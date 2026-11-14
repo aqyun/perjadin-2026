@@ -365,6 +365,15 @@
             <span class="empty-note">Belum ada pegawai dipilih</span>
           </div>
 
+          <div class="trip-dates-block" id="tripDatesBlock" style="display:none">
+            <div class="selected-head">
+              <span class="selected-label">Tanggal Perjalanan per Pegawai</span>
+              <span class="trip-dates-hint-inline">Kosong = ikut tanggal global di atas</span>
+            </div>
+            <div class="trip-dates-list" id="tripDatesList"></div>
+            <div class="trip-dates-hint">Tanggal bisa berbeda antar pegawai dan bisa terputus (mis. 10–11 dst. lalu 16). Klik + Tanggal untuk menambah rentang.</div>
+          </div>
+
           <div class="action-panel">
             <div class="action-panel-head">
               <div>
@@ -714,7 +723,7 @@
               <input type="text" id="cfg_alamatKuitansi" value="Raden Patah No. 1 RT. 002 RW. 001 Kebayoran Baru, Jakarta Selatan - DKI Jakarta">
             </div>
             <div class="form-group full">
-              <label for="cfg_kegiatan">Kegiatan</label>
+              <label for="cfg_kegiatan">Output</label>
               <input type="text" id="cfg_kegiatan" value="Penyelenggaraan Kegiatan Protokoler Kementerian">
             </div>
           </div>
@@ -734,11 +743,11 @@
             <div class="form-section full">Pejabat Pembuat Komitmen (PPK)</div>
             <div class="form-group">
               <label for="cfg_ppkNama">Nama PPK</label>
-              <input type="text" id="cfg_ppkNama" value="Rangi Liwitiara, S.T., M.T.">
+              <input type="text" id="cfg_ppkNama" value="Emanuel Pati Libak">
             </div>
             <div class="form-group">
               <label for="cfg_ppkNip">NIP PPK</label>
-              <input type="text" id="cfg_ppkNip" value="NIP. 198404132010012021">
+              <input type="text" id="cfg_ppkNip" value="NIP. 197512072010121001">
             </div>
             <div class="form-group full">
               <label for="cfg_ppkJabatan">Jabatan PPK</label>
@@ -758,11 +767,11 @@
             <div class="form-section full">Pejabat Pembuat SPM</div>
             <div class="form-group">
               <label for="cfg_ppspmNama">Nama Pejabat Pembuat SPM (PP-SPM)</label>
-              <input type="text" id="cfg_ppspmNama">
+              <input type="text" id="cfg_ppspmNama" value="Mala Hayati Rahayu, S.E.">
             </div>
             <div class="form-group">
               <label for="cfg_ppspmNip">NIP PP-SPM</label>
-              <input type="text" id="cfg_ppspmNip">
+              <input type="text" id="cfg_ppspmNip" value="NIP. 198408012009122003">
             </div>
 
             <div class="form-section full">Verifikator</div>

@@ -249,10 +249,11 @@ function renderEmployeeList() {
 function filterEmployees() { renderEmployeeList(); }
 
 function toggleEmployee(id) {
-  if (selectedEmpIds.has(id)) selectedEmpIds.delete(id);
+  if (selectedEmpIds.has(id)) { selectedEmpIds.delete(id); empTripSegments.delete(id); }
   else selectedEmpIds.add(id);
   renderEmployeeList();
   renderSelectedTags();
+  renderTripDates();
   refreshCustomCostAssignments();
   refreshHotelGuests();
   updateSbmWarnings();
@@ -273,10 +274,89 @@ function renderSelectedTags() {
   }).join('');
 }
 
+function renderTripDates() {
+  const block = document.getElementById('tripDatesBlock');
+  const list = document.getElementById('tripDatesList');
+  if (!block || !list) return;
+  if (selectedEmpIds.size === 0) { block.style.display = 'none'; list.innerHTML = ''; return; }
+  block.style.display = '';
+  const g1 = document.getElementById('tglBerangkat').value;
+  const g2 = document.getElementById('tglKembali').value;
+  const globalText = g1 && g2 ? `${formatTgl(g1)} – ${formatTgl(g2)}` : 'belum diisi';
+  list.innerHTML = [...selectedEmpIds].map(id => {
+    const e = employees.find(x => x.id === id);
+    if (!e) return '';
+    const name = e.nama.split(',')[0];
+    const segs = empTripSegments.get(id) || [];
+    if (!segs.length) {
+      return `<div class="trip-row">
+        <div class="trip-name" title="${e.nama}">${name}</div>
+        <div class="trip-follow">Ikut tanggal perjalanan (${globalText})</div>
+        <button type="button" class="trip-btn" onclick="setEmpDates(${id})">Atur tanggal</button>
+      </div>`;
+    }
+    const segHtml = segs.map((s, i) => `
+      <span class="trip-seg">
+        <input type="date" value="${s.start}" onchange="updateEmpSegment(${id},${i},'start',this.value)">
+        <span class="trip-sep">s.d.</span>
+        <input type="date" value="${s.end}" onchange="updateEmpSegment(${id},${i},'end',this.value)">
+        <button type="button" class="trip-seg-rm" title="Hapus tanggal" onclick="removeEmpSegment(${id},${i})">×</button>
+      </span>`).join('');
+    return `<div class="trip-row">
+      <div class="trip-name" title="${e.nama}">${name}</div>
+      <div class="trip-segs">${segHtml}</div>
+      <div class="trip-actions">
+        <button type="button" class="trip-btn" onclick="addEmpSegment(${id})">+ Tanggal</button>
+        <button type="button" class="trip-btn trip-btn-reset" onclick="resetEmpDates(${id})">Ikut global</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function setEmpDates(id) {
+  const g1 = document.getElementById('tglBerangkat').value;
+  const g2 = document.getElementById('tglKembali').value || g1;
+  if (!g1) return;
+  empTripSegments.set(id, [{ start: g1, end: g2 }]);
+  renderTripDates();
+}
+
+function addEmpSegment(id) {
+  const segs = [...(empTripSegments.get(id) || [])];
+  segs.push({ start: '', end: '' });
+  empTripSegments.set(id, segs);
+  renderTripDates();
+}
+
+function updateEmpSegment(id, index, field, value) {
+  const segs = [...(empTripSegments.get(id) || [])];
+  if (!segs[index]) return;
+  segs[index][field] = value;
+  if (field === 'start' && (!segs[index].end || segs[index].end < value)) segs[index].end = value;
+  if (field === 'end' && segs[index].start && value && value < segs[index].start) segs[index].start = value;
+  empTripSegments.set(id, segs);
+  renderTripDates();
+}
+
+function removeEmpSegment(id, index) {
+  const segs = [...(empTripSegments.get(id) || [])];
+  segs.splice(index, 1);
+  if (segs.length) empTripSegments.set(id, segs);
+  else empTripSegments.delete(id);
+  renderTripDates();
+}
+
+function resetEmpDates(id) {
+  empTripSegments.delete(id);
+  renderTripDates();
+}
+
 function clearAll() {
   selectedEmpIds.clear();
+  empTripSegments.clear();
   renderEmployeeList();
   renderSelectedTags();
+  renderTripDates();
   refreshCustomCostAssignments();
   refreshHotelGuests();
   updateSbmWarnings();
@@ -697,10 +777,14 @@ function updateSbmWarnings() {
 function hitungLama() {
   const tgl1 = document.getElementById('tglBerangkat').value;
   const tgl2 = document.getElementById('tglKembali').value;
-  if (!tgl1 || !tgl2) return;
+  if (!tgl1 || !tgl2) {
+    if (typeof renderTripDates === 'function') renderTripDates();
+    return;
+  }
   const d1 = new Date(tgl1), d2 = new Date(tgl2);
   const diffDays = Math.round((d2 - d1) / 86400000) + 1;
   document.getElementById('lamaTugas').value = diffDays <= 0 ? 'Tanggal tidak valid' : `${diffDays} Hari`;
+  if (typeof renderTripDates === 'function') renderTripDates();
 }
 
 function getDays() {
@@ -710,6 +794,63 @@ function getDays() {
   const d1 = new Date(tgl1), d2 = new Date(tgl2);
   const days = Math.max(0, Math.round((d2 - d1) / 86400000) + 1);
   return { days, nights: Math.max(0, days - 1) };
+}
+
+const empTripSegments = new Map();
+
+function daySpan(start, end) {
+  if (!start || !end) return 0;
+  return Math.max(0, Math.round((new Date(end) - new Date(start)) / 86400000) + 1);
+}
+
+function getEmpSegments(empId) {
+  const custom = empTripSegments.get(empId);
+  if (custom && custom.length) {
+    return custom.filter(s => s.start && s.end).map(s => ({
+      start: s.start,
+      end: s.end < s.start ? s.start : s.end
+    }));
+  }
+  const tgl1 = document.getElementById('tglBerangkat').value;
+  const tgl2 = document.getElementById('tglKembali').value;
+  return tgl1 && tgl2 ? [{ start: tgl1, end: tgl2 }] : [];
+}
+
+function getEmpDays(empId) {
+  let days = 0, nights = 0;
+  getEmpSegments(empId).forEach(seg => {
+    const span = daySpan(seg.start, seg.end);
+    days += span;
+    nights += Math.max(0, span - 1);
+  });
+  return { days, nights };
+}
+
+function expandTripDays(segments) {
+  const pad = n => String(n).padStart(2, '0');
+  const days = new Set();
+  segments.forEach(seg => {
+    const cur = new Date(seg.start);
+    const end = new Date(seg.end);
+    while (cur <= end) {
+      days.add(`${cur.getFullYear()}-${pad(cur.getMonth() + 1)}-${pad(cur.getDate())}`);
+      cur.setDate(cur.getDate() + 1);
+    }
+  });
+  return [...days].sort();
+}
+
+function formatTanggalList(isoDates) {
+  const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  const groups = [];
+  isoDates.forEach(iso => {
+    const d = new Date(iso);
+    const key = `${d.getFullYear()}-${d.getMonth()}`;
+    const last = groups[groups.length - 1];
+    if (last && last.key === key) last.days.push(d.getDate());
+    else groups.push({ key, days: [d.getDate()], month: months[d.getMonth()], year: d.getFullYear() });
+  });
+  return groups.map(g => `${g.days.join(', ')} ${g.month} ${g.year}`).join(', ');
 }
 
 function getHotelRate(sbm, gol) {
@@ -731,7 +872,7 @@ function hitungBiaya(emp) {
   }));
   const customTotal = customCosts.reduce((total, item) => total + item.amount, 0);
   if (!sbm) return { uh: 0, uhGross: 0, mealDeduction: 0, snackDeduction: 0, hotel: 0, representatif: 0, representatifRate: 0, dpr: 0, tiket: 0, customCosts, total: customTotal };
-  const { days, nights } = getDays();
+  const { days, nights } = getEmpDays(emp.id);
   const cbUH = document.getElementById('cbUH').checked;
   const cbHotel = document.getElementById('cbHotel').checked;
   const cbDPR = document.getElementById('cbDPR').checked;
@@ -1095,7 +1236,8 @@ function renderSPPDPerorangan() {
   }
 
   const sbm = getSBM();
-  const { days } = getDays();
+  const empSegments = getEmpSegments(emp.id);
+  const { days } = getEmpDays(emp.id);
   const satker = document.getElementById('cfg_satker').value;
   const alamat = document.getElementById('cfg_alamatKuitansi').value;
   const kotaAsal = document.getElementById('cfg_kotaAsal').value;
@@ -1110,8 +1252,12 @@ function renderSPPDPerorangan() {
   const tujuan = document.getElementById('kotaTujuan').value.trim() || (sbm ? `${sbm.ibukota}, ${sbm.provinsi}` : '-');
   const noSPD = spdPerEmployee[emp.id] || document.getElementById('noSPD').value.trim() || '-';
   const tanggalSPD = formatTgl(document.getElementById('tglSPD').value);
-  const tglBerangkat = formatTgl(document.getElementById('tglBerangkat').value);
-  const tglKembali = formatTgl(document.getElementById('tglKembali').value);
+  const tripDays = expandTripDays(empSegments);
+  const tripContiguous = tripDays.length > 0 && tripDays.length === daySpan(tripDays[0], tripDays[tripDays.length - 1]);
+  const tglBerangkat = !tripContiguous && tripDays.length > 1
+    ? `${formatTanggalList(tripDays.slice(0, -1))}, dan`
+    : formatTgl(empSegments.length ? empSegments[0].start : document.getElementById('tglBerangkat').value);
+  const tglKembali = formatTgl(tripDays.length ? tripDays[tripDays.length - 1] : (empSegments.length ? empSegments[empSegments.length - 1].end : document.getElementById('tglKembali').value));
   const noST = document.getElementById('noST').value.trim() || '-';
   const tglST = formatTgl(document.getElementById('tglST').value);
   const pangkat = emp.pangkat && emp.pangkat !== '-' ? emp.pangkat : '-';
@@ -1221,8 +1367,13 @@ function renderLembarKendali() {
   const nomorSPD = document.getElementById('lk_nomorSPD').value;
   const nomorST = document.getElementById('noST').value || '-';
   const tanggalST = formatTgl(document.getElementById('tglST').value);
-  const tanggalBerangkat = formatTgl(document.getElementById('tglBerangkat').value);
-  const tanggalKembali = formatTgl(document.getElementById('tglKembali').value);
+  const allTripSegs = selectedEmps.flatMap(emp => getEmpSegments(emp.id));
+  const tripStart = allTripSegs.length ? allTripSegs.reduce((min, s) => (s.start < min ? s.start : min), allTripSegs[0].start) : document.getElementById('tglBerangkat').value;
+  const tripEnd = allTripSegs.length ? allTripSegs.reduce((max, s) => (s.end > max ? s.end : max), allTripSegs[0].end) : document.getElementById('tglKembali').value;
+  const tanggalBerangkat = formatTgl(tripStart);
+  const tanggalKembali = formatTgl(tripEnd);
+  const verifNama = document.getElementById('cfg_verifikatorNama').value.trim();
+  const verifNipRaw = document.getElementById('cfg_verifikatorNip').value.trim().replace(/^NIP\.?\s*/i, '');
   const jenisPerjalanan = document.getElementById('lk_jenisPerjalanan').value;
   const tujuan = document.getElementById('kotaTujuan').value || (sbm ? `${sbm.ibukota}, ${sbm.provinsi}` : '-');
   const tujuanPerjalanan = document.getElementById('agenda').value.trim() || tujuan;
@@ -1313,26 +1464,32 @@ function renderLembarKendali() {
       </table>
 
       <div class="lembar-kendali-signatures">
-        <div>
-          <strong>Disetujui</strong>
-          <div>Pejabat Pembuat Komitmen</div>
-          <div>Sekretariat Jenderal Kementerian PKP</div>
+        <div class="lk-sig-col">
+          <div class="lk-sig-head">
+            <strong>Disetujui</strong>
+            <div>Pejabat Pembuat Komitmen</div>
+            <div>Sekretariat Jenderal Kementerian PKP</div>
+          </div>
           <div class="lembar-kendali-signature-space"></div>
           <div>${document.getElementById('cfg_ppkNama').value}</div>
           <div>${document.getElementById('cfg_ppkNip').value}</div>
         </div>
-        <div>
-          <strong>Pejabat Pembuat SPM (PP-SPM)</strong>
+        <div class="lk-sig-col">
+          <div class="lk-sig-head">
+            <strong>Pejabat Pembuat SPM (PP-SPM)</strong>
+          </div>
           <div class="lembar-kendali-signature-space"></div>
           <div>${document.getElementById('cfg_ppspmNama').value}</div>
           <div>${document.getElementById('cfg_ppspmNip').value}</div>
         </div>
-        <div>
-          <div>${document.getElementById('cfg_kotaAsal').value},</div>
-          <strong>Verifikator Pejabat Pembuat Komitmen</strong>
+        <div class="lk-sig-col">
+          <div class="lk-sig-head">
+            <div>${document.getElementById('cfg_kotaAsal').value},</div>
+            <strong>Verifikator Pejabat Pembuat Komitmen</strong>
+          </div>
           <div class="lembar-kendali-signature-space"></div>
-          <div>${document.getElementById('cfg_verifikatorNama').value}</div>
-          <div>${document.getElementById('cfg_verifikatorNip').value}</div>
+          <div>${verifNama || '..................................'}</div>
+          <div>NIP. ${verifNipRaw || '..................................'}</div>
         </div>
       </div>
     </section>
@@ -1354,9 +1511,14 @@ function renderRekapRincian() {
   }
 
   const sbm = getSBM();
-  const { days, nights } = getDays();
   const selectedEmps = [...selectedEmpIds].map(id => employees.find(emp => emp.id === id));
-  const rows = selectedEmps.map((emp, index) => ({ emp, index: index + 1, biaya: hitungBiaya(emp) }));
+  const rows = selectedEmps.map((emp, index) => ({
+    emp,
+    index: index + 1,
+    biaya: hitungBiaya(emp),
+    segs: getEmpSegments(emp.id),
+    days: getEmpDays(emp.id).days
+  }));
   const satker = document.getElementById('cfg_satker').value;
   const kodeSatker = document.getElementById('cfg_kodeSatker').value;
   const kodeKegiatan = document.getElementById('kodeKegiatan').value;
@@ -1416,6 +1578,7 @@ function renderRekapRincian() {
 
   const grandTotal = rows.reduce((total, row) => total + row.biaya.total, 0);
   const totalUangHarian = rows.reduce((total, row) => total + row.biaya.uh, 0);
+  const multiSegRows = rows.filter(row => row.segs.length > 1);
   const biayaColspan = Math.max(1, biayaColumns.length);
   const financialColumnCount = (cbUH ? 1 : 0) + biayaColspan + 1;
   const financialColumnWidth = 18 / financialColumnCount;
@@ -1465,9 +1628,9 @@ function renderRekapRincian() {
               <td class="rekap-rincian-center">${row.emp.gol}</td>
               <td class="rekap-rincian-center">${row.emp.nip}</td>
               <td class="rekap-rincian-center">${tujuan}</td>
-              <td class="rekap-rincian-center">${formatTgl(tanggalBerangkat)}</td>
-              <td class="rekap-rincian-center">${formatTgl(tanggalKembali)}</td>
-              <td class="rekap-rincian-center">${days} hari</td>
+              <td class="rekap-rincian-center">${formatTgl(row.segs.length ? row.segs[0].start : tanggalBerangkat)}</td>
+              <td class="rekap-rincian-center">${formatTgl(row.segs.length ? row.segs[row.segs.length - 1].end : tanggalKembali)}</td>
+              <td class="rekap-rincian-center">${row.days} hari</td>
               ${cbUH ? `<td class="rekap-rincian-number">${rp(row.biaya.uh)}</td>` : ''}
               ${biayaColumns.length ? biayaColumns.map(column => `<td class="rekap-rincian-number">${rp(column.value(row.biaya))}</td>`).join('') : '<td class="rekap-rincian-center">-</td>'}
               <td class="rekap-rincian-number">${rp(row.biaya.total)}</td>
@@ -1482,6 +1645,7 @@ function renderRekapRincian() {
         </tbody>
       </table>
 
+      ${multiSegRows.length ? `<div class="rekap-rincian-date-note">Catatan tanggal perjalanan: ${multiSegRows.map(row => `${row.emp.nama} (${row.segs.map(s => `${formatTgl(s.start)} s.d. ${formatTgl(s.end)}`).join('; ')})`).join(' | ')}.</div>` : ''}
       <div class="rekap-rincian-terbilang"><strong><em>Terbilang</em></strong><span>:</span><strong><em>${terbilang(grandTotal)}</em></strong></div>
       <div class="rekap-rincian-signatures">
         <div>
@@ -1599,7 +1763,6 @@ function renderNominatif() {
     return;
   }
   const sbm = getSBM();
-  const { days, nights } = getDays();
   const tglBrkt = document.getElementById('tglBerangkat').value;
   const tglKmb = document.getElementById('tglKembali').value;
   const kotaTujuan = document.getElementById('kotaTujuan').value || (sbm ? sbm.ibukota + ', ' + sbm.provinsi : '-');
@@ -1622,8 +1785,9 @@ function renderNominatif() {
   const rows = selectedEmps.map((emp, idx) => {
     const b = hitungBiaya(emp);
     grandTotal += b.total;
-    return { emp, b, idx: idx + 1 };
+    return { emp, b, idx: idx + 1, segs: getEmpSegments(emp.id), days: getEmpDays(emp.id).days };
   });
+  const multiSegRows = rows.filter(r => r.segs.length > 1);
 
   out.innerHTML = `
     <div class="nominatif-area">
@@ -1671,9 +1835,9 @@ function renderNominatif() {
                 <td class="tc">${r.emp.gol}</td>
                 <td class="tc nominatif-nip">${r.emp.nip}</td>
                 <td class="tc">${kotaTujuan}</td>
-                <td class="tc">${formatTgl(tglBrkt).replace(/ (\d{4})$/, '<br>$1')}</td>
-                <td class="tc">${formatTgl(tglKmb).replace(/ (\d{4})$/, '<br>$1')}</td>
-                <td class="tc">${days} hari</td>
+                <td class="tc">${formatTgl(r.segs.length ? r.segs[0].start : tglBrkt).replace(/ (\d{4})$/, '<br>$1')}</td>
+                <td class="tc">${formatTgl(r.segs.length ? r.segs[r.segs.length - 1].end : tglKmb).replace(/ (\d{4})$/, '<br>$1')}</td>
+                <td class="tc">${r.days} hari</td>
                 <td><div class="nominatif-amount"><span>Rp</span><span>${Number(r.b.total).toLocaleString('id-ID')}</span></div></td>
               </tr>
             `).join('')}
@@ -1684,6 +1848,8 @@ function renderNominatif() {
           </tbody>
         </table>
       </div>
+
+      ${multiSegRows.length ? `<div class="rekap-rincian-date-note">Catatan tanggal perjalanan: ${multiSegRows.map(r => `${r.emp.nama} (${r.segs.map(s => `${formatTgl(s.start)} s.d. ${formatTgl(s.end)}`).join('; ')})`).join(' | ')}.</div>` : ''}
 
       <div class="nominatif-terbilang">
         <b><em>Terbilang</em></b><span>:</span><strong><em>${terbilang(grandTotal)}</em></strong>
@@ -1765,7 +1931,7 @@ function renderRincian() {
   if (!id && id !== 0) { document.getElementById('rincianOut').innerHTML = ''; return; }
   const emp = employees.find(e => e.id === id);
   const sbm = getSBM();
-  const { days, nights } = getDays();
+  const { days, nights } = getEmpDays(emp.id);
   const b = hitungBiaya(emp);
   const kotaTujuan = document.getElementById('kotaTujuan').value || (sbm ? sbm.ibukota : '-');
   const noSPD = spdPerEmployee[emp.id] || document.getElementById('noSPD').value.trim() || '___/SPD/Birkom/___/____';
@@ -1776,8 +1942,6 @@ function renderRincian() {
   const bendNama = document.getElementById('cfg_bendNama').value;
   const bendNip = document.getElementById('cfg_bendNip').value;
   const agenda = document.getElementById('agenda').value || '-';
-  const tglBrkt = document.getElementById('tglBerangkat').value;
-  const tglKmb = document.getElementById('tglKembali').value;
   const cbUH = document.getElementById('cbUH').checked;
   const cbHotel = document.getElementById('cbHotel').checked;
   const cbDPR = document.getElementById('cbDPR').checked;
