@@ -1,0 +1,1673 @@
+// =====================================================================
+// DATA PEGAWAI (dari sheet KARYAWAN)
+// =====================================================================
+const employees = [
+  {id:0,nama:'Adolfus Manuel Pati, S.Ak.',nip:'-',pangkat:'-',gol:'-',jabatan:'Staf Biro Umum'},
+  {id:1,nama:'Arif Fajar Alfalaqy, S.Sos., M.Sc.',nip:'198305152008011009',pangkat:'Pembina',gol:'IV/a',jabatan:'Kabag. Pengelolaan Dokumentasi dan Hubungan Media'},
+  {id:2,nama:'Rendhi Mirad, S.Sos., M.S.E.',nip:'198205212006041002',pangkat:'Pembina',gol:'IV/a',jabatan:'Kabag. Pelayanan Publik dan Publikasi'},
+  {id:3,nama:'Dwi Handoko, S.Kom., M.Si., M.MT.',nip:'198811112010121002',pangkat:'Penata Tingkat I',gol:'III/d',jabatan:'Kepala Subbagian Tata Usaha'},
+  {id:4,nama:'Ristyan Mega Putra, S.Sos, M.Si.',nip:'198310142010121001',pangkat:'Penata Tingkat I',gol:'III/d',jabatan:'Pranata Humas Ahli Muda'},
+  {id:5,nama:'Ahmad Jayadi, S.Hum, M.T.',nip:'198702182010121003',pangkat:'Penata Tingkat I',gol:'III/d',jabatan:'Pranata Humas Ahli Muda'},
+  {id:6,nama:'Erwin Alimudin, S.Ds.',nip:'199305222019031006',pangkat:'Penata Muda Tingkat I',gol:'III/b',jabatan:'Plt. Kasubbag TU'},
+  {id:7,nama:'Ishaq Abdullah, S.Ars.',nip:'199505122020121002',pangkat:'Penata Muda Tingkat I',gol:'III/b',jabatan:'Penata Kelola Perumahan Ahli Pertama'},
+  {id:8,nama:'Imelda Gita Nugrahani, S.Ars.',nip:'199701082020122014',pangkat:'Penata Muda Tingkat I',gol:'III/b',jabatan:'Penata Kelola Bangunan Gedung dan Kawasan Permukiman'},
+  {id:9,nama:'Indra Nugraha, S.I.Kom.',nip:'198705282024211009',pangkat:'-',gol:'IX',jabatan:'Pranata Humas Ahli Pertama'},
+  {id:10,nama:'Annisa Zetta Afiatni, S.I.Kom.',nip:'199401312023212027',pangkat:'-',gol:'IX',jabatan:'Pranata Humas Ahli Pertama'},
+  {id:11,nama:'Gita Nawangsari Estika Putri, S.Kom.I.',nip:'199401042023212032',pangkat:'-',gol:'IX',jabatan:'Pranata Humas Ahli Pertama'},
+  {id:12,nama:'Nur Rahma Aziza, S.I.Kom.',nip:'199901012023212005',pangkat:'-',gol:'IX',jabatan:'Pranata Humas Ahli Pertama'},
+  {id:13,nama:'Bambang Ismanto, A.Md.',nip:'199505252024211005',pangkat:'-',gol:'VII',jabatan:'Pranata Komputer Terampil'},
+  {id:14,nama:'Lisa Rahmawati Dewi Syam, S.H., M.H.',nip:'199009162025212062',pangkat:'-',gol:'IX',jabatan:'Arsiparis Ahli Pertama'},
+  {id:15,nama:'Refly Saprilaturyandi, S.Kom.',nip:'198504232025211049',pangkat:'-',gol:'IX',jabatan:'Pranata Komputer Ahli Pertama'},
+  {id:16,nama:'Rudiyana Harris, S.E.',nip:'198912202025211044',pangkat:'-',gol:'IX',jabatan:'Analis Kebijakan Ahli Pertama'},
+  {id:17,nama:'Fitrah Faizal, S.T.',nip:'198802242025211047',pangkat:'-',gol:'IX',jabatan:'Penata Layanan Operasional'},
+  {id:18,nama:'Wahyu Ady Sulistyo, S.T.',nip:'198407022025211043',pangkat:'-',gol:'IX',jabatan:'Penata Layanan Operasional'},
+  {id:19,nama:'Aisyah Putri Robbani, S.Ars',nip:'199706262025062015',pangkat:'Penata Muda',gol:'III/a',jabatan:'Penata Kelola Bangunan Gedung dan Kawasan Permukiman Ahli Pertama'},
+  {id:20,nama:'Akhdiyat Dewa Galenica, S.I.Kom.',nip:'200212262025061003',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
+  {id:21,nama:'Ameta Dian Fachirah Tarigan, S.I.Kom',nip:'199906202025062017',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
+  {id:22,nama:'Aqyun Rista Maulidin, S.Tr.Kom.',nip:'200205302025062010',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Komputer Ahli Pertama'},
+  {id:23,nama:'Ardilamita Febrimasya, S.K.Pm.',nip:'200203122025062008',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
+  {id:24,nama:'Atini Rahmatika Fauzi Murod, S.K.Pm.',nip:'199903172025062014',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
+  {id:25,nama:'Avifah Setiyani, S.I.Kom.',nip:'199909222025062015',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
+  {id:26,nama:'Brilliani Nadiva Yana Wibowo, S.I.Kom',nip:'199711172025062013',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
+  {id:27,nama:'David Ardi, S.T',nip:'199906152025061009',pangkat:'Penata Muda',gol:'III/a',jabatan:'Penata Kelola Perumahan Ahli Pertama'},
+  {id:28,nama:'Deshinta Firstiana Sari, S.I.Kom.',nip:'198912152025062003',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
+  {id:29,nama:'Digna Margareth Rismauli, S.I.Kom.',nip:'199310142025062008',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
+  {id:30,nama:'Dimas Novel Calvindoro Damarjati, S.I.Kom.',nip:'199906182025061012',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
+  {id:31,nama:'Emanuel Van Fernando Sibarani, S.I.Kom',nip:'199611092025061011',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
+  {id:32,nama:'Fatmawati, S.T.',nip:'200002182025062015',pangkat:'Penata Muda',gol:'III/a',jabatan:'Penata Kelola Perumahan Ahli Pertama'},
+  {id:33,nama:'Gayatri Puspita Sari, S.I.Kom',nip:'200001172025062013',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
+  {id:34,nama:'Imam Efendi Zarkasi, S.T.',nip:'199811022025061006',pangkat:'Penata Muda',gol:'III/a',jabatan:'Penata Kelola Bangunan Gedung dan Kawasan Permukiman Ahli Pertama'},
+  {id:35,nama:'Indar Amila Azizah, S.I.Kom',nip:'200006052025062023',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
+  {id:36,nama:'Kinanti Juli Astuti, S.I.Kom.',nip:'200107292025062013',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
+  {id:37,nama:'Lastrafila V. Alnoriz, S.I.Kom.',nip:'200007112025061011',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
+  {id:38,nama:'Leonardo Abet Zebe, S.Ars',nip:'200206092025061006',pangkat:'Penata Muda',gol:'III/a',jabatan:'Penata Kelola Perumahan Ahli Pertama'},
+  {id:39,nama:'Madya Puspa Faradina, B.A.',nip:'199711182025062011',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
+  {id:40,nama:'Maharani Bilqist Caroline, S.T.',nip:'200009262025062013',pangkat:'Penata Muda',gol:'III/a',jabatan:'Penata Kelola Bangunan Gedung dan Kawasan Permukiman Ahli Pertama'},
+  {id:41,nama:'Melly Nur Fatimah, S.T.',nip:'199805282025062014',pangkat:'Penata Muda',gol:'III/a',jabatan:'Penata Kelola Perumahan Ahli Pertama'},
+  {id:42,nama:'Michael Prilas Simanjuntak, S.T.',nip:'200204112025061006',pangkat:'Penata Muda',gol:'III/a',jabatan:'Penata Kelola Perumahan Ahli Pertama'},
+  {id:43,nama:'Muhammad Ihsan Yudanto, S.T.',nip:'199802252025061010',pangkat:'Penata Muda',gol:'III/a',jabatan:'Penata Kelola Perumahan Ahli Pertama'},
+  {id:44,nama:'Muhammad Ilham Bintang, S.K.Pm.',nip:'200010192025061007',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
+  {id:45,nama:'Nabela Aristya Fajrin, S.Akt.',nip:'200003022025062014',pangkat:'Penata Muda',gol:'III/a',jabatan:'Analis Pengelolaan Keuangan APBN Ahli Pertama'},
+  {id:46,nama:'Nevia Tiara Putri, S.Ars.',nip:'200006192025062021',pangkat:'Penata Muda',gol:'III/a',jabatan:'Penata Kelola Perumahan Ahli Pertama'},
+  {id:47,nama:'Novia Dwi Purwanti, S.K.Pm.',nip:'200111112025062016',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
+  {id:48,nama:'Raden Bintang Agna Fadhila, S.I.Kom.',nip:'200111022025061007',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
+  {id:49,nama:'Ratu Budhi Sejati, S.I.Kom.',nip:'199610232025062013',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
+  {id:50,nama:'Rian Fahmi Miftahul Rizky, S.T.',nip:'199907252025061005',pangkat:'Penata Muda',gol:'III/a',jabatan:'Penata Kelola Perumahan Ahli Pertama'},
+  {id:51,nama:'Ridho Halasan Sinaga, S.I.Kom.',nip:'200108122025061008',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
+  {id:52,nama:'Rifky Aji Rahmandita, S.I.Kom',nip:'199902242025061006',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
+  {id:53,nama:'Risyanti Ananti Putri, S.IP',nip:'199906192025062020',pangkat:'Penata Muda',gol:'III/a',jabatan:'Arsiparis Ahli Pertama'},
+  {id:54,nama:'Sahrul Hari Nugroho, S.T',nip:'199906032025061009',pangkat:'Penata Muda',gol:'III/a',jabatan:'Penata Kelola Bangunan Gedung dan Kawasan Permukiman'},
+  {id:55,nama:'Shafa Kamila, S.I.Kom.',nip:'200111162025062019',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
+  {id:56,nama:'Shafira Zerlina, S.P.W.K.',nip:'200207072025062011',pangkat:'Penata Muda',gol:'III/a',jabatan:'Penata Kelola Perumahan Ahli Pertama'},
+  {id:57,nama:'Utari Liani Narulita, S.I.Kom.',nip:'200104142025062021',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
+  {id:58,nama:'Vania Adita Siagian, S.T.',nip:'199910242025062017',pangkat:'Penata Muda',gol:'III/a',jabatan:'Penata Kelola Perumahan Ahli Pertama'},
+  {id:59,nama:'Vera Siringo Ringo, S.Ikom.',nip:'199602052025062013',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
+  {id:60,nama:'Vira Febrianti Octria, S.I.Kom.',nip:'200110152025062016',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
+  {id:61,nama:'Widya Cantika Sisnawar, S.I.Kom.',nip:'200101192025062013',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
+  {id:62,nama:'Wika Wulandari, S.T.',nip:'199610042025062007',pangkat:'Penata Muda',gol:'III/a',jabatan:'Penata Kelola Perumahan Ahli Pertama'},
+  {id:63,nama:'Yogi Andre Yonatan Pakpahan, S.P.W.K',nip:'199511272025061006',pangkat:'Penata Muda',gol:'III/a',jabatan:'Penata Kelola Bangunan Gedung dan Kawasan Permukiman Ahli Pertama'},
+  {id:64,nama:'Yovita Rimbawati, S.I.Kom.',nip:'199107312025062006',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
+  {id:65,nama:'Zahra Puspa Noviandini, S.Ars.',nip:'199711012025062009',pangkat:'Penata Muda',gol:'III/a',jabatan:'Penata Kelola Perumahan Ahli Pertama'},
+  {id:66,nama:'Zhafira Alya Miftach, S.I.Kom',nip:'199910012025062019',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
+];
+
+// =====================================================================
+// DATA SBM (dari sheet Master - PMK)
+// Fields: uh=uang harian 100%, jktPP=transport JKT PP, taxi=taxi lokal,
+//         h4=hotel Eselon III/Gol IV, h3=hotel Eselon IV/Gol III,
+//         h2=hotel Eselon II, h1=hotel Eselon I, tiket=tiket pesawat PP
+// =====================================================================
+const sbmData = [
+  {id:1,provinsi:'NANGROE ACEH DARUSSALAM',ibukota:'Banda Aceh',uh:360000,jktPP:512000,taxi:254000,dpr:766000,h1:4774000,h2:3526000,h4:1578000,h3:770000,tiket:4492000},
+  {id:2,provinsi:'SUMATERA UTARA',ibukota:'Medan',uh:370000,jktPP:512000,taxi:616000,dpr:1128000,h1:4960000,h2:2195000,h4:1188000,h3:699000,tiket:3808000},
+  {id:3,provinsi:'RIAU',ibukota:'Pekanbaru',uh:370000,jktPP:512000,taxi:202000,dpr:714000,h1:3820000,h2:3119000,h4:1650000,h3:852000,tiket:3016000},
+  {id:4,provinsi:'KEPULAUAN RIAU',ibukota:'Tanjung Pinang',uh:370000,jktPP:512000,taxi:330000,dpr:842000,h1:5772000,h2:2318000,h4:1297000,h3:792000,tiket:0},
+  {id:5,provinsi:'JAMBI',ibukota:'Jambi',uh:370000,jktPP:512000,taxi:294000,dpr:806000,h1:5004000,h2:4102000,h4:1225000,h3:580000,tiket:2460000},
+  {id:6,provinsi:'SUMATERA BARAT',ibukota:'Padang',uh:380000,jktPP:512000,taxi:380000,dpr:892000,h1:5236000,h2:3332000,h4:1353000,h3:701000,tiket:2952000},
+  {id:7,provinsi:'SUMATERA SELATAN',ibukota:'Palembang',uh:380000,jktPP:512000,taxi:358000,dpr:870000,h1:6298000,h2:3083000,h4:1966000,h3:861000,tiket:2268000},
+  {id:8,provinsi:'LAMPUNG',ibukota:'Bandar Lampung',uh:380000,jktPP:512000,taxi:336000,dpr:848000,h1:4491000,h2:2488000,h4:1539000,h3:580000,tiket:1583000},
+  {id:9,provinsi:'BENGKULU',ibukota:'Bengkulu',uh:380000,jktPP:512000,taxi:218000,dpr:730000,h1:2140000,h2:1628000,h4:1546000,h3:692000,tiket:2621000},
+  {id:10,provinsi:'BANGKA BELITUNG',ibukota:'Pangkal Pinang',uh:410000,jktPP:512000,taxi:194000,dpr:706000,h1:4134000,h2:2838000,h4:1957000,h3:676000,tiket:2139000},
+  {id:11,provinsi:'BANTEN',ibukota:'Serang',uh:370000,jktPP:0,taxi:536000,dpr:536000,h1:5725000,h2:2373000,h4:1301000,h3:724000,tiket:0},
+  {id:12,provinsi:'JAWA BARAT',ibukota:'Bandung',uh:430000,jktPP:512000,taxi:400000,dpr:912000,h1:5812000,h2:2755000,h4:1298000,h3:686000,tiket:0},
+  {id:13,provinsi:'DKI JAKARTA',ibukota:'Jakarta',uh:530000,jktPP:0,taxi:512000,dpr:512000,h1:8720000,h2:2063000,h4:992000,h3:730000,tiket:0},
+  {id:14,provinsi:'JAWA TENGAH',ibukota:'Semarang',uh:370000,jktPP:512000,taxi:216000,dpr:728000,h1:5728000,h2:1998000,h4:1201000,h3:810000,tiket:2182000},
+  {id:15,provinsi:'D.I. YOGYAKARTA',ibukota:'Yogyakarta',uh:420000,jktPP:512000,taxi:534000,dpr:1046000,h1:5017000,h2:2695000,h4:1495000,h3:845000,tiket:2268000},
+  {id:16,provinsi:'JAWA TIMUR',ibukota:'Surabaya',uh:410000,jktPP:512000,taxi:466000,dpr:978000,h1:4449000,h2:2007000,h4:1153000,h3:814000,tiket:2674000},
+  {id:17,provinsi:'BALI',ibukota:'Denpasar',uh:480000,jktPP:512000,taxi:454000,dpr:966000,h1:6848000,h2:2433000,h4:1685000,h3:1138000,tiket:3262000},
+  {id:18,provinsi:'NUSA TENGGARA BARAT',ibukota:'Mataram',uh:440000,jktPP:512000,taxi:462000,dpr:974000,h1:4375000,h2:2648000,h4:1418000,h3:907000,tiket:3230000},
+  {id:19,provinsi:'NUSA TENGGARA TIMUR',ibukota:'Kupang',uh:430000,jktPP:512000,taxi:232000,dpr:744000,h1:3750000,h2:2133000,h4:1355000,h3:688000,tiket:5081000},
+  {id:20,provinsi:'KALIMANTAN BARAT',ibukota:'Pontianak',uh:380000,jktPP:512000,taxi:342000,dpr:854000,h1:2654000,h2:1923000,h4:1125000,h3:538000,tiket:2781000},
+  {id:21,provinsi:'KALIMANTAN TENGAH',ibukota:'Palangkaraya',uh:360000,jktPP:512000,taxi:268000,dpr:780000,h1:4901000,h2:3391000,h4:1160000,h3:659000,tiket:2984000},
+  {id:22,provinsi:'KALIMANTAN SELATAN',ibukota:'Banjarmasin',uh:380000,jktPP:512000,taxi:360000,dpr:872000,h1:4797000,h2:3316000,h4:1500000,h3:697000,tiket:2995000},
+  {id:23,provinsi:'KALIMANTAN TIMUR',ibukota:'Samarinda',uh:430000,jktPP:512000,taxi:1066000,dpr:1578000,h1:4000000,h2:2188000,h4:1507000,h3:804000,tiket:3797000},
+  {id:24,provinsi:'KALIMANTAN UTARA',ibukota:'Tanjung Selor',uh:430000,jktPP:512000,taxi:436000,dpr:948000,h1:4000000,h2:2735000,h4:1507000,h3:904000,tiket:4057000},
+  {id:25,provinsi:'SULAWESI UTARA',ibukota:'Manado',uh:370000,jktPP:512000,taxi:276000,dpr:788000,h1:4919000,h2:2290000,h4:1270000,h3:978000,tiket:5102000},
+  {id:26,provinsi:'GORONTALO',ibukota:'Gorontalo',uh:370000,jktPP:512000,taxi:530000,dpr:1042000,h1:4168000,h2:3107000,h4:1606000,h3:955000,tiket:4824000},
+  {id:27,provinsi:'SULAWESI BARAT',ibukota:'Mamuju',uh:410000,jktPP:512000,taxi:626000,dpr:1138000,h1:4076000,h2:3098000,h4:1344000,h3:704000,tiket:4867000},
+  {id:28,provinsi:'SULAWESI SELATAN',ibukota:'Makassar',uh:430000,jktPP:512000,taxi:374000,dpr:886000,h1:4820000,h2:1938000,h4:1423000,h3:745000,tiket:3829000},
+  {id:29,provinsi:'SULAWESI TENGAH',ibukota:'Palu',uh:370000,jktPP:512000,taxi:330000,dpr:842000,h1:2309000,h2:2027000,h4:1679000,h3:951000,tiket:5113000},
+  {id:30,provinsi:'SULAWESI TENGGARA',ibukota:'Kendari',uh:380000,jktPP:512000,taxi:342000,dpr:854000,h1:3088800,h2:2574000,h4:1297000,h3:786000,tiket:4182000},
+  {id:31,provinsi:'MALUKU',ibukota:'Ambon',uh:380000,jktPP:512000,taxi:576000,dpr:1088000,h1:3467000,h2:3240000,h4:1059000,h3:667000,tiket:7081000},
+  {id:32,provinsi:'MALUKU UTARA',ibukota:'Sofifi',uh:430000,jktPP:512000,taxi:430000,dpr:942000,h1:4612000,h2:3843000,h4:1160000,h3:654000,tiket:0},
+  {id:33,provinsi:'PAPUA',ibukota:'Jayapura',uh:580000,jktPP:512000,taxi:1026000,dpr:1538000,h1:3872000,h2:3318000,h4:2521000,h3:1038000,tiket:8193000},
+  {id:34,provinsi:'PAPUA BARAT',ibukota:'Manokwari',uh:480000,jktPP:512000,taxi:472000,dpr:984000,h1:3872000,h2:3341000,h4:2056000,h3:967000,tiket:10824000},
+  {id:35,provinsi:'PAPUA BARAT DAYA',ibukota:'-',uh:480000,jktPP:0,taxi:0,dpr:0,h1:3872000,h2:3341000,h4:2056000,h3:967000,tiket:0},
+  {id:36,provinsi:'PAPUA TENGAH',ibukota:'-',uh:580000,jktPP:0,taxi:0,dpr:0,h1:3859000,h2:3318000,h4:2521000,h3:1038000,tiket:0},
+  {id:37,provinsi:'PAPUA SELATAN',ibukota:'-',uh:580000,jktPP:0,taxi:0,dpr:0,h1:5673000,h2:4877000,h4:3706000,h3:1526000,tiket:0},
+  {id:38,provinsi:'PAPUA PEGUNUNGAN',ibukota:'-',uh:580000,jktPP:0,taxi:0,dpr:0,h1:5711000,h2:4911000,h4:3731000,h3:1536000,tiket:0},
+];
+
+// =====================================================================
+// STATE
+// =====================================================================
+let selectedEmpIds = new Set();
+let currentFilter = '';
+let currentRateProvinceId = '';
+let dprAutoCheckedForDki = false;
+let spdPerEmployee = {};
+let provinceFoodRates = {};
+try {
+  provinceFoodRates = JSON.parse(localStorage.getItem('provinceFoodRates') || '{}');
+} catch (error) {
+  provinceFoodRates = {};
+}
+
+// =====================================================================
+// INIT
+// =====================================================================
+document.addEventListener('DOMContentLoaded', () => {
+  // Populate provinsi dropdown
+  const sel = document.getElementById('provinsiTujuan');
+  sbmData.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s.id;
+    opt.textContent = `${s.provinsi} (${s.ibukota})`;
+    sel.appendChild(opt);
+  });
+  renderEmployeeList();
+  // Set default dates
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('tglST').value = today;
+  document.getElementById('tglSPD').value = today;
+  document.getElementById('tglBerangkat').value = today;
+  document.getElementById('tglKembali').value = today;
+  hitungLama();
+});
+
+// =====================================================================
+// TABS
+// =====================================================================
+function showTab(name) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  const tabLabels = {
+    input: 'input perjalanan',
+    nominatif: 'daftar nominatif',
+    'rekap-kuitansi': 'rekap kuitansi',
+    'kuitansi-perorangan': 'kuitansi perorangan',
+    'sppd-perorangan': 'sppd perorangan',
+    'lembar-kendali': 'lembar kendali',
+    'rekap-rincian': 'rekap rincian',
+    'rekap-spt': 'rekap surat tugas',
+    rincian: 'rincian',
+    dpr: 'dpr perorangan',
+    pengaturan: 'pengaturan'
+  };
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    if (b.textContent.toLowerCase().includes(tabLabels[name])) b.classList.add('active');
+  });
+  if (name === 'rincian') populateRincianSelect();
+  if (name === 'dpr') populateDPRSelect();
+  if (name === 'nominatif') renderNominatif();
+  if (name === 'rekap-kuitansi') renderRekapKuitansi();
+  if (name === 'kuitansi-perorangan') populateKuitansiPeroranganSelect();
+  if (name === 'sppd-perorangan') populateSPPDSelect();
+  if (name === 'lembar-kendali') renderLembarKendali();
+  if (name === 'rekap-rincian') renderRekapRincian();
+  if (name === 'rekap-spt') renderRekapSPT();
+}
+
+// =====================================================================
+// EMPLOYEE LIST
+// =====================================================================
+function renderEmployeeList() {
+  const box = document.getElementById('empListBox');
+  const q = document.getElementById('empSearch').value.toLowerCase();
+  const filtered = employees.filter(e => e.nama.toLowerCase().includes(q) || e.jabatan.toLowerCase().includes(q));
+  box.innerHTML = filtered.map(e => `
+    <div class="emp-item ${selectedEmpIds.has(e.id)?'selected':''}" onclick="toggleEmployee(${e.id})">
+      <input type="checkbox" ${selectedEmpIds.has(e.id)?'checked':''} onclick="event.stopPropagation();toggleEmployee(${e.id})">
+      <div>
+        <div class="emp-name">${e.nama}</div>
+        <div class="emp-detail">Gol. ${e.gol} &nbsp;|&nbsp; ${e.jabatan} &nbsp;|&nbsp; NIP: ${e.nip}</div>
+      </div>
+    </div>
+  `).join('') || '<div style="padding:16px;text-align:center;color:#a0aec0;font-size:13px">Tidak ada hasil</div>';
+}
+
+function filterEmployees() { renderEmployeeList(); }
+
+function toggleEmployee(id) {
+  if (selectedEmpIds.has(id)) selectedEmpIds.delete(id);
+  else selectedEmpIds.add(id);
+  renderEmployeeList();
+  renderSelectedTags();
+  refreshCustomCostAssignments();
+}
+
+function renderSelectedTags() {
+  const box = document.getElementById('selectedBox');
+  const count = document.getElementById('countSelected');
+  if (selectedEmpIds.size === 0) {
+    box.innerHTML = '<span style="font-size:12px;color:#a0aec0;padding:4px 0">Belum ada pegawai dipilih</span>';
+    count.textContent = '0';
+    return;
+  }
+  count.textContent = selectedEmpIds.size;
+  box.innerHTML = [...selectedEmpIds].map(id => {
+    const e = employees.find(x => x.id === id);
+    return `<span class="emp-tag">${e.nama.split(',')[0]} <span class="rm" onclick="toggleEmployee(${id})">×</span></span>`;
+  }).join('');
+}
+
+function clearAll() {
+  selectedEmpIds.clear();
+  renderEmployeeList();
+  renderSelectedTags();
+  refreshCustomCostAssignments();
+}
+
+// =====================================================================
+// SBM & LAMA TUGAS
+// =====================================================================
+function getSBM() {
+  const id = parseInt(document.getElementById('provinsiTujuan').value);
+  return sbmData.find(s => s.id === id) || null;
+}
+
+function changeProvince() {
+  saveProvinceFoodRates();
+  currentRateProvinceId = document.getElementById('provinsiTujuan').value;
+  const rates = provinceFoodRates[currentRateProvinceId] || {};
+  document.getElementById('tarifMakan').value = rates.makan || 0;
+  document.getElementById('tarifSnack').value = rates.snack || 0;
+  document.getElementById('dprManual').value = '';
+  const cbDPR = document.getElementById('cbDPR');
+  if (getSBM()?.provinsi === 'DKI JAKARTA' && !cbDPR.checked) {
+    cbDPR.checked = true;
+    dprAutoCheckedForDki = true;
+  } else if (getSBM()?.provinsi !== 'DKI JAKARTA' && dprAutoCheckedForDki) {
+    cbDPR.checked = false;
+    dprAutoCheckedForDki = false;
+  }
+  updateDPRInput();
+  updateSBMPreview();
+}
+
+function markDPRManual() {
+  dprAutoCheckedForDki = false;
+}
+
+function updateDPRInput() {
+  const sbm = getSBM();
+  const isDkiJakarta = sbm?.provinsi === 'DKI JAKARTA';
+  const isDprChecked = document.getElementById('cbDPR').checked;
+  document.getElementById('dprManualField').style.display = isDprChecked && sbm && !isDkiJakarta ? 'block' : 'none';
+}
+
+function saveProvinceFoodRates() {
+  if (!currentRateProvinceId) return;
+  provinceFoodRates[currentRateProvinceId] = {
+    makan: Math.max(0, Number(document.getElementById('tarifMakan').value) || 0),
+    snack: Math.max(0, Number(document.getElementById('tarifSnack').value) || 0)
+  };
+  localStorage.setItem('provinceFoodRates', JSON.stringify(provinceFoodRates));
+}
+
+function toggleKonsumsiFields() {
+  document.getElementById('konsumsiFields').style.display =
+    document.getElementById('jenisKegiatan').value === 'rapat' ? 'grid' : 'none';
+}
+
+function addCustomCost() {
+  const row = document.createElement('div');
+  row.className = 'custom-cost-row';
+  row.innerHTML = `
+    <div class="form-group">
+      <label>Nama biaya</label>
+      <input type="text" class="custom-cost-name" placeholder="Contoh: Tiket kapal">
+    </div>
+    <div class="custom-cost-assignees"></div>
+    <button class="btn btn-warn btn-sm" type="button" onclick="this.closest('.custom-cost-row').remove()">Hapus</button>
+  `;
+  document.getElementById('customCostList').appendChild(row);
+  renderCustomCostAssignments(row);
+}
+
+function renderCustomCostAssignments(row) {
+  const assignments = row.querySelector('.custom-cost-assignees');
+  let currentAmounts = {};
+  try {
+    currentAmounts = JSON.parse(row.dataset.amounts || '{}');
+  } catch (error) {
+    currentAmounts = {};
+  }
+  row.querySelectorAll('.custom-cost-amount').forEach(input => {
+    currentAmounts[input.dataset.employeeId] = input.value;
+  });
+  row.dataset.amounts = JSON.stringify(currentAmounts);
+
+  if (selectedEmpIds.size === 0) {
+    assignments.innerHTML = '<div class="custom-cost-empty">Pilih pegawai untuk mengatur nominal per orang.</div>';
+    return;
+  }
+
+  assignments.innerHTML = [...selectedEmpIds].map(id => {
+    const emp = employees.find(employee => employee.id === id);
+    return `
+      <label class="custom-cost-assignee">
+        <span>${emp.nama}</span>
+        <input type="number" class="custom-cost-amount" data-employee-id="${id}" min="0" step="1000" value="${currentAmounts[id] ?? 0}" oninput="updateCustomCostAmount(this)" aria-label="Biaya ${row.querySelector('.custom-cost-name').value || 'tambahan'} untuk ${emp.nama}">
+      </label>
+    `;
+  }).join('');
+}
+
+function updateCustomCostAmount(input) {
+  const row = input.closest('.custom-cost-row');
+  let amounts = {};
+  try {
+    amounts = JSON.parse(row.dataset.amounts || '{}');
+  } catch (error) {
+    amounts = {};
+  }
+  amounts[input.dataset.employeeId] = input.value;
+  row.dataset.amounts = JSON.stringify(amounts);
+}
+
+function refreshCustomCostAssignments() {
+  document.querySelectorAll('.custom-cost-row').forEach(renderCustomCostAssignments);
+}
+
+function getCustomCosts() {
+  return [...document.querySelectorAll('.custom-cost-row')].map(row => ({
+    name: row.querySelector('.custom-cost-name').value.trim(),
+    amounts: Object.fromEntries([...row.querySelectorAll('.custom-cost-amount')].map(input => [
+      input.dataset.employeeId,
+      Math.max(0, Number(input.value) || 0)
+    ]))
+  })).filter(item => item.name);
+}
+
+function updateSBMPreview() {
+  const sbm = getSBM();
+  const pv = document.getElementById('sbmPreview');
+  if (!sbm) { pv.style.display = 'none'; return; }
+  pv.style.display = 'block';
+  const isDkiJakarta = sbm.provinsi === 'DKI JAKARTA';
+  document.getElementById('sbm_uh').textContent = isDkiJakarta ? `${rp(0)} (tidak dibayarkan)` : rp(sbm.uh);
+  document.getElementById('sbm_h4').textContent = rp(sbm.h4);
+  document.getElementById('sbm_h3').textContent = rp(sbm.h3);
+  document.getElementById('sbm_jkt').textContent = sbm.jktPP ? rp(sbm.jktPP) : '(tidak ada/dalam kota)';
+  document.getElementById('sbm_taxi').textContent = sbm.taxi ? rp(sbm.taxi) : '-';
+  const manualDpr = Number(document.getElementById('dprManual').value) || 0;
+  document.getElementById('sbm_dpr').textContent = isDkiJakarta ? `${rp(170000)} (otomatis)` : manualDpr ? rp(manualDpr) : '(isi manual)';
+  document.getElementById('sbm_tiket').textContent = sbm.tiket ? rp(sbm.tiket) : '(tidak ada tiket pesawat)';
+}
+
+function hitungLama() {
+  const tgl1 = document.getElementById('tglBerangkat').value;
+  const tgl2 = document.getElementById('tglKembali').value;
+  if (!tgl1 || !tgl2) return;
+  const d1 = new Date(tgl1), d2 = new Date(tgl2);
+  const diffDays = Math.round((d2 - d1) / 86400000) + 1;
+  document.getElementById('lamaTugas').value = diffDays <= 0 ? 'Tanggal tidak valid' : `${diffDays} Hari`;
+}
+
+function getDays() {
+  const tgl1 = document.getElementById('tglBerangkat').value;
+  const tgl2 = document.getElementById('tglKembali').value;
+  if (!tgl1 || !tgl2) return { days: 0, nights: 0 };
+  const d1 = new Date(tgl1), d2 = new Date(tgl2);
+  const days = Math.max(0, Math.round((d2 - d1) / 86400000) + 1);
+  return { days, nights: Math.max(0, days - 1) };
+}
+
+function getHotelRate(sbm, gol) {
+  if (!sbm) return 0;
+  if (gol.startsWith('IV')) return sbm.h4;
+  if (gol === 'I' || gol === 'II') return sbm.h2;
+  return sbm.h3; // Gol III, IX, VIII, VII, dll → rate Eselon IV/Gol III
+}
+
+function hitungBiaya(emp) {
+  const sbm = getSBM();
+  const customCosts = getCustomCosts().map(item => ({
+    name: item.name,
+    amount: item.amounts[emp.id] || 0
+  }));
+  const customTotal = customCosts.reduce((total, item) => total + item.amount, 0);
+  if (!sbm) return { uh: 0, uhGross: 0, mealDeduction: 0, snackDeduction: 0, hotel: 0, dpr: 0, tiket: 0, customCosts, total: customTotal };
+  const { days, nights } = getDays();
+  const cbUH = document.getElementById('cbUH').checked;
+  const cbHotel = document.getElementById('cbHotel').checked;
+  const cbDPR = document.getElementById('cbDPR').checked;
+  const cbTiket = document.getElementById('cbTiket').checked;
+  const uhPercent = Number(document.getElementById('uhPersentase').value) || 1;
+  const isDkiJakarta = sbm.provinsi === 'DKI JAKARTA';
+  const uhGross = cbUH && !isDkiJakarta ? sbm.uh * days * uhPercent : 0;
+  const isMeeting = document.getElementById('jenisKegiatan').value === 'rapat';
+  const mealRequested = isMeeting ? (Number(document.getElementById('tarifMakan').value) || 0) * (Number(document.getElementById('jumlahMakan').value) || 0) * days : 0;
+  const snackRequested = isMeeting ? (Number(document.getElementById('tarifSnack').value) || 0) * (Number(document.getElementById('jumlahSnack').value) || 0) * days : 0;
+  const mealDeduction = Math.min(uhGross, mealRequested);
+  const snackDeduction = Math.min(Math.max(0, uhGross - mealDeduction), snackRequested);
+  const uh = uhGross - mealDeduction - snackDeduction;
+  const hotel = cbHotel ? getHotelRate(sbm, emp.gol) * nights : 0;
+  const dprVal = cbDPR ? (isDkiJakarta ? 170000 : Number(document.getElementById('dprManual').value) || 0) : 0;
+  const tiketVal = cbTiket ? sbm.tiket : 0;
+  return { uh, uhGross, mealDeduction, snackDeduction, hotel, dpr: dprVal, tiket: tiketVal, customCosts, total: uh + hotel + dprVal + tiketVal + customTotal };
+}
+
+// =====================================================================
+// FORMAT HELPERS
+// =====================================================================
+function rp(n) {
+  if (!n || n === 0) return 'Rp 0';
+  return 'Rp ' + Number(n).toLocaleString('id-ID');
+}
+
+function formatTgl(str) {
+  if (!str) return '-';
+  const d = new Date(str);
+  const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function jabatanDuaBaris(text) {
+  return String(text || '').replace(/Pejabat Pembuat Komitmen\s+(?=Sekretariat Jenderal)/, 'Pejabat Pembuat Komitmen<br>');
+}
+
+function terbilang(angka) {
+  const satuan = ['','Satu','Dua','Tiga','Empat','Lima','Enam','Tujuh','Delapan','Sembilan',
+    'Sepuluh','Sebelas','Dua Belas','Tiga Belas','Empat Belas','Lima Belas','Enam Belas',
+    'Tujuh Belas','Delapan Belas','Sembilan Belas'];
+  if (angka === 0) return 'Nol';
+  if (angka < 20) return satuan[angka];
+  if (angka < 100) return satuan[Math.floor(angka/10)*10===20?2:Math.floor(angka/10)] + (Math.floor(angka/10)>1?' Puluh ':' Puluh ') + satuan[angka % 10];
+  function helper(n) {
+    if (n === 0) return '';
+    if (n < 20) return satuan[n] + ' ';
+    if (n < 100) return satuan[Math.floor(n/10)] + ' Puluh ' + (n%10?satuan[n%10]+' ':'');
+    if (n < 200) return 'Seratus ' + helper(n - 100);
+    if (n < 1000) return satuan[Math.floor(n/100)] + ' Ratus ' + helper(n % 100);
+    if (n < 2000) return 'Seribu ' + helper(n - 1000);
+    if (n < 1000000) return helper(Math.floor(n/1000)) + 'Ribu ' + helper(n % 1000);
+    if (n < 1000000000) return helper(Math.floor(n/1000000)) + 'Juta ' + helper(n % 1000000);
+    return helper(Math.floor(n/1000000000)) + 'Miliar ' + helper(n % 1000000000);
+  }
+  return helper(angka).trim() + ' Rupiah';
+}
+
+// =====================================================================
+// RENDER DAFTAR NOMINATIF
+// =====================================================================
+function renderRekapKuitansi() {
+  const out = document.getElementById('rekapKuitansiOut');
+  const dateValue = document.getElementById('tglSPD').value || document.getElementById('tglST').value;
+  const date = dateValue ? new Date(`${dateValue}T00:00:00`) : new Date();
+  const year = date.getFullYear();
+  const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  const monthInput = document.getElementById('bulanKuitansi');
+  if (!monthInput.value) monthInput.value = months[date.getMonth()];
+  const month = monthInput.value.trim() || months[date.getMonth()];
+
+  if (selectedEmpIds.size === 0) {
+    out.innerHTML = '<div class="alert-warn no-print">Belum ada pegawai yang dipilih. Kembali ke tab Input Perjalanan.</div>';
+    return;
+  }
+
+  const selectedEmps = [...selectedEmpIds].map(id => employees.find(emp => emp.id === id));
+  const grandTotal = selectedEmps.reduce((total, emp) => total + hitungBiaya(emp).total, 0);
+  const satker = document.getElementById('cfg_satker').value;
+  const nomorBukti = document.getElementById('cfg_noBuktiKuitansi').value || '-';
+  const kodeKegiatan = document.getElementById('kodeKegiatan').value;
+  const kodeSubKegiatan = document.getElementById('kodeSubKegiatan').value;
+  const mak = document.getElementById('mak').value;
+  const agenda = document.getElementById('agenda').value.trim();
+  const kegiatan = document.getElementById('cfg_kegiatan').value.trim();
+  const kotaAsal = document.getElementById('cfg_kotaAsal').value;
+  const ppkNama = document.getElementById('cfg_ppkNama').value;
+  const ppkNip = document.getElementById('cfg_ppkNip').value;
+  const bendNama = document.getElementById('cfg_bendNama').value;
+  const bendNip = document.getElementById('cfg_bendNip').value;
+  const monthYear = `${month} ${year}`;
+  const makLengkap = `${kodeKegiatan}.${kodeSubKegiatan}.${mak}`;
+  const paymentText = [agenda || `Perjalanan dinas ke ${document.getElementById('kotaTujuan').value || '-'}`, kegiatan ? `Output ${kegiatan}` : '']
+    .filter(Boolean)
+    .join(', ');
+
+  out.innerHTML = `
+    <section class="kuitansi-area">
+      <h2>KUITANSI LS</h2>
+      <div class="kuitansi-frame">
+        <table class="kuitansi-reference">
+          <tr><td>TA</td><td>:</td><td>${year}</td></tr>
+          <tr><td>Nomor Bukti</td><td>:</td><td><span class="kuitansi-bukti-space"></span>${nomorBukti}</td></tr>
+          <tr><td>MAK</td><td>:</td><td>${makLengkap}</td></tr>
+        </table>
+
+        <table class="kuitansi-details">
+          <tr>
+            <td>Sudah terima dari</td><td>:</td>
+            <td>Kuasa Pengguna Anggaran/Pejabat Pembuat Komitmen<br>${satker}</td>
+          </tr>
+          <tr><td>Jumlah Uang</td><td>:</td><td>Rp&nbsp;&nbsp;${Number(grandTotal).toLocaleString('id-ID')}</td></tr>
+          <tr><td>Terbilang</td><td>:</td><td>${terbilang(grandTotal)}</td></tr>
+          <tr><td>Untuk pembayaran</td><td>:</td><td>${paymentText}</td></tr>
+        </table>
+
+        <div class="kuitansi-bendahara">
+          <div>${kotaAsal}, <span class="kuitansi-day-blank"></span> ${monthYear}</div>
+          <div>Bendahara Pengeluaran</div>
+          <div>Satuan Kerja Sekretariat Jenderal Kementerian PKP</div>
+          <div class="kuitansi-signature-space"></div>
+          <div>${bendNama}</div>
+          <div>${bendNip}</div>
+        </div>
+
+        <div class="kuitansi-approval">
+          <div>Setuju dibayar :</div>
+          <div>a.n. Kuasa Pengguna Anggaran</div>
+          <div>Pejabat Pembuat Komitmen</div>
+          <div>Sekretariat Jenderal Kementerian PKP</div>
+          <div class="kuitansi-signature-space"></div>
+          <div>${ppkNama}</div>
+          <div>${ppkNip}</div>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function printRekapKuitansi() {
+  const clearPrintMode = () => document.body.classList.remove('print-kuitansi');
+  document.body.classList.add('print-kuitansi');
+  window.addEventListener('afterprint', clearPrintMode, { once: true });
+  window.print();
+}
+
+function populateKuitansiPeroranganSelect() {
+  const select = document.getElementById('kuitansiPeroranganPegawai');
+  const previousValue = select.value;
+  select.innerHTML = '<option value="">-- Pilih Pegawai --</option>';
+  [...selectedEmpIds].forEach(id => {
+    const emp = employees.find(employee => employee.id === id);
+    const option = document.createElement('option');
+    option.value = id;
+    option.textContent = emp.nama;
+    select.appendChild(option);
+  });
+
+  if (selectedEmpIds.size === 0) {
+    document.getElementById('kuitansiPeroranganOut').innerHTML = '<div class="alert-warn no-print">Belum ada pegawai yang dipilih. Kembali ke tab Input Perjalanan.</div>';
+    return;
+  }
+
+  const previousId = Number(previousValue);
+  select.value = previousValue !== '' && selectedEmpIds.has(previousId) ? previousValue : String([...selectedEmpIds][0]);
+  loadKuitansiPeroranganSPD();
+  renderKuitansiPerorangan();
+}
+
+function loadKuitansiPeroranganSPD() {
+  const select = document.getElementById('kuitansiPeroranganPegawai');
+  if (select.value === '') return;
+  document.getElementById('kuitansiPeroranganNoSPD').value = spdPerEmployee[Number(select.value)] || '';
+}
+
+function onKuitansiPeroranganEmployeeChange() {
+  loadKuitansiPeroranganSPD();
+  renderKuitansiPerorangan();
+}
+
+function saveKuitansiPeroranganSPD() {
+  const select = document.getElementById('kuitansiPeroranganPegawai');
+  if (select.value === '') return;
+  const value = document.getElementById('kuitansiPeroranganNoSPD').value.trim();
+  spdPerEmployee[Number(select.value)] = value;
+  renderKuitansiPerorangan();
+}
+
+function renderKuitansiPerorangan() {
+  const out = document.getElementById('kuitansiPeroranganOut');
+  const select = document.getElementById('kuitansiPeroranganPegawai');
+  if (select.value === '') {
+    out.innerHTML = '';
+    return;
+  }
+  const id = Number(select.value);
+  const emp = employees.find(employee => employee.id === id);
+  if (!emp) {
+    out.innerHTML = '';
+    return;
+  }
+
+  const biaya = hitungBiaya(emp);
+  const tanggalSPDValue = document.getElementById('tglSPD').value || document.getElementById('tglST').value;
+  const tanggalSPD = formatTgl(tanggalSPDValue);
+  const date = tanggalSPDValue ? new Date(`${tanggalSPDValue}T00:00:00`) : new Date();
+  const tahun = date.getFullYear();
+  const nomorBukti = document.getElementById('cfg_noBuktiKuitansi').value;
+  const satker = document.getElementById('cfg_satker').value;
+  const alamat = document.getElementById('cfg_alamatKuitansi').value;
+  const kotaAsal = document.getElementById('cfg_kotaAsal').value;
+  const tujuan = document.getElementById('kotaTujuan').value || (getSBM()?.ibukota || '-');
+  const paymentText = `Biaya Perjalanan Dinas atas nama ${emp.nama}`;
+  const mak = `${document.getElementById('kodeKegiatan').value} ${document.getElementById('kodeSubKegiatan').value} ${document.getElementById('mak').value}`;
+  const noSPD = spdPerEmployee[emp.id] || document.getElementById('noSPD').value.trim() || '-';
+  const ppkNama = document.getElementById('cfg_ppkNama').value;
+  const ppkNip = document.getElementById('cfg_ppkNip').value;
+  const bendNama = document.getElementById('cfg_bendNama').value;
+  const bendNip = document.getElementById('cfg_bendNip').value;
+
+  out.innerHTML = `
+    <section class="kuitansi-perorangan-area">
+      <header class="kuitansi-perorangan-header lembar-kendali-header">
+        <img src="logo-pkp.webp" alt="" class="kuitansi-perorangan-logo lembar-kendali-logo">
+        <div>
+          <div class="kuitansi-perorangan-ministry lembar-kendali-ministry">KEMENTERIAN PERUMAHAN DAN KAWASAN PERMUKIMAN <span>REPUBLIK INDONESIA</span></div>
+          <strong class="lembar-kendali-secretariat">SEKRETARIAT JENDERAL</strong>
+          <div class="lembar-kendali-unit">SATUAN KERJA</div>
+          <div class="lembar-kendali-address">${alamat}</div>
+        </div>
+      </header>
+
+      <table class="kuitansi-perorangan-reference">
+        <tr><td>Tahun Anggaran</td><td>:</td><td>${tahun}</td></tr>
+        <tr><td>Bukti Kas No.</td><td>:</td><td><span class="kuitansi-perorangan-bukti-space"></span>${nomorBukti}</td></tr>
+        <tr><td>Mata Anggaran</td><td>:</td><td>${mak}</td></tr>
+      </table>
+
+      <h2 class="kuitansi-perorangan-title">K W I T A N S I</h2>
+      <table class="kuitansi-perorangan-details">
+        <tr><td>Sudah Terima dari</td><td>:</td><td>${jabatanDuaBaris(document.getElementById('cfg_ppkJabatan').value)}</td></tr>
+        <tr><td>Uang Sebesar</td><td>:</td><td>Rp. &nbsp; ${Number(biaya.total).toLocaleString('id-ID')}</td></tr>
+        <tr><td>Terbilang</td><td>:</td><td><em>${terbilang(biaya.total)}</em></td></tr>
+        <tr><td>Untuk Pembayaran</td><td>:</td><td>${paymentText}</td></tr>
+        <tr><td>Berdasarkan SPD</td><td>:</td><td></td></tr>
+        <tr><td>Nomor</td><td>:</td><td>${noSPD}</td></tr>
+        <tr><td>Tanggal</td><td>:</td><td>${tanggalSPD}</td></tr>
+        <tr><td>Untuk Perjalanan Dinas dari</td><td>:</td><td>${kotaAsal} ke ${tujuan} &nbsp; (PP)</td></tr>
+      </table>
+
+      <div class="kuitansi-perorangan-recipient">
+        <div>${kotaAsal}, ${tanggalSPD}</div>
+        <div>Yang Menerima</div>
+        <div class="kuitansi-perorangan-signature-space"></div>
+        <div>${emp.nama}</div>
+        <div>NIP. ${emp.nip}</div>
+      </div>
+
+      <div class="kuitansi-perorangan-approvals">
+        <div>
+          <div>Setuju dibebankan pada mata anggaran berkenaan,</div>
+          <div>a.n. Kuasa Pengguna Anggaran</div>
+          <div>Pejabat Pembuat Komitmen</div>
+          <div>Sekretariat Jenderal Kementerian PKP</div>
+          <div class="kuitansi-perorangan-approval-space"></div>
+          <div>${ppkNama}</div>
+          <div>${ppkNip}</div>
+        </div>
+        <div>
+          <div class="kuitansi-perorangan-approval-space-sm"></div>
+          <div>Lunas dibayar tanggal</div>
+          <div>Bendahara Pengeluaran</div>
+          <div class="kuitansi-perorangan-approval-space"></div>
+          <div>${bendNama}</div>
+          <div>${bendNip}</div>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function printKuitansiPerorangan() {
+  const clearPrintMode = () => document.body.classList.remove('print-kuitansi-perorangan');
+  document.body.classList.add('print-kuitansi-perorangan');
+  window.addEventListener('afterprint', clearPrintMode, { once: true });
+  window.print();
+}
+
+function populateSPPDSelect() {
+  const select = document.getElementById('sppdPegawai');
+  const previousValue = select.value;
+  select.innerHTML = '<option value="">-- Pilih Pegawai --</option>';
+  [...selectedEmpIds].forEach(id => {
+    const emp = employees.find(employee => employee.id === id);
+    if (!emp) return;
+    const option = document.createElement('option');
+    option.value = id;
+    option.textContent = emp.nama;
+    select.appendChild(option);
+  });
+
+  if (selectedEmpIds.size === 0) {
+    document.getElementById('sppdOut').innerHTML = '<div class="alert-warn no-print">Belum ada pegawai yang dipilih. Kembali ke tab Input Perjalanan.</div>';
+    return;
+  }
+
+  const previousId = Number(previousValue);
+  select.value = previousValue !== '' && selectedEmpIds.has(previousId) ? previousValue : String([...selectedEmpIds][0]);
+  loadSPPDNo();
+  renderSPPDPerorangan();
+}
+
+function loadSPPDNo() {
+  const select = document.getElementById('sppdPegawai');
+  if (select.value === '') return;
+  document.getElementById('sppdNoSPD').value = spdPerEmployee[Number(select.value)] || '';
+}
+
+function onSPPDEmployeeChange() {
+  loadSPPDNo();
+  renderSPPDPerorangan();
+}
+
+function saveSPPDNo() {
+  const select = document.getElementById('sppdPegawai');
+  if (select.value === '') return;
+  spdPerEmployee[Number(select.value)] = document.getElementById('sppdNoSPD').value.trim();
+  renderSPPDPerorangan();
+}
+
+function renderSPPDPerorangan() {
+  const out = document.getElementById('sppdOut');
+  const select = document.getElementById('sppdPegawai');
+  if (select.value === '') {
+    out.innerHTML = '';
+    return;
+  }
+  const emp = employees.find(employee => employee.id === Number(select.value));
+  if (!emp) {
+    out.innerHTML = '';
+    return;
+  }
+
+  const sbm = getSBM();
+  const { days } = getDays();
+  const satker = document.getElementById('cfg_satker').value;
+  const alamat = document.getElementById('cfg_alamatKuitansi').value;
+  const kotaAsal = document.getElementById('cfg_kotaAsal').value;
+  const ppkNama = document.getElementById('cfg_ppkNama').value;
+  const ppkNip = document.getElementById('cfg_ppkNip').value;
+  const ppkJabatan = document.getElementById('cfg_ppkJabatan').value;
+  const kegiatan = document.getElementById('cfg_kegiatan').value;
+  const kodeKegiatan = document.getElementById('kodeKegiatan').value;
+  const kodeSubKegiatan = document.getElementById('kodeSubKegiatan').value;
+  const mak = document.getElementById('mak').value;
+  const agenda = document.getElementById('agenda').value.trim() || '-';
+  const tujuan = document.getElementById('kotaTujuan').value.trim() || (sbm ? `${sbm.ibukota}, ${sbm.provinsi}` : '-');
+  const noSPD = spdPerEmployee[emp.id] || document.getElementById('noSPD').value.trim() || '-';
+  const tanggalSPD = formatTgl(document.getElementById('tglSPD').value);
+  const tglBerangkat = formatTgl(document.getElementById('tglBerangkat').value);
+  const tglKembali = formatTgl(document.getElementById('tglKembali').value);
+  const noST = document.getElementById('noST').value.trim() || '-';
+  const tglST = formatTgl(document.getElementById('tglST').value);
+  const pangkat = emp.pangkat && emp.pangkat !== '-' ? emp.pangkat : '-';
+  const transport = document.getElementById('cbTiket').checked ? 'Pesawat Udara' : 'Transportasi Darat';
+  const lamaKata = terbilang(days).replace(/\s*Rupiah$/, '').toLowerCase();
+  const pengikutRows = [1, 2, 3, 4, 5].map(() => `
+        <tr><td></td><td></td><td></td></tr>`).join('');
+  const pengikutNums = [1, 2, 3, 4, 5].map(number => `<tr><td>${number}.</td></tr>`).join('');
+
+  out.innerHTML = `
+    <section class="sppd-area">
+      <header class="kuitansi-perorangan-header lembar-kendali-header">
+        <img src="logo-pkp.webp" alt="" class="kuitansi-perorangan-logo lembar-kendali-logo">
+        <div>
+          <div class="kuitansi-perorangan-ministry lembar-kendali-ministry">KEMENTERIAN PERUMAHAN DAN KAWASAN PERMUKIMAN <span>REPUBLIK INDONESIA</span></div>
+          <strong class="lembar-kendali-secretariat">SEKRETARIAT JENDERAL</strong>
+          <div class="lembar-kendali-unit">SATUAN KERJA</div>
+          <div class="lembar-kendali-address">${alamat}</div>
+        </div>
+      </header>
+
+      <table class="sppd-meta">
+        <tr><td>Lembar ke</td><td>:</td><td></td></tr>
+        <tr><td>Kode No.</td><td>:</td><td></td></tr>
+        <tr><td>Nomor</td><td>:</td><td>${noSPD}</td></tr>
+      </table>
+
+      <table class="sppd-tbl">
+        <colgroup><col style="width:31%"><col style="width:69%"></colgroup>
+        <tbody>
+          <tr><td>Pejabat Pembuat Komitmen</td><td>${satker}</td></tr>
+          <tr><td>Nama, NIP Pegawai yang Melaksanakan Perjalanan Dinas</td><td><div class="sppd-emp-line"><span>${emp.nama}</span><span>NIP. ${emp.nip}</span></div></td></tr>
+          <tr><td>a. Pangkat dan Golongan</td><td>a. ${pangkat} Gol. ${emp.gol}</td></tr>
+          <tr><td>b. Jabatan/Instansi</td><td>b. ${emp.jabatan}</td></tr>
+          <tr><td>c. Tingkat Biaya Perjalanan Dinas</td><td>c. -</td></tr>
+          <tr><td>Maksud Perjalanan Dinas</td><td class="sppd-agenda">${agenda}${kegiatan ? `, Output ${kegiatan}` : ''}</td></tr>
+          <tr><td>Alat angkut yang dipergunakan</td><td>${transport}</td></tr>
+          <tr><td>a. Tempat berangkat</td><td>a. ${kotaAsal}</td></tr>
+          <tr><td>b. Tempat Tujuan</td><td>b. ${tujuan}</td></tr>
+          <tr><td>a. Lamanya Perjalanan Dinas</td><td>a. ${days} (${lamaKata}) hari</td></tr>
+          <tr><td>b. Tanggal berangkat</td><td>b. ${tglBerangkat}</td></tr>
+          <tr><td>c. Tanggal harus kembali/tiba di tempat baru *)</td><td>c. ${tglKembali}</td></tr>
+          <tr><td class="sppd-pengikut-no-cell">
+            <table class="sppd-pengikut-no">
+              <thead><tr><th>Pengikut</th></tr></thead>
+              <tbody>${pengikutNums}</tbody>
+            </table>
+          </td><td class="sppd-pengikut-cell">
+            <table class="sppd-pengikut">
+              <colgroup><col style="width:55%"><col style="width:22%"><col style="width:23%"></colgroup>
+              <thead><tr><th>Nama</th><th>Tanggal Lahir</th><th>Keterangan</th></tr></thead>
+              <tbody>${pengikutRows}</tbody>
+            </table>
+          </td></tr>
+          <tr><td colspan="2" class="sppd-pembebanan-wrap">
+            <table class="sppd-pembebanan">
+              <colgroup><col style="width:31%"><col style="width:69%"></colgroup>
+              <tbody>
+                <tr><td>Pembebanan Anggaran</td><td></td></tr>
+                <tr><td>a. Instansi</td><td>a. Satuan Kerja ${satker}</td></tr>
+                <tr><td>b. Akun</td><td>b. ${kodeKegiatan} ${kodeSubKegiatan} ${mak}</td></tr>
+              </tbody>
+            </table>
+          </td></tr>
+          <tr><td>Keterangan Lain-lain</td><td><div class="sppd-keterangan"><span>${noST}</span><span>Tanggal ${tglST}</span></div></td></tr>
+        </tbody>
+      </table>
+
+      <div class="sppd-footnote">*) Coret yang tidak perlu</div>
+
+      <div class="sppd-signature">
+        <table class="sppd-signature-meta">
+          <tr><td>Dikeluarkan di</td><td>:</td><td>${kotaAsal.toUpperCase()}</td></tr>
+          <tr><td>Tanggal</td><td>:</td><td>${tanggalSPD}</td></tr>
+        </table>
+        <div>${jabatanDuaBaris(ppkJabatan)}</div>
+        <div class="sppd-signature-space"></div>
+        <div class="sppd-signature-name">${ppkNama}</div>
+        <div>${ppkNip}</div>
+      </div>
+    </section>
+  `;
+}
+
+function printSPPDPerorangan() {
+  const clearPrintMode = () => document.body.classList.remove('print-sppd');
+  document.body.classList.add('print-sppd');
+  window.addEventListener('afterprint', clearPrintMode, { once: true });
+  window.print();
+}
+
+function renderLembarKendali() {
+  const out = document.getElementById('lembarKendaliOut');
+  if (selectedEmpIds.size === 0) {
+    out.innerHTML = '<div class="alert-warn no-print">Belum ada pegawai yang dipilih. Kembali ke tab Input Perjalanan.</div>';
+    return;
+  }
+
+  const sbm = getSBM();
+  const selectedEmps = [...selectedEmpIds].map(id => employees.find(emp => emp.id === id));
+  const total = selectedEmps.reduce((sum, emp) => sum + hitungBiaya(emp).total, 0);
+  const satker = document.getElementById('cfg_satker').value;
+  const alamat = document.getElementById('cfg_alamatSatker').value;
+  const pelaksana = document.getElementById('lk_pelaksana').value || '-';
+  const tanggalMasuk = document.getElementById('lk_tanggalMasuk').value;
+  const nomorSPM = document.getElementById('lk_nomorSPM').value;
+  const nomorSPD = document.getElementById('lk_nomorSPD').value;
+  const nomorST = document.getElementById('noST').value || '-';
+  const tanggalST = formatTgl(document.getElementById('tglST').value);
+  const tanggalBerangkat = formatTgl(document.getElementById('tglBerangkat').value);
+  const tanggalKembali = formatTgl(document.getElementById('tglKembali').value);
+  const jenisPerjalanan = document.getElementById('lk_jenisPerjalanan').value;
+  const tujuan = document.getElementById('kotaTujuan').value || (sbm ? `${sbm.ibukota}, ${sbm.provinsi}` : '-');
+  const tujuanPerjalanan = document.getElementById('agenda').value.trim() || tujuan;
+  const akunKegiatan = `${document.getElementById('kodeKegiatan').value}.${document.getElementById('kodeSubKegiatan').value}.${document.getElementById('mak').value}`;
+  const checklistItems = [
+    'Surat Undangan (Jika Ada)',
+    'Surat Tugas',
+    'Surat Perjalanan Dinas',
+    'Daftar Nominatif',
+    'Daftar Rincian Perjalanan Dinas',
+    'Daftar Rekap SPT',
+    'Daftar Pengeluaran Riil (DPR)',
+    'Kuitansi LS',
+    'Bukti Pembayaran Transportasi (Kereta/Pesawat/Kapal Laut/Bus)',
+    'Boarding Pass',
+    'Bukti Pembayaran Taksi, BBM, Tol',
+    'Kuitansi Pembayaran Hotel',
+    'Laporan Perjalanan Dinas',
+    'SP2D (Lembar Dua)',
+    'Tanda Tangan pada Link Monitoring Perdin'
+  ];
+
+  out.innerHTML = `
+    <section class="lembar-kendali-area">
+      <header class="lembar-kendali-header">
+        <img class="lembar-kendali-logo" src="logo-pkp.webp" alt="">
+        <div>
+          <div class="lembar-kendali-ministry">KEMENTERIAN PERUMAHAN DAN KAWASAN PERMUKIMAN <span>REPUBLIK INDONESIA</span></div>
+          <strong class="lembar-kendali-secretariat">SEKRETARIAT JENDERAL</strong>
+          <div class="lembar-kendali-unit">SATUAN KERJA</div>
+          ${alamat ? `<div class="lembar-kendali-address">${alamat}</div>` : ''}
+        </div>
+      </header>
+
+      <div class="lembar-kendali-section-title lembar-kendali-section-title-berkas">Tanggal Masuk Berkas: ${formatTgl(tanggalMasuk)}</div>
+      <table class="lembar-kendali-meta">
+        <colgroup>
+          <col style="width:14%"><col style="width:13%"><col style="width:2%"><col style="width:35%">
+          <col style="width:14%"><col style="width:2%"><col style="width:20%">
+        </colgroup>
+        <tr><th colspan="2" class="lembar-kendali-meta-label">PELAKSANA PERTANGGUNGJAWABAN</th><td class="lembar-kendali-meta-separator">:</td><td class="lembar-kendali-meta-value">${pelaksana}</td><th class="lembar-kendali-meta-label">SPM</th><td class="lembar-kendali-meta-separator">:</td><td class="lembar-kendali-meta-value">${nomorSPM}</td></tr>
+        <tr><td colspan="4"></td><th class="lembar-kendali-meta-label">SP2D</th><td class="lembar-kendali-meta-separator">:</td><td class="lembar-kendali-meta-value">${nomorSPD}</td></tr>
+      </table>
+
+      <div class="lembar-kendali-section-title lembar-kendali-section-title-checklist">CHECKLIST PENGENDALIAN PERJALANAN DINAS</div>
+      <table class="lembar-kendali-info">
+        <colgroup>
+          <col style="width:14%"><col style="width:13%"><col style="width:2%"><col style="width:35%">
+          <col style="width:14%"><col style="width:2%"><col style="width:20%">
+        </colgroup>
+        <tr>
+          <th rowspan="2" class="lembar-kendali-side-label">Pelaksana<br>Perjalanan Dinas</th>
+          <th class="lembar-kendali-before-colon">Nama Pelaksana</th><td class="lembar-kendali-colon">:</td>
+          <td>${selectedEmps.map(emp => emp.nama.split(',')[0].trim().split(/\s+/).slice(0, 2).join(' ')).join(', ')}</td>
+          <th class="lembar-kendali-before-colon">Tanggal Berangkat</th><td class="lembar-kendali-colon">:</td><td>${tanggalBerangkat}</td>
+        </tr>
+        <tr>
+          <th class="lembar-kendali-before-colon">Tujuan</th><td class="lembar-kendali-colon">:</td><td>${tujuanPerjalanan}</td>
+          <th class="lembar-kendali-before-colon">Tanggal Kembali</th><td class="lembar-kendali-colon">:</td><td>${tanggalKembali}</td>
+        </tr>
+        <tr>
+          <th colspan="2" class="lembar-kendali-before-colon">Akun/Kegiatan</th><td class="lembar-kendali-colon">:</td><td>${akunKegiatan}</td>
+          <th class="lembar-kendali-before-colon">Surat Tugas (ST)</th><td class="lembar-kendali-colon">:</td><td>${nomorST}</td>
+        </tr>
+        <tr>
+          <th colspan="2" class="lembar-kendali-before-colon">Jenis Perjalanan Dinas</th><td class="lembar-kendali-colon">:</td><td>${jenisPerjalanan}</td>
+          <th class="lembar-kendali-before-colon">Tanggal Surat Tugas (ST)</th><td class="lembar-kendali-colon">:</td><td>${tanggalST}</td>
+        </tr>
+        <tr><td colspan="4"></td><th class="lembar-kendali-before-colon">Nilai (Rp)</th><td class="lembar-kendali-colon">:</td><td>${rp(total)}</td></tr>
+      </table>
+
+      <table class="lembar-kendali-checklist">
+        <thead>
+          <tr><th>No</th><th>Berkas Kegiatan</th><th>Ada</th><th>Tidak Ada</th><th>Keterangan</th></tr>
+        </thead>
+        <tbody>
+          ${checklistItems.map((item, index) => `
+            <tr>
+              <td class="lembar-kendali-center">${index + 1}</td>
+              <td>${item}</td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+          `).join('')}
+          <tr class="lembar-kendali-notes"><td colspan="5">Catatan:</td></tr>
+        </tbody>
+      </table>
+
+      <div class="lembar-kendali-signatures">
+        <div>
+          <strong>Disetujui</strong>
+          <div>Pejabat Pembuat Komitmen</div>
+          <div>Sekretariat Jenderal Kementerian PKP</div>
+          <div class="lembar-kendali-signature-space"></div>
+          <div>${document.getElementById('cfg_ppkNama').value}</div>
+          <div>${document.getElementById('cfg_ppkNip').value}</div>
+        </div>
+        <div>
+          <strong>Pejabat Pembuat SPM (PP-SPM)</strong>
+          <div class="lembar-kendali-signature-space"></div>
+          <div>${document.getElementById('cfg_ppspmNama').value}</div>
+          <div>${document.getElementById('cfg_ppspmNip').value}</div>
+        </div>
+        <div>
+          <div>${document.getElementById('cfg_kotaAsal').value},</div>
+          <strong>Verifikator Pejabat Pembuat Komitmen</strong>
+          <div class="lembar-kendali-signature-space"></div>
+          <div>${document.getElementById('cfg_verifikatorNama').value}</div>
+          <div>${document.getElementById('cfg_verifikatorNip').value}</div>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function printLembarKendali() {
+  const clearPrintMode = () => document.body.classList.remove('print-lembar-kendali');
+  document.body.classList.add('print-lembar-kendali');
+  window.addEventListener('afterprint', clearPrintMode, { once: true });
+  window.print();
+}
+
+function renderRekapRincian() {
+  const out = document.getElementById('rekapRincianOut');
+  if (selectedEmpIds.size === 0) {
+    out.innerHTML = '<div class="alert-warn no-print">Belum ada pegawai yang dipilih. Kembali ke tab Input Perjalanan.</div>';
+    return;
+  }
+
+  const sbm = getSBM();
+  const { days, nights } = getDays();
+  const selectedEmps = [...selectedEmpIds].map(id => employees.find(emp => emp.id === id));
+  const rows = selectedEmps.map((emp, index) => ({ emp, index: index + 1, biaya: hitungBiaya(emp) }));
+  const satker = document.getElementById('cfg_satker').value;
+  const kodeSatker = document.getElementById('cfg_kodeSatker').value;
+  const kodeKegiatan = document.getElementById('kodeKegiatan').value;
+  const kodeSubKegiatan = document.getElementById('kodeSubKegiatan').value;
+  const mak = document.getElementById('mak').value;
+  const kegiatan = document.getElementById('cfg_kegiatan').value;
+  const bank = document.getElementById('cfg_bank').value;
+  const tujuan = document.getElementById('kotaTujuan').value || (sbm ? `${sbm.ibukota}, ${sbm.provinsi}` : '-');
+  const tanggalBerangkat = document.getElementById('tglBerangkat').value;
+  const tanggalKembali = document.getElementById('tglKembali').value;
+  const cbUH = document.getElementById('cbUH').checked;
+  const cbHotel = document.getElementById('cbHotel').checked;
+  const cbDPR = document.getElementById('cbDPR').checked;
+  const cbTiket = document.getElementById('cbTiket').checked;
+  const customCosts = getCustomCosts();
+  const ppkNama = document.getElementById('cfg_ppkNama').value;
+  const ppkNip = document.getElementById('cfg_ppkNip').value;
+  const ppkJabatan = document.getElementById('cfg_ppkJabatan').value;
+  const bendNama = document.getElementById('cfg_bendNama').value;
+  const bendNip = document.getElementById('cfg_bendNip').value;
+
+  const biayaColumns = [];
+  if (cbHotel) biayaColumns.push({ label: 'Penginapan', value: biaya => biaya.hotel });
+  if (cbDPR) biayaColumns.push({ label: 'DPR', value: biaya => biaya.dpr });
+  if (cbTiket) biayaColumns.push({ label: 'Tiket Pesawat', value: biaya => biaya.tiket });
+  customCosts.forEach((item, index) => {
+    biayaColumns.push({ label: item.name, value: biaya => biaya.customCosts[index]?.amount || 0 });
+  });
+
+  const grandTotal = rows.reduce((total, row) => total + row.biaya.total, 0);
+  const totalUangHarian = rows.reduce((total, row) => total + row.biaya.uh, 0);
+  const biayaColspan = Math.max(1, biayaColumns.length);
+  const financialColumnCount = (cbUH ? 1 : 0) + biayaColspan + 1;
+  const financialColumnWidth = 18 / financialColumnCount;
+
+  out.innerHTML = `
+    <section class="rekap-rincian-area">
+      <h2>RINCIAN</h2>
+      <table class="rekap-rincian-meta">
+        <tr><td>NAMA SATKER</td><td>:</td><td>${satker}</td></tr>
+        <tr><td>KODE SATKER</td><td>:</td><td>${kodeSatker}</td></tr>
+        <tr><td>KODE KEGIATAN</td><td>:</td><td>${kodeKegiatan}</td></tr>
+        <tr><td>KODE SUB KEGIATAN</td><td>:</td><td>${kodeSubKegiatan}</td></tr>
+        <tr><td>KODE MAK</td><td>:</td><td>${mak}</td></tr>
+        <tr><td>KEGIATAN</td><td>:</td><td>${kegiatan}</td></tr>
+        <tr><td>BANK DAN NO. REKENING</td><td>:</td><td>${bank}</td></tr>
+      </table>
+
+      <table class="rekap-rincian-table">
+        <colgroup>
+          ${[3,17,4,11,26,8,8,5].map(width => `<col style="width:${width}%">`).join('')}
+          ${Array.from({length:financialColumnCount}, () => `<col style="width:${financialColumnWidth}%">`).join('')}
+        </colgroup>
+        <thead>
+          <tr>
+            <th rowspan="2">No</th>
+            <th rowspan="2">Nama Yang Ditugaskan</th>
+            <th rowspan="2">Gol</th>
+            <th rowspan="2">NIP</th>
+            <th rowspan="2">Tujuan</th>
+            <th colspan="2">Tanggal</th>
+            <th rowspan="2">Lama Tugas</th>
+            ${cbUH ? '<th rowspan="2">Uang Harian</th>' : ''}
+            <th colspan="${biayaColspan}">Biaya</th>
+            <th rowspan="2">JUMLAH<br>(Rp)</th>
+          </tr>
+          <tr>
+            <th>Berangkat</th>
+            <th>Kembali</th>
+            ${biayaColumns.length ? biayaColumns.map(column => `<th>${column.label}</th>`).join('') : '<th>-</th>'}
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map(row => `
+            <tr>
+              <td class="rekap-rincian-center">${row.index}</td>
+              <td>${row.emp.nama}</td>
+              <td class="rekap-rincian-center">${row.emp.gol}</td>
+              <td class="rekap-rincian-center">${row.emp.nip}</td>
+              <td class="rekap-rincian-center">${tujuan}</td>
+              <td class="rekap-rincian-center">${formatTgl(tanggalBerangkat)}</td>
+              <td class="rekap-rincian-center">${formatTgl(tanggalKembali)}</td>
+              <td class="rekap-rincian-center">${days} hari</td>
+              ${cbUH ? `<td class="rekap-rincian-number">${rp(row.biaya.uh)}</td>` : ''}
+              ${biayaColumns.length ? biayaColumns.map(column => `<td class="rekap-rincian-number">${rp(column.value(row.biaya))}</td>`).join('') : '<td class="rekap-rincian-center">-</td>'}
+              <td class="rekap-rincian-number">${rp(row.biaya.total)}</td>
+            </tr>
+          `).join('')}
+          <tr class="rekap-rincian-total">
+            <td colspan="8" class="rekap-rincian-center">Jumlah</td>
+            ${cbUH ? `<td class="rekap-rincian-number">${rp(totalUangHarian)}</td>` : ''}
+            ${biayaColumns.length ? biayaColumns.map(column => `<td class="rekap-rincian-number">${rp(rows.reduce((total, row) => total + column.value(row.biaya), 0))}</td>`).join('') : '<td></td>'}
+            <td class="rekap-rincian-number">${rp(grandTotal)}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="rekap-rincian-terbilang"><strong><em>Terbilang</em></strong><span>:</span><strong><em>${terbilang(grandTotal)}</em></strong></div>
+      <div class="rekap-rincian-signatures">
+        <div>
+          <div>Pejabat Pembuat Komitmen</div>
+          <div>Sekretariat Jenderal Kementerian PKP</div>
+          <div class="rekap-rincian-signature-space"></div>
+          <div>${ppkNama}</div>
+          <div>${ppkNip}</div>
+        </div>
+        <div>
+          <div>Bendahara Pengeluaran</div>
+          <div class="rekap-rincian-signature-space"></div>
+          <div>${bendNama}</div>
+          <div>${bendNip}</div>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function printRekapRincian() {
+  const clearPrintMode = () => document.body.classList.remove('print-rekap-rincian');
+  document.body.classList.add('print-rekap-rincian');
+  window.addEventListener('afterprint', clearPrintMode, { once: true });
+  window.print();
+}
+
+function renderRekapSPT() {
+  const out = document.getElementById('rekapSPTOut');
+  if (selectedEmpIds.size === 0) {
+    out.innerHTML = '<div class="alert-warn no-print">Belum ada pegawai yang dipilih. Kembali ke tab Input Perjalanan.</div>';
+    return;
+  }
+
+  const sbm = getSBM();
+  const selectedEmps = [...selectedEmpIds].map(id => employees.find(emp => emp.id === id));
+  const satker = document.getElementById('cfg_satker').value;
+  const kodeSatker = document.getElementById('cfg_kodeSatker').value;
+  const kodeKegiatan = document.getElementById('kodeKegiatan').value;
+  const kodeSubKegiatan = document.getElementById('kodeSubKegiatan').value;
+  const mak = document.getElementById('mak').value;
+  const kegiatan = document.getElementById('cfg_kegiatan').value;
+  const kotaTujuan = document.getElementById('kotaTujuan').value ||
+    (sbm ? `${sbm.ibukota}, ${sbm.provinsi}` : '-');
+  const tanggalSPT = formatTgl(document.getElementById('tglST').value);
+  const nomorSPT = document.getElementById('noST').value || '-';
+  const ppkNama = document.getElementById('cfg_ppkNama').value;
+  const ppkNip = document.getElementById('cfg_ppkNip').value;
+  const ppkJabatan = document.getElementById('cfg_ppkJabatan').value;
+
+  out.innerHTML = `
+    <section class="rekap-spt-area">
+      <h2>REKAP SURAT PERINTAH TUGAS</h2>
+      <table class="rekap-spt-meta">
+        <tr><td>NAMA SATKER</td><td>:</td><td>${satker}</td></tr>
+        <tr><td>KODE SATKER</td><td>:</td><td>${kodeSatker}</td></tr>
+        <tr><td>KODE KEGIATAN</td><td>:</td><td>${kodeKegiatan}</td></tr>
+        <tr><td>KODE SUB KEGIATAN</td><td>:</td><td>${kodeSubKegiatan}</td></tr>
+        <tr><td>KODE MAK</td><td>:</td><td>${mak}</td></tr>
+        <tr><td>KEGIATAN</td><td>:</td><td>${kegiatan}</td></tr>
+      </table>
+
+      <table class="rekap-spt-table">
+        <colgroup>
+          <col style="width:5%"><col style="width:10%"><col style="width:29%">
+          <col style="width:12%"><col style="width:16%"><col style="width:13%"><col style="width:15%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th rowspan="2">No</th>
+            <th rowspan="2">MAK</th>
+            <th rowspan="2">Nama Penerima</th>
+            <th rowspan="2" colspan="2">Uraian</th>
+            <th colspan="2">SPT</th>
+          </tr>
+          <tr><th>Tanggal</th><th>Nomor</th></tr>
+        </thead>
+        <tbody>
+          ${selectedEmps.map((emp, index) => `
+            <tr>
+              <td class="rekap-spt-center">${index + 1}</td>
+              <td class="rekap-spt-center">${mak}</td>
+              <td>${emp.nama}<br><span>NIP. ${emp.nip}</span></td>
+              <td>Perjalanan Dinas ke</td>
+              <td class="rekap-spt-center">${kotaTujuan}</td>
+              <td class="rekap-spt-center">${tanggalSPT}</td>
+              <td class="rekap-spt-center">${nomorSPT}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+
+      <div class="rekap-spt-signature">
+        <div>${jabatanDuaBaris(ppkJabatan)}</div>
+        <div class="rekap-spt-signature-space"></div>
+        <div>${ppkNama}</div>
+        <div>${ppkNip}</div>
+      </div>
+    </section>
+  `;
+}
+
+function printRekapSPT() {
+  const clearPrintMode = () => document.body.classList.remove('print-rekap-spt');
+  document.body.classList.add('print-rekap-spt');
+  window.addEventListener('afterprint', clearPrintMode, { once: true });
+  window.print();
+}
+
+function renderNominatif() {
+  const out = document.getElementById('nominatifOut');
+  if (selectedEmpIds.size === 0) {
+    out.innerHTML = '<div class="alert-warn">⚠️ Belum ada pegawai yang dipilih. Kembali ke tab <b>Input Perjalanan</b> dan pilih pegawai terlebih dahulu.</div>';
+    return;
+  }
+  const sbm = getSBM();
+  const { days, nights } = getDays();
+  const tglBrkt = document.getElementById('tglBerangkat').value;
+  const tglKmb = document.getElementById('tglKembali').value;
+  const kotaTujuan = document.getElementById('kotaTujuan').value || (sbm ? sbm.ibukota + ', ' + sbm.provinsi : '-');
+  const satker = document.getElementById('cfg_satker').value;
+  const kodeSatker = document.getElementById('cfg_kodeSatker').value;
+  const kodeKeg = document.getElementById('kodeKegiatan').value;
+  const kodeSubKeg = document.getElementById('kodeSubKegiatan').value;
+  const mak = document.getElementById('mak').value;
+  const kegiatan = document.getElementById('cfg_kegiatan').value;
+  const bank = document.getElementById('cfg_bank').value;
+  const ppkNama = document.getElementById('cfg_ppkNama').value;
+  const ppkNip = document.getElementById('cfg_ppkNip').value;
+  const bendNama = document.getElementById('cfg_bendNama').value;
+  const bendNip = document.getElementById('cfg_bendNip').value;
+
+  const selectedEmps = [...selectedEmpIds].map(id => employees.find(e => e.id === id));
+
+  // Calculate totals
+  let grandTotal = 0;
+  const rows = selectedEmps.map((emp, idx) => {
+    const b = hitungBiaya(emp);
+    grandTotal += b.total;
+    return { emp, b, idx: idx + 1 };
+  });
+
+  out.innerHTML = `
+    <div class="nominatif-area">
+      <div class="doc-title">
+        <h2>DAFTAR NOMINATIF</h2>
+      </div>
+      <table class="meta-tbl">
+        <tr><td>NAMA SATKER</td><td>:</td><td>${satker}</td></tr>
+        <tr><td>KODE SATKER</td><td>:</td><td>${kodeSatker}</td></tr>
+        <tr><td>KODE KEGIATAN</td><td>:</td><td>${kodeKeg}</td></tr>
+        <tr><td>KODE SUB KEGIATAN</td><td>:</td><td>${kodeSubKeg}</td></tr>
+        <tr><td>KODE MAK</td><td>:</td><td>${mak}</td></tr>
+        <tr><td>KEGIATAN</td><td>:</td><td>${kegiatan}</td></tr>
+        <tr><td>BANK DAN NO. REKENING</td><td>:</td><td>${bank}</td></tr>
+      </table>
+
+      <div class="nominatif-wrapper">
+        <table class="data-tbl nominatif-table">
+          <colgroup>
+            <col style="width:4%"><col style="width:23%"><col style="width:5%"><col style="width:16%">
+            <col style="width:13%"><col style="width:9.5%"><col style="width:10%"><col style="width:8.5%"><col style="width:11%">
+          </colgroup>
+          <thead>
+            <tr>
+              <th rowspan="2">No</th>
+              <th rowspan="2">Nama Yang Ditugaskan</th>
+              <th rowspan="2">Gol</th>
+              <th rowspan="2">NIP</th>
+              <th rowspan="2">Tujuan</th>
+              <th colspan="2">Tanggal</th>
+              <th rowspan="2">Lama Tugas</th>
+              <th>JUMLAH</th>
+            </tr>
+            <tr>
+              <th>Berangkat</th>
+              <th>Kembali</th>
+              <th>(Rp)</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(r => `
+              <tr>
+                <td class="tc">${r.idx}</td>
+                <td>${r.emp.nama}</td>
+                <td class="tc">${r.emp.gol}</td>
+                <td class="tc nominatif-nip">${r.emp.nip}</td>
+                <td class="tc">${kotaTujuan}</td>
+                <td class="tc">${formatTgl(tglBrkt).replace(/ (\d{4})$/, '<br>$1')}</td>
+                <td class="tc">${formatTgl(tglKmb).replace(/ (\d{4})$/, '<br>$1')}</td>
+                <td class="tc">${days} hari</td>
+                <td><div class="nominatif-amount"><span>Rp</span><span>${Number(r.b.total).toLocaleString('id-ID')}</span></div></td>
+              </tr>
+            `).join('')}
+            <tr class="total-row nominatif-total">
+              <td colspan="8" class="nominatif-total-label">Jumlah</td>
+              <td><div class="nominatif-amount nominatif-amount-total"><span>Rp</span><span>${Number(grandTotal).toLocaleString('id-ID')}</span></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="nominatif-terbilang">
+        <b><em>Terbilang</em></b><span>:</span><strong><em>${terbilang(grandTotal)}</em></strong>
+      </div>
+
+      <div class="sig-row">
+        <div class="sig-box">
+          <div>Pejabat Pembuat Komitmen</div>
+          <div>Sekretariat Jenderal Kementerian PKP</div>
+          <div class="sig-space"></div>
+          <div>${ppkNama}</div>
+          <div class="sig-nip">${ppkNip}</div>
+        </div>
+        <div class="sig-box">
+          <div>Bendahara Pengeluaran</div>
+          <div>&nbsp;</div>
+          <div class="sig-space"></div>
+          <div>${bendNama}</div>
+          <div class="sig-nip">${bendNip}</div>
+        </div>
+      </div>
+
+      ${!sbm?'<div class="alert-warn" style="margin-top:16px">⚠️ Provinsi tujuan belum dipilih — biaya dihitung Rp 0. Kembali ke Input dan pilih provinsi.</div>':''}
+    </div>
+  `;
+}
+
+function printNominatif() {
+  const clearPrintMode = () => document.body.classList.remove('print-nominatif');
+  document.body.classList.add('print-nominatif');
+  window.addEventListener('afterprint', clearPrintMode, { once: true });
+  window.print();
+}
+
+// =====================================================================
+// RENDER RINCIAN PER ORANG
+// =====================================================================
+function populateRincianSelect() {
+  const sel = document.getElementById('rincianPegawai');
+  sel.innerHTML = '<option value="">-- Pilih Pegawai --</option>';
+  [...selectedEmpIds].forEach(id => {
+    const e = employees.find(x => x.id === id);
+    const opt = document.createElement('option');
+    opt.value = id;
+    opt.textContent = e.nama;
+    sel.appendChild(opt);
+  });
+  loadRincianSPD();
+  if (selectedEmpIds.size === 0) {
+    document.getElementById('rincianOut').innerHTML = '<div class="alert-warn">⚠️ Belum ada pegawai dipilih. Kembali ke Input Perjalanan.</div>';
+  }
+}
+
+function loadRincianSPD() {
+  const select = document.getElementById('rincianPegawai');
+  const input = document.getElementById('rincianNoSPD');
+  input.value = select.value === '' ? '' : (spdPerEmployee[Number(select.value)] || '');
+}
+
+function onRincianEmployeeChange() {
+  loadRincianSPD();
+  renderRincian();
+}
+
+function saveRincianSPD() {
+  const select = document.getElementById('rincianPegawai');
+  if (select.value === '') return;
+  spdPerEmployee[Number(select.value)] = document.getElementById('rincianNoSPD').value.trim();
+  renderRincian();
+}
+
+function renderRincian() {
+  const id = parseInt(document.getElementById('rincianPegawai').value);
+  if (!id && id !== 0) { document.getElementById('rincianOut').innerHTML = ''; return; }
+  const emp = employees.find(e => e.id === id);
+  const sbm = getSBM();
+  const { days, nights } = getDays();
+  const b = hitungBiaya(emp);
+  const kotaTujuan = document.getElementById('kotaTujuan').value || (sbm ? sbm.ibukota : '-');
+  const noSPD = spdPerEmployee[emp.id] || document.getElementById('noSPD').value.trim() || '___/SPD/Birkom/___/____';
+  const tglSPD = document.getElementById('tglSPD').value;
+  const kotaAsal = document.getElementById('cfg_kotaAsal').value;
+  const ppkNama = document.getElementById('cfg_ppkNama').value;
+  const ppkNip = document.getElementById('cfg_ppkNip').value;
+  const bendNama = document.getElementById('cfg_bendNama').value;
+  const bendNip = document.getElementById('cfg_bendNip').value;
+  const agenda = document.getElementById('agenda').value || '-';
+  const tglBrkt = document.getElementById('tglBerangkat').value;
+  const tglKmb = document.getElementById('tglKembali').value;
+  const cbUH = document.getElementById('cbUH').checked;
+  const cbHotel = document.getElementById('cbHotel').checked;
+  const cbDPR = document.getElementById('cbDPR').checked;
+  const cbTiket = document.getElementById('cbTiket').checked;
+  const uhPercent = Number(document.getElementById('uhPersentase').value) || 1;
+
+  let rincianRows = '';
+  let no = 1;
+  if (cbUH && b.uhGross > 0) {
+    rincianRows += `<tr><td class="tc">${no++}</td><td>Uang Harian ${uhPercent*100}%<br><span style="padding-left:12px">${days} hari &nbsp; X &nbsp; Rp &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ${Number(sbm?sbm.uh:0).toLocaleString('id-ID')}</span></td><td class="tr">${rp(b.uhGross)}</td><td></td></tr>`;
+  }
+  if (b.mealDeduction > 0) {
+    const mealCount = Number(document.getElementById('jumlahMakan').value) || 0;
+    rincianRows += `<tr><td class="tc">${no++}</td><td>Pengurangan uang makan<br><span style="font-size:10px;color:#718096">${days} hari × ${mealCount} kali × ${rp(Number(document.getElementById('tarifMakan').value)||0)}</span></td><td class="tr">- ${rp(b.mealDeduction)}</td><td></td></tr>`;
+  }
+  if (b.snackDeduction > 0) {
+    const snackCount = Number(document.getElementById('jumlahSnack').value) || 0;
+    rincianRows += `<tr><td class="tc">${no++}</td><td>Pengurangan snack<br><span style="font-size:10px;color:#718096">${days} hari × ${snackCount} kali × ${rp(Number(document.getElementById('tarifSnack').value)||0)}</span></td><td class="tr">- ${rp(b.snackDeduction)}</td><td></td></tr>`;
+  }
+  if (cbHotel && b.hotel > 0) {
+    rincianRows += `<tr><td class="tc">${no++}</td><td>Penginapan/Hotel<br><span style="font-size:10px;color:#718096">${nights} malam × ${rp(getHotelRate(sbm,emp.gol))}</span></td><td class="tr">${rp(b.hotel)}</td><td></td></tr>`;
+  }
+  if (cbDPR && b.dpr > 0) {
+    const dprUraian = sbm?.provinsi === 'DKI JAKARTA'
+      ? `Daftar Pengeluaran Riil:<br>${kotaAsal} - ${kotaTujuan} PP`
+      : `Transport ${kotaAsal} - ${kotaTujuan} PP`;
+    rincianRows += `<tr><td class="tc">${no++}</td><td>${dprUraian}</td><td class="tr">${rp(b.dpr)}</td><td></td></tr>`;
+  }
+  if (cbTiket && b.tiket > 0) {
+    rincianRows += `<tr><td class="tc">${no++}</td><td>Tiket Pesawat PP</td><td class="tr">${rp(b.tiket)}</td><td></td></tr>`;
+  }
+  b.customCosts.forEach(item => {
+    if (item.amount > 0) {
+      rincianRows += `<tr><td class="tc">${no++}</td><td>${item.name}<br><span style="padding-left:12px;font-size:11px">Rincian Transport:</span><br><span style="padding-left:24px;font-size:11px">Bensin (Pertamax)</span></td><td class="tr">${rp(item.amount)}<br><br>${rp(item.amount)}</td><td></td></tr>`;
+    }
+  });
+
+  document.getElementById('rincianOut').innerHTML = `
+    <div class="rincian-doc">
+      <h3>RINCIAN &nbsp; PERJALANAN &nbsp; DINAS</h3>
+      <table class="rincian-meta-top">
+        <tr><td>Lampiran SPD No.</td><td>:</td><td>${noSPD}</td></tr>
+        <tr><td>Tanggal</td><td>:</td><td>${formatTgl(tglSPD)}</td></tr>
+      </table>
+
+      <table class="rincian-tbl">
+        <thead>
+          <tr>
+            <th style="width:30px">NO</th>
+            <th>PERINCIAN BIAYA</th>
+            <th style="width:150px">J u m l a h</th>
+            <th style="width:120px">Keterangan</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rincianRows || '<tr><td colspan="4" style="text-align:center;color:#a0aec0;padding:16px">Tidak ada komponen biaya yang dipilih</td></tr>'}
+          <tr class="rincian-total-row">
+            <td colspan="2" style="text-align:center;font-weight:700">J u m l a h</td>
+            <td style="text-align:center;font-weight:700">${rp(b.total)}</td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="rincian-terbilang">terbilang : <em>${terbilang(b.total)}</em></div>
+
+      <div class="rincian-payment-row">
+        <div class="rincian-payment-col">
+          <div style="visibility:hidden">placeholder</div>
+          <div>Telah dibayar sejumlah</div>
+          <div class="rincian-amount-box">${rp(b.total)}</div>
+          <div class="rincian-signatory-label">Bendahara Pengeluaran</div>
+          <div class="rincian-sig-space"></div>
+          <div class="rincian-name">${bendNama}</div>
+          <div>NIP. ${bendNip.replace('NIP.','').trim()}</div>
+        </div>
+        <div class="rincian-payment-col">
+          <div>${kotaAsal}, ${formatTgl(tglSPD)}</div>
+          <div>Telah menerima jumlah uang</div>
+          <div class="rincian-amount-box">${rp(b.total)}</div>
+          <div class="rincian-signatory-label">Yang Menerima</div>
+          <div class="rincian-sig-space"></div>
+          <div class="rincian-name">${emp.nama}</div>
+          <div>NIP.${emp.nip}</div>
+        </div>
+      </div>
+
+      <div class="rincian-spd-rampung">
+        <div style="font-weight:700;text-align:center;margin-bottom:8px">PERHITUNGAN SPD RAMPUNG</div>
+        <table class="rincian-spd-tbl">
+          <tr><td>Ditetapkan sejumlah</td><td style="text-align:right">${rp(b.total)}</td></tr>
+          <tr><td>Yang telah dibayar semula</td><td style="text-align:right">${rp(b.total)}</td></tr>
+          <tr><td>Sisa/Kurang</td><td style="text-align:right">-</td></tr>
+        </table>
+      </div>
+
+      <div class="rincian-ppk-sig">
+        <div>Pejabat Pembuat Komitmen</div>
+        <div>Sekretariat Jenderal Kementerian PKP</div>
+        <div class="rincian-sig-space"></div>
+        <div class="rincian-name">${ppkNama}</div>
+        <div>${ppkNip}</div>
+      </div>
+    </div>
+    <div class="btn-row no-print" style="margin-top:16px;justify-content:center">
+      <button class="btn btn-success" onclick="printRincian()">🖨️ Print Rincian</button>
+    </div>
+  `;
+}
+
+function printRincian() {
+  const clearPrintMode = () => document.body.classList.remove('print-rincian');
+  document.body.classList.add('print-rincian');
+  window.addEventListener('afterprint', clearPrintMode, { once: true });
+  window.print();
+}
+
+// =====================================================================
+// DAFTAR PENGELUARAN RIIL (DPR) PER ORANG
+// =====================================================================
+function populateDPRSelect() {
+  const select = document.getElementById('dprPegawai');
+  const previousValue = select.value;
+  select.innerHTML = '<option value="">-- Pilih Pegawai --</option>';
+  [...selectedEmpIds].forEach(id => {
+    const emp = employees.find(employee => employee.id === id);
+    if (!emp) return;
+    const option = document.createElement('option');
+    option.value = id;
+    option.textContent = emp.nama;
+    select.appendChild(option);
+  });
+
+  if (selectedEmpIds.size === 0) {
+    document.getElementById('dprOut').innerHTML = '<div class="alert-warn">⚠️ Belum ada pegawai yang dipilih. Kembali ke tab Input Perjalanan.</div>';
+    return;
+  }
+
+  const previousId = Number(previousValue);
+  select.value = previousValue !== '' && selectedEmpIds.has(previousId) ? previousValue : String([...selectedEmpIds][0]);
+  loadDPRNo();
+  renderDPR();
+}
+
+function loadDPRNo() {
+  const select = document.getElementById('dprPegawai');
+  document.getElementById('dprNoSPD').value = select.value === '' ? '' : (spdPerEmployee[Number(select.value)] || '');
+}
+
+function onDPREmployeeChange() {
+  loadDPRNo();
+  renderDPR();
+}
+
+function saveDPRNoSPD() {
+  const select = document.getElementById('dprPegawai');
+  if (select.value === '') return;
+  spdPerEmployee[Number(select.value)] = document.getElementById('dprNoSPD').value.trim();
+  renderDPR();
+}
+
+function renderDPR() {
+  const out = document.getElementById('dprOut');
+  const select = document.getElementById('dprPegawai');
+  if (select.value === '') {
+    out.innerHTML = '';
+    return;
+  }
+  const emp = employees.find(employee => employee.id === Number(select.value));
+  if (!emp) {
+    out.innerHTML = '';
+    return;
+  }
+
+  const sbm = getSBM();
+  if (!sbm || sbm.provinsi !== 'DKI JAKARTA') {
+    out.innerHTML = '<div class="alert-warn">⚠️ Lembar Daftar Pengeluaran Riil hanya untuk Perjalanan Dinas dalam kota DKI Jakarta (DPR Rp 170.000).</div>';
+    return;
+  }
+  const biaya = hitungBiaya(emp);
+  if (!biaya.dpr) {
+    out.innerHTML = '<div class="alert-warn">⚠️ Biaya DPR belum dicentang di Input Perjalanan.</div>';
+    return;
+  }
+
+  const alamat = document.getElementById('cfg_alamatKuitansi').value;
+  const kotaAsal = document.getElementById('cfg_kotaAsal').value;
+  const tujuan = document.getElementById('kotaTujuan').value.trim() || '-';
+  const noSPD = spdPerEmployee[emp.id] || document.getElementById('noSPD').value.trim() || '-';
+  const tanggalSPD = formatTgl(document.getElementById('tglSPD').value);
+  const ppkNama = document.getElementById('cfg_ppkNama').value;
+  const ppkNip = document.getElementById('cfg_ppkNip').value;
+  const ppkJabatan = document.getElementById('cfg_ppkJabatan').value;
+  const dprAmount = Number(biaya.dpr);
+
+  out.innerHTML = `
+    <section class="dpr-area">
+      <header class="kuitansi-perorangan-header lembar-kendali-header">
+        <img src="logo-pkp.webp" alt="" class="kuitansi-perorangan-logo lembar-kendali-logo">
+        <div>
+          <div class="kuitansi-perorangan-ministry lembar-kendali-ministry">KEMENTERIAN PERUMAHAN DAN KAWASAN PERMUKIMAN <span>REPUBLIK INDONESIA</span></div>
+          <strong class="lembar-kendali-secretariat">SEKRETARIAT JENDERAL</strong>
+          <div class="lembar-kendali-unit">SATUAN KERJA</div>
+          <div class="lembar-kendali-address">${alamat}</div>
+        </div>
+      </header>
+
+      <h2>Daftar Pengeluaran Riil</h2>
+
+      <table class="dpr-meta">
+        <tr><td>Nama</td><td>:</td><td>${emp.nama}</td></tr>
+        <tr><td>NIP</td><td>:</td><td>${emp.nip}</td></tr>
+        <tr><td>Jabatan</td><td>:</td><td>${emp.jabatan}</td></tr>
+      </table>
+
+      <p class="dpr-text">Berdasarkan Surat Perjalanan Dinas (SPD) nomor ${noSPD} tanggal ${tanggalSPD} dengan ini kami menyatakan dengan sesungguhnya bahwa :</p>
+
+      <ol class="dpr-list">
+        <li>Biaya transport pegawai dan/atau biaya penginapan di bawah ini yang tidak dapat diperoleh bukti-bukti pengeluarannya, meliputi :
+          <table class="dpr-tbl">
+            <colgroup><col style="width:7%"><col style="width:63%"><col style="width:30%"></colgroup>
+            <thead><tr><th>No.</th><th>Uraian</th><th>Jumlah</th></tr></thead>
+            <tbody>
+              <tr>
+                <td class="tc">1</td>
+                <td>
+                  <div class="dpr-uraian-title">Daftar Pengeluaran Riil</div>
+                  <div>${kotaAsal} - ${tujuan} (PP)</div>
+                  <div>1 orang x 1 hari x @${dprAmount.toLocaleString('id-ID')}</div>
+                </td>
+                <td class="dpr-jumlah">${rp(dprAmount)}</td>
+              </tr>
+              <tr><td colspan="2" class="dpr-total-label">Jumlah</td><td class="dpr-jumlah">${rp(dprAmount)}</td></tr>
+            </tbody>
+          </table>
+        </li>
+        <li>Jumlah uang tersebut pada angka 1 di atas benar-benar dikeluarkan untuk pelaksanaan perjalanan dinas dimaksud dan apabila di kemudian hari terdapat kelebihan atas pembayaran, kami bersedia untuk menyetorkan kelebihan tersebut ke Kas Negara.</li>
+      </ol>
+
+      <p class="dpr-closing">Demikian pernyataan ini kami buat dengan sebenarnya, untuk dipergunakan sebagaimana mestinya.</p>
+
+      <div class="dpr-signatures">
+        <div>
+          <div>Mengetahui/Menyetujui:</div>
+          <div>${jabatanDuaBaris(ppkJabatan)}</div>
+          <div class="dpr-sig-space"></div>
+          <div>${ppkNama}</div>
+          <div>${ppkNip}</div>
+        </div>
+        <div>
+          <div>${kotaAsal}, ${tanggalSPD}</div>
+          <div>Pelaksana Perjalanan Dinas</div>
+          <div class="dpr-sig-space"></div>
+          <div>${emp.nama}</div>
+          <div>NIP. ${emp.nip}</div>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function printDPR() {
+  const clearPrintMode = () => document.body.classList.remove('print-dpr');
+  document.body.classList.add('print-dpr');
+  window.addEventListener('afterprint', clearPrintMode, { once: true });
+  window.print();
+}
