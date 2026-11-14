@@ -2,13 +2,13 @@
 // DATA PEGAWAI (dari sheet KARYAWAN)
 // =====================================================================
 const employees = [
-  {id:0,nama:'Adolfus Manuel Pati, S.Ak.',nip:'-',pangkat:'-',gol:'-',jabatan:'Staf Biro Umum'},
+  {id:0,nama:'Yenita Sari, S.H., M.H.',nip:'197905172002122002',pangkat:'Pembina Tingkat 1',gol:'IV/b',jabatan:'Kepala Biro Komunikasi Publik'},
   {id:1,nama:'Arif Fajar Alfalaqy, S.Sos., M.Sc.',nip:'198305152008011009',pangkat:'Pembina',gol:'IV/a',jabatan:'Kabag. Pengelolaan Dokumentasi dan Hubungan Media'},
   {id:2,nama:'Rendhi Mirad, S.Sos., M.S.E.',nip:'198205212006041002',pangkat:'Pembina',gol:'IV/a',jabatan:'Kabag. Pelayanan Publik dan Publikasi'},
   {id:3,nama:'Dwi Handoko, S.Kom., M.Si., M.MT.',nip:'198811112010121002',pangkat:'Penata Tingkat I',gol:'III/d',jabatan:'Kepala Subbagian Tata Usaha'},
   {id:4,nama:'Ristyan Mega Putra, S.Sos, M.Si.',nip:'198310142010121001',pangkat:'Penata Tingkat I',gol:'III/d',jabatan:'Pranata Humas Ahli Muda'},
-  {id:5,nama:'Ahmad Jayadi, S.Hum, M.T.',nip:'198702182010121003',pangkat:'Penata Tingkat I',gol:'III/d',jabatan:'Pranata Humas Ahli Muda'},
-  {id:6,nama:'Erwin Alimudin, S.Ds.',nip:'199305222019031006',pangkat:'Penata Muda Tingkat I',gol:'III/b',jabatan:'Plt. Kasubbag TU'},
+  {id:5,nama:'Ahmad Jayadi, S.Hum, M.T.',nip:'198702182010121003',pangkat:'Penata Tingkat I',gol:'III/d',jabatan:'Kepala Subbagian Tata Usaha'},
+  {id:6,nama:'Erwin Alimudin, S.Ds.',nip:'199305222019031006',pangkat:'Penata Muda Tingkat I',gol:'III/b',jabatan:'Pranata Humas Ahli Pertama'},
   {id:7,nama:'Ishaq Abdullah, S.Ars.',nip:'199505122020121002',pangkat:'Penata Muda Tingkat I',gol:'III/b',jabatan:'Penata Kelola Perumahan Ahli Pertama'},
   {id:8,nama:'Imelda Gita Nugrahani, S.Ars.',nip:'199701082020122014',pangkat:'Penata Muda Tingkat I',gol:'III/b',jabatan:'Penata Kelola Bangunan Gedung dan Kawasan Permukiman'},
   {id:9,nama:'Indra Nugraha, S.I.Kom.',nip:'198705282024211009',pangkat:'-',gol:'IX',jabatan:'Pranata Humas Ahli Pertama'},
@@ -69,6 +69,7 @@ const employees = [
   {id:64,nama:'Yovita Rimbawati, S.I.Kom.',nip:'199107312025062006',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
   {id:65,nama:'Zahra Puspa Noviandini, S.Ars.',nip:'199711012025062009',pangkat:'Penata Muda',gol:'III/a',jabatan:'Penata Kelola Perumahan Ahli Pertama'},
   {id:66,nama:'Zhafira Alya Miftach, S.I.Kom',nip:'199910012025062019',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
+  {id:67,nama:'Adolfus Manuel, S.Ak.',nip:'-',pangkat:'-',gol:'-',jabatan:'Staf Biro Umum'},
 ];
 
 // =====================================================================
@@ -146,6 +147,10 @@ document.addEventListener('DOMContentLoaded', () => {
     sel.appendChild(opt);
   });
   renderEmployeeList();
+  const datePill = document.getElementById('datePill');
+  if (datePill) {
+    datePill.textContent = new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date());
+  }
   // Set default dates
   const today = new Date().toISOString().split('T')[0];
   document.getElementById('tglST').value = today;
@@ -153,31 +158,41 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('tglBerangkat').value = today;
   document.getElementById('tglKembali').value = today;
   hitungLama();
+  updateSbmWarnings();
 });
 
 // =====================================================================
 // TABS
 // =====================================================================
+const tabMeta = {
+  input: ['Input Perjalanan', 'Formulir'],
+  nominatif: ['Daftar Nominatif', 'Dokumen'],
+  'rekap-kuitansi': ['Rekap Kuitansi', 'Dokumen'],
+  'kuitansi-perorangan': ['Kuitansi Perorangan', 'Dokumen'],
+  'sppd-perorangan': ['SPPD Perorangan', 'Dokumen'],
+  'lembar-kendali': ['Lembar Kendali', 'Dokumen'],
+  'rekap-rincian': ['Rekap Rincian', 'Rekapitulasi'],
+  'rekap-spt': ['Rekap Surat Tugas', 'Rekapitulasi'],
+  rincian: ['Rincian per Orang', 'Rekapitulasi'],
+  dpr: ['DPR Perorangan', 'Rekapitulasi'],
+  pengaturan: ['Pengaturan', 'Sistem']
+};
+
 function showTab(name) {
+  const panel = document.getElementById('tab-' + name);
+  if (!panel) return;
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.add('active');
-  const tabLabels = {
-    input: 'input perjalanan',
-    nominatif: 'daftar nominatif',
-    'rekap-kuitansi': 'rekap kuitansi',
-    'kuitansi-perorangan': 'kuitansi perorangan',
-    'sppd-perorangan': 'sppd perorangan',
-    'lembar-kendali': 'lembar kendali',
-    'rekap-rincian': 'rekap rincian',
-    'rekap-spt': 'rekap surat tugas',
-    rincian: 'rincian',
-    dpr: 'dpr perorangan',
-    pengaturan: 'pengaturan'
-  };
-  document.querySelectorAll('.tab-btn').forEach(b => {
-    if (b.textContent.toLowerCase().includes(tabLabels[name])) b.classList.add('active');
-  });
+  panel.classList.add('active');
+  const activeBtn = document.querySelector(`.tab-btn[data-tab="${name}"]`);
+  if (activeBtn) activeBtn.classList.add('active');
+  const meta = tabMeta[name] || ['Perjalanan Dinas', 'Menu'];
+  const titleEl = document.getElementById('pageTitle');
+  const eyebrowEl = document.getElementById('pageEyebrow');
+  if (titleEl) titleEl.textContent = meta[0];
+  if (eyebrowEl) eyebrowEl.textContent = meta[1];
+  closeSidebar();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
   if (name === 'rincian') populateRincianSelect();
   if (name === 'dpr') populateDPRSelect();
   if (name === 'nominatif') renderNominatif();
@@ -189,9 +204,32 @@ function showTab(name) {
   if (name === 'rekap-spt') renderRekapSPT();
 }
 
+function toggleSidebar() {
+  document.body.classList.toggle('sidebar-open');
+  const btn = document.querySelector('.burger');
+  if (btn) btn.setAttribute('aria-expanded', document.body.classList.contains('sidebar-open') ? 'true' : 'false');
+}
+
+function closeSidebar() {
+  document.body.classList.remove('sidebar-open');
+  const btn = document.querySelector('.burger');
+  if (btn) btn.setAttribute('aria-expanded', 'false');
+}
+
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape') closeSidebar();
+});
+
+document.addEventListener('input', () => { updateSbmWarnings(); refreshHotelSummaries(); });
+document.addEventListener('change', () => { updateSbmWarnings(); refreshHotelSummaries(); });
+
 // =====================================================================
 // EMPLOYEE LIST
 // =====================================================================
+function getInitials(nama) {
+  return nama.replace(/[^A-Za-z\s]/g, '').trim().split(/\s+/).slice(0, 2).map(w => w[0] || '').join('').toUpperCase();
+}
+
 function renderEmployeeList() {
   const box = document.getElementById('empListBox');
   const q = document.getElementById('empSearch').value.toLowerCase();
@@ -199,12 +237,13 @@ function renderEmployeeList() {
   box.innerHTML = filtered.map(e => `
     <div class="emp-item ${selectedEmpIds.has(e.id)?'selected':''}" onclick="toggleEmployee(${e.id})">
       <input type="checkbox" ${selectedEmpIds.has(e.id)?'checked':''} onclick="event.stopPropagation();toggleEmployee(${e.id})">
-      <div>
+      <span class="emp-avatar">${getInitials(e.nama)}</span>
+      <div class="emp-text">
         <div class="emp-name">${e.nama}</div>
-        <div class="emp-detail">Gol. ${e.gol} &nbsp;|&nbsp; ${e.jabatan} &nbsp;|&nbsp; NIP: ${e.nip}</div>
+        <div class="emp-detail">Gol. ${e.gol}<span class="sep">·</span>${e.jabatan}<span class="sep">·</span>NIP: ${e.nip}</div>
       </div>
     </div>
-  `).join('') || '<div style="padding:16px;text-align:center;color:#a0aec0;font-size:13px">Tidak ada hasil</div>';
+  `).join('') || '<div style="padding:16px;text-align:center;color:#9aabc0;font-size:13px">Tidak ada hasil</div>';
 }
 
 function filterEmployees() { renderEmployeeList(); }
@@ -215,13 +254,15 @@ function toggleEmployee(id) {
   renderEmployeeList();
   renderSelectedTags();
   refreshCustomCostAssignments();
+  refreshHotelGuests();
+  updateSbmWarnings();
 }
 
 function renderSelectedTags() {
   const box = document.getElementById('selectedBox');
   const count = document.getElementById('countSelected');
   if (selectedEmpIds.size === 0) {
-    box.innerHTML = '<span style="font-size:12px;color:#a0aec0;padding:4px 0">Belum ada pegawai dipilih</span>';
+    box.innerHTML = '<span class="empty-note">Belum ada pegawai dipilih</span>';
     count.textContent = '0';
     return;
   }
@@ -237,6 +278,8 @@ function clearAll() {
   renderEmployeeList();
   renderSelectedTags();
   refreshCustomCostAssignments();
+  refreshHotelGuests();
+  updateSbmWarnings();
 }
 
 // =====================================================================
@@ -264,6 +307,7 @@ function changeProvince() {
   }
   updateDPRInput();
   updateSBMPreview();
+  updateSbmWarnings();
 }
 
 function markDPRManual() {
@@ -291,19 +335,193 @@ function toggleKonsumsiFields() {
     document.getElementById('jenisKegiatan').value === 'rapat' ? 'grid' : 'none';
 }
 
+function toggleHotelFields() {
+  const checked = document.getElementById('cbHotel').checked;
+  document.getElementById('hotelFields').style.display = checked ? 'grid' : 'none';
+  if (checked && !document.querySelectorAll('#hotelList .hotel-row').length) {
+    addHotelRow(getDays().nights || 1);
+  }
+}
+
+function addHotelRow(nights = 1) {
+  const row = document.createElement('div');
+  row.className = 'hotel-row';
+  row.innerHTML = `
+    <label class="hotel-field"><span>Nama hotel (opsional)</span><input type="text" class="hotel-name" placeholder="Contoh: Hotel Nusa Dua"></label>
+    <label class="hotel-field hotel-field-nights"><span>Malam</span><input type="number" class="hotel-nights" min="0" step="1" value="${nights}"></label>
+    <label class="hotel-field"><span>Harga per malam (Rp)</span><input type="number" class="hotel-price" min="0" step="1000" placeholder="Isi harga manual"></label>
+    <button class="btn btn-warn btn-sm" type="button" onclick="removeHotelRow(this)">Hapus</button>
+    <div class="hotel-guests"></div>
+    <div class="hotel-summary"></div>
+  `;
+  document.getElementById('hotelList').appendChild(row);
+  renderHotelGuests(row);
+  updateSbmWarnings();
+}
+
+function renderHotelGuests(row) {
+  const box = row.querySelector('.hotel-guests');
+  if (!box) return;
+  if (selectedEmpIds.size === 0) {
+    box.innerHTML = '<div class="hotel-guests-empty">Pilih pegawai dulu untuk menentukan yang dibebani biaya kamar.</div>';
+    return;
+  }
+  const existing = [...row.querySelectorAll('.hotel-guest-check')];
+  const knownIds = existing.map(cb => Number(cb.dataset.employeeId));
+  const checkedIds = existing.filter(cb => cb.checked).map(cb => Number(cb.dataset.employeeId));
+  const selected = [...selectedEmpIds].sort((a, b) => a - b);
+  box.innerHTML = `
+    <span class="hotel-guests-title">Pegawai yang menanggung kamar — biaya kamar penuh per pegawai</span>
+    <div class="hotel-guest-list">
+      ${selected.map(id => {
+        const emp = employees.find(e => e.id === id);
+        const isChecked = existing.length ? checkedIds.includes(id) || !knownIds.includes(id) : true;
+        return `<label class="hotel-guest"><input type="checkbox" class="hotel-guest-check" data-employee-id="${id}" ${isChecked ? 'checked' : ''}><span>${emp.nama}</span></label>`;
+      }).join('')}
+    </div>
+  `;
+  updateHotelSummary(row);
+}
+
+function updateHotelSummary(row) {
+  const el = row.querySelector('.hotel-summary');
+  if (!el) return;
+  const nights = Math.max(0, Number(row.querySelector('.hotel-nights').value) || 0);
+  const price = Math.max(0, Number(row.querySelector('.hotel-price').value) || 0);
+  const roomTotal = nights * price;
+  if (roomTotal <= 0) {
+    el.textContent = '';
+    return;
+  }
+  const count = row.querySelectorAll('.hotel-guest-check:checked').length;
+  el.textContent = count
+    ? `Total kamar ${rp(roomTotal)} — ${rp(roomTotal)} per pegawai × ${count} pegawai = ${rp(roomTotal * count)}`
+    : `Total kamar ${rp(roomTotal)} — belum ada pegawai dicentang, biaya belum masuk rincian.`;
+}
+
+function refreshHotelSummaries() {
+  document.querySelectorAll('#hotelList .hotel-row').forEach(updateHotelSummary);
+}
+
+function refreshHotelGuests() {
+  document.querySelectorAll('#hotelList .hotel-row').forEach(renderHotelGuests);
+}
+
+function removeHotelRow(button) {
+  button.closest('.hotel-row').remove();
+  updateSbmWarnings();
+}
+
+function getHotelEntries() {
+  return [...document.querySelectorAll('#hotelList .hotel-row')].map(row => ({
+    name: row.querySelector('.hotel-name').value.trim(),
+    nights: Math.max(0, Number(row.querySelector('.hotel-nights').value) || 0),
+    price: Math.max(0, Number(row.querySelector('.hotel-price').value) || 0),
+    employeeIds: [...row.querySelectorAll('.hotel-guest-check:checked')].map(cb => Number(cb.dataset.employeeId))
+  })).filter(item => item.name || item.price > 0);
+}
+
+const TRANSPORT_COST_RE = /\b(grab|grabcar|gojek|goride|gocar|grabbike|ojek|ojol|maxim|toll|tol|bensin|bbm|pertamax|pertalite|solar|parkir|taxi|taksi|angkot|transport)\b/i;
+const TOLL_COST_RE = /\b(toll|tol)\b/i;
+const TICKET_COST_RE = /\b(tiket|kereta|whoosh|pesawat|kapal|ferry|feri|speedboat)\b/i;
+const TICKET_CATEGORY_RULES = [
+  { re: /\b(pesawat|penerbangan|flight)\b/i, label: 'Tiket Pesawat Udara' },
+  { re: /\bwhoosh\b/i, label: 'Tiket Whoosh' },
+  { re: /\bkereta\b/i, label: 'Tiket Kereta Api' },
+  { re: /\b(kapal|ferry|feri|speedboat)\b/i, label: 'Tiket Kapal' }
+];
+
+function getTicketCostLabel(name) {
+  const rule = TICKET_CATEGORY_RULES.find(item => item.re.test(name));
+  return rule ? rule.label : name;
+}
+
 function addCustomCost() {
   const row = document.createElement('div');
   row.className = 'custom-cost-row';
+  row.dataset.kindAuto = '1';
   row.innerHTML = `
     <div class="form-group">
       <label>Nama biaya</label>
-      <input type="text" class="custom-cost-name" placeholder="Contoh: Tiket kapal">
+      <input type="text" class="custom-cost-name" placeholder="Contoh: Grab, Tol, atau Tiket kapal" oninput="detectCustomCostKind(this)">
+      <div class="custom-kind" role="group" aria-label="Kelompok biaya">
+        <button type="button" class="custom-kind-btn active" data-kind="other" aria-pressed="true" onclick="setCustomCostKind(this)">Biaya lain</button>
+        <button type="button" class="custom-kind-btn" data-kind="tiket" aria-pressed="false" onclick="setCustomCostKind(this)">Tiket</button>
+        <button type="button" class="custom-kind-btn" data-kind="transport" aria-pressed="false" onclick="setCustomCostKind(this)">Transport PP</button>
+      </div>
+      <div class="custom-route">
+        <span class="custom-route-title">Keterangan rute (opsional)</span>
+        <div class="custom-route-fields">
+          <label class="custom-route-field custom-route-pickup"><span class="custom-route-label-pickup">Titik jemput</span><input type="text" class="custom-cost-pickup" placeholder="Contoh: Stasiun Gambir"></label>
+          <label class="custom-route-field custom-route-dropoff"><span class="custom-route-label-dropoff">Titik antar</span><input type="text" class="custom-cost-dropoff" placeholder="Contoh: Rumah"></label>
+        </div>
+      </div>
     </div>
     <div class="custom-cost-assignees"></div>
-    <button class="btn btn-warn btn-sm" type="button" onclick="this.closest('.custom-cost-row').remove()">Hapus</button>
+    <button class="btn btn-warn btn-sm" type="button" onclick="removeCustomCostRow(this)">Hapus</button>
   `;
   document.getElementById('customCostList').appendChild(row);
   renderCustomCostAssignments(row);
+}
+
+function removeCustomCostRow(button) {
+  button.closest('.custom-cost-row').remove();
+  updateSbmWarnings();
+}
+
+function setCustomCostKind(button) {
+  const row = button.closest('.custom-cost-row');
+  row.dataset.kindAuto = '0';
+  applyCustomCostKind(row, button.dataset.kind);
+}
+
+function detectCustomCostKind(input) {
+  const row = input.closest('.custom-cost-row');
+  if (row.dataset.kindAuto === '0') return;
+  const value = input.value;
+  const kind = TICKET_COST_RE.test(value) ? 'tiket' : TRANSPORT_COST_RE.test(value) ? 'transport' : 'other';
+  applyCustomCostKind(row, kind);
+}
+
+function applyCustomCostKind(row, kind) {
+  row.querySelectorAll('.custom-kind-btn').forEach(btn => {
+    const active = btn.dataset.kind === kind;
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-pressed', String(active));
+  });
+  updateCustomCostRouteFields(row);
+  updateSbmWarnings();
+}
+
+function updateCustomCostRouteFields(row) {
+  const kind = row.querySelector('.custom-kind-btn.active')?.dataset.kind || 'other';
+  const name = row.querySelector('.custom-cost-name')?.value || '';
+  const isTicket = kind === 'tiket';
+  const isToll = kind === 'transport' && TOLL_COST_RE.test(name);
+  const pickupLabel = row.querySelector('.custom-route-label-pickup');
+  const dropoffLabel = row.querySelector('.custom-route-label-dropoff');
+  const pickupInput = row.querySelector('.custom-cost-pickup');
+  const dropoffInput = row.querySelector('.custom-cost-dropoff');
+  const dropoffField = row.querySelector('.custom-route-dropoff');
+  const fields = row.querySelector('.custom-route-fields');
+
+  if (isTicket) {
+    pickupLabel.textContent = 'Keberangkatan';
+    dropoffLabel.textContent = 'Kedatangan';
+    pickupInput.placeholder = 'Contoh: Stasiun Gambir';
+    dropoffInput.placeholder = 'Contoh: Bandung';
+  } else if (isToll) {
+    pickupLabel.textContent = 'Keterangan tol';
+    pickupInput.placeholder = 'Contoh: Tol Cipularang';
+  } else {
+    pickupLabel.textContent = 'Titik jemput';
+    dropoffLabel.textContent = 'Titik antar';
+    pickupInput.placeholder = 'Contoh: Stasiun Gambir';
+    dropoffInput.placeholder = 'Contoh: Rumah';
+  }
+
+  dropoffField.style.display = isToll ? 'none' : '';
+  fields.classList.toggle('single', isToll);
 }
 
 function renderCustomCostAssignments(row) {
@@ -352,13 +570,21 @@ function refreshCustomCostAssignments() {
 }
 
 function getCustomCosts() {
-  return [...document.querySelectorAll('.custom-cost-row')].map(row => ({
-    name: row.querySelector('.custom-cost-name').value.trim(),
-    amounts: Object.fromEntries([...row.querySelectorAll('.custom-cost-amount')].map(input => [
-      input.dataset.employeeId,
-      Math.max(0, Number(input.value) || 0)
-    ]))
-  })).filter(item => item.name);
+  return [...document.querySelectorAll('.custom-cost-row')].map(row => {
+    const name = row.querySelector('.custom-cost-name').value.trim();
+    const kind = row.querySelector('.custom-kind-btn.active')?.dataset.kind || 'other';
+    const isToll = kind === 'transport' && TOLL_COST_RE.test(name);
+    return {
+      name,
+      kind,
+      pickup: row.querySelector('.custom-cost-pickup')?.value.trim() || '',
+      dropoff: isToll ? '' : row.querySelector('.custom-cost-dropoff')?.value.trim() || '',
+      amounts: Object.fromEntries([...row.querySelectorAll('.custom-cost-amount')].map(input => [
+        input.dataset.employeeId,
+        Math.max(0, Number(input.value) || 0)
+      ]))
+    };
+  }).filter(item => item.name);
 }
 
 function updateSBMPreview() {
@@ -375,6 +601,97 @@ function updateSBMPreview() {
   const manualDpr = Number(document.getElementById('dprManual').value) || 0;
   document.getElementById('sbm_dpr').textContent = isDkiJakarta ? `${rp(170000)} (otomatis)` : manualDpr ? rp(manualDpr) : '(isi manual)';
   document.getElementById('sbm_tiket').textContent = sbm.tiket ? rp(sbm.tiket) : '(tidak ada tiket pesawat)';
+}
+
+function escHtml(value) {
+  return String(value).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+}
+
+function updateSbmWarnings() {
+  const box = document.getElementById('sbmWarnings');
+  if (!box) return;
+  const sbm = getSBM();
+  const items = [];
+  if (sbm) {
+    const selected = [...selectedEmpIds].sort((a, b) => a - b);
+    const cbHotel = document.getElementById('cbHotel').checked;
+    const cbDPR = document.getElementById('cbDPR').checked;
+    const cbTiket = document.getElementById('cbTiket').checked;
+    const customCosts = getCustomCosts();
+    const dprBase = cbDPR ? (sbm.provinsi === 'DKI JAKARTA' ? 170000 : Number(document.getElementById('dprManual').value) || 0) : 0;
+
+    if (cbHotel) {
+      getHotelEntries().forEach(item => {
+        if (item.price <= 0) return;
+        item.employeeIds.forEach(id => {
+          const emp = employees.find(e => e.id === id);
+          if (!emp) return;
+          const rate = getHotelRate(sbm, emp.gol);
+          if (rate && item.price > rate) {
+            items.push({
+              title: `Penginapan — ${item.name || 'Hotel'} (${emp.nama.split(',')[0]})`,
+              text: `${rp(item.price)}/malam melebihi SBM Gol ${emp.gol} sebesar ${rp(item.price - rate)}. SBM ${rp(rate)}/malam.`
+            });
+          }
+        });
+      });
+    }
+
+    if (sbm.dpr > 0 && (dprBase > 0 || customCosts.some(item => item.kind === 'transport'))) {
+      selected.forEach(id => {
+        const emp = employees.find(e => e.id === id);
+        const transportExtra = customCosts.reduce((total, item) => total + (item.kind === 'transport' ? item.amounts[String(id)] || 0 : 0), 0);
+        const total = dprBase + transportExtra;
+        if (total > sbm.dpr) {
+          items.push({
+            title: `Transport — ${emp.nama.split(',')[0]}`,
+            text: `${rp(total)} melebihi SBM DPR ${rp(sbm.dpr)} sebesar ${rp(total - sbm.dpr)}.`
+          });
+        }
+      });
+    }
+
+    if (sbm.tiket > 0) {
+      const ticketGroups = new Map();
+      if (cbTiket) ticketGroups.set('Tiket Pesawat Udara', []);
+      customCosts.forEach(item => {
+        if (item.kind !== 'tiket') return;
+        const label = getTicketCostLabel(item.name);
+        if (!ticketGroups.has(label)) ticketGroups.set(label, []);
+        ticketGroups.get(label).push(item);
+      });
+      ticketGroups.forEach((list, label) => {
+        selected.forEach(id => {
+          const emp = employees.find(e => e.id === id);
+          const ticketExtra = list.reduce((total, item) => total + (item.amounts[String(id)] || 0), 0);
+          const total = ticketExtra + (label === 'Tiket Pesawat Udara' && cbTiket ? sbm.tiket : 0);
+          if (total > sbm.tiket) {
+            items.push({
+              sptjm: true,
+              title: `${label} — ${emp.nama.split(',')[0]}`,
+              text: `${rp(total)} melebihi SBM sebesar ${rp(total - sbm.tiket)}.`
+            });
+          }
+        });
+      });
+    }
+  }
+
+  if (!items.length) {
+    box.style.display = 'none';
+    box.innerHTML = '';
+    return;
+  }
+  box.style.display = 'grid';
+  box.innerHTML = items.map(item => `
+    <div class="sbm-warning${item.sptjm ? ' is-sptjm' : ''}">
+      <span class="sbm-warning-ico" aria-hidden="true">!</span>
+      <div class="sbm-warning-body">
+        <strong>${escHtml(item.title)}</strong>
+        <span>${escHtml(item.text)}</span>
+      </div>
+      <span class="sbm-warning-badge${item.sptjm ? '' : ' is-soft'}">${item.sptjm ? 'Buatkan SPTJM' : 'Info SBM'}</span>
+    </div>`).join('');
 }
 
 function hitungLama() {
@@ -406,10 +723,14 @@ function hitungBiaya(emp) {
   const sbm = getSBM();
   const customCosts = getCustomCosts().map(item => ({
     name: item.name,
-    amount: item.amounts[emp.id] || 0
+    amount: item.amounts[emp.id] || 0,
+    isTransport: item.kind === 'transport',
+    isTicket: item.kind === 'tiket',
+    pickup: item.pickup,
+    dropoff: item.dropoff
   }));
   const customTotal = customCosts.reduce((total, item) => total + item.amount, 0);
-  if (!sbm) return { uh: 0, uhGross: 0, mealDeduction: 0, snackDeduction: 0, hotel: 0, dpr: 0, tiket: 0, customCosts, total: customTotal };
+  if (!sbm) return { uh: 0, uhGross: 0, mealDeduction: 0, snackDeduction: 0, hotel: 0, representatif: 0, representatifRate: 0, dpr: 0, tiket: 0, customCosts, total: customTotal };
   const { days, nights } = getDays();
   const cbUH = document.getElementById('cbUH').checked;
   const cbHotel = document.getElementById('cbHotel').checked;
@@ -424,10 +745,28 @@ function hitungBiaya(emp) {
   const mealDeduction = Math.min(uhGross, mealRequested);
   const snackDeduction = Math.min(Math.max(0, uhGross - mealDeduction), snackRequested);
   const uh = uhGross - mealDeduction - snackDeduction;
-  const hotel = cbHotel ? getHotelRate(sbm, emp.gol) * nights : 0;
+  const hotelEntries = getHotelEntries();
+  let hotel = 0;
+  const hotelDetails = [];
+  if (cbHotel) {
+    if (hotelEntries.length) {
+      hotelEntries.forEach(item => {
+        if (!item.employeeIds.includes(emp.id)) return;
+        const roomTotal = item.nights * item.price;
+        if (roomTotal <= 0) return;
+        hotel += roomTotal;
+        hotelDetails.push({ name: item.name, nights: item.nights, price: item.price, total: roomTotal });
+      });
+    } else {
+      hotel = getHotelRate(sbm, emp.gol) * nights;
+    }
+  }
+  const isKepalaBiro = /kepala biro/i.test(emp.jabatan || '');
+  const representatifRate = isKepalaBiro ? (isDkiJakarta ? 75000 : 150000) : 0;
+  const representatif = representatifRate * days;
   const dprVal = cbDPR ? (isDkiJakarta ? 170000 : Number(document.getElementById('dprManual').value) || 0) : 0;
   const tiketVal = cbTiket ? sbm.tiket : 0;
-  return { uh, uhGross, mealDeduction, snackDeduction, hotel, dpr: dprVal, tiket: tiketVal, customCosts, total: uh + hotel + dprVal + tiketVal + customTotal };
+  return { uh, uhGross, mealDeduction, snackDeduction, hotel, hotelDetails, representatif, representatifRate, dpr: dprVal, tiket: tiketVal, customCosts, total: uh + hotel + representatif + dprVal + tiketVal + customTotal };
 }
 
 // =====================================================================
@@ -1040,12 +1379,40 @@ function renderRekapRincian() {
   const bendNip = document.getElementById('cfg_bendNip').value;
 
   const biayaColumns = [];
+  if (rows.some(row => row.biaya.representatif > 0)) {
+    biayaColumns.push({ label: 'Representatif', value: biaya => biaya.representatif });
+  }
   if (cbHotel) biayaColumns.push({ label: 'Penginapan', value: biaya => biaya.hotel });
-  if (cbDPR) biayaColumns.push({ label: 'DPR', value: biaya => biaya.dpr });
-  if (cbTiket) biayaColumns.push({ label: 'Tiket Pesawat', value: biaya => biaya.tiket });
+  const hasTransportCost = customCosts.some(item => item.kind === 'transport');
+  if (cbDPR || hasTransportCost) {
+    biayaColumns.push({
+      label: 'DPR',
+      value: biaya => biaya.dpr + biaya.customCosts.reduce((total, item) => total + (item.isTransport ? item.amount : 0), 0)
+    });
+  }
+  const ticketGroups = new Map();
+  const otherColumns = [];
   customCosts.forEach((item, index) => {
-    biayaColumns.push({ label: item.name, value: biaya => biaya.customCosts[index]?.amount || 0 });
+    if (item.kind === 'transport') return;
+    if (item.kind === 'tiket') {
+      const label = getTicketCostLabel(item.name);
+      if (!ticketGroups.has(label)) ticketGroups.set(label, []);
+      ticketGroups.get(label).push(index);
+      return;
+    }
+    otherColumns.push({ label: item.name, value: biaya => biaya.customCosts[index]?.amount || 0 });
   });
+  const planeTicketLabel = 'Tiket Pesawat Udara';
+  if (cbTiket && !ticketGroups.has(planeTicketLabel)) ticketGroups.set(planeTicketLabel, []);
+  ticketGroups.forEach((indices, label) => {
+    const includeSbmTiket = label === planeTicketLabel;
+    biayaColumns.push({
+      label,
+      value: biaya => (includeSbmTiket ? biaya.tiket : 0) +
+        indices.reduce((total, index) => total + (biaya.customCosts[index]?.amount || 0), 0)
+    });
+  });
+  biayaColumns.push(...otherColumns);
 
   const grandTotal = rows.reduce((total, row) => total + row.biaya.total, 0);
   const totalUangHarian = rows.reduce((total, row) => total + row.biaya.uh, 0);
@@ -1126,6 +1493,7 @@ function renderRekapRincian() {
         </div>
         <div>
           <div>Bendahara Pengeluaran</div>
+          <div style="visibility:hidden">Sekretariat Jenderal Kementerian PKP</div>
           <div class="rekap-rincian-signature-space"></div>
           <div>${bendNama}</div>
           <div>${bendNip}</div>
@@ -1355,6 +1723,7 @@ function printNominatif() {
 // =====================================================================
 function populateRincianSelect() {
   const sel = document.getElementById('rincianPegawai');
+  const previousValue = sel.value;
   sel.innerHTML = '<option value="">-- Pilih Pegawai --</option>';
   [...selectedEmpIds].forEach(id => {
     const e = employees.find(x => x.id === id);
@@ -1363,10 +1732,14 @@ function populateRincianSelect() {
     opt.textContent = e.nama;
     sel.appendChild(opt);
   });
-  loadRincianSPD();
   if (selectedEmpIds.size === 0) {
     document.getElementById('rincianOut').innerHTML = '<div class="alert-warn">⚠️ Belum ada pegawai dipilih. Kembali ke Input Perjalanan.</div>';
+    return;
   }
+  const previousId = Number(previousValue);
+  sel.value = previousValue !== '' && selectedEmpIds.has(previousId) ? previousValue : String([...selectedEmpIds][0]);
+  loadRincianSPD();
+  renderRincian();
 }
 
 function loadRincianSPD() {
@@ -1413,8 +1786,9 @@ function renderRincian() {
 
   let rincianRows = '';
   let no = 1;
+  const uhKeterangan = uhPercent < 1 ? 'Menggunakan Kendaraan Dinas Operasional' : '';
   if (cbUH && b.uhGross > 0) {
-    rincianRows += `<tr><td class="tc">${no++}</td><td>Uang Harian ${uhPercent*100}%<br><span style="padding-left:12px">${days} hari &nbsp; X &nbsp; Rp &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ${Number(sbm?sbm.uh:0).toLocaleString('id-ID')}</span></td><td class="tr">${rp(b.uhGross)}</td><td></td></tr>`;
+    rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td>Uang Harian ${uhPercent*100}%<br><span style="padding-left:12px">${days} hari &nbsp; X &nbsp; Rp &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ${Number(sbm?sbm.uh:0).toLocaleString('id-ID')}</span></td><td class="tr">${rp(b.uhGross)}</td><td>${uhKeterangan}</td></tr>`;
   }
   if (b.mealDeduction > 0) {
     const mealCount = Number(document.getElementById('jumlahMakan').value) || 0;
@@ -1424,22 +1798,56 @@ function renderRincian() {
     const snackCount = Number(document.getElementById('jumlahSnack').value) || 0;
     rincianRows += `<tr><td class="tc">${no++}</td><td>Pengurangan snack<br><span style="font-size:10px;color:#718096">${days} hari × ${snackCount} kali × ${rp(Number(document.getElementById('tarifSnack').value)||0)}</span></td><td class="tr">- ${rp(b.snackDeduction)}</td><td></td></tr>`;
   }
-  if (cbHotel && b.hotel > 0) {
-    rincianRows += `<tr><td class="tc">${no++}</td><td>Penginapan/Hotel<br><span style="font-size:10px;color:#718096">${nights} malam × ${rp(getHotelRate(sbm,emp.gol))}</span></td><td class="tr">${rp(b.hotel)}</td><td></td></tr>`;
+  if (b.representatif > 0) {
+    const representatifKet = sbm && sbm.provinsi === 'DKI JAKARTA' ? 'Dalam kota' : 'Luar kota';
+    rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td>Biaya Representatif<br><span style="padding-left:12px">${days} hari &nbsp; X &nbsp; ${rp(b.representatifRate)}</span></td><td class="tr">${rp(b.representatif)}</td><td>${representatifKet}</td></tr>`;
   }
-  if (cbDPR && b.dpr > 0) {
-    const dprUraian = sbm?.provinsi === 'DKI JAKARTA'
+  if (cbHotel && b.hotel > 0) {
+    if (b.hotelDetails.length) {
+      b.hotelDetails.forEach(item => {
+        rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td>Penginapan/Hotel<br><span style="padding-left:12px">${item.nights} malam &nbsp; X &nbsp; ${rp(item.price)}</span></td><td class="tr">${rp(item.total)}</td><td>${escHtml(item.name)}</td></tr>`;
+      });
+    } else {
+      rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td>Penginapan/Hotel<br><span style="padding-left:12px">${nights} malam &nbsp; X &nbsp; ${rp(getHotelRate(sbm,emp.gol))}</span></td><td class="tr">${rp(b.hotel)}</td><td></td></tr>`;
+    }
+  }
+  const transportCosts = b.customCosts.filter(item => item.isTransport && item.amount > 0);
+  const otherCosts = b.customCosts.filter(item => !item.isTransport && item.amount > 0);
+  const transportExtra = transportCosts.reduce((total, item) => total + item.amount, 0);
+  if ((cbDPR && b.dpr > 0) || transportExtra > 0) {
+    const dprUraian = cbDPR && sbm?.provinsi === 'DKI JAKARTA'
       ? `Daftar Pengeluaran Riil:<br>${kotaAsal} - ${kotaTujuan} PP`
-      : `Transport ${kotaAsal} - ${kotaTujuan} PP`;
-    rincianRows += `<tr><td class="tc">${no++}</td><td>${dprUraian}</td><td class="tr">${rp(b.dpr)}</td><td></td></tr>`;
+      : `Transport ${kotaAsal} - ${kotaTujuan} (PP)`;
+    const transportTotal = b.dpr + transportExtra;
+    if (transportCosts.length) {
+      const detailRows = transportCosts.map(item => {
+        const route = [item.pickup, item.dropoff].filter(Boolean).join(' - ');
+        return `<tr><td style="padding-left:24px"><em>${item.name}</em></td><td class="tr"><em>${rp(item.amount)}</em></td><td>${route}</td></tr>`;
+      }).join('');
+      rincianRows += `<tr>
+        <td class="tc">${no++}</td>
+        <td colspan="3" style="padding:0">
+          <table class="rincian-subtbl">
+            <colgroup><col><col><col style="width:120px"></colgroup>
+            <tbody>
+              <tr><td>${dprUraian}</td><td class="tr"><strong>${rp(transportTotal)}</strong></td><td></td></tr>
+              <tr><td style="padding-left:12px"><em>Rincian Transport:</em></td><td></td><td></td></tr>
+              ${detailRows}
+            </tbody>
+          </table>
+        </td>
+      </tr>`;
+    } else {
+      rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td>${dprUraian}</td><td class="tr">${rp(transportTotal)}</td><td></td></tr>`;
+    }
   }
   if (cbTiket && b.tiket > 0) {
-    rincianRows += `<tr><td class="tc">${no++}</td><td>Tiket Pesawat PP</td><td class="tr">${rp(b.tiket)}</td><td></td></tr>`;
+    const ticketRoute = [kotaAsal, kotaTujuan].filter(Boolean).join(' - ');
+    rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td>Tiket Pesawat PP</td><td class="tr">${rp(b.tiket)}</td><td>${ticketRoute}</td></tr>`;
   }
-  b.customCosts.forEach(item => {
-    if (item.amount > 0) {
-      rincianRows += `<tr><td class="tc">${no++}</td><td>${item.name}<br><span style="padding-left:12px;font-size:11px">Rincian Transport:</span><br><span style="padding-left:24px;font-size:11px">Bensin (Pertamax)</span></td><td class="tr">${rp(item.amount)}<br><br>${rp(item.amount)}</td><td></td></tr>`;
-    }
+  otherCosts.forEach(item => {
+    const route = [item.pickup, item.dropoff].filter(Boolean).join(' - ');
+    rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td>${item.name}</td><td class="tr">${rp(item.amount)}</td><td>${route}</td></tr>`;
   });
 
   document.getElementById('rincianOut').innerHTML = `
@@ -1451,12 +1859,13 @@ function renderRincian() {
       </table>
 
       <table class="rincian-tbl">
+        <colgroup><col style="width:40px"><col><col><col style="width:120px"></colgroup>
         <thead>
           <tr>
-            <th style="width:30px">NO</th>
+            <th>NO</th>
             <th>PERINCIAN BIAYA</th>
-            <th style="width:150px">J u m l a h</th>
-            <th style="width:120px">Keterangan</th>
+            <th>J u m l a h</th>
+            <th>Keterangan</th>
           </tr>
         </thead>
         <tbody>

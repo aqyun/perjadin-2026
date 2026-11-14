@@ -3,454 +3,783 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aplikasi Perjalanan Dinas - Setjen Kementerian PKP</title>
-    <link rel="stylesheet" href="style.css">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#0b1729">
+  <title>Aplikasi Perjalanan Dinas - Biro Komunikasi Publik TA 2026</title>
+  <link rel="icon" href="logo-pkp.webp">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="app-header no-print">
-  <span class="icon">🏛️</span>
-  <div>
-    <h1>Aplikasi Perjalanan Dinas</h1>
-    <p>Biro Komunikasi Publik | Tahun Anggaran 2026</p>
-  </div>
-</div>
+<svg class="svg-sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M9 14h6M9 18h4"/></symbol>
+  <symbol id="i-file-lines" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/></symbol>
+  <symbol id="i-receipt" viewBox="0 0 24 24"><path d="M5 3h14v18l-3-2-2 2-2-2-2 2-3-2Z"/><path d="M9 8h6M9 12h6M9 16h3"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+  <symbol id="i-clipboard" viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 16v-4M12 16V8M17 16V5"/></symbol>
+  <symbol id="i-files" viewBox="0 0 24 24"><path d="M8 3h8a2 2 0 0 1 2 2v12"/><rect x="4" y="7" width="12" height="14" rx="2"/><path d="M8 11h4M8 15h4"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h12M9 12h12M9 18h12"/><path d="M4 6h.01M4 12h.01M4 18h.01"/></symbol>
+  <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M20 7H5a2 2 0 0 1 0-4h13v4"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1H5"/><path d="M16 13h2"/></symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="8" cy="18" r="2"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+  <symbol id="i-print" viewBox="0 0 24 24"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></symbol>
+  <symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 18-6-6 6-6"/></symbol>
+  <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m4 12 5 5L20 6"/></symbol>
+</svg>
 
-<div class="tabs-nav no-print">
-  <button class="tab-btn active" onclick="showTab('input')">📋 Input Perjalanan</button>
-  <button class="tab-btn" onclick="showTab('nominatif')">📄 Daftar Nominatif</button>
-  <button class="tab-btn" onclick="showTab('rekap-kuitansi')">🧾 Rekap Kuitansi</button>
-  <button class="tab-btn" onclick="showTab('kuitansi-perorangan')">🧾 Kuitansi Perorangan</button>
-  <button class="tab-btn" onclick="showTab('sppd-perorangan')">📄 SPPD Perorangan</button>
-  <button class="tab-btn" onclick="showTab('lembar-kendali')">📋 Lembar Kendali</button>
-  <button class="tab-btn" onclick="showTab('rekap-rincian')">📊 Rekap Rincian</button>
-  <button class="tab-btn" onclick="showTab('rekap-spt')">📑 Rekap Surat Tugas</button>
-  <button class="tab-btn" onclick="showTab('rincian')">🧾 Rincian per Orang</button>
-  <button class="tab-btn" onclick="showTab('dpr')">🧾 DPR Perorangan</button>
-  <button class="tab-btn" onclick="showTab('pengaturan')">⚙️ Pengaturan</button>
-</div>
-
-<!-- ============================================================ TAB INPUT -->
-<div id="tab-input" class="tab-content active">
-
-  <!-- Info Perjalanan -->
-  <div class="card">
-    <div class="card-title">📌 Informasi Perjalanan Dinas</div>
-    <div class="form-grid">
-      <div class="form-group">
-        <label>Nomor Surat Tugas (ST)</label>
-        <input type="text" id="noST" placeholder="Contoh: 375/ST/Sj.07/2026">
-      </div>
-      <div class="form-group">
-        <label>Tanggal Surat Tugas</label>
-        <input type="date" id="tglST">
-      </div>
-      <div class="form-group">
-        <label>Nomor SPD</label>
-        <input type="text" id="noSPD" placeholder="Contoh: /SPD/Birkom/10/2026">
-      </div>
-      <div class="form-group">
-        <label>Tanggal SPD</label>
-        <input type="date" id="tglSPD">
-      </div>
-      <div class="form-group">
-        <label>Tanggal Berangkat</label>
-        <input type="date" id="tglBerangkat" onchange="hitungLama()">
-      </div>
-      <div class="form-group">
-        <label>Tanggal Kembali</label>
-        <input type="date" id="tglKembali" onchange="hitungLama()">
-      </div>
-      <div class="form-group">
-        <label>Lama Tugas</label>
-        <input type="text" id="lamaTugas" readonly placeholder="Otomatis dihitung" style="background:#f7fafc">
-      </div>
-      <div class="form-group">
-        <label>Provinsi Tujuan</label>
-        <select id="provinsiTujuan" onchange="changeProvince()">
-          <option value="">-- Pilih Provinsi --</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Kota / Kabupaten Tujuan Spesifik</label>
-        <input type="text" id="kotaTujuan" placeholder="Contoh: Kab. Subang, Jawa Barat">
-      </div>
-      <div class="form-group full">
-        <label>Agenda / Maksud Perjalanan Dinas</label>
-        <textarea id="agenda" placeholder="Contoh: Dalam rangka dokumentasi dan publikasi kegiatan Menteri PKP menghadiri Sosialisasi KUR Bank BRI..."></textarea>
-      </div>
-      <div class="form-group">
-        <label>Kode Kegiatan</label>
-        <input type="text" id="kodeKegiatan" value="146.01.WA.E.7667">
-      </div>
-      <div class="form-group">
-        <label>Kode Sub Kegiatan</label>
-        <input type="text" id="kodeSubKegiatan" value="EBA.970.101.A">
-      </div>
-      <div class="form-group">
-        <label>MAK</label>
-        <input type="text" id="mak" value="524111">
-      </div>
+<aside class="sidebar no-print" id="sidebar" aria-label="Navigasi utama">
+  <div class="sidebar-brand">
+    <span class="brand-logo-wrap">
+      <img class="brand-logo" src="logo-pkp.webp" alt="Logo Kementerian PKP">
+    </span>
+    <div class="brand-copy">
+      <strong>Perjalanan Dinas</strong>
+      <span>Biro Komunikasi Publik TA 2026</span>
     </div>
-
-    <!-- SBM Preview -->
-    <div id="sbmPreview" style="display:none">
-      <div style="margin-top:16px;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:6px">📊 Tarif SBM (PMK) untuk provinsi terpilih:</div>
-      <div class="sbm-preview">
-        <div class="sbm-row"><span class="sbm-label">Uang Harian 100%</span><span class="sbm-val" id="sbm_uh">-</span></div>
-        <div class="sbm-row"><span class="sbm-label">Penginapan Gol IV / Eselon III</span><span class="sbm-val" id="sbm_h4">-</span></div>
-        <div class="sbm-row"><span class="sbm-label">Penginapan Gol III / Eselon IV</span><span class="sbm-val" id="sbm_h3">-</span></div>
-        <div class="sbm-row"><span class="sbm-label">DPR Jakarta PP</span><span class="sbm-val" id="sbm_jkt">-</span></div>
-        <div class="sbm-row"><span class="sbm-label">Taxi Lokal</span><span class="sbm-val" id="sbm_taxi">-</span></div>
-        <div class="sbm-row"><span class="sbm-label">DPR dibayarkan</span><span class="sbm-val" id="sbm_dpr">-</span></div>
-        <div class="sbm-row"><span class="sbm-label">Tiket Pesawat PP</span><span class="sbm-val" id="sbm_tiket">-</span></div>
-      </div>
-    </div>
+    <button type="button" class="icon-btn sidebar-close" onclick="closeSidebar()" aria-label="Tutup menu">
+      <svg class="ico"><use href="#i-close"></use></svg>
+    </button>
   </div>
 
-  <!-- Pilih Komponen Biaya -->
-  <div class="card">
-    <div class="card-title">💰 Komponen Biaya yang Dibayarkan</div>
-    <div class="form-grid">
-      <div class="form-group">
-        <label>
-          <input type="checkbox" id="cbUH" checked style="margin-right:6px">Uang Harian
-        </label>
-        <label style="margin-top:8px">Persentase Uang Harian
-          <select id="uhPersentase">
-            <option value="1">100%</option>
-            <option value="0.6">60%</option>
-          </select>
-        </label>
-        <label style="margin-top:8px">
-          <input type="checkbox" id="cbHotel" style="margin-right:6px">Penginapan/Hotel
-        </label>
-        <label style="margin-top:8px">
-          <input type="checkbox" id="cbDPR" style="margin-right:6px" onchange="markDPRManual();updateDPRInput();updateSBMPreview()">DPR
-        </label>
-        <div id="dprManualField" class="form-group" style="display:none;margin-top:8px">
-          <label for="dprManual">Nominal DPR manual (Rp)</label>
-          <input type="number" id="dprManual" min="0" step="1000" placeholder="Isi nominal DPR">
+  <nav class="sidebar-nav">
+    <p class="nav-label">Utama</p>
+    <button type="button" class="tab-btn active" data-tab="input" onclick="showTab('input')">
+      <span class="nav-ico"><svg class="ico"><use href="#i-edit"></use></svg></span>
+      <span class="nav-text">Input Perjalanan</span>
+    </button>
+
+    <p class="nav-label">Dokumen</p>
+    <button type="button" class="tab-btn" data-tab="kuitansi-perorangan" onclick="showTab('kuitansi-perorangan')">
+      <span class="nav-ico"><svg class="ico"><use href="#i-user"></use></svg></span>
+      <span class="nav-text">Kuitansi Perorangan</span>
+    </button>
+    <button type="button" class="tab-btn" data-tab="rincian" onclick="showTab('rincian')">
+      <span class="nav-ico"><svg class="ico"><use href="#i-list"></use></svg></span>
+      <span class="nav-text">Rincian per Orang</span>
+    </button>
+    <button type="button" class="tab-btn" data-tab="dpr" onclick="showTab('dpr')">
+      <span class="nav-ico"><svg class="ico"><use href="#i-wallet"></use></svg></span>
+      <span class="nav-text">DPR Perorangan</span>
+    </button>
+    <button type="button" class="tab-btn" data-tab="sppd-perorangan" onclick="showTab('sppd-perorangan')">
+      <span class="nav-ico"><svg class="ico"><use href="#i-file"></use></svg></span>
+      <span class="nav-text">SPPD Perorangan</span>
+    </button>
+
+    <p class="nav-label">Rekapitulasi</p>
+    <button type="button" class="tab-btn" data-tab="lembar-kendali" onclick="showTab('lembar-kendali')">
+      <span class="nav-ico"><svg class="ico"><use href="#i-clipboard"></use></svg></span>
+      <span class="nav-text">Lembar Kendali</span>
+    </button>
+    <button type="button" class="tab-btn" data-tab="rekap-kuitansi" onclick="showTab('rekap-kuitansi')">
+      <span class="nav-ico"><svg class="ico"><use href="#i-receipt"></use></svg></span>
+      <span class="nav-text">Rekap Kuitansi</span>
+    </button>
+    <button type="button" class="tab-btn" data-tab="nominatif" onclick="showTab('nominatif')">
+      <span class="nav-ico"><svg class="ico"><use href="#i-file-lines"></use></svg></span>
+      <span class="nav-text">Daftar Nominatif</span>
+    </button>
+    <button type="button" class="tab-btn" data-tab="rekap-rincian" onclick="showTab('rekap-rincian')">
+      <span class="nav-ico"><svg class="ico"><use href="#i-chart"></use></svg></span>
+      <span class="nav-text">Rekap Rincian</span>
+    </button>
+    <button type="button" class="tab-btn" data-tab="rekap-spt" onclick="showTab('rekap-spt')">
+      <span class="nav-ico"><svg class="ico"><use href="#i-files"></use></svg></span>
+      <span class="nav-text">Rekap Surat Tugas</span>
+    </button>
+
+    <p class="nav-label">Sistem</p>
+    <button type="button" class="tab-btn" data-tab="pengaturan" onclick="showTab('pengaturan')">
+      <span class="nav-ico"><svg class="ico"><use href="#i-sliders"></use></svg></span>
+      <span class="nav-text">Pengaturan</span>
+    </button>
+  </nav>
+
+  <div class="sidebar-foot">
+    <div class="side-note">
+      <span class="side-note-dot"></span>
+      <div>
+        <strong>Mode siap cetak</strong>
+        <span>Dokumen mengikuti format resmi</span>
+      </div>
+    </div>
+    <p class="side-credit">Biro Komunikasi Publik · TA 2026</p>
+  </div>
+</aside>
+
+<div class="scrim no-print" id="scrim" onclick="closeSidebar()"></div>
+
+<div class="app-main">
+  <header class="topbar no-print">
+    <button type="button" class="icon-btn burger" onclick="toggleSidebar()" aria-label="Buka menu" aria-expanded="false" aria-controls="sidebar">
+      <svg class="ico"><use href="#i-menu"></use></svg>
+    </button>
+    <div class="topbar-title">
+      <span class="eyebrow" id="pageEyebrow">Formulir</span>
+      <h1 id="pageTitle">Input Perjalanan</h1>
+    </div>
+    <div class="topbar-tools">
+      <span class="status-pill"><span class="status-dot"></span>Siap cetak</span>
+      <span class="date-pill"><svg class="ico"><use href="#i-calendar"></use></svg><span id="datePill">—</span></span>
+    </div>
+  </header>
+
+  <main class="workspace">
+
+    <!-- ============================================================ TAB INPUT -->
+    <div id="tab-input" class="tab-content active">
+
+      <section class="flow-hero">
+        <div class="flow-hero-text">
+          <span class="flow-kicker">Formulir perjalanan dinas</span>
+          <h2>Susun data, pilih komponen biaya, lalu cetak dokumen.</h2>
+          <p>Perhitungan mengikuti tarif SBM dan seluruh keluaran otomatis siap cetak.</p>
         </div>
-        <label style="margin-top:8px">
-          <input type="checkbox" id="cbTiket" style="margin-right:6px">Tiket Pesawat PP
-        </label>
-      </div>
-      <div class="form-group">
-        <label>Kegiatan
-          <select id="jenisKegiatan" onchange="toggleKonsumsiFields()">
-            <option value="lainnya">Kegiatan lainnya</option>
-            <option value="rapat">Rapat / Bimbingan Teknis</option>
-          </select>
-        </label>
-        <div id="konsumsiFields" class="form-grid full" style="display:none">
-          <div class="alert-info form-group full">Tarif makan dan snack diisi sesuai SBM provinsi tujuan. Tarif tersimpan di browser untuk masing-masing provinsi.</div>
-          <div class="form-group">
-            <label>Tarif makan per kali (Rp)</label>
-            <input type="number" id="tarifMakan" min="0" step="1000" value="0" onchange="saveProvinceFoodRates()">
+        <ol class="flow-steps">
+          <li class="on"><span>1</span>Data</li>
+          <li class="on"><span>2</span>Biaya</li>
+          <li class="on"><span>3</span>Pegawai</li>
+        </ol>
+      </section>
+
+      <!-- Info Perjalanan -->
+      <section class="card">
+        <div class="card-head">
+          <span class="card-ico"><svg class="ico"><use href="#i-edit"></use></svg></span>
+          <div class="card-heading">
+            <h2 class="card-title">Informasi Perjalanan Dinas</h2>
+            <p class="card-sub">Nomor surat tugas, SPD, rute, dan agenda kegiatan</p>
           </div>
-          <div class="form-group">
-            <label>Makan disediakan per hari</label>
-            <input type="number" id="jumlahMakan" min="0" max="3" step="1" value="0">
+          <span class="card-badge">Langkah 1</span>
+        </div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="noST">Nomor Surat Tugas (ST)</label>
+              <input type="text" id="noST" placeholder="Contoh: 375/ST/Sj.07/2026">
+            </div>
+            <div class="form-group">
+              <label for="tglST">Tanggal Surat Tugas</label>
+              <input type="date" id="tglST">
+            </div>
+            <div class="form-group">
+              <label for="noSPD">Nomor SPD</label>
+              <input type="text" id="noSPD" placeholder="Contoh: /SPD/Birkom/10/2026">
+            </div>
+            <div class="form-group">
+              <label for="tglSPD">Tanggal SPD</label>
+              <input type="date" id="tglSPD">
+            </div>
+            <div class="form-group">
+              <label for="tglBerangkat">Tanggal Berangkat</label>
+              <input type="date" id="tglBerangkat" onchange="hitungLama()">
+            </div>
+            <div class="form-group">
+              <label for="tglKembali">Tanggal Kembali</label>
+              <input type="date" id="tglKembali" onchange="hitungLama()">
+            </div>
+            <div class="form-group">
+              <label for="lamaTugas">Lama Tugas</label>
+              <input type="text" id="lamaTugas" class="is-readonly" readonly placeholder="Otomatis dihitung">
+            </div>
+            <div class="form-group">
+              <label for="provinsiTujuan">Provinsi Tujuan</label>
+              <select id="provinsiTujuan" onchange="changeProvince()">
+                <option value="">-- Pilih Provinsi --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="kotaTujuan">Kota / Kabupaten Tujuan Spesifik</label>
+              <input type="text" id="kotaTujuan" placeholder="Contoh: Kab. Subang, Jawa Barat">
+            </div>
+            <div class="form-group full">
+              <label for="agenda">Agenda / Maksud Perjalanan Dinas</label>
+              <textarea id="agenda" placeholder="Contoh: Dalam rangka dokumentasi dan publikasi kegiatan Menteri PKP menghadiri Sosialisasi KUR Bank BRI..."></textarea>
+            </div>
+            <div class="form-group">
+              <label for="kodeKegiatan">Kode Kegiatan</label>
+              <input type="text" id="kodeKegiatan" value="146.01.WA.E.7667">
+            </div>
+            <div class="form-group">
+              <label for="kodeSubKegiatan">Kode Sub Kegiatan</label>
+              <input type="text" id="kodeSubKegiatan" value="EBA.970.101.A">
+            </div>
+            <div class="form-group">
+              <label for="mak">MAK</label>
+              <input type="text" id="mak" value="524111">
+            </div>
           </div>
-          <div class="form-group">
-            <label>Tarif snack per kali (Rp)</label>
-            <input type="number" id="tarifSnack" min="0" step="1000" value="0" onchange="saveProvinceFoodRates()">
-          </div>
-          <div class="form-group">
-            <label>Snack disediakan per hari</label>
-            <input type="number" id="jumlahSnack" min="0" max="3" step="1" value="0">
+
+          <!-- SBM Preview -->
+          <div id="sbmPreview" style="display:none">
+            <div class="sbm-head">
+              <span class="sbm-title"><svg class="ico"><use href="#i-chart"></use></svg>Tarif SBM Provinsi Terpilih</span>
+              <span class="sbm-note">Tarif PMK</span>
+            </div>
+            <div class="sbm-preview">
+              <div class="sbm-row"><span class="sbm-label">Uang Harian 100%</span><span class="sbm-val" id="sbm_uh">-</span></div>
+              <div class="sbm-row"><span class="sbm-label">Penginapan Gol IV / Eselon III</span><span class="sbm-val" id="sbm_h4">-</span></div>
+              <div class="sbm-row"><span class="sbm-label">Penginapan Gol III / Eselon IV</span><span class="sbm-val" id="sbm_h3">-</span></div>
+              <div class="sbm-row"><span class="sbm-label">DPR Jakarta PP</span><span class="sbm-val" id="sbm_jkt">-</span></div>
+              <div class="sbm-row"><span class="sbm-label">Taxi Lokal</span><span class="sbm-val" id="sbm_taxi">-</span></div>
+              <div class="sbm-row"><span class="sbm-label">DPR dibayarkan</span><span class="sbm-val" id="sbm_dpr">-</span></div>
+              <div class="sbm-row"><span class="sbm-label">Tiket Pesawat PP</span><span class="sbm-val" id="sbm_tiket">-</span></div>
+            </div>
           </div>
         </div>
-        <label style="font-size:12px;color:#718096">Uang harian dihitung per hari perjalanan. Penginapan dihitung per malam. Potongan konsumsi rapat/bimtek berlaku sesuai tarif dan frekuensi yang diisi.</label>
-      </div>
-      <div class="form-group full">
-        <label>Biaya tambahan per orang</label>
-        <div id="customCostList" class="custom-cost-list"></div>
-        <button class="btn btn-secondary btn-sm" type="button" onclick="addCustomCost()">＋ Tambah biaya custom</button>
-      </div>
-    </div>
-  </div>
+      </section>
 
-  <!-- Pilih Pegawai -->
-  <div class="card">
-    <div class="card-title">👤 Pilih Pegawai yang Ditugaskan</div>
-    <div style="margin-bottom:8px;font-size:12px;color:#718096">
-      Ketik nama untuk filter. Klik nama untuk menambah/menghapus dari daftar.
-    </div>
-    <input type="text" class="emp-search-input" id="empSearch" placeholder="🔍 Cari nama pegawai..." oninput="filterEmployees()">
-    <div class="emp-list-box" id="empListBox"></div>
-    <div style="margin-top:12px;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:6px">
-      Pegawai Terpilih (<span id="countSelected">0</span>):
-    </div>
-    <div class="selected-box" id="selectedBox">
-      <span style="font-size:12px;color:#a0aec0;padding:4px 0">Belum ada pegawai dipilih</span>
-    </div>
-    <div class="btn-row no-print">
-      <button class="btn btn-primary" onclick="showTab('nominatif');renderNominatif()">📄 Generate Daftar Nominatif</button>
-      <button class="btn btn-primary" onclick="showTab('rekap-kuitansi')">🧾 Generate Rekap Kuitansi</button>
-      <button class="btn btn-primary" onclick="showTab('kuitansi-perorangan')">🧾 Generate Kuitansi Perorangan</button>
-      <button class="btn btn-primary" onclick="showTab('sppd-perorangan')">📄 Generate SPPD Perorangan</button>
-      <button class="btn btn-primary" onclick="showTab('lembar-kendali')">📋 Generate Lembar Kendali</button>
-      <button class="btn btn-primary" onclick="showTab('rekap-rincian')">📊 Generate Rekap Rincian</button>
-      <button class="btn btn-primary" onclick="showTab('rekap-spt')">📑 Generate Rekap SPT</button>
-      <button class="btn btn-secondary" onclick="clearAll()">🗑️ Reset Semua</button>
-    </div>
-  </div>
-</div>
+      <!-- Pilih Komponen Biaya -->
+      <section class="card">
+        <div class="card-head">
+          <span class="card-ico"><svg class="ico"><use href="#i-wallet"></use></svg></span>
+          <div class="card-heading">
+            <h2 class="card-title">Komponen Biaya yang Dibayarkan</h2>
+            <p class="card-sub">Aktifkan komponen yang masuk ke perhitungan</p>
+          </div>
+          <span class="card-badge">Langkah 2</span>
+        </div>
+        <div class="card-body">
+          <div class="opt-grid">
+            <label class="opt-tile">
+              <input type="checkbox" id="cbUH" checked>
+              <span class="opt-text"><strong>Uang Harian</strong><small>Dihitung per hari perjalanan</small></span>
+            </label>
+            <label class="opt-tile">
+              <input type="checkbox" id="cbHotel" onchange="toggleHotelFields()">
+              <span class="opt-text"><strong>Penginapan / Hotel</strong><small>Harga manual, bisa ganti hotel</small></span>
+            </label>
+            <label class="opt-tile">
+              <input type="checkbox" id="cbDPR" onchange="markDPRManual();updateDPRInput();updateSBMPreview()">
+              <span class="opt-text"><strong>DPR</strong><small>Daftar pengeluaran riil</small></span>
+            </label>
+            <label class="opt-tile">
+              <input type="checkbox" id="cbTiket">
+              <span class="opt-text"><strong>Tiket Pesawat PP</strong><small>Pulang-pergi sesuai SBM</small></span>
+            </label>
+          </div>
 
-<!-- ============================================================ TAB NOMINATIF -->
-<div id="tab-nominatif" class="tab-content">
-  <div class="btn-row no-print" style="margin-bottom:16px">
-    <button class="btn btn-primary" onclick="renderNominatif()">🔄 Refresh</button>
-    <button class="btn btn-success" onclick="printNominatif()">🖨️ Print</button>
-    <button class="btn btn-secondary" onclick="showTab('input')">← Kembali Input</button>
-  </div>
-  <div id="nominatifOut"></div>
-</div>
+          <div id="sbmWarnings" class="sbm-warnings" style="display:none"></div>
 
-<!-- ============================================================ TAB REKAP KUITANSI -->
-<div id="tab-rekap-kuitansi" class="tab-content">
-  <div class="btn-row no-print" style="margin-bottom:16px">
-    <button class="btn btn-primary" onclick="renderRekapKuitansi()">🔄 Refresh</button>
-    <button class="btn btn-success" onclick="printRekapKuitansi()">🖨️ Print Kuitansi</button>
-    <button class="btn btn-secondary" onclick="showTab('input')">← Kembali Input</button>
-  </div>
-  <div class="card no-print">
-    <div class="form-group">
-      <label for="bulanKuitansi">Bulan Kuitansi</label>
-      <input type="text" id="bulanKuitansi" maxlength="20" placeholder="Contoh: November" oninput="renderRekapKuitansi()">
+          <div class="cost-extra-grid">
+            <div class="form-group">
+              <label for="uhPersentase">Persentase Uang Harian</label>
+              <select id="uhPersentase">
+                <option value="1">100%</option>
+                <option value="0.6">60%</option>
+              </select>
+            </div>
+            <div class="form-group" id="dprManualField" style="display:none">
+              <label for="dprManual">Nominal DPR manual (Rp)</label>
+              <input type="number" id="dprManual" min="0" step="1000" placeholder="Isi nominal DPR">
+            </div>
+            <div class="form-group">
+              <label for="jenisKegiatan">Jenis Kegiatan</label>
+              <select id="jenisKegiatan" onchange="toggleKonsumsiFields()">
+                <option value="lainnya">Kegiatan lainnya</option>
+                <option value="rapat">Rapat / Bimbingan Teknis</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="konsumsiFields" class="form-grid konsumsi-grid" style="display:none">
+            <div class="alert-info form-group full">Tarif makan dan snack diisi sesuai SBM provinsi tujuan. Tarif tersimpan di browser untuk masing-masing provinsi.</div>
+            <div class="form-group">
+              <label for="tarifMakan">Tarif makan per kali (Rp)</label>
+              <input type="number" id="tarifMakan" min="0" step="1000" value="0" onchange="saveProvinceFoodRates()">
+            </div>
+            <div class="form-group">
+              <label for="jumlahMakan">Makan disediakan per hari</label>
+              <input type="number" id="jumlahMakan" min="0" max="3" step="1" value="0">
+            </div>
+            <div class="form-group">
+              <label for="tarifSnack">Tarif snack per kali (Rp)</label>
+              <input type="number" id="tarifSnack" min="0" step="1000" value="0" onchange="saveProvinceFoodRates()">
+            </div>
+            <div class="form-group">
+              <label for="jumlahSnack">Snack disediakan per hari</label>
+              <input type="number" id="jumlahSnack" min="0" max="3" step="1" value="0">
+            </div>
+          </div>
+
+          <div id="hotelFields" class="hotel-group" style="display:none">
+            <div class="field-head">
+              <label>Rincian penginapan</label>
+              <span class="field-tip">Input manual — total per kamar = malam × harga, dibebankan penuh ke tiap pegawai yang dicentang. Kosongkan jika ingin memakai tarif SBM.</span>
+            </div>
+            <div id="hotelList" class="hotel-list"></div>
+            <button class="add-cost-btn" type="button" onclick="addHotelRow()">
+              <svg class="ico"><use href="#i-plus"></use></svg>Tambah hotel
+            </button>
+          </div>
+
+          <p class="field-note">Uang harian dihitung per hari perjalanan. Penginapan dihitung per malam. Potongan konsumsi rapat/bimtek berlaku sesuai tarif dan frekuensi yang diisi.</p>
+
+          <div class="form-group full custom-cost-group">
+            <div class="field-head">
+              <label>Rincian transport &amp; biaya tambahan</label>
+              <span class="field-tip">Nominal per pegawai — Grab/Gojek/Tol/Bensin masuk Transport PP (kolom DPR); tiket kereta/whoosh/pesawat/kapal jadi kolom biaya sendiri di rekap</span>
+            </div>
+            <div id="customCostList" class="custom-cost-list"></div>
+            <button class="add-cost-btn" type="button" onclick="addCustomCost()">
+              <svg class="ico"><use href="#i-plus"></use></svg>Tambah rincian biaya
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Pilih Pegawai -->
+      <section class="card">
+        <div class="card-head">
+          <span class="card-ico"><svg class="ico"><use href="#i-user"></use></svg></span>
+          <div class="card-heading">
+            <h2 class="card-title">Pegawai yang Ditugaskan</h2>
+            <p class="card-sub">Cari nama, lalu klik untuk memilih atau melepas</p>
+          </div>
+          <span class="card-badge">Langkah 3</span>
+        </div>
+        <div class="card-body">
+          <div class="search-wrap">
+            <svg class="ico"><use href="#i-search"></use></svg>
+            <input type="text" class="emp-search-input" id="empSearch" placeholder="Cari nama atau jabatan pegawai..." oninput="filterEmployees()">
+          </div>
+          <div class="emp-list-box" id="empListBox"></div>
+
+          <div class="selected-head">
+            <span class="selected-label">Pegawai Terpilih</span>
+            <span class="count-chip"><span id="countSelected">0</span></span>
+          </div>
+          <div class="selected-box" id="selectedBox">
+            <span class="empty-note">Belum ada pegawai dipilih</span>
+          </div>
+
+          <div class="action-panel">
+            <div class="action-panel-head">
+              <div>
+                <h3>Buat Dokumen</h3>
+                <p>Pilih format keluaran — semua sudah siap dicetak.</p>
+              </div>
+            </div>
+            <div class="action-grid">
+              <button type="button" class="action-card" onclick="showTab('kuitansi-perorangan')">
+                <span class="action-ico"><svg class="ico"><use href="#i-user"></use></svg></span>
+                <span class="action-body"><strong>Kuitansi Perorangan</strong><small>Satu kuitansi per pegawai</small></span>
+                <span class="action-arrow"><svg class="ico"><use href="#i-arrow-right"></use></svg></span>
+              </button>
+              <button type="button" class="action-card" onclick="showTab('rincian')">
+                <span class="action-ico"><svg class="ico"><use href="#i-list"></use></svg></span>
+                <span class="action-body"><strong>Rincian per Orang</strong><small>Rincian biaya tiap pegawai</small></span>
+                <span class="action-arrow"><svg class="ico"><use href="#i-arrow-right"></use></svg></span>
+              </button>
+              <button type="button" class="action-card" onclick="showTab('dpr')">
+                <span class="action-ico"><svg class="ico"><use href="#i-wallet"></use></svg></span>
+                <span class="action-body"><strong>DPR Perorangan</strong><small>Daftar pengeluaran riil</small></span>
+                <span class="action-arrow"><svg class="ico"><use href="#i-arrow-right"></use></svg></span>
+              </button>
+              <button type="button" class="action-card" onclick="showTab('sppd-perorangan')">
+                <span class="action-ico"><svg class="ico"><use href="#i-file"></use></svg></span>
+                <span class="action-body"><strong>SPPD Perorangan</strong><small>Surat perjalanan dinas</small></span>
+                <span class="action-arrow"><svg class="ico"><use href="#i-arrow-right"></use></svg></span>
+              </button>
+              <button type="button" class="action-card" onclick="showTab('lembar-kendali')">
+                <span class="action-ico"><svg class="ico"><use href="#i-clipboard"></use></svg></span>
+                <span class="action-body"><strong>Lembar Kendali</strong><small>Checklist kelengkapan berkas</small></span>
+                <span class="action-arrow"><svg class="ico"><use href="#i-arrow-right"></use></svg></span>
+              </button>
+              <button type="button" class="action-card" onclick="showTab('rekap-kuitansi')">
+                <span class="action-ico"><svg class="ico"><use href="#i-receipt"></use></svg></span>
+                <span class="action-body"><strong>Rekap Kuitansi</strong><small>Kuitansi kolektif</small></span>
+                <span class="action-arrow"><svg class="ico"><use href="#i-arrow-right"></use></svg></span>
+              </button>
+              <button type="button" class="action-card" onclick="showTab('nominatif')">
+                <span class="action-ico"><svg class="ico"><use href="#i-file-lines"></use></svg></span>
+                <span class="action-body"><strong>Daftar Nominatif</strong><small>Rekap peserta dan biaya</small></span>
+                <span class="action-arrow"><svg class="ico"><use href="#i-arrow-right"></use></svg></span>
+              </button>
+              <button type="button" class="action-card" onclick="showTab('rekap-rincian')">
+                <span class="action-ico"><svg class="ico"><use href="#i-chart"></use></svg></span>
+                <span class="action-body"><strong>Rekap Rincian</strong><small>Rincian biaya seluruh peserta</small></span>
+                <span class="action-arrow"><svg class="ico"><use href="#i-arrow-right"></use></svg></span>
+              </button>
+              <button type="button" class="action-card" onclick="showTab('rekap-spt')">
+                <span class="action-ico"><svg class="ico"><use href="#i-files"></use></svg></span>
+                <span class="action-body"><strong>Rekap Surat Tugas</strong><small>Daftar SPT dan SPD</small></span>
+                <span class="action-arrow"><svg class="ico"><use href="#i-arrow-right"></use></svg></span>
+              </button>
+              <button type="button" class="action-card action-danger" onclick="clearAll()">
+                <span class="action-ico"><svg class="ico"><use href="#i-trash"></use></svg></span>
+                <span class="action-body"><strong>Reset Pilihan</strong><small>Kosongkan pegawai terpilih</small></span>
+                <span class="action-arrow"><svg class="ico"><use href="#i-arrow-right"></use></svg></span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
-  </div>
-  <div id="rekapKuitansiOut"></div>
-</div>
 
-<!-- ============================================================ TAB KUITANSI PERORANGAN -->
-<div id="tab-kuitansi-perorangan" class="tab-content">
-  <div class="btn-row no-print" style="margin-bottom:16px">
-    <button class="btn btn-primary" onclick="renderKuitansiPerorangan()">🔄 Refresh</button>
-    <button class="btn btn-success" onclick="printKuitansiPerorangan()">🖨️ Print Kuitansi</button>
-    <button class="btn btn-secondary" onclick="showTab('input')">← Kembali Input</button>
-  </div>
-  <div class="card no-print">
-    <div class="card-title">🧾 Pilih Pegawai untuk Kuitansi</div>
-    <div class="form-group">
-      <label>Pegawai</label>
-      <select id="kuitansiPeroranganPegawai" onchange="onKuitansiPeroranganEmployeeChange()">
-        <option value="">-- Pilih Pegawai --</option>
-      </select>
+    <!-- ============================================================ TAB NOMINATIF -->
+    <div id="tab-nominatif" class="tab-content">
+      <div class="btn-row no-print">
+        <button class="btn btn-primary" onclick="renderNominatif()"><svg class="ico"><use href="#i-refresh"></use></svg>Refresh</button>
+        <button class="btn btn-success" onclick="printNominatif()"><svg class="ico"><use href="#i-print"></use></svg>Cetak Nominatif</button>
+        <button class="btn btn-secondary" onclick="showTab('input')"><svg class="ico"><use href="#i-arrow-left"></use></svg>Kembali</button>
+      </div>
+      <div id="nominatifOut"></div>
     </div>
-    <div class="form-group">
-      <label>No. SPD Perorangan</label>
-      <input type="text" id="kuitansiPeroranganNoSPD" placeholder="Contoh: 001/SPD/Birkom/10/2026" oninput="saveKuitansiPeroranganSPD()">
+
+    <!-- ============================================================ TAB REKAP KUITANSI -->
+    <div id="tab-rekap-kuitansi" class="tab-content">
+      <div class="btn-row no-print">
+        <button class="btn btn-primary" onclick="renderRekapKuitansi()"><svg class="ico"><use href="#i-refresh"></use></svg>Refresh</button>
+        <button class="btn btn-success" onclick="printRekapKuitansi()"><svg class="ico"><use href="#i-print"></use></svg>Cetak Kuitansi</button>
+        <button class="btn btn-secondary" onclick="showTab('input')"><svg class="ico"><use href="#i-arrow-left"></use></svg>Kembali</button>
+      </div>
+      <div class="card no-print">
+        <div class="card-head">
+          <span class="card-ico"><svg class="ico"><use href="#i-receipt"></use></svg></span>
+          <div class="card-heading">
+            <h2 class="card-title">Periode Kuitansi</h2>
+            <p class="card-sub">Nama bulan yang tercetak pada bukti</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="bulanKuitansi">Bulan Kuitansi</label>
+              <select id="bulanKuitansi" onchange="renderRekapKuitansi()">
+                <option value="">-- Pilih Bulan --</option>
+                <option>Januari</option>
+                <option>Februari</option>
+                <option>Maret</option>
+                <option>April</option>
+                <option>Mei</option>
+                <option>Juni</option>
+                <option>Juli</option>
+                <option>Agustus</option>
+                <option>September</option>
+                <option>Oktober</option>
+                <option>November</option>
+                <option>Desember</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="rekapKuitansiOut"></div>
     </div>
-  </div>
-  <div id="kuitansiPeroranganOut"></div>
-</div>
 
-<!-- ============================================================ TAB SPPD PERORANGAN -->
-<div id="tab-sppd-perorangan" class="tab-content">
-  <div class="btn-row no-print" style="margin-bottom:16px">
-    <button class="btn btn-primary" onclick="renderSPPDPerorangan()">🔄 Refresh</button>
-    <button class="btn btn-success" onclick="printSPPDPerorangan()">🖨️ Print SPPD</button>
-    <button class="btn btn-secondary" onclick="showTab('input')">← Kembali Input</button>
-  </div>
-  <div class="card no-print">
-    <div class="card-title">📄 Pilih Pegawai untuk SPPD</div>
-    <div class="form-grid">
-      <div class="form-group">
-        <label>Pegawai</label>
-        <select id="sppdPegawai" onchange="onSPPDEmployeeChange()">
-          <option value="">-- Pilih Pegawai --</option>
-        </select>
+    <!-- ============================================================ TAB KUITANSI PERORANGAN -->
+    <div id="tab-kuitansi-perorangan" class="tab-content">
+      <div class="btn-row no-print">
+        <button class="btn btn-primary" onclick="renderKuitansiPerorangan()"><svg class="ico"><use href="#i-refresh"></use></svg>Refresh</button>
+        <button class="btn btn-success" onclick="printKuitansiPerorangan()"><svg class="ico"><use href="#i-print"></use></svg>Cetak Kuitansi</button>
+        <button class="btn btn-secondary" onclick="showTab('input')"><svg class="ico"><use href="#i-arrow-left"></use></svg>Kembali</button>
       </div>
-      <div class="form-group">
-        <label>No. SPD Perorangan</label>
-        <input type="text" id="sppdNoSPD" placeholder="Contoh: 001/SPD/Birkom/10/2026" oninput="saveSPPDNo()">
+      <div class="card no-print">
+        <div class="card-head">
+          <span class="card-ico"><svg class="ico"><use href="#i-user"></use></svg></span>
+          <div class="card-heading">
+            <h2 class="card-title">Pilih Pegawai untuk Kuitansi</h2>
+            <p class="card-sub">Satu kuitansi untuk satu pegawai</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="kuitansiPeroranganPegawai">Pegawai</label>
+              <select id="kuitansiPeroranganPegawai" onchange="onKuitansiPeroranganEmployeeChange()">
+                <option value="">-- Pilih Pegawai --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="kuitansiPeroranganNoSPD">No. SPD Perorangan</label>
+              <input type="text" id="kuitansiPeroranganNoSPD" placeholder="Contoh: 001/SPD/Birkom/10/2026" oninput="saveKuitansiPeroranganSPD()">
+            </div>
+          </div>
+        </div>
       </div>
+      <div id="kuitansiPeroranganOut"></div>
     </div>
-  </div>
-  <div id="sppdOut"></div>
-</div>
 
-<!-- ============================================================ TAB LEMBAR KENDALI -->
-<div id="tab-lembar-kendali" class="tab-content">
-  <div class="btn-row no-print" style="margin-bottom:16px">
-    <button class="btn btn-primary" onclick="renderLembarKendali()">🔄 Refresh</button>
-    <button class="btn btn-success" onclick="printLembarKendali()">🖨️ Print Lembar Kendali</button>
-    <button class="btn btn-secondary" onclick="showTab('input')">← Kembali Input</button>
-  </div>
-  <div class="card no-print">
-    <div class="card-title">📋 Data Berkas Kendali</div>
-    <div class="form-grid">
-      <div class="form-group">
-        <label>Tanggal Masuk Berkas</label>
-        <input type="date" id="lk_tanggalMasuk" oninput="renderLembarKendali()">
+    <!-- ============================================================ TAB SPPD PERORANGAN -->
+    <div id="tab-sppd-perorangan" class="tab-content">
+      <div class="btn-row no-print">
+        <button class="btn btn-primary" onclick="renderSPPDPerorangan()"><svg class="ico"><use href="#i-refresh"></use></svg>Refresh</button>
+        <button class="btn btn-success" onclick="printSPPDPerorangan()"><svg class="ico"><use href="#i-print"></use></svg>Cetak SPPD</button>
+        <button class="btn btn-secondary" onclick="showTab('input')"><svg class="ico"><use href="#i-arrow-left"></use></svg>Kembali</button>
       </div>
-      <div class="form-group">
-        <label>Pelaksana Pertanggungjawaban</label>
-        <input type="text" id="lk_pelaksana" placeholder="Nama pelaksana" oninput="renderLembarKendali()">
+      <div class="card no-print">
+        <div class="card-head">
+          <span class="card-ico"><svg class="ico"><use href="#i-file"></use></svg></span>
+          <div class="card-heading">
+            <h2 class="card-title">Pilih Pegawai untuk SPPD</h2>
+            <p class="card-sub">Dokumen SPPD dicetak per pegawai</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="sppdPegawai">Pegawai</label>
+              <select id="sppdPegawai" onchange="onSPPDEmployeeChange()">
+                <option value="">-- Pilih Pegawai --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="sppdNoSPD">No. SPD Perorangan</label>
+              <input type="text" id="sppdNoSPD" placeholder="Contoh: 001/SPD/Birkom/10/2026" oninput="saveSPPDNo()">
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="form-group">
-        <label>Nomor SPM</label>
-        <input type="text" id="lk_nomorSPM" oninput="renderLembarKendali()">
-      </div>
-      <div class="form-group">
-        <label>Nomor SPD</label>
-        <input type="text" id="lk_nomorSPD" oninput="renderLembarKendali()">
-      </div>
-      <div class="form-group">
-        <label>Jenis Perjalanan Dinas</label>
-        <select id="lk_jenisPerjalanan" onchange="renderLembarKendali()">
-          <option value="Luar Kota">Luar Kota</option>
-          <option value="Dalam Kota">Dalam Kota</option>
-        </select>
-      </div>
+      <div id="sppdOut"></div>
     </div>
-  </div>
-  <div id="lembarKendaliOut"></div>
-</div>
 
-<!-- ============================================================ TAB REKAP RINCIAN -->
-<div id="tab-rekap-rincian" class="tab-content">
-  <div class="btn-row no-print" style="margin-bottom:16px">
-    <button class="btn btn-primary" onclick="renderRekapRincian()">🔄 Refresh</button>
-    <button class="btn btn-success" onclick="printRekapRincian()">🖨️ Print Rekap Rincian</button>
-    <button class="btn btn-secondary" onclick="showTab('input')">← Kembali Input</button>
-  </div>
-  <div id="rekapRincianOut"></div>
-</div>
-
-<!-- ============================================================ TAB REKAP SPT -->
-<div id="tab-rekap-spt" class="tab-content">
-  <div class="btn-row no-print" style="margin-bottom:16px">
-    <button class="btn btn-primary" onclick="renderRekapSPT()">🔄 Refresh</button>
-    <button class="btn btn-success" onclick="printRekapSPT()">🖨️ Print Rekap SPT</button>
-    <button class="btn btn-secondary" onclick="showTab('input')">← Kembali Input</button>
-  </div>
-  <div id="rekapSPTOut"></div>
-</div>
-
-<!-- ============================================================ TAB RINCIAN -->
-<div id="tab-rincian" class="tab-content">
-  <div class="card no-print">
-    <div class="card-title">🧾 Pilih Pegawai untuk Rincian</div>
-    <div class="form-grid">
-      <div class="form-group">
-        <label>Pegawai</label>
-        <select id="rincianPegawai" onchange="onRincianEmployeeChange()">
-          <option value="">-- Pilih Pegawai --</option>
-        </select>
+    <!-- ============================================================ TAB LEMBAR KENDALI -->
+    <div id="tab-lembar-kendali" class="tab-content">
+      <div class="btn-row no-print">
+        <button class="btn btn-primary" onclick="renderLembarKendali()"><svg class="ico"><use href="#i-refresh"></use></svg>Refresh</button>
+        <button class="btn btn-success" onclick="printLembarKendali()"><svg class="ico"><use href="#i-print"></use></svg>Cetak Lembar Kendali</button>
+        <button class="btn btn-secondary" onclick="showTab('input')"><svg class="ico"><use href="#i-arrow-left"></use></svg>Kembali</button>
       </div>
-      <div class="form-group">
-        <label>No. SPD Perorangan</label>
-        <input type="text" id="rincianNoSPD" placeholder="Nomor SPD pegawai terpilih" oninput="saveRincianSPD()">
+      <div class="card no-print">
+        <div class="card-head">
+          <span class="card-ico"><svg class="ico"><use href="#i-clipboard"></use></svg></span>
+          <div class="card-heading">
+            <h2 class="card-title">Data Berkas Kendali</h2>
+            <p class="card-sub">Kelengkapan administrasi pertanggungjawaban</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="lk_tanggalMasuk">Tanggal Masuk Berkas</label>
+              <input type="date" id="lk_tanggalMasuk" oninput="renderLembarKendali()">
+            </div>
+            <div class="form-group">
+              <label for="lk_pelaksana">Pelaksana Pertanggungjawaban</label>
+              <input type="text" id="lk_pelaksana" placeholder="Nama pelaksana" oninput="renderLembarKendali()">
+            </div>
+            <div class="form-group">
+              <label for="lk_nomorSPM">Nomor SPM</label>
+              <input type="text" id="lk_nomorSPM" oninput="renderLembarKendali()">
+            </div>
+            <div class="form-group">
+              <label for="lk_nomorSPD">Nomor SPD</label>
+              <input type="text" id="lk_nomorSPD" oninput="renderLembarKendali()">
+            </div>
+            <div class="form-group">
+              <label for="lk_jenisPerjalanan">Jenis Perjalanan Dinas</label>
+              <select id="lk_jenisPerjalanan" onchange="renderLembarKendali()">
+                <option value="Luar Kota">Luar Kota</option>
+                <option value="Dalam Kota">Dalam Kota</option>
+              </select>
+            </div>
+          </div>
+        </div>
       </div>
+      <div id="lembarKendaliOut"></div>
     </div>
-  </div>
-  <div id="rincianOut"></div>
-</div>
 
-<!-- ============================================================ TAB DPR PERORANGAN -->
-<div id="tab-dpr" class="tab-content">
-  <div class="btn-row no-print" style="margin-bottom:16px">
-    <button class="btn btn-primary" onclick="renderDPR()">🔄 Refresh</button>
-    <button class="btn btn-success" onclick="printDPR()">🖨️ Print DPR</button>
-    <button class="btn btn-secondary" onclick="showTab('input')">← Kembali Input</button>
-  </div>
-  <div class="card no-print">
-    <div class="card-title">🧾 Pilih Pegawai untuk Daftar Pengeluaran Riil</div>
-    <div class="form-grid">
-      <div class="form-group">
-        <label>Pegawai</label>
-        <select id="dprPegawai" onchange="onDPREmployeeChange()">
-          <option value="">-- Pilih Pegawai --</option>
-        </select>
+    <!-- ============================================================ TAB REKAP RINCIAN -->
+    <div id="tab-rekap-rincian" class="tab-content">
+      <div class="btn-row no-print">
+        <button class="btn btn-primary" onclick="renderRekapRincian()"><svg class="ico"><use href="#i-refresh"></use></svg>Refresh</button>
+        <button class="btn btn-success" onclick="printRekapRincian()"><svg class="ico"><use href="#i-print"></use></svg>Cetak Rekap Rincian</button>
+        <button class="btn btn-secondary" onclick="showTab('input')"><svg class="ico"><use href="#i-arrow-left"></use></svg>Kembali</button>
       </div>
-      <div class="form-group">
-        <label>No. SPD Perorangan</label>
-        <input type="text" id="dprNoSPD" placeholder="Nomor SPD pegawai terpilih" oninput="saveDPRNoSPD()">
-      </div>
+      <div id="rekapRincianOut"></div>
     </div>
-  </div>
-  <div id="dprOut"></div>
-</div>
 
-<!-- ============================================================ TAB PENGATURAN -->
-<div id="tab-pengaturan" class="tab-content">
-  <div class="card">
-    <div class="card-title">⚙️ Pengaturan Instansi & Pejabat</div>
-    <div class="form-grid">
-      <div class="form-group full">
-        <label>Nama Satker</label>
-        <input type="text" id="cfg_satker" value="Sekretariat Jenderal Kementerian Perumahan dan Kawasan Permukiman">
+    <!-- ============================================================ TAB REKAP SPT -->
+    <div id="tab-rekap-spt" class="tab-content">
+      <div class="btn-row no-print">
+        <button class="btn btn-primary" onclick="renderRekapSPT()"><svg class="ico"><use href="#i-refresh"></use></svg>Refresh</button>
+        <button class="btn btn-success" onclick="printRekapSPT()"><svg class="ico"><use href="#i-print"></use></svg>Cetak Rekap SPT</button>
+        <button class="btn btn-secondary" onclick="showTab('input')"><svg class="ico"><use href="#i-arrow-left"></use></svg>Kembali</button>
       </div>
-      <div class="form-group full">
-        <label>Alamat Satker</label>
-        <input type="text" id="cfg_alamatSatker" value="Raden Patah No. 1 RT. 002 RW. 001 Kebayoran Baru, Jakarta Selatan - DKI Jakarta">
-      </div>
-      <div class="form-group">
-        <label>Kode Satker</label>
-        <input type="text" id="cfg_kodeSatker" value="694307">
-      </div>
-      <div class="form-group">
-        <label>Bank dan No. Rekening</label>
-        <input type="text" id="cfg_bank" value="Bank Mandiri KCP PU no.rek 8100126943071000">
-      </div>
-      <div class="form-group">
-        <label>Nomor Bukti Kuitansi</label>
-        <input type="text" id="cfg_noBuktiKuitansi" value="/KW/Bend/Satker-SJ/2026">
-      </div>
-      <div class="form-group full">
-        <label>Alamat Kop Kuitansi</label>
-        <input type="text" id="cfg_alamatKuitansi" value="Raden Patah No. 1 RT. 002 RW. 001 Kebayoran Baru, Jakarta Selatan - DKI Jakarta">
-      </div>
-      <div class="form-group full">
-        <label>Kegiatan</label>
-        <input type="text" id="cfg_kegiatan" value="Penyelenggaraan Kegiatan Protokoler Kementerian">
-      </div>
-      <div class="form-group">
-        <label>Nama Pejabat Pembuat Komitmen (PPK)</label>
-        <input type="text" id="cfg_ppkNama" value="Rangi Liwitiara, S.T., M.T.">
-      </div>
-      <div class="form-group">
-        <label>NIP PPK</label>
-        <input type="text" id="cfg_ppkNip" value="NIP. 198404132010012021">
-      </div>
-      <div class="form-group">
-        <label>Jabatan PPK</label>
-        <input type="text" id="cfg_ppkJabatan" value="Pejabat Pembuat Komitmen Sekretariat Jenderal Kementerian PKP">
-      </div>
-      <div class="form-group">
-        <label>Nama Bendahara Pengeluaran</label>
-        <input type="text" id="cfg_bendNama" value="Rahmat H">
-      </div>
-      <div class="form-group">
-        <label>NIP Bendahara</label>
-        <input type="text" id="cfg_bendNip" value="NIP. 198004022014081001">
-      </div>
-      <div class="form-group">
-        <label>Nama Pejabat Pembuat SPM (PP-SPM)</label>
-        <input type="text" id="cfg_ppspmNama">
-      </div>
-      <div class="form-group">
-        <label>NIP PP-SPM</label>
-        <input type="text" id="cfg_ppspmNip">
-      </div>
-      <div class="form-group">
-        <label>Nama Verifikator PPK</label>
-        <input type="text" id="cfg_verifikatorNama">
-      </div>
-      <div class="form-group">
-        <label>NIP Verifikator PPK</label>
-        <input type="text" id="cfg_verifikatorNip">
-      </div>
-      <div class="form-group">
-        <label>Kota Asal</label>
-        <input type="text" id="cfg_kotaAsal" value="Jakarta">
-      </div>
+      <div id="rekapSPTOut"></div>
     </div>
-  </div>
+
+    <!-- ============================================================ TAB RINCIAN -->
+    <div id="tab-rincian" class="tab-content">
+      <div class="card no-print">
+        <div class="card-head">
+          <span class="card-ico"><svg class="ico"><use href="#i-list"></use></svg></span>
+          <div class="card-heading">
+            <h2 class="card-title">Pilih Pegawai untuk Rincian</h2>
+            <p class="card-sub">Rincian biaya per orang</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="rincianPegawai">Pegawai</label>
+              <select id="rincianPegawai" onchange="onRincianEmployeeChange()">
+                <option value="">-- Pilih Pegawai --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="rincianNoSPD">No. SPD Perorangan</label>
+              <input type="text" id="rincianNoSPD" placeholder="Nomor SPD pegawai terpilih" oninput="saveRincianSPD()">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="rincianOut"></div>
+    </div>
+
+    <!-- ============================================================ TAB DPR PERORANGAN -->
+    <div id="tab-dpr" class="tab-content">
+      <div class="btn-row no-print">
+        <button class="btn btn-primary" onclick="renderDPR()"><svg class="ico"><use href="#i-refresh"></use></svg>Refresh</button>
+        <button class="btn btn-success" onclick="printDPR()"><svg class="ico"><use href="#i-print"></use></svg>Cetak DPR</button>
+        <button class="btn btn-secondary" onclick="showTab('input')"><svg class="ico"><use href="#i-arrow-left"></use></svg>Kembali</button>
+      </div>
+      <div class="card no-print">
+        <div class="card-head">
+          <span class="card-ico"><svg class="ico"><use href="#i-wallet"></use></svg></span>
+          <div class="card-heading">
+            <h2 class="card-title">Pilih Pegawai untuk DPR</h2>
+            <p class="card-sub">Daftar pengeluaran riil per orang</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="dprPegawai">Pegawai</label>
+              <select id="dprPegawai" onchange="onDPREmployeeChange()">
+                <option value="">-- Pilih Pegawai --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="dprNoSPD">No. SPD Perorangan</label>
+              <input type="text" id="dprNoSPD" placeholder="Nomor SPD pegawai terpilih" oninput="saveDPRNoSPD()">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="dprOut"></div>
+    </div>
+
+    <!-- ============================================================ TAB PENGATURAN -->
+    <div id="tab-pengaturan" class="tab-content">
+      <section class="card">
+        <div class="card-head">
+          <span class="card-ico"><svg class="ico"><use href="#i-sliders"></use></svg></span>
+          <div class="card-heading">
+            <h2 class="card-title">Identitas Satker</h2>
+            <p class="card-sub">Dipakai pada kop kuitansi dan dokumen resmi</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-group full">
+              <label for="cfg_satker">Nama Satker</label>
+              <input type="text" id="cfg_satker" value="Sekretariat Jenderal Kementerian Perumahan dan Kawasan Permukiman">
+            </div>
+            <div class="form-group full">
+              <label for="cfg_alamatSatker">Alamat Satker</label>
+              <input type="text" id="cfg_alamatSatker" value="Raden Patah No. 1 RT. 002 RW. 001 Kebayoran Baru, Jakarta Selatan - DKI Jakarta">
+            </div>
+            <div class="form-group">
+              <label for="cfg_kodeSatker">Kode Satker</label>
+              <input type="text" id="cfg_kodeSatker" value="694307">
+            </div>
+            <div class="form-group">
+              <label for="cfg_bank">Bank dan No. Rekening</label>
+              <input type="text" id="cfg_bank" value="Bank Mandiri KCP PU no.rek 8100126943071000">
+            </div>
+            <div class="form-group">
+              <label for="cfg_noBuktiKuitansi">Nomor Bukti Kuitansi</label>
+              <input type="text" id="cfg_noBuktiKuitansi" value="/KW/Bend/Satker-SJ/2026">
+            </div>
+            <div class="form-group">
+              <label for="cfg_kotaAsal">Kota Asal</label>
+              <input type="text" id="cfg_kotaAsal" value="Jakarta">
+            </div>
+            <div class="form-group full">
+              <label for="cfg_alamatKuitansi">Alamat Kop Kuitansi</label>
+              <input type="text" id="cfg_alamatKuitansi" value="Raden Patah No. 1 RT. 002 RW. 001 Kebayoran Baru, Jakarta Selatan - DKI Jakarta">
+            </div>
+            <div class="form-group full">
+              <label for="cfg_kegiatan">Kegiatan</label>
+              <input type="text" id="cfg_kegiatan" value="Penyelenggaraan Kegiatan Protokoler Kementerian">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <span class="card-ico"><svg class="ico"><use href="#i-user"></use></svg></span>
+          <div class="card-heading">
+            <h2 class="card-title">Pejabat &amp; Tanda Tangan</h2>
+            <p class="card-sub">Nama dan NIP yang tercetak pada bagian tanda tangan</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-section full">Pejabat Pembuat Komitmen (PPK)</div>
+            <div class="form-group">
+              <label for="cfg_ppkNama">Nama PPK</label>
+              <input type="text" id="cfg_ppkNama" value="Rangi Liwitiara, S.T., M.T.">
+            </div>
+            <div class="form-group">
+              <label for="cfg_ppkNip">NIP PPK</label>
+              <input type="text" id="cfg_ppkNip" value="NIP. 198404132010012021">
+            </div>
+            <div class="form-group full">
+              <label for="cfg_ppkJabatan">Jabatan PPK</label>
+              <input type="text" id="cfg_ppkJabatan" value="Pejabat Pembuat Komitmen Sekretariat Jenderal Kementerian PKP">
+            </div>
+
+            <div class="form-section full">Bendahara Pengeluaran</div>
+            <div class="form-group">
+              <label for="cfg_bendNama">Nama Bendahara Pengeluaran</label>
+              <input type="text" id="cfg_bendNama" value="Rahmat H">
+            </div>
+            <div class="form-group">
+              <label for="cfg_bendNip">NIP Bendahara</label>
+              <input type="text" id="cfg_bendNip" value="NIP. 198004022014081001">
+            </div>
+
+            <div class="form-section full">Pejabat Pembuat SPM</div>
+            <div class="form-group">
+              <label for="cfg_ppspmNama">Nama Pejabat Pembuat SPM (PP-SPM)</label>
+              <input type="text" id="cfg_ppspmNama">
+            </div>
+            <div class="form-group">
+              <label for="cfg_ppspmNip">NIP PP-SPM</label>
+              <input type="text" id="cfg_ppspmNip">
+            </div>
+
+            <div class="form-section full">Verifikator</div>
+            <div class="form-group">
+              <label for="cfg_verifikatorNama">Nama Verifikator PPK</label>
+              <input type="text" id="cfg_verifikatorNama">
+            </div>
+            <div class="form-group">
+              <label for="cfg_verifikatorNip">NIP Verifikator PPK</label>
+              <input type="text" id="cfg_verifikatorNip">
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  </main>
 </div>
 
 <script src="script.js"></script>
