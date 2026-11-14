@@ -563,8 +563,6 @@
     .rincian-tbl .rincian-subtbl td:first-child{border-right:1px solid #111}
     .rincian-tbl .rincian-subtbl td:nth-child(2){border-right:1px solid #111}
     .rincian-tbl .rincian-subtbl td:last-child{overflow-wrap:anywhere}
-    .rincian-tbl tbody > tr.rincian-ket-row:has(+ tr.rincian-total-row) td:last-child{border-bottom:0}
-    .rincian-tbl tbody > tr.rincian-total-row td:last-child{border-top:0}
     .rincian-total-row td{background:#fff}
     .rincian-terbilang{font-size:12px;font-style:italic;margin:4px 0 16px;padding:6px 10px;border:1px solid #111}
     .rincian-payment-row{display:flex;justify-content:space-between;margin-top:20px;font-size:12px;gap:20px}

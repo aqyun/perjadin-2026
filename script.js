@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
   sbmData.forEach(s => {
     const opt = document.createElement('option');
     opt.value = s.id;
-    opt.textContent = `${s.provinsi} (${s.ibukota})`;
+    opt.textContent = formatProvinsi(s.provinsi);
     sel.appendChild(opt);
   });
   renderEmployeeList();
@@ -166,15 +166,15 @@ document.addEventListener('DOMContentLoaded', () => {
 // =====================================================================
 const tabMeta = {
   input: ['Input Perjalanan', 'Formulir'],
-  nominatif: ['Daftar Nominatif', 'Dokumen'],
-  'rekap-kuitansi': ['Rekap Kuitansi', 'Dokumen'],
+  nominatif: ['Daftar Nominatif', 'Rekapitulasi'],
+  'rekap-kuitansi': ['Rekap Kuitansi', 'Rekapitulasi'],
   'kuitansi-perorangan': ['Kuitansi Perorangan', 'Dokumen'],
   'sppd-perorangan': ['SPPD Perorangan', 'Dokumen'],
-  'lembar-kendali': ['Lembar Kendali', 'Dokumen'],
+  'lembar-kendali': ['Lembar Kendali', 'Rekapitulasi'],
   'rekap-rincian': ['Rekap Rincian', 'Rekapitulasi'],
   'rekap-spt': ['Rekap Surat Tugas', 'Rekapitulasi'],
-  rincian: ['Rincian per Orang', 'Rekapitulasi'],
-  dpr: ['DPR Perorangan', 'Rekapitulasi'],
+  rincian: ['Rincian per Orang', 'Dokumen'],
+  dpr: ['DPR Perorangan', 'Dokumen'],
   pengaturan: ['Pengaturan', 'Sistem']
 };
 
@@ -368,6 +368,25 @@ function clearAll() {
 function getSBM() {
   const id = parseInt(document.getElementById('provinsiTujuan').value);
   return sbmData.find(s => s.id === id) || null;
+}
+
+const PROVINSI_AKRONIM = new Set(['DKI', 'D.I.']);
+
+function formatProvinsi(nama) {
+  return String(nama || '')
+    .split(/\s+/)
+    .map(word => PROVINSI_AKRONIM.has(word) ? word : word.charAt(0) + word.slice(1).toLowerCase())
+    .join(' ');
+}
+
+function kotaDenganProvinsi(kota) {
+  const text = String(kota || '').trim();
+  const sbm = getSBM();
+  if (!text || !sbm) return text;
+  const provinsi = formatProvinsi(sbm.provinsi);
+  const lower = text.toLowerCase();
+  if (lower.includes(sbm.provinsi.toLowerCase()) || lower.includes(provinsi.toLowerCase())) return text;
+  return `${text}, ${provinsi}`;
 }
 
 function changeProvince() {
@@ -984,7 +1003,8 @@ function renderRekapKuitansi() {
   const bendNip = document.getElementById('cfg_bendNip').value;
   const monthYear = `${month} ${year}`;
   const makLengkap = `${kodeKegiatan}.${kodeSubKegiatan}.${mak}`;
-  const paymentText = [agenda || `Perjalanan dinas ke ${document.getElementById('kotaTujuan').value || '-'}`, kegiatan ? `Output ${kegiatan}` : '']
+  const kotaTeks = document.getElementById('kotaTujuan').value.trim();
+  const paymentText = [agenda || `Perjalanan dinas ke ${kotaTeks ? kotaDenganProvinsi(kotaTeks) : '-'}`, kegiatan ? `Output ${kegiatan}` : '']
     .filter(Boolean)
     .join(', ');
 
@@ -1103,7 +1123,8 @@ function renderKuitansiPerorangan() {
   const satker = document.getElementById('cfg_satker').value;
   const alamat = document.getElementById('cfg_alamatKuitansi').value;
   const kotaAsal = document.getElementById('cfg_kotaAsal').value;
-  const tujuan = document.getElementById('kotaTujuan').value || (getSBM()?.ibukota || '-');
+  const kotaTeks = document.getElementById('kotaTujuan').value.trim();
+  const tujuan = kotaTeks ? kotaDenganProvinsi(kotaTeks) : (getSBM()?.ibukota || '-');
   const paymentText = `Biaya Perjalanan Dinas atas nama ${emp.nama}`;
   const mak = `${document.getElementById('kodeKegiatan').value} ${document.getElementById('kodeSubKegiatan').value} ${document.getElementById('mak').value}`;
   const noSPD = spdPerEmployee[emp.id] || document.getElementById('noSPD').value.trim() || '-';
@@ -1249,7 +1270,8 @@ function renderSPPDPerorangan() {
   const kodeSubKegiatan = document.getElementById('kodeSubKegiatan').value;
   const mak = document.getElementById('mak').value;
   const agenda = document.getElementById('agenda').value.trim() || '-';
-  const tujuan = document.getElementById('kotaTujuan').value.trim() || (sbm ? `${sbm.ibukota}, ${sbm.provinsi}` : '-');
+  const kotaTeks = document.getElementById('kotaTujuan').value.trim();
+  const tujuan = kotaTeks ? kotaDenganProvinsi(kotaTeks) : (sbm ? `${sbm.ibukota}, ${formatProvinsi(sbm.provinsi)}` : '-');
   const noSPD = spdPerEmployee[emp.id] || document.getElementById('noSPD').value.trim() || '-';
   const tanggalSPD = formatTgl(document.getElementById('tglSPD').value);
   const tripDays = expandTripDays(empSegments);
@@ -1375,7 +1397,8 @@ function renderLembarKendali() {
   const verifNama = document.getElementById('cfg_verifikatorNama').value.trim();
   const verifNipRaw = document.getElementById('cfg_verifikatorNip').value.trim().replace(/^NIP\.?\s*/i, '');
   const jenisPerjalanan = document.getElementById('lk_jenisPerjalanan').value;
-  const tujuan = document.getElementById('kotaTujuan').value || (sbm ? `${sbm.ibukota}, ${sbm.provinsi}` : '-');
+  const kotaTeks = document.getElementById('kotaTujuan').value.trim();
+  const tujuan = kotaTeks ? kotaDenganProvinsi(kotaTeks) : (sbm ? `${sbm.ibukota}, ${formatProvinsi(sbm.provinsi)}` : '-');
   const tujuanPerjalanan = document.getElementById('agenda').value.trim() || tujuan;
   const akunKegiatan = `${document.getElementById('kodeKegiatan').value}.${document.getElementById('kodeSubKegiatan').value}.${document.getElementById('mak').value}`;
   const checklistItems = [
@@ -1526,7 +1549,8 @@ function renderRekapRincian() {
   const mak = document.getElementById('mak').value;
   const kegiatan = document.getElementById('cfg_kegiatan').value;
   const bank = document.getElementById('cfg_bank').value;
-  const tujuan = document.getElementById('kotaTujuan').value || (sbm ? `${sbm.ibukota}, ${sbm.provinsi}` : '-');
+  const kotaTeks = document.getElementById('kotaTujuan').value.trim();
+  const tujuan = kotaTeks ? kotaDenganProvinsi(kotaTeks) : (sbm ? `${sbm.ibukota}, ${formatProvinsi(sbm.provinsi)}` : '-');
   const tanggalBerangkat = document.getElementById('tglBerangkat').value;
   const tanggalKembali = document.getElementById('tglKembali').value;
   const cbUH = document.getElementById('cbUH').checked;
@@ -1689,8 +1713,9 @@ function renderRekapSPT() {
   const kodeSubKegiatan = document.getElementById('kodeSubKegiatan').value;
   const mak = document.getElementById('mak').value;
   const kegiatan = document.getElementById('cfg_kegiatan').value;
-  const kotaTujuan = document.getElementById('kotaTujuan').value ||
-    (sbm ? `${sbm.ibukota}, ${sbm.provinsi}` : '-');
+  const kotaTeks = document.getElementById('kotaTujuan').value.trim();
+  const kotaTujuan = kotaTeks ? kotaDenganProvinsi(kotaTeks) :
+    (sbm ? `${sbm.ibukota}, ${formatProvinsi(sbm.provinsi)}` : '-');
   const tanggalSPT = formatTgl(document.getElementById('tglST').value);
   const nomorSPT = document.getElementById('noST').value || '-';
   const ppkNama = document.getElementById('cfg_ppkNama').value;
@@ -1765,7 +1790,8 @@ function renderNominatif() {
   const sbm = getSBM();
   const tglBrkt = document.getElementById('tglBerangkat').value;
   const tglKmb = document.getElementById('tglKembali').value;
-  const kotaTujuan = document.getElementById('kotaTujuan').value || (sbm ? sbm.ibukota + ', ' + sbm.provinsi : '-');
+  const kotaTeks = document.getElementById('kotaTujuan').value.trim();
+  const kotaTujuan = kotaTeks ? kotaDenganProvinsi(kotaTeks) : (sbm ? sbm.ibukota + ', ' + formatProvinsi(sbm.provinsi) : '-');
   const satker = document.getElementById('cfg_satker').value;
   const kodeSatker = document.getElementById('cfg_kodeSatker').value;
   const kodeKeg = document.getElementById('kodeKegiatan').value;
@@ -1926,6 +1952,34 @@ function saveRincianSPD() {
   renderRincian();
 }
 
+function mergeRincianKeterangan(rowsHtml) {
+  const tbody = document.createElement('tbody');
+  tbody.innerHTML = rowsHtml;
+  const rows = [...tbody.children];
+  let blankStart = null;
+  rows.forEach((tr, index) => {
+    const ket = tr.querySelector('td.rincian-ket-cell');
+    if (!ket) {
+      blankStart = null;
+      return;
+    }
+    if (!ket.textContent.trim()) {
+      if (blankStart === null) blankStart = index;
+      return;
+    }
+    if (blankStart !== null && tr.dataset.mergeKetUp === 'true') {
+      const target = rows[blankStart].querySelector('td.rincian-ket-cell');
+      target.innerHTML = ket.innerHTML;
+      target.rowSpan = index - blankStart + 1;
+      for (let i = blankStart + 1; i <= index; i++) {
+        rows[i].querySelector('td.rincian-ket-cell')?.remove();
+      }
+    }
+    blankStart = null;
+  });
+  return tbody.innerHTML;
+}
+
 function renderRincian() {
   const id = parseInt(document.getElementById('rincianPegawai').value);
   if (!id && id !== 0) { document.getElementById('rincianOut').innerHTML = ''; return; }
@@ -1933,7 +1987,8 @@ function renderRincian() {
   const sbm = getSBM();
   const { days, nights } = getEmpDays(emp.id);
   const b = hitungBiaya(emp);
-  const kotaTujuan = document.getElementById('kotaTujuan').value || (sbm ? sbm.ibukota : '-');
+  const kotaTeks = document.getElementById('kotaTujuan').value.trim();
+  const kotaTujuan = kotaTeks ? kotaDenganProvinsi(kotaTeks) : (sbm ? sbm.ibukota : '-');
   const noSPD = spdPerEmployee[emp.id] || document.getElementById('noSPD').value.trim() || '___/SPD/Birkom/___/____';
   const tglSPD = document.getElementById('tglSPD').value;
   const kotaAsal = document.getElementById('cfg_kotaAsal').value;
@@ -1952,27 +2007,27 @@ function renderRincian() {
   let no = 1;
   const uhKeterangan = uhPercent < 1 ? 'Menggunakan Kendaraan Dinas Operasional' : '';
   if (cbUH && b.uhGross > 0) {
-    rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td>Uang Harian ${uhPercent*100}%<br><span style="padding-left:12px">${days} hari &nbsp; X &nbsp; Rp &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ${Number(sbm?sbm.uh:0).toLocaleString('id-ID')}</span></td><td class="tr">${rp(b.uhGross)}</td><td>${uhKeterangan}</td></tr>`;
+    rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td>Uang Harian ${uhPercent*100}%<br><span style="padding-left:12px">${days} hari &nbsp; X &nbsp; Rp &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ${Number(sbm?sbm.uh:0).toLocaleString('id-ID')}</span></td><td class="tr">${rp(b.uhGross)}</td><td class="rincian-ket-cell">${uhKeterangan}</td></tr>`;
   }
   if (b.mealDeduction > 0) {
     const mealCount = Number(document.getElementById('jumlahMakan').value) || 0;
-    rincianRows += `<tr><td class="tc">${no++}</td><td>Pengurangan uang makan<br><span style="font-size:10px;color:#718096">${days} hari × ${mealCount} kali × ${rp(Number(document.getElementById('tarifMakan').value)||0)}</span></td><td class="tr">- ${rp(b.mealDeduction)}</td><td></td></tr>`;
+    rincianRows += `<tr><td class="tc">${no++}</td><td>Pengurangan uang makan<br><span style="font-size:10px;color:#718096">${days} hari × ${mealCount} kali × ${rp(Number(document.getElementById('tarifMakan').value)||0)}</span></td><td class="tr">- ${rp(b.mealDeduction)}</td><td class="rincian-ket-cell"></td></tr>`;
   }
   if (b.snackDeduction > 0) {
     const snackCount = Number(document.getElementById('jumlahSnack').value) || 0;
-    rincianRows += `<tr><td class="tc">${no++}</td><td>Pengurangan snack<br><span style="font-size:10px;color:#718096">${days} hari × ${snackCount} kali × ${rp(Number(document.getElementById('tarifSnack').value)||0)}</span></td><td class="tr">- ${rp(b.snackDeduction)}</td><td></td></tr>`;
+    rincianRows += `<tr><td class="tc">${no++}</td><td>Pengurangan snack<br><span style="font-size:10px;color:#718096">${days} hari × ${snackCount} kali × ${rp(Number(document.getElementById('tarifSnack').value)||0)}</span></td><td class="tr">- ${rp(b.snackDeduction)}</td><td class="rincian-ket-cell"></td></tr>`;
   }
   if (b.representatif > 0) {
     const representatifKet = sbm && sbm.provinsi === 'DKI JAKARTA' ? 'Dalam kota' : 'Luar kota';
-    rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td>Biaya Representatif<br><span style="padding-left:12px">${days} hari &nbsp; X &nbsp; ${rp(b.representatifRate)}</span></td><td class="tr">${rp(b.representatif)}</td><td>${representatifKet}</td></tr>`;
+    rincianRows += `<tr class="rincian-ket-row" data-merge-ket-up="true"><td class="tc">${no++}</td><td>Biaya Representatif<br><span style="padding-left:12px">${days} hari &nbsp; X &nbsp; ${rp(b.representatifRate)}</span></td><td class="tr">${rp(b.representatif)}</td><td class="rincian-ket-cell">${representatifKet}</td></tr>`;
   }
   if (cbHotel && b.hotel > 0) {
     if (b.hotelDetails.length) {
       b.hotelDetails.forEach(item => {
-        rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td>Penginapan/Hotel<br><span style="padding-left:12px">${item.nights} malam &nbsp; X &nbsp; ${rp(item.price)}</span></td><td class="tr">${rp(item.total)}</td><td>${escHtml(item.name)}</td></tr>`;
+        rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td>Penginapan/Hotel<br><span style="padding-left:12px">${item.nights} malam &nbsp; X &nbsp; ${rp(item.price)}</span></td><td class="tr">${rp(item.total)}</td><td class="rincian-ket-cell">${escHtml(item.name)}</td></tr>`;
       });
     } else {
-      rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td>Penginapan/Hotel<br><span style="padding-left:12px">${nights} malam &nbsp; X &nbsp; ${rp(getHotelRate(sbm,emp.gol))}</span></td><td class="tr">${rp(b.hotel)}</td><td></td></tr>`;
+      rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td>Penginapan/Hotel<br><span style="padding-left:12px">${nights} malam &nbsp; X &nbsp; ${rp(getHotelRate(sbm,emp.gol))}</span></td><td class="tr">${rp(b.hotel)}</td><td class="rincian-ket-cell"></td></tr>`;
     }
   }
   const transportCosts = b.customCosts.filter(item => item.isTransport && item.amount > 0);
@@ -2002,16 +2057,16 @@ function renderRincian() {
         </td>
       </tr>`;
     } else {
-      rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td>${dprUraian}</td><td class="tr">${rp(transportTotal)}</td><td></td></tr>`;
+      rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td>${dprUraian}</td><td class="tr">${rp(transportTotal)}</td><td class="rincian-ket-cell"></td></tr>`;
     }
   }
   if (cbTiket && b.tiket > 0) {
     const ticketRoute = [kotaAsal, kotaTujuan].filter(Boolean).join(' - ');
-    rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td>Tiket Pesawat PP</td><td class="tr">${rp(b.tiket)}</td><td>${ticketRoute}</td></tr>`;
+    rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td>Tiket Pesawat PP</td><td class="tr">${rp(b.tiket)}</td><td class="rincian-ket-cell">${ticketRoute}</td></tr>`;
   }
   otherCosts.forEach(item => {
     const route = [item.pickup, item.dropoff].filter(Boolean).join(' - ');
-    rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td>${item.name}</td><td class="tr">${rp(item.amount)}</td><td>${route}</td></tr>`;
+    rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td>${item.name}</td><td class="tr">${rp(item.amount)}</td><td class="rincian-ket-cell">${route}</td></tr>`;
   });
 
   document.getElementById('rincianOut').innerHTML = `
@@ -2033,7 +2088,7 @@ function renderRincian() {
           </tr>
         </thead>
         <tbody>
-          ${rincianRows || '<tr><td colspan="4" style="text-align:center;color:#a0aec0;padding:16px">Tidak ada komponen biaya yang dipilih</td></tr>'}
+          ${mergeRincianKeterangan(rincianRows) || '<tr><td colspan="4" style="text-align:center;color:#a0aec0;padding:16px">Tidak ada komponen biaya yang dipilih</td></tr>'}
           <tr class="rincian-total-row">
             <td colspan="2" style="text-align:center;font-weight:700">J u m l a h</td>
             <td style="text-align:center;font-weight:700">${rp(b.total)}</td>
@@ -2164,7 +2219,8 @@ function renderDPR() {
 
   const alamat = document.getElementById('cfg_alamatKuitansi').value;
   const kotaAsal = document.getElementById('cfg_kotaAsal').value;
-  const tujuan = document.getElementById('kotaTujuan').value.trim() || '-';
+  const kotaTeks = document.getElementById('kotaTujuan').value.trim();
+  const tujuan = kotaTeks ? kotaDenganProvinsi(kotaTeks) : '-';
   const noSPD = spdPerEmployee[emp.id] || document.getElementById('noSPD').value.trim() || '-';
   const tanggalSPD = formatTgl(document.getElementById('tglSPD').value);
   const ppkNama = document.getElementById('cfg_ppkNama').value;
