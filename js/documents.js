@@ -606,7 +606,8 @@ function renderRekapRincian() {
   }
   if (cbHotel) biayaColumns.push({ label: 'Penginapan', value: biaya => biaya.hotel });
   const hasTransportCost = customCosts.some(item => item.kind === 'transport');
-  if (cbDPR || hasTransportCost) {
+  const hasDprCost = rows.some(row => row.biaya.dpr > 0);
+  if (hasDprCost || hasTransportCost) {
     biayaColumns.push({
       label: 'DPR',
       value: biaya => biaya.dpr + biaya.customCosts.reduce((total, item) => total + (item.isTransport ? item.amount : 0), 0)
@@ -1170,8 +1171,8 @@ function renderRincian() {
   const transportCosts = b.customCosts.filter(item => item.isTransport && item.amount > 0);
   const otherCosts = b.customCosts.filter(item => !item.isTransport && item.amount > 0);
   const transportExtra = transportCosts.reduce((total, item) => total + item.amount, 0);
-  if ((cbDPR && b.dpr > 0) || transportExtra > 0) {
-    const dprUraian = cbDPR && sbm?.provinsi === 'DKI JAKARTA'
+  if (b.dpr > 0 || transportExtra > 0) {
+    const dprUraian = (sbm?.provinsi === 'DKI JAKARTA' && b.dpr > 0)
       ? `Daftar Pengeluaran Riil:<br>${kotaAsal} - ${kotaTujuan} PP`
       : `Transport ${kotaAsal} - ${kotaTujuan} (PP)`;
     const transportTotal = b.dpr + transportExtra;
@@ -1345,14 +1346,10 @@ function renderDPR() {
 
   const sbm = getSBM();
   if (!sbm || sbm.provinsi !== 'DKI JAKARTA') {
-    out.innerHTML = '<div class="alert-warn">⚠️ Lembar Daftar Pengeluaran Riil hanya untuk Perjalanan Dinas dalam kota DKI Jakarta (DPR Rp 170.000).</div>';
+    out.innerHTML = '<div class="alert-warn">⚠️ Lembar Daftar Pengeluaran Riil (DPR) hanya untuk Perjalanan Dinas dalam kota DKI Jakarta (DPR Rp 170.000). Untuk provinsi selain DKI Jakarta, pengeluaran riil tidak tersedia.</div>';
     return;
   }
   const biaya = hitungBiaya(emp);
-  if (!biaya.dpr) {
-    out.innerHTML = '<div class="alert-warn">⚠️ Biaya DPR belum dicentang di Input Perjalanan.</div>';
-    return;
-  }
 
   const alamat = document.getElementById('cfg_alamatKuitansi').value;
   const kotaAsal = document.getElementById('cfg_kotaAsal').value;

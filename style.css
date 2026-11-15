@@ -736,7 +736,7 @@ body.sidebar-open .scrim {
   letter-spacing: .005em;
 }
 
-.form-group input, .form-group select, .form-group textarea {
+.form-group input:not([type="checkbox"]):not([type="radio"]), .form-group select, .form-group textarea {
   width: 100%;
   padding: 11px 13px;
   border: 1px solid var(--line-strong);
@@ -744,26 +744,26 @@ body.sidebar-open .scrim {
   font-size: 13px;
   font-family: inherit;
   color: var(--ink);
-  background: #fff;
+  background: var(--surface);
   transition: border-color .18s,box-shadow .18s,background .18s;
 }
 
-.form-group input::placeholder, .form-group textarea::placeholder {
+.form-group input:not([type="checkbox"]):not([type="radio"])::placeholder, .form-group textarea::placeholder {
   color: #9aabc0;
 }
 
-.form-group input:hover, .form-group select:hover, .form-group textarea:hover {
+.form-group input:not([type="checkbox"]):not([type="radio"]):hover, .form-group select:hover, .form-group textarea:hover {
   border-color: #bccce0;
 }
 
-.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+.form-group input:not([type="checkbox"]):not([type="radio"]):focus, .form-group select:focus, .form-group textarea:focus {
   outline: none;
   border-color: #8fb8ff;
   box-shadow: var(--ring);
-  background: #fff;
+  background: var(--surface);
 }
 
-.form-group input:focus-visible, .form-group select:focus-visible, .form-group textarea:focus-visible {
+.form-group input:not([type="checkbox"]):not([type="radio"]):focus-visible, .form-group select:focus-visible, .form-group textarea:focus-visible {
   outline: none;
 }
 
@@ -868,10 +868,9 @@ body.sidebar-open .scrim {
 
 /* Filled / Valid state - turns into a sleek green check */
 .field-control.is-filled .field-inner-icon {
-  background: #ecfdf5;
-  border-color: #a7f3d0;
-  color: #059669;
-  opacity: 0.75;
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
 }
 
 .form-group.has-error input,
@@ -1556,15 +1555,15 @@ input[type="number"] {
 .opt-konsumsi-pill {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 14px;
+  gap: 8px;
+  padding: 6px 12px;
   border-radius: 10px;
   border: 1.5px solid var(--line);
   background: var(--surface-2);
   cursor: pointer;
   user-select: none;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 12.5px;
+  font-weight: 500;
   color: var(--text-1);
   transition: all .18s ease;
 }
@@ -1612,48 +1611,85 @@ input[type="number"] {
 .opt-check-inline {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   cursor: pointer;
   user-select: none;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
   color: var(--text-1);
-  padding: 4px 0;
+  padding: 6px 10px;
+  border-radius: 10px;
+  transition: all .16s ease;
+}
+
+.opt-konsumsi-pill.opt-check-inline {
+  font-size: 12.5px !important;
+  font-weight: 500 !important;
+}
+
+.opt-check-multiprov {
+  background: var(--surface-1);
+  border: 1.5px solid var(--line);
+  padding: 10px 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px -4px rgba(0, 0, 0, 0.05);
+}
+
+.opt-check-multiprov:hover {
+  border-color: #93c5fd;
+  background: #f8fafc;
+}
+
+.opt-check-multiprov:has(input:checked) {
+  border-color: #2563eb;
+  background: #eff6ff;
 }
 
 .opt-check-inline input[type="checkbox"] {
   appearance: none;
   -webkit-appearance: none;
-  width: 18px;
-  height: 18px;
-  border: 1.5px solid #c2d1e4;
-  border-radius: 5px;
-  background: #fff;
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  min-height: 20px !important;
+  max-width: 20px !important;
+  max-height: 20px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  border: 2px solid #94a3b8 !important;
+  border-radius: 6px !important;
+  background: #ffffff !important;
   cursor: pointer;
   flex: none;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   position: relative;
-  transition: all .16s ease;
+  transition: all .18s ease;
+  vertical-align: middle;
 }
 
 .opt-check-inline input[type="checkbox"]:hover {
-  border-color: #3f84ff;
+  border-color: #2563eb !important;
 }
 
 .opt-check-inline input[type="checkbox"]:checked {
-  background: linear-gradient(140deg, #3f84ff, #1b5fe0);
-  border-color: transparent;
+  background: #2563eb !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 2px 8px -2px rgba(37, 99, 235, 0.5) !important;
 }
 
 .opt-check-inline input[type="checkbox"]:checked::after {
-  content: "";
-  position: absolute;
-  left: 5px;
-  top: 2px;
-  width: 5px;
-  height: 9px;
-  border: solid #fff;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
+  content: "" !important;
+  display: block !important;
+  width: 5px !important;
+  height: 10px !important;
+  border: solid #ffffff !important;
+  border-width: 0 2.2px 2.2px 0 !important;
+  transform: rotate(45deg) translate(-0.5px, -1px) !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 .multi-prov-card {
@@ -5083,6 +5119,7 @@ MODE GELAP — layar saja; kertas dokumen & cetak tetap putih
     --canvas: #0a1322;
     --ring: 0 0 0 4px rgba(111,168,255,.18);
     --shadow: 0 18px 40px -24px rgba(0,0,0,.6),0 2px 6px rgba(0,0,0,.3);
+    color-scheme: dark;
   }
 
   html[data-theme="dark"] body {
@@ -5166,32 +5203,59 @@ MODE GELAP — layar saja; kertas dokumen & cetak tetap putih
     color: #9db1cf;
   }
 
-  html[data-theme="dark"] .form-group input, html[data-theme="dark"] .form-group select, html[data-theme="dark"] .form-group textarea {
-    color: var(--ink);
-    background-color: var(--surface-2);
-    border-color: var(--line-strong);
+  html[data-theme="dark"] .form-group input:not([type="checkbox"]):not([type="radio"]),
+  html[data-theme="dark"] .form-group input,
+  html[data-theme="dark"] .form-group select,
+  html[data-theme="dark"] .form-group textarea,
+  html[data-theme="dark"] .field-control input,
+  html[data-theme="dark"] .field-control select,
+  html[data-theme="dark"] .field-control textarea {
+    color: var(--ink) !important;
+    background: var(--surface-2) !important;
+    background-color: var(--surface-2) !important;
+    border-color: var(--line-strong) !important;
   }
 
-  html[data-theme="dark"] .form-group input::placeholder, html[data-theme="dark"] .form-group textarea::placeholder {
-    color: #5f7392;
+  html[data-theme="dark"] .form-group input::placeholder,
+  html[data-theme="dark"] .form-group textarea::placeholder,
+  html[data-theme="dark"] .field-control input::placeholder,
+  html[data-theme="dark"] .field-control textarea::placeholder {
+    color: #64748b !important;
   }
 
-  html[data-theme="dark"] .form-group input:hover, html[data-theme="dark"] .form-group select:hover, html[data-theme="dark"] .form-group textarea:hover {
-    border-color: #3f5c86;
+  html[data-theme="dark"] .form-group input:not([type="checkbox"]):not([type="radio"]):hover,
+  html[data-theme="dark"] .form-group input:hover,
+  html[data-theme="dark"] .form-group select:hover,
+  html[data-theme="dark"] .form-group textarea:hover,
+  html[data-theme="dark"] .field-control input:hover {
+    border-color: #3f5c86 !important;
   }
 
-  html[data-theme="dark"] .form-group input:focus, html[data-theme="dark"] .form-group select:focus, html[data-theme="dark"] .form-group textarea:focus {
-    background-color: #1a2c4a;
+  html[data-theme="dark"] .form-group input:not([type="checkbox"]):not([type="radio"]):focus,
+  html[data-theme="dark"] .form-group input:focus,
+  html[data-theme="dark"] .form-group select:focus,
+  html[data-theme="dark"] .form-group textarea:focus,
+  html[data-theme="dark"] .field-control input:focus {
+    background: #1a2c4a !important;
+    background-color: #1a2c4a !important;
+    border-color: #3b82f6 !important;
+    color: #f1f5f9 !important;
+  }
+
+  html[data-theme="dark"] input[type="date"] {
+    color-scheme: dark !important;
   }
 
   html[data-theme="dark"] .form-group select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238fa3c2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 13px center;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238fa3c2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 13px center !important;
   }
 
   html[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator {
-    filter: invert(.75);
+    filter: invert(.8);
+    opacity: 0.75;
+    cursor: pointer;
   }
 
   html[data-theme="dark"] .is-readonly {
@@ -5646,13 +5710,20 @@ MODE GELAP — layar saja; kertas dokumen & cetak tetap putih
     box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.35);
   }
 
+  html[data-theme="dark"] .form-group.has-error input:not([type="checkbox"]):not([type="radio"]),
   html[data-theme="dark"] .form-group.has-error input,
   html[data-theme="dark"] .form-group.has-error select,
   html[data-theme="dark"] .form-group.has-error textarea,
+  html[data-theme="dark"] .field-control.has-error input,
   html[data-theme="dark"] .selected-box.has-error {
     border-color: #ef4444 !important;
-    background-color: rgba(239, 68, 68, 0.08) !important;
+    background: rgba(239, 68, 68, 0.12) !important;
+    background-color: rgba(239, 68, 68, 0.12) !important;
     box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25) !important;
+  }
+
+  html[data-theme="dark"] #noteJakartaDPR {
+    color: #93c5fd !important;
   }
 
   html[data-theme="dark"] .form-group.has-error label {

@@ -235,12 +235,14 @@ function updateFieldFilledStatus(el) {
   if (val) {
     ctrl.classList.add('is-filled');
     if (icon) {
-      icon.textContent = '✓';
-      icon.title = 'Terisi';
+      icon.style.display = 'none';
+      icon.textContent = '';
+      icon.title = '';
     }
   } else {
     ctrl.classList.remove('is-filled');
     if (icon) {
+      icon.style.display = 'inline-flex';
       icon.textContent = '!';
       icon.title = 'Wajib diisi';
     }

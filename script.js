@@ -380,6 +380,13 @@ function getTujuanDisplay(kotaTeks) {
   return sbm ? `${sbm.ibukota}, ${formatProvinsi(sbm.provinsi)}` : '-';
 }
 
+function checkJakartaNote() {
+  const val = parseInt(document.getElementById('provinsiTujuan')?.value);
+  const isDki = sbmData.some(function(s) { return s.id === val && s.provinsi === 'DKI JAKARTA'; });
+  const note = document.getElementById('noteJakartaDPR');
+  if (note) note.style.display = isDki ? 'block' : 'none';
+}
+
 function changeProvince() {
   currentRateProvinceId = document.getElementById('provinsiTujuan').value;
   const sbm = getSBM();
@@ -391,9 +398,12 @@ function changeProvince() {
   if (elSnack) elSnack.value = snackRate ? rp(snackRate) : '0';
   const elDpr = document.getElementById('dprManual');
   if (elDpr) elDpr.value = '';
+  const isDki = sbm && sbm.provinsi === 'DKI JAKARTA';
   const cbDPR = document.getElementById('cbDPR');
-  if (cbDPR) cbDPR.checked = false;
-  dprAutoCheckedForDki = false;
+  if (cbDPR) cbDPR.checked = isDki;
+  dprAutoCheckedForDki = isDki;
+  const noteJkt = document.getElementById('noteJakartaDPR');
+  if (noteJkt) noteJkt.style.display = isDki ? 'block' : 'none';
   updateDPRInput();
   updateSBMPreview();
   updateSbmWarnings();
@@ -718,9 +728,11 @@ function updateSBMPreview() {
   document.getElementById('sbm_h3').textContent = rp(sbm.h3);
   document.getElementById('sbm_jkt').textContent = sbm.jktPP ? rp(sbm.jktPP) : '(tidak ada/dalam kota)';
   document.getElementById('sbm_taxi').textContent = sbm.taxi ? rp(sbm.taxi) : '-';
-  const manualDpr = Number(document.getElementById('dprManual').value) || 0;
-  document.getElementById('sbm_dpr').textContent = isDkiJakarta ? `${rp(170000)} (otomatis)` : manualDpr ? rp(manualDpr) : '(isi manual)';
+  const manualDpr = Number(document.getElementById('dprManual')?.value) || 0;
+  document.getElementById('sbm_dpr').textContent = isDkiJakarta ? `${rp(170000)} (otomatis)` : '- (hanya DKI Jakarta)';
   document.getElementById('sbm_tiket').textContent = sbm.tiket ? rp(sbm.tiket) : '(tidak ada tiket pesawat)';
+  const noteJkt = document.getElementById('noteJakartaDPR');
+  if (noteJkt) noteJkt.style.display = isDkiJakarta ? 'block' : 'none';
 }
 
 function escHtml(value) {
@@ -735,10 +747,11 @@ function updateSbmWarnings() {
   if (sbm) {
     const selected = [...selectedEmpIds].sort((a, b) => a - b);
     const cbHotel = document.getElementById('cbHotel').checked;
-    const cbDPR = document.getElementById('cbDPR').checked;
     const cbTiket = document.getElementById('cbTiket').checked;
     const customCosts = getCustomCosts();
-    const dprBase = cbDPR ? (sbm.provinsi === 'DKI JAKARTA' ? 170000 : Number(document.getElementById('dprManual').value) || 0) : 0;
+    const isDki = sbm.provinsi === 'DKI JAKARTA';
+    const dprBase = isDki ? 170000 : 0;
+    const cbDPR = isDki;
 
     if (cbHotel) {
       getHotelEntries().forEach(item => {
@@ -1063,7 +1076,9 @@ function hitungBiaya(emp) {
   const isKepalaBiro = /kepala biro/i.test(emp.jabatan || '');
   const representatifRate = isKepalaBiro ? (isDkiJakarta ? 75000 : 150000) : 0;
   const representatif = representatifRate * days;
-  const dprVal = cbDPR ? (isDkiJakarta ? 170000 : Number(document.getElementById('dprManual').value) || 0) : 0;
+  // DPR otomatis Rp 170.000 hanya jika tujuan DKI JAKARTA, selain Jakarta tidak ada (0)
+  const isDkiTarget = isDkiJakarta || (isMultiProv && ((sbm1 && sbm1.provinsi === 'DKI JAKARTA') || (sbm2 && sbm2.provinsi === 'DKI JAKARTA')));
+  const dprVal = isDkiTarget ? 170000 : 0;
   const tiketVal = cbTiket ? sbm.tiket : 0;
   return {
     uh,
@@ -1715,7 +1730,8 @@ function renderRekapRincian() {
   }
   if (cbHotel) biayaColumns.push({ label: 'Penginapan', value: biaya => biaya.hotel });
   const hasTransportCost = customCosts.some(item => item.kind === 'transport');
-  if (cbDPR || hasTransportCost) {
+  const hasDprCost = rows.some(row => row.biaya.dpr > 0);
+  if (hasDprCost || hasTransportCost) {
     biayaColumns.push({
       label: 'DPR',
       value: biaya => biaya.dpr + biaya.customCosts.reduce((total, item) => total + (item.isTransport ? item.amount : 0), 0)
@@ -2279,8 +2295,8 @@ function renderRincian() {
   const transportCosts = b.customCosts.filter(item => item.isTransport && item.amount > 0);
   const otherCosts = b.customCosts.filter(item => !item.isTransport && item.amount > 0);
   const transportExtra = transportCosts.reduce((total, item) => total + item.amount, 0);
-  if ((cbDPR && b.dpr > 0) || transportExtra > 0) {
-    const dprUraian = cbDPR && sbm?.provinsi === 'DKI JAKARTA'
+  if (b.dpr > 0 || transportExtra > 0) {
+    const dprUraian = (sbm?.provinsi === 'DKI JAKARTA' && b.dpr > 0)
       ? `Daftar Pengeluaran Riil:<br>${kotaAsal} - ${kotaTujuan} PP`
       : `Transport ${kotaAsal} - ${kotaTujuan} (PP)`;
     const transportTotal = b.dpr + transportExtra;
@@ -2454,14 +2470,10 @@ function renderDPR() {
 
   const sbm = getSBM();
   if (!sbm || sbm.provinsi !== 'DKI JAKARTA') {
-    out.innerHTML = '<div class="alert-warn">⚠️ Lembar Daftar Pengeluaran Riil hanya untuk Perjalanan Dinas dalam kota DKI Jakarta (DPR Rp 170.000).</div>';
+    out.innerHTML = '<div class="alert-warn">⚠️ Lembar Daftar Pengeluaran Riil (DPR) hanya untuk Perjalanan Dinas dalam kota DKI Jakarta (DPR Rp 170.000). Untuk provinsi selain DKI Jakarta, pengeluaran riil tidak tersedia.</div>';
     return;
   }
   const biaya = hitungBiaya(emp);
-  if (!biaya.dpr) {
-    out.innerHTML = '<div class="alert-warn">⚠️ Biaya DPR belum dicentang di Input Perjalanan.</div>';
-    return;
-  }
 
   const alamat = document.getElementById('cfg_alamatKuitansi').value;
   const kotaAsal = document.getElementById('cfg_kotaAsal').value;
@@ -3251,12 +3263,14 @@ function updateFieldFilledStatus(el) {
   if (val) {
     ctrl.classList.add('is-filled');
     if (icon) {
-      icon.textContent = '✓';
-      icon.title = 'Terisi';
+      icon.style.display = 'none';
+      icon.textContent = '';
+      icon.title = '';
     }
   } else {
     ctrl.classList.remove('is-filled');
     if (icon) {
+      icon.style.display = 'inline-flex';
       icon.textContent = '!';
       icon.title = 'Wajib diisi';
     }

@@ -348,7 +348,7 @@
               <span class="field-error-msg">Kota/Kabupaten tujuan wajib diisi</span>
             </div>
             <div class="form-group full" style="margin-top:-4px; margin-bottom:4px;">
-              <label class="opt-check-inline">
+              <label class="opt-check-inline opt-check-multiprov">
                 <input type="checkbox" id="cbMultiProvinsi" onchange="toggleMultiProvinsi()">
                 <span>Perjalanan ke 2 Provinsi Berbeda (Multi-Provinsi dalam satu ST)</span>
               </label>
@@ -466,7 +466,11 @@
           <div class="opt-grid">
             <label class="opt-tile">
               <input type="checkbox" id="cbUH" checked>
-              <span class="opt-text"><strong>Uang Harian</strong><small>Dihitung per hari perjalanan</small></span>
+              <span class="opt-text">
+                <strong>Uang Harian</strong>
+                <small>Dihitung per hari perjalanan</small>
+                <small id="noteJakartaDPR" style="display:none; color:#2563eb; font-size:10px; margin-top:3px; line-height:1.35;">*Khusus DKI Jakarta tidak mendapatkan uang harian. Tetapi, DPR yang dibayarkan sebesar Rp170.000</small>
+              </span>
             </label>
             <label class="opt-tile">
               <input type="checkbox" id="cbHotel" onchange="toggleHotelFields()">

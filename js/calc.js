@@ -191,9 +191,12 @@ function changeProvince() {
   if (elSnack) elSnack.value = snackRate ? rp(snackRate) : '0';
   const elDpr = document.getElementById('dprManual');
   if (elDpr) elDpr.value = '';
+  const isDki = sbm && sbm.provinsi === 'DKI JAKARTA';
   const cbDPR = document.getElementById('cbDPR');
-  if (cbDPR) cbDPR.checked = false;
-  dprAutoCheckedForDki = false;
+  if (cbDPR) cbDPR.checked = isDki;
+  dprAutoCheckedForDki = isDki;
+  const noteJkt = document.getElementById('noteJakartaDPR');
+  if (noteJkt) noteJkt.style.display = isDki ? 'block' : 'none';
   updateDPRInput();
   updateSBMPreview();
   updateSbmWarnings();
@@ -518,9 +521,12 @@ function updateSBMPreview() {
   document.getElementById('sbm_h3').textContent = rp(sbm.h3);
   document.getElementById('sbm_jkt').textContent = sbm.jktPP ? rp(sbm.jktPP) : '(tidak ada/dalam kota)';
   document.getElementById('sbm_taxi').textContent = sbm.taxi ? rp(sbm.taxi) : '-';
-  const manualDpr = Number(document.getElementById('dprManual').value) || 0;
-  document.getElementById('sbm_dpr').textContent = isDkiJakarta ? `${rp(170000)} (otomatis)` : manualDpr ? rp(manualDpr) : '(isi manual)';
+  const manualDpr = Number(document.getElementById('dprManual')?.value) || 0;
+  document.getElementById('sbm_dpr').textContent = isDkiJakarta ? `${rp(170000)} (otomatis)` : '- (hanya DKI Jakarta)';
   document.getElementById('sbm_tiket').textContent = sbm.tiket ? rp(sbm.tiket) : '(tidak ada tiket pesawat)';
+  const isDkiTarget = isDkiJakarta || (multi && ((multi.sbm1 && multi.sbm1.provinsi === 'DKI JAKARTA') || (multi.sbm2 && multi.sbm2.provinsi === 'DKI JAKARTA')));
+  const noteJkt = document.getElementById('noteJakartaDPR');
+  if (noteJkt) noteJkt.style.display = isDkiTarget ? 'block' : 'none';
 }
 
 function escHtml(value) {
@@ -535,10 +541,11 @@ function updateSbmWarnings() {
   if (sbm) {
     const selected = [...selectedEmpIds].sort((a, b) => a - b);
     const cbHotel = document.getElementById('cbHotel').checked;
-    const cbDPR = document.getElementById('cbDPR').checked;
     const cbTiket = document.getElementById('cbTiket').checked;
     const customCosts = getCustomCosts();
-    const dprBase = cbDPR ? (sbm.provinsi === 'DKI JAKARTA' ? 170000 : Number(document.getElementById('dprManual').value) || 0) : 0;
+    const isDki = sbm.provinsi === 'DKI JAKARTA';
+    const dprBase = isDki ? 170000 : 0;
+    const cbDPR = isDki;
 
     if (cbHotel) {
       getHotelEntries().forEach(item => {
@@ -863,7 +870,9 @@ function hitungBiaya(emp) {
   const isKepalaBiro = /kepala biro/i.test(emp.jabatan || '');
   const representatifRate = isKepalaBiro ? (isDkiJakarta ? 75000 : 150000) : 0;
   const representatif = representatifRate * days;
-  const dprVal = cbDPR ? (isDkiJakarta ? 170000 : Number(document.getElementById('dprManual').value) || 0) : 0;
+  // DPR otomatis Rp 170.000 hanya jika tujuan DKI JAKARTA, selain Jakarta tidak ada (0)
+  const isDkiTarget = isDkiJakarta || (isMultiProv && ((sbm1 && sbm1.provinsi === 'DKI JAKARTA') || (sbm2 && sbm2.provinsi === 'DKI JAKARTA')));
+  const dprVal = isDkiTarget ? 170000 : 0;
   const tiketVal = cbTiket ? sbm.tiket : 0;
   return {
     uh,
