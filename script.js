@@ -1,4 +1,43 @@
 // =====================================================================
+// MODE TAMPILAN (terang / gelap / otomatis)
+// =====================================================================
+const THEME_STORAGE_KEY = 'perjadin-theme';
+const themeMedia = window.matchMedia('(prefers-color-scheme: dark)');
+
+function getThemeMode() {
+  const saved = localStorage.getItem(THEME_STORAGE_KEY);
+  return ['light', 'dark', 'auto'].includes(saved) ? saved : 'auto';
+}
+
+function applyThemeMode(mode) {
+  const dark = mode === 'dark' || (mode === 'auto' && themeMedia.matches);
+  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+}
+
+function markThemeButtons(mode) {
+  document.querySelectorAll('.theme-opt').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.themeMode === mode);
+  });
+}
+
+function setThemeMode(mode) {
+  localStorage.setItem(THEME_STORAGE_KEY, mode);
+  applyThemeMode(mode);
+  markThemeButtons(mode);
+}
+
+function initTheme() {
+  const mode = getThemeMode();
+  applyThemeMode(mode);
+  markThemeButtons(mode);
+  const onChange = () => { if (getThemeMode() === 'auto') applyThemeMode('auto'); };
+  if (themeMedia.addEventListener) themeMedia.addEventListener('change', onChange);
+  else themeMedia.addListener(onChange);
+}
+
+initTheme();
+
+// =====================================================================
 // DATA PEGAWAI (dari sheet KARYAWAN)
 // =====================================================================
 const employees = [
@@ -159,6 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('tglKembali').value = today;
   hitungLama();
   updateSbmWarnings();
+  initWelcomeModal();
 });
 
 // =====================================================================
@@ -216,8 +256,53 @@ function closeSidebar() {
   if (btn) btn.setAttribute('aria-expanded', 'false');
 }
 
+// =====================================================================
+// JENDELA / POPUP SELAMAT DATANG (WELCOME MODAL)
+// =====================================================================
+function openWelcome() {
+  const overlay = document.getElementById('welcomeOverlay');
+  if (!overlay) return;
+  overlay.classList.add('is-open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeWelcome() {
+  const overlay = document.getElementById('welcomeOverlay');
+  if (!overlay) return;
+  const checkbox = document.getElementById('welcomeDontShow');
+  if (checkbox && checkbox.checked) {
+    try {
+      localStorage.setItem('perdinku_welcome_dismissed', '1');
+    } catch (e) {}
+  }
+  overlay.classList.remove('is-open');
+  document.body.style.overflow = '';
+}
+
+function handleWelcomeBackdrop(event) {
+  if (event.target && event.target.id === 'welcomeOverlay') {
+    closeWelcome();
+  }
+}
+
+function initWelcomeModal() {
+  let isDismissed = false;
+  try {
+    isDismissed = localStorage.getItem('perdinku_welcome_dismissed') === '1';
+  } catch (e) {}
+
+  if (!isDismissed) {
+    setTimeout(() => {
+      openWelcome();
+    }, 450);
+  }
+}
+
 document.addEventListener('keydown', event => {
-  if (event.key === 'Escape') closeSidebar();
+  if (event.key === 'Escape') {
+    closeSidebar();
+    closeWelcome();
+  }
 });
 
 document.addEventListener('input', () => { updateSbmWarnings(); refreshHotelSummaries(); });
@@ -793,6 +878,11 @@ function updateSbmWarnings() {
     </div>`).join('');
 }
 
+function syncTglSPD() {
+  const tglST = document.getElementById('tglST').value;
+  if (tglST) document.getElementById('tglSPD').value = tglST;
+}
+
 function hitungLama() {
   const tgl1 = document.getElementById('tglBerangkat').value;
   const tgl2 = document.getElementById('tglKembali').value;
@@ -1127,7 +1217,7 @@ function renderKuitansiPerorangan() {
   const tujuan = kotaTeks ? kotaDenganProvinsi(kotaTeks) : (getSBM()?.ibukota || '-');
   const paymentText = `Biaya Perjalanan Dinas atas nama ${emp.nama}`;
   const mak = `${document.getElementById('kodeKegiatan').value} ${document.getElementById('kodeSubKegiatan').value} ${document.getElementById('mak').value}`;
-  const noSPD = spdPerEmployee[emp.id] || document.getElementById('noSPD').value.trim() || '-';
+  const noSPD = spdPerEmployee[emp.id] || '-';
   const ppkNama = document.getElementById('cfg_ppkNama').value;
   const ppkNip = document.getElementById('cfg_ppkNip').value;
   const bendNama = document.getElementById('cfg_bendNama').value;
@@ -1272,7 +1362,7 @@ function renderSPPDPerorangan() {
   const agenda = document.getElementById('agenda').value.trim() || '-';
   const kotaTeks = document.getElementById('kotaTujuan').value.trim();
   const tujuan = kotaTeks ? kotaDenganProvinsi(kotaTeks) : (sbm ? `${sbm.ibukota}, ${formatProvinsi(sbm.provinsi)}` : '-');
-  const noSPD = spdPerEmployee[emp.id] || document.getElementById('noSPD').value.trim() || '-';
+  const noSPD = spdPerEmployee[emp.id] || '-';
   const tanggalSPD = formatTgl(document.getElementById('tglSPD').value);
   const tripDays = expandTripDays(empSegments);
   const tripContiguous = tripDays.length > 0 && tripDays.length === daySpan(tripDays[0], tripDays[tripDays.length - 1]);
@@ -1989,7 +2079,7 @@ function renderRincian() {
   const b = hitungBiaya(emp);
   const kotaTeks = document.getElementById('kotaTujuan').value.trim();
   const kotaTujuan = kotaTeks ? kotaDenganProvinsi(kotaTeks) : (sbm ? sbm.ibukota : '-');
-  const noSPD = spdPerEmployee[emp.id] || document.getElementById('noSPD').value.trim() || '___/SPD/Birkom/___/____';
+  const noSPD = spdPerEmployee[emp.id] || '___/SPD/Birkom/___/____';
   const tglSPD = document.getElementById('tglSPD').value;
   const kotaAsal = document.getElementById('cfg_kotaAsal').value;
   const ppkNama = document.getElementById('cfg_ppkNama').value;
@@ -2221,7 +2311,7 @@ function renderDPR() {
   const kotaAsal = document.getElementById('cfg_kotaAsal').value;
   const kotaTeks = document.getElementById('kotaTujuan').value.trim();
   const tujuan = kotaTeks ? kotaDenganProvinsi(kotaTeks) : '-';
-  const noSPD = spdPerEmployee[emp.id] || document.getElementById('noSPD').value.trim() || '-';
+  const noSPD = spdPerEmployee[emp.id] || '-';
   const tanggalSPD = formatTgl(document.getElementById('tglSPD').value);
   const ppkNama = document.getElementById('cfg_ppkNama').value;
   const ppkNip = document.getElementById('cfg_ppkNip').value;
@@ -2307,7 +2397,6 @@ function printDPR() {
 const EXCEL_TRIP_FIELDS = [
   ['Nomor Surat Tugas (ST)', 'noST', 'text'],
   ['Tanggal Surat Tugas', 'tglST', 'date'],
-  ['Nomor SPD', 'noSPD', 'text'],
   ['Tanggal SPD', 'tglSPD', 'date'],
   ['Tanggal Berangkat', 'tglBerangkat', 'date'],
   ['Tanggal Kembali', 'tglKembali', 'date'],

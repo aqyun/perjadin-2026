@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light">
   <meta name="theme-color" content="#0b1729">
-  <title>Aplikasi Perjalanan Dinas - Biro Komunikasi Publik TA 2026</title>
-  <link rel="icon" href="logo-pkp.webp">
+  <title>PerdinKu</title>
+  <link rel="icon" type="image/png" href="logo-perdinku.png">
+  <link rel="shortcut icon" href="favicon.ico">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -39,15 +40,16 @@
   <symbol id="i-check" viewBox="0 0 24 24"><path d="m4 12 5 5L20 6"/></symbol>
   <symbol id="i-save" viewBox="0 0 24 24"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></symbol>
   <symbol id="i-load" viewBox="0 0 24 24"><path d="M12 20V9"/><path d="m7 14 5-5 5 5"/><path d="M5 4h14"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></symbol>
 </svg>
 
 <aside class="sidebar no-print" id="sidebar" aria-label="Navigasi utama">
   <div class="sidebar-brand">
     <span class="brand-logo-wrap">
-      <img class="brand-logo" src="logo-pkp.webp" alt="Logo Kementerian PKP">
+      <img class="brand-logo" src="logo-perdinku.png" alt="Logo PerdinKu">
     </span>
     <div class="brand-copy">
-      <strong>Perjalanan Dinas</strong>
+      <strong>PerdinKu</strong>
       <span>Biro Komunikasi Publik TA 2026</span>
     </div>
     <button type="button" class="icon-btn sidebar-close" onclick="closeSidebar()" aria-label="Tutup menu">
@@ -110,6 +112,14 @@
   </nav>
 
   <div class="sidebar-foot">
+    <div class="theme-switch">
+      <span class="theme-label">Tampilan</span>
+      <div class="theme-seg" role="group" aria-label="Mode tampilan">
+        <button type="button" class="theme-opt" data-theme-mode="light" onclick="setThemeMode('light')">Terang</button>
+        <button type="button" class="theme-opt" data-theme-mode="dark" onclick="setThemeMode('dark')">Gelap</button>
+        <button type="button" class="theme-opt" data-theme-mode="auto" onclick="setThemeMode('auto')">Otomatis</button>
+      </div>
+    </div>
     <div class="side-note">
       <span class="side-note-dot"></span>
       <div>
@@ -123,6 +133,67 @@
 
 <div class="scrim no-print" id="scrim" onclick="closeSidebar()"></div>
 
+<!-- ============================================================ WELCOME MODAL -->
+<div class="welcome-overlay no-print" id="welcomeOverlay" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle" onclick="handleWelcomeBackdrop(event)">
+  <div class="welcome-modal" id="welcomeModal">
+    <button type="button" class="icon-btn welcome-close" onclick="closeWelcome()" aria-label="Tutup jendela selamat datang">
+      <svg class="ico"><use href="#i-close"></use></svg>
+    </button>
+    <div class="welcome-glow" aria-hidden="true"></div>
+    <div class="welcome-header">
+      <div class="welcome-logo-wrap">
+        <img class="welcome-logo" src="logo-perdinku.png" alt="Logo PerdinKu">
+      </div>
+      <div class="welcome-title-wrap">
+        <span class="welcome-badge">Aplikasi Resmi TA 2026</span>
+        <h2 class="welcome-title" id="welcomeTitle">Selamat Datang di PerdinKu</h2>
+        <p class="welcome-subtitle">Perjalanan Dinas · Biro Komunikasi Publik</p>
+      </div>
+    </div>
+    <div class="welcome-body">
+      <p class="welcome-desc">
+        Aplikasi terpadu untuk menyusun, menghitung tarif SBM, dan mencetak seluruh kelengkapan administrasi perjalanan dinas secara otomatis, cepat, dan siap cetak.
+      </p>
+      <div class="welcome-features">
+        <div class="welcome-feat">
+          <div class="welcome-feat-ico"><svg class="ico"><use href="#i-edit"></use></svg></div>
+          <div class="welcome-feat-text">
+            <strong>Input Sekali, Terhubung ke Semua Form</strong>
+            <span>Nomor ST, rute, tanggal perjalanan, dan pegawai yang ditugaskan otomatis tersinkronisasi.</span>
+          </div>
+        </div>
+        <div class="welcome-feat">
+          <div class="welcome-feat-ico"><svg class="ico"><use href="#i-chart"></use></svg></div>
+          <div class="welcome-feat-text">
+            <strong>Perhitungan Otomatis Standar SBM</strong>
+            <span>Uang harian, hotel, transport, dan pengeluaran riil dihitung akurat berdasarkan standar PMK.</span>
+          </div>
+        </div>
+        <div class="welcome-feat">
+          <div class="welcome-feat-ico"><svg class="ico"><use href="#i-print"></use></svg></div>
+          <div class="welcome-feat-text">
+            <strong>Format Dokumen Resmi Siap Cetak</strong>
+            <span>Kuitansi Perorangan, SPPD, Rincian Biaya, DPR, Rekapitulasi, dan Lembar Kendali.</span>
+          </div>
+        </div>
+      </div>
+      <label class="welcome-dont-show">
+        <input type="checkbox" id="welcomeDontShow">
+        <span>Jangan tampilkan lagi jendela selamat datang ini</span>
+      </label>
+    </div>
+    <div class="welcome-footer">
+      <button type="button" class="btn btn-primary welcome-btn" onclick="closeWelcome()">
+        <span>Mulai Gunakan PerdinKu</span>
+        <svg class="ico"><use href="#i-arrow-right"></use></svg>
+      </button>
+      <div class="welcome-meta">
+        <span>Kementerian Perumahan dan Kawasan Permukiman</span>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="app-main">
   <header class="topbar no-print">
     <button type="button" class="icon-btn burger" onclick="toggleSidebar()" aria-label="Buka menu" aria-expanded="false" aria-controls="sidebar">
@@ -133,6 +204,9 @@
       <h1 id="pageTitle">Input Perjalanan</h1>
     </div>
     <div class="topbar-tools">
+      <button type="button" class="icon-btn info-btn" onclick="openWelcome()" title="Panduan & Info PerdinKu" aria-label="Panduan & Info PerdinKu">
+        <svg class="ico"><use href="#i-info"></use></svg>
+      </button>
       <span class="status-pill"><span class="status-dot"></span>Siap cetak</span>
       <span class="date-pill"><svg class="ico"><use href="#i-calendar"></use></svg><span id="datePill">—</span></span>
     </div>
@@ -174,11 +248,7 @@
             </div>
             <div class="form-group">
               <label for="tglST">Tanggal Surat Tugas</label>
-              <input type="date" id="tglST">
-            </div>
-            <div class="form-group">
-              <label for="noSPD">Nomor SPD</label>
-              <input type="text" id="noSPD" placeholder="Contoh: /SPD/Birkom/10/2026">
+              <input type="date" id="tglST" onchange="syncTglSPD()">
             </div>
             <div class="form-group">
               <label for="tglSPD">Tanggal SPD</label>
@@ -558,7 +628,7 @@
             </div>
             <div class="form-group">
               <label for="sppdNoSPD">No. SPD Perorangan</label>
-              <input type="text" id="sppdNoSPD" placeholder="Contoh: 001/SPD/Birkom/10/2026" oninput="saveSPPDNo()">
+              <input type="text" id="sppdNoSPD" class="is-readonly" readonly placeholder="Otomatis dari Kuitansi Perorangan">
             </div>
           </div>
         </div>
@@ -652,7 +722,7 @@
             </div>
             <div class="form-group">
               <label for="rincianNoSPD">No. SPD Perorangan</label>
-              <input type="text" id="rincianNoSPD" placeholder="Nomor SPD pegawai terpilih" oninput="saveRincianSPD()">
+              <input type="text" id="rincianNoSPD" class="is-readonly" readonly placeholder="Otomatis dari Kuitansi Perorangan">
             </div>
           </div>
         </div>
@@ -685,7 +755,7 @@
             </div>
             <div class="form-group">
               <label for="dprNoSPD">No. SPD Perorangan</label>
-              <input type="text" id="dprNoSPD" placeholder="Nomor SPD pegawai terpilih" oninput="saveDPRNoSPD()">
+              <input type="text" id="dprNoSPD" class="is-readonly" readonly placeholder="Otomatis dari Kuitansi Perorangan">
             </div>
           </div>
         </div>
