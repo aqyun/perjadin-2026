@@ -139,7 +139,7 @@ svg.ico {
 .brand-logo-wrap {
   width: 44px;
   height: 44px;
-  border-radius: 12px;
+  border-radius: 50%;
   background: transparent;
   display: grid;
   place-items: center;
@@ -147,8 +147,8 @@ svg.ico {
 }
 
 .brand-logo {
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   object-fit: contain;
   display: block;
 }
@@ -1445,8 +1445,8 @@ input[type="number"] {
 
 .opt-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
-  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 14px;
 }
 
 .opt-tile {
@@ -1534,7 +1534,7 @@ input[type="number"] {
 
 .cost-extra-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit,minmax(210px,1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px 16px;
   margin-top: 18px;
   padding-top: 18px;
@@ -1545,43 +1545,199 @@ input[type="number"] {
   animation: rise .2s ease both;
 }
 
+.opt-konsumsi-biasa-wrap {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 8px;
+  margin-bottom: 2px;
+  padding: 2px 0 0;
+}
+
+.opt-konsumsi-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1.5px solid var(--line);
+  background: var(--surface-2);
+  cursor: pointer;
+  user-select: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-1);
+  transition: all .18s ease;
+}
+
+.opt-konsumsi-pill:hover {
+  border-color: #3f84ff;
+  background: rgba(63, 132, 255, 0.05);
+}
+
+.opt-konsumsi-pill:has(input:checked) {
+  border-color: #3f84ff;
+  background: rgba(63, 132, 255, 0.09);
+  box-shadow: 0 4px 12px -4px rgba(63, 132, 255, 0.25);
+}
+
+@media (max-width: 640px) {
+  .opt-konsumsi-biasa-wrap {
+    justify-content: flex-start;
+  }
+}
+
 .konsumsi-grid {
-  margin-top: 16px!important;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 14px 16px;
+  margin-top: 16px !important;
   padding: 16px;
   border: 1px solid var(--line);
   border-radius: 16px;
   background: var(--surface-2);
 }
 
+@media (max-width: 768px) {
+  .konsumsi-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
 .konsumsi-grid .alert-info {
   margin-bottom: 2px;
+}
+
+/* ---------- Checkbox Inline & Multi-Provinsi ---------- */
+
+.opt-check-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-1);
+  padding: 4px 0;
+}
+
+.opt-check-inline input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid #c2d1e4;
+  border-radius: 5px;
+  background: #fff;
+  cursor: pointer;
+  flex: none;
+  position: relative;
+  transition: all .16s ease;
+}
+
+.opt-check-inline input[type="checkbox"]:hover {
+  border-color: #3f84ff;
+}
+
+.opt-check-inline input[type="checkbox"]:checked {
+  background: linear-gradient(140deg, #3f84ff, #1b5fe0);
+  border-color: transparent;
+}
+
+.opt-check-inline input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 2px;
+  width: 5px;
+  height: 9px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.multi-prov-card {
+  margin-top: 4px !important;
+  margin-bottom: 8px !important;
+  padding: 16px;
+  border: 1.5px dashed #b8cde8;
+  border-radius: 14px;
+  background: var(--surface-2);
+  animation: rise .2s ease both;
+}
+
+.multi-prov-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+
+.multi-prov-header strong {
+  font-size: 13.5px;
+  color: var(--text-1);
+}
+
+.multi-prov-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.multi-prov-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.multi-prov-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 10px;
+  background: var(--surface-1);
+  border: 1px solid var(--line);
+}
+
+@media (max-width: 640px) {
+  .multi-prov-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ---------- Biaya custom ---------- */
 
 .custom-cost-group {
-  margin-top: 20px;
-  padding-top: 18px;
-  border-top: 1px dashed var(--line);
-  gap: 8px;
+  margin-top: 22px;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface-1);
+  box-shadow: 0 4px 16px -8px rgba(0, 0, 0, 0.05);
+  gap: 12px;
 }
 
 .field-head {
   display: flex;
-  align-items: baseline;
-  gap: 10px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 6px;
 }
 
 .field-head label {
-  font-size: 11.5px;
+  font-size: 14.5px;
   font-weight: 700;
-  color: #4a5d75;
+  color: var(--text-1);
+  display: block;
+  margin: 0;
+  padding: 0;
+  text-align: left;
 }
 
 .field-tip {
-  font-size: 10.5px;
-  color: #94a4b8;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  line-height: 1.5;
 }
 
 .custom-cost-list {
@@ -1622,19 +1778,19 @@ input[type="number"] {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 10px;
+  font-size: 11.5px;
   font-weight: 700;
-  color: #6a7d94;
+  color: var(--text-1);
 }
 
 .custom-cost-assignee input {
   width: 100%;
   min-width: 0;
-  height: 36px;
-  padding: 0 10px;
+  height: 38px;
+  padding: 0 12px;
   border: 1px solid var(--line-strong);
   border-radius: 9px;
-  font-size: 12px;
+  font-size: 13px;
   font-family: inherit;
   font-variant-numeric: tabular-nums;
 }
@@ -2614,10 +2770,11 @@ input[type="number"] {
 .btn-row {
   display: flex;
   align-items: center;
-  gap: 9px;
+  justify-content: space-between;
+  gap: 12px;
   flex-wrap: wrap;
   margin: 0 0 18px;
-  padding: 10px;
+  padding: 10px 14px;
   border: 1px solid rgba(216,227,241,.95);
   border-radius: 16px;
   background: rgba(255,255,255,.8);
@@ -2626,6 +2783,14 @@ input[type="number"] {
   position: sticky;
   top: 84px;
   z-index: 30;
+}
+
+.btn-row-left,
+.btn-row-right {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
 }
 
 .rincian-doc .btn-row {
@@ -3653,17 +3818,24 @@ input[type="number"] {
   padding: 24px;
   background: #fff;
   font-size: 12px;
-  font-family: Arial,sans-serif;
-  color: #111;
+  font-family: Arial, sans-serif;
+  color: #000000;
 }
 
 .rincian-doc h3 {
-  font-family: Arial,sans-serif;
+  font-family: Arial, sans-serif;
   font-size: 16px;
   font-weight: 700;
   text-align: center;
   margin-bottom: 14px;
   letter-spacing: 0;
+  color: #000000;
+}
+
+.rincian-doc *:not(h3) {
+  font-family: Arial, sans-serif !important;
+  font-size: 12px !important;
+  color: #000000 !important;
 }
 
 .rincian-meta-top {
@@ -3677,6 +3849,7 @@ input[type="number"] {
   padding: 2px 4px;
   vertical-align: top;
   border: none;
+  color: #000000;
 }
 
 .rincian-meta-top td:first-child {
@@ -3696,19 +3869,31 @@ input[type="number"] {
 }
 
 .rincian-tbl th, .rincian-tbl td {
-  border: 1px solid #111;
+  border: 1px solid #000000;
   padding: 4px 6px;
   overflow-wrap: anywhere;
+  color: #000000;
 }
 
 .rincian-tbl th {
   font-weight: 700;
   text-align: center;
   background: #fff;
+  color: #000000;
 }
 
-.rincian-tbl .tc, .rincian-tbl .tr {
+.rincian-tbl .tc {
   text-align: center;
+}
+
+.rincian-tbl .tr {
+  text-align: right;
+  padding-right: 8px;
+}
+
+.rincian-tbl .rincian-subtbl td.tr {
+  text-align: right;
+  padding-right: 8px;
 }
 
 .rincian-tbl .rincian-subtbl {
@@ -3721,14 +3906,15 @@ input[type="number"] {
   border: 0;
   padding: 2px 6px;
   font-size: 12px;
+  color: #000000;
 }
 
 .rincian-tbl .rincian-subtbl td:first-child {
-  border-right: 1px solid #111;
+  border-right: 1px solid #000000;
 }
 
 .rincian-tbl .rincian-subtbl td:nth-child(2) {
-  border-right: 1px solid #111;
+  border-right: 1px solid #000000;
 }
 
 .rincian-tbl .rincian-subtbl td:last-child {
@@ -3737,6 +3923,7 @@ input[type="number"] {
 
 .rincian-total-row td {
   background: #fff;
+  color: #000000;
 }
 
 .rincian-terbilang {
@@ -3744,7 +3931,8 @@ input[type="number"] {
   font-style: italic;
   margin: 4px 0 16px;
   padding: 6px 10px;
-  border: 1px solid #111;
+  border: 1px solid #000000;
+  color: #000000;
 }
 
 .rincian-payment-row {
@@ -3753,6 +3941,7 @@ input[type="number"] {
   margin-top: 20px;
   font-size: 12px;
   gap: 20px;
+  color: #000000;
 }
 
 .rincian-payment-col {
@@ -3760,12 +3949,13 @@ input[type="number"] {
 }
 
 .rincian-amount-box {
-  border: 1px solid #111;
+  border: 1px solid #000000;
   padding: 3px 8px;
   display: inline-block;
   min-width: 120px;
   font-weight: 700;
   margin: 4px 0 16px;
+  color: #000000;
 }
 
 .rincian-signatory-label {
@@ -3779,13 +3969,15 @@ input[type="number"] {
 .rincian-name {
   padding-top: 3px;
   display: inline-block;
+  color: #000000;
 }
 
 .rincian-spd-rampung {
   margin-top: 20px;
   font-size: 12px;
-  border-top: 1px solid #111;
+  border-top: 1px solid #000000;
   padding-top: 10px;
+  color: #000000;
 }
 
 .rincian-spd-tbl {
@@ -3796,6 +3988,7 @@ input[type="number"] {
 
 .rincian-spd-tbl td {
   padding: 2px 6px;
+  color: #000000;
 }
 
 .rincian-spd-tbl td:last-child {
@@ -3804,7 +3997,7 @@ input[type="number"] {
 }
 
 .rincian-spd-tbl tr:last-child td:last-child {
-  border-top: 1px solid #111;
+  border-top: 1px solid #000000;
   padding-top: 4px;
 }
 
@@ -3812,6 +4005,7 @@ input[type="number"] {
   margin-top: 24px;
   text-align: center;
   font-size: 12px;
+  color: #000000;
 }
 
 .rincian-ppk-sig .rincian-sig-space {
@@ -4488,8 +4682,10 @@ Responsive UI (screen only) — tidak menyentuh aturan cetak
     flex: 1 1 auto;
   }
 
-  .btn-row .btn {
-    flex: 1 1 calc(50% - 7px);
+  .btn-row .btn,
+  .btn-row-left .btn,
+  .btn-row-right .btn {
+    flex: 1 1 auto;
   }
 }
 
@@ -4669,18 +4865,18 @@ Responsive UI (screen only) — tidak menyentuh aturan cetak
 .welcome-logo-wrap {
   width: 54px;
   height: 54px;
-  border-radius: 15px;
+  border-radius: 50%;
   overflow: hidden;
   flex: none;
-  box-shadow: 0 10px 24px -8px rgba(11,23,41,.4),0 0 0 1px rgba(217,164,65,.5);
-  background: #0b1729;
+  box-shadow: 0 10px 24px -8px rgba(11,23,41,.4);
+  background: transparent;
   display: grid;
   place-items: center;
 }
 
 .welcome-logo {
-  width: 44px;
-  height: 44px;
+  width: 54px;
+  height: 54px;
   object-fit: contain;
   display: block;
 }
@@ -5048,7 +5244,40 @@ MODE GELAP — layar saja; kertas dokumen & cetak tetap putih
     border-color: var(--line);
   }
 
+  html[data-theme="dark"] .opt-check-inline input[type=checkbox] {
+    background: var(--surface-2);
+    border-color: #3a5378;
+  }
+
+  html[data-theme="dark"] .opt-konsumsi-pill {
+    background: var(--surface-2);
+    border-color: #2a3e5c;
+  }
+  html[data-theme="dark"] .opt-konsumsi-pill:hover {
+    border-color: #4f8dff;
+    background: rgba(79, 141, 255, 0.12);
+  }
+  html[data-theme="dark"] .opt-konsumsi-pill:has(input:checked) {
+    border-color: #4f8dff;
+    background: rgba(79, 141, 255, 0.18);
+  }
+
+  html[data-theme="dark"] .multi-prov-card {
+    border-color: #344c70;
+    background: var(--surface-2);
+  }
+
+  html[data-theme="dark"] .multi-prov-col {
+    background: var(--surface-1);
+    border-color: var(--line);
+  }
+
   /* biaya custom & hotel */
+
+  html[data-theme="dark"] .custom-cost-group {
+    background: var(--surface-1);
+    border-color: var(--line);
+  }
 
   html[data-theme="dark"] .custom-cost-row, html[data-theme="dark"] .hotel-row {
     background: var(--surface-2);

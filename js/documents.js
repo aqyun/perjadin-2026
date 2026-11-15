@@ -39,7 +39,7 @@ function renderRekapKuitansi() {
   const monthYear = `${month} ${year}`;
   const makLengkap = `${kodeKegiatan}.${kodeSubKegiatan}.${mak}`;
   const kotaTeks = document.getElementById('kotaTujuan').value.trim();
-  const paymentText = [agenda || `Perjalanan dinas ke ${kotaTeks ? kotaDenganProvinsi(kotaTeks) : '-'}`, kegiatan ? `Output ${kegiatan}` : '']
+  const paymentText = [agenda || `Perjalanan dinas ke ${kotaTeks ? getTujuanDisplay(kotaTeks) : '-'}`, kegiatan ? `Output ${kegiatan}` : '']
     .filter(Boolean)
     .join(', ');
 
@@ -159,7 +159,7 @@ function renderKuitansiPerorangan() {
   const alamat = document.getElementById('cfg_alamatKuitansi').value;
   const kotaAsal = document.getElementById('cfg_kotaAsal').value;
   const kotaTeks = document.getElementById('kotaTujuan').value.trim();
-  const tujuan = kotaTeks ? kotaDenganProvinsi(kotaTeks) : (getSBM()?.ibukota || '-');
+  const tujuan = getTujuanDisplay(kotaTeks);
   const paymentText = `Biaya Perjalanan Dinas atas nama ${emp.nama}`;
   const mak = `${document.getElementById('kodeKegiatan').value} ${document.getElementById('kodeSubKegiatan').value} ${document.getElementById('mak').value}`;
   const noSPD = spdPerEmployee[emp.id] || '-';
@@ -306,7 +306,7 @@ function renderSPPDPerorangan() {
   const mak = document.getElementById('mak').value;
   const agenda = document.getElementById('agenda').value.trim() || '-';
   const kotaTeks = document.getElementById('kotaTujuan').value.trim();
-  const tujuan = kotaTeks ? kotaDenganProvinsi(kotaTeks) : (sbm ? `${sbm.ibukota}, ${formatProvinsi(sbm.provinsi)}` : '-');
+  const tujuan = getTujuanDisplay(kotaTeks);
   const noSPD = spdPerEmployee[emp.id] || '-';
   const tanggalSPD = formatTgl(document.getElementById('tglSPD').value);
   const tripDays = expandTripDays(empSegments);
@@ -318,7 +318,8 @@ function renderSPPDPerorangan() {
   const noST = document.getElementById('noST').value.trim() || '-';
   const tglST = formatTgl(document.getElementById('tglST').value);
   const pangkat = emp.pangkat && emp.pangkat !== '-' ? emp.pangkat : '-';
-  const transport = document.getElementById('cbTiket').checked ? 'Pesawat Udara' : 'Transportasi Darat';
+  const hasPesawatCost = typeof getCustomCosts === 'function' && getCustomCosts().some(c => /pesawat|udara/i.test(c.name) || (c.kind === 'tiket' && /pesawat/i.test(c.name)));
+  const transport = (document.getElementById('cbTiket')?.checked || hasPesawatCost) ? 'Pesawat Udara' : 'Transportasi Darat';
   const lamaKata = terbilang(days).replace(/\s*Rupiah$/, '').toLowerCase();
   const pengikutRows = [1, 2, 3, 4, 5].map(() => `
         <tr><td></td><td></td><td></td></tr>`).join('');
@@ -433,7 +434,7 @@ function renderLembarKendali() {
   const verifNipRaw = document.getElementById('cfg_verifikatorNip').value.trim().replace(/^NIP\.?\s*/i, '');
   const jenisPerjalanan = document.getElementById('lk_jenisPerjalanan').value;
   const kotaTeks = document.getElementById('kotaTujuan').value.trim();
-  const tujuan = kotaTeks ? kotaDenganProvinsi(kotaTeks) : (sbm ? `${sbm.ibukota}, ${formatProvinsi(sbm.provinsi)}` : '-');
+  const tujuan = getTujuanDisplay(kotaTeks);
   const tujuanPerjalanan = document.getElementById('agenda').value.trim() || tujuan;
   const akunKegiatan = `${document.getElementById('kodeKegiatan').value}.${document.getElementById('kodeSubKegiatan').value}.${document.getElementById('mak').value}`;
   const checklistItems = [
@@ -451,7 +452,7 @@ function renderLembarKendali() {
     'Kuitansi Pembayaran Hotel',
     'Laporan Perjalanan Dinas',
     'SP2D (Lembar Dua)',
-    'Tanda Tangan pada Link Monitoring Perdin'
+    'Tanda Tangan pada Link Monitoring Perjadin'
   ];
 
   out.innerHTML = `
@@ -585,7 +586,7 @@ function renderRekapRincian() {
   const kegiatan = document.getElementById('cfg_kegiatan').value;
   const bank = document.getElementById('cfg_bank').value;
   const kotaTeks = document.getElementById('kotaTujuan').value.trim();
-  const tujuan = kotaTeks ? kotaDenganProvinsi(kotaTeks) : (sbm ? `${sbm.ibukota}, ${formatProvinsi(sbm.provinsi)}` : '-');
+  const tujuan = getTujuanDisplay(kotaTeks);
   const tanggalBerangkat = document.getElementById('tglBerangkat').value;
   const tanggalKembali = document.getElementById('tglKembali').value;
   const cbUH = document.getElementById('cbUH').checked;
@@ -749,8 +750,7 @@ function renderRekapSPT() {
   const mak = document.getElementById('mak').value;
   const kegiatan = document.getElementById('cfg_kegiatan').value;
   const kotaTeks = document.getElementById('kotaTujuan').value.trim();
-  const kotaTujuan = kotaTeks ? kotaDenganProvinsi(kotaTeks) :
-    (sbm ? `${sbm.ibukota}, ${formatProvinsi(sbm.provinsi)}` : '-');
+  const kotaTujuan = getTujuanDisplay(kotaTeks);
   const tanggalSPT = formatTgl(document.getElementById('tglST').value);
   const nomorSPT = document.getElementById('noST').value || '-';
   const ppkNama = document.getElementById('cfg_ppkNama').value;
@@ -826,7 +826,7 @@ function renderNominatif() {
   const tglBrkt = document.getElementById('tglBerangkat').value;
   const tglKmb = document.getElementById('tglKembali').value;
   const kotaTeks = document.getElementById('kotaTujuan').value.trim();
-  const kotaTujuan = kotaTeks ? kotaDenganProvinsi(kotaTeks) : (sbm ? sbm.ibukota + ', ' + formatProvinsi(sbm.provinsi) : '-');
+  const kotaTujuan = getTujuanDisplay(kotaTeks);
   const satker = document.getElementById('cfg_satker').value;
   const kodeSatker = document.getElementById('cfg_kodeSatker').value;
   const kodeKeg = document.getElementById('kodeKegiatan').value;
@@ -993,7 +993,7 @@ function mergeRincianKeterangan(rowsHtml) {
   const rows = [...tbody.children];
   let blankStart = null;
   rows.forEach((tr, index) => {
-    const ket = tr.querySelector('td.rincian-ket-cell');
+    const ket = [...tr.children].find(c => c.classList && c.classList.contains('rincian-ket-cell'));
     if (!ket) {
       blankStart = null;
       return;
@@ -1003,11 +1003,13 @@ function mergeRincianKeterangan(rowsHtml) {
       return;
     }
     if (blankStart !== null && tr.dataset.mergeKetUp === 'true') {
-      const target = rows[blankStart].querySelector('td.rincian-ket-cell');
-      target.innerHTML = ket.innerHTML;
-      target.rowSpan = index - blankStart + 1;
-      for (let i = blankStart + 1; i <= index; i++) {
-        rows[i].querySelector('td.rincian-ket-cell')?.remove();
+      const target = [...rows[blankStart].children].find(c => c.classList && c.classList.contains('rincian-ket-cell'));
+      if (target) {
+        target.innerHTML = ket.innerHTML;
+        target.rowSpan = index - blankStart + 1;
+        for (let i = blankStart + 1; i <= index; i++) {
+          [...rows[i].children].find(c => c.classList && c.classList.contains('rincian-ket-cell'))?.remove();
+        }
       }
     }
     blankStart = null;
@@ -1023,7 +1025,7 @@ function renderRincian() {
   const { days, nights } = getEmpDays(emp.id);
   const b = hitungBiaya(emp);
   const kotaTeks = document.getElementById('kotaTujuan').value.trim();
-  const kotaTujuan = kotaTeks ? kotaDenganProvinsi(kotaTeks) : (sbm ? sbm.ibukota : '-');
+  const kotaTujuan = getTujuanDisplay(kotaTeks);
   const noSPD = spdPerEmployee[emp.id] || '___/SPD/Birkom/___/____';
   const tglSPD = document.getElementById('tglSPD').value;
   const kotaAsal = document.getElementById('cfg_kotaAsal').value;
@@ -1040,17 +1042,117 @@ function renderRincian() {
 
   let rincianRows = '';
   let no = 1;
-  const uhKeterangan = uhPercent < 1 ? 'Menggunakan Kendaraan Dinas Operasional' : '';
-  if (cbUH && b.uhGross > 0) {
-    rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td>Uang Harian ${uhPercent*100}%<br><span style="padding-left:12px">${days} hari &nbsp; X &nbsp; Rp &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ${Number(sbm?sbm.uh:0).toLocaleString('id-ID')}</span></td><td class="tr">${rp(b.uhGross)}</td><td class="rincian-ket-cell">${uhKeterangan}</td></tr>`;
-  }
-  if (b.mealDeduction > 0) {
-    const mealCount = Number(document.getElementById('jumlahMakan').value) || 0;
-    rincianRows += `<tr><td class="tc">${no++}</td><td>Pengurangan uang makan<br><span style="font-size:10px;color:#718096">${days} hari × ${mealCount} kali × ${rp(Number(document.getElementById('tarifMakan').value)||0)}</span></td><td class="tr">- ${rp(b.mealDeduction)}</td><td class="rincian-ket-cell"></td></tr>`;
-  }
-  if (b.snackDeduction > 0) {
-    const snackCount = Number(document.getElementById('jumlahSnack').value) || 0;
-    rincianRows += `<tr><td class="tc">${no++}</td><td>Pengurangan snack<br><span style="font-size:10px;color:#718096">${days} hari × ${snackCount} kali × ${rp(Number(document.getElementById('tarifSnack').value)||0)}</span></td><td class="tr">- ${rp(b.snackDeduction)}</td><td class="rincian-ket-cell"></td></tr>`;
+  const uhKeterangan = b.jenisKeg === 'fullboard'
+    ? 'Paket Fullboard'
+    : b.jenisKeg === 'diklat'
+    ? 'Diklat / Pelatihan'
+    : (uhPercent < 1 ? 'Menggunakan Kendaraan Dinas Operasional' : '');
+
+  if (cbUH && (b.uhGross > 0 || b.uh > 0)) {
+    if (b.isMultiProv && b.multiProvData) {
+      let deductionBlock = '';
+      if (b.mealDeduction > 0 || b.snackDeduction > 0) {
+        let deductionRows = '';
+        if (b.mealDeduction > 0) {
+          deductionRows += `
+            <tr>
+              <td style="padding-left:24px;">
+                * Makan<br>
+                <span style="padding-left:12px;">${b.mealDays} hari &times; ${b.mealCount} kali &times; ${rp(b.mealRate)}</span>
+              </td>
+              <td class="tr" style="vertical-align:bottom;">- ${rp(b.mealDeduction)}</td>
+              <td></td>
+            </tr>`;
+        }
+        if (b.snackDeduction > 0) {
+          deductionRows += `
+            <tr>
+              <td style="padding-left:24px;">
+                * Snack<br>
+                <span style="padding-left:12px;">${b.snackDays} hari &times; ${b.snackCount} kali &times; ${rp(b.snackRate)}</span>
+              </td>
+              <td class="tr" style="vertical-align:bottom;">- ${rp(b.snackDeduction)}</td>
+              <td></td>
+            </tr>`;
+        }
+        deductionBlock = `
+          <tr>
+            <td style="padding-left:12px;">Terpotong konsumsi:</td>
+            <td></td>
+            <td></td>
+          </tr>
+          ${deductionRows}`;
+      }
+
+      rincianRows += `<tr>
+        <td class="tc">${no++}</td>
+        <td colspan="3" style="padding:0">
+          <table class="rincian-subtbl">
+            <colgroup><col><col style="width:130px"><col style="width:120px"></colgroup>
+            <tbody>
+              <tr>
+                <td>${b.multiProvData.title1}<br><span style="padding-left:12px">${b.multiProvData.days1} hari &nbsp; X &nbsp; ${rp(b.multiProvData.uhRate1)}</span></td>
+                <td class="tr" style="vertical-align:bottom;">${rp(b.multiProvData.uhGross1)}</td>
+                <td>${uhKeterangan}</td>
+              </tr>
+              <tr>
+                <td>${b.multiProvData.title2}<br><span style="padding-left:12px">${b.multiProvData.days2} hari &nbsp; X &nbsp; ${rp(b.multiProvData.uhRate2)}</span></td>
+                <td class="tr" style="vertical-align:bottom;">${rp(b.multiProvData.uhGross2)}</td>
+                <td></td>
+              </tr>
+              ${deductionBlock}
+            </tbody>
+          </table>
+        </td>
+      </tr>`;
+    } else if (b.mealDeduction > 0 || b.snackDeduction > 0) {
+      let deductionRows = '';
+      if (b.mealDeduction > 0) {
+        deductionRows += `
+          <tr>
+            <td style="padding-left:24px;">
+              * Makan<br>
+              <span style="padding-left:12px;">${b.mealDays} hari &times; ${b.mealCount} kali &times; ${rp(b.mealRate)}</span>
+            </td>
+            <td class="tr" style="vertical-align:bottom;">- ${rp(b.mealDeduction)}</td>
+            <td></td>
+          </tr>`;
+      }
+      if (b.snackDeduction > 0) {
+        deductionRows += `
+          <tr>
+            <td style="padding-left:24px;">
+              * Snack<br>
+              <span style="padding-left:12px;">${b.snackDays} hari &times; ${b.snackCount} kali &times; ${rp(b.snackRate)}</span>
+            </td>
+            <td class="tr" style="vertical-align:bottom;">- ${rp(b.snackDeduction)}</td>
+            <td></td>
+          </tr>`;
+      }
+      rincianRows += `<tr>
+        <td class="tc">${no++}</td>
+        <td colspan="3" style="padding:0">
+          <table class="rincian-subtbl">
+            <colgroup><col><col style="width:130px"><col style="width:120px"></colgroup>
+            <tbody>
+              <tr>
+                <td>${b.uhTitle || 'Uang Harian'}<br><span style="padding-left:12px">${days} hari &nbsp; X &nbsp; ${rp(b.uhBaseRate)}</span></td>
+                <td class="tr" style="vertical-align:bottom;">${rp(b.uhGross)}</td>
+                <td>${uhKeterangan}</td>
+              </tr>
+              <tr>
+                <td style="padding-left:12px;">Terpotong konsumsi:</td>
+                <td></td>
+                <td></td>
+              </tr>
+              ${deductionRows}
+            </tbody>
+          </table>
+        </td>
+      </tr>`;
+    } else {
+      rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td>${b.uhTitle || 'Uang Harian'}<br><span style="padding-left:12px">${days} hari &nbsp; X &nbsp; ${rp(b.uhBaseRate)}</span></td><td class="tr">${rp(b.uh)}</td><td class="rincian-ket-cell">${uhKeterangan}</td></tr>`;
+    }
   }
   if (b.representatif > 0) {
     const representatifKet = sbm && sbm.provinsi === 'DKI JAKARTA' ? 'Dalam kota' : 'Luar kota';
@@ -1082,7 +1184,7 @@ function renderRincian() {
         <td class="tc">${no++}</td>
         <td colspan="3" style="padding:0">
           <table class="rincian-subtbl">
-            <colgroup><col><col><col style="width:120px"></colgroup>
+            <colgroup><col><col style="width:130px"><col style="width:120px"></colgroup>
             <tbody>
               <tr><td>${dprUraian}</td><td class="tr"><strong>${rp(transportTotal)}</strong></td><td></td></tr>
               <tr><td style="padding-left:12px"><em>Rincian Transport:</em></td><td></td><td></td></tr>
@@ -1113,7 +1215,7 @@ function renderRincian() {
       </table>
 
       <table class="rincian-tbl">
-        <colgroup><col style="width:40px"><col><col><col style="width:120px"></colgroup>
+        <colgroup><col style="width:40px"><col><col style="width:130px"><col style="width:120px"></colgroup>
         <thead>
           <tr>
             <th>NO</th>
@@ -1126,7 +1228,7 @@ function renderRincian() {
           ${mergeRincianKeterangan(rincianRows) || '<tr><td colspan="4" style="text-align:center;color:#a0aec0;padding:16px">Tidak ada komponen biaya yang dipilih</td></tr>'}
           <tr class="rincian-total-row">
             <td colspan="2" style="text-align:center;font-weight:700">J u m l a h</td>
-            <td style="text-align:center;font-weight:700">${rp(b.total)}</td>
+            <td class="tr" style="font-weight:700">${rp(b.total)}</td>
             <td></td>
           </tr>
         </tbody>
@@ -1255,7 +1357,7 @@ function renderDPR() {
   const alamat = document.getElementById('cfg_alamatKuitansi').value;
   const kotaAsal = document.getElementById('cfg_kotaAsal').value;
   const kotaTeks = document.getElementById('kotaTujuan').value.trim();
-  const tujuan = kotaTeks ? kotaDenganProvinsi(kotaTeks) : '-';
+  const tujuan = getTujuanDisplay(kotaTeks);
   const noSPD = spdPerEmployee[emp.id] || '-';
   const tanggalSPD = formatTgl(document.getElementById('tglSPD').value);
   const ppkNama = document.getElementById('cfg_ppkNama').value;

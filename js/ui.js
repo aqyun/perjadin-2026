@@ -47,13 +47,16 @@ initTheme();
 // INIT
 // =====================================================================
 document.addEventListener('DOMContentLoaded', () => {
-  // Populate provinsi dropdown
-  const sel = document.getElementById('provinsiTujuan');
-  sbmData.forEach(s => {
-    const opt = document.createElement('option');
-    opt.value = s.id;
-    opt.textContent = formatProvinsi(s.provinsi);
-    sel.appendChild(opt);
+  // Populate provinsi dropdowns
+  ['provinsiTujuan', 'provinsiTujuan1', 'provinsiTujuan2'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    sbmData.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = formatProvinsi(s.provinsi);
+      sel.appendChild(opt);
+    });
   });
   renderEmployeeList();
   const datePill = document.getElementById('datePill');
@@ -95,6 +98,28 @@ function validateTripForm() {
   const missing = [];
 
   REQUIRED_FIELDS.forEach(f => {
+    if (f.id === 'provinsiTujuan' && typeof isMultiProvActive === 'function' && isMultiProvActive()) {
+      const p1 = document.getElementById('provinsiTujuan1');
+      const p2 = document.getElementById('provinsiTujuan2');
+      const g1 = p1?.closest('.form-group');
+      const g2 = p2?.closest('.form-group');
+      const v1 = (p1?.value || '').trim();
+      const v2 = (p2?.value || '').trim();
+      if (!v1) {
+        if (g1) g1.classList.add('has-error');
+        missing.push({ el: p1, label: 'Provinsi Tujuan 1', id: 'provinsiTujuan1' });
+      } else if (g1) {
+        g1.classList.remove('has-error');
+      }
+      if (!v2) {
+        if (g2) g2.classList.add('has-error');
+        missing.push({ el: p2, label: 'Provinsi Tujuan 2', id: 'provinsiTujuan2' });
+      } else if (g2) {
+        g2.classList.remove('has-error');
+      }
+      return;
+    }
+
     const el = document.getElementById(f.id);
     if (!el) return;
     const val = (el.value || '').trim();
@@ -121,6 +146,21 @@ function validateTripForm() {
       customError: true
     });
     dateMismatch = true;
+  }
+
+  // Cek multi-provinsi pembagian hari
+  if (typeof isMultiProvActive === 'function' && isMultiProvActive()) {
+    const totalDays = (typeof getDays === 'function' ? getDays().days : 0) || 1;
+    const h1 = parseInt(document.getElementById('hariProvinsi1')?.value) || 0;
+    const h2 = parseInt(document.getElementById('hariProvinsi2')?.value) || 0;
+    if (totalDays > 1 && (h1 <= 0 || h2 <= 0 || (h1 + h2 !== totalDays))) {
+      missing.push({
+        el: document.getElementById('hariProvinsi1'),
+        label: `Pembagian hari (${h1} hr + ${h2} hr) harus sesuai total lama tugas (${totalDays} Hari)`,
+        id: 'hariProvinsi1',
+        customError: true
+      });
+    }
   }
 
   // Cek minimal 1 pegawai
@@ -226,6 +266,27 @@ function setupRealtimeValidation() {
     el.addEventListener('blur', () => {
       updateFieldFilledStatus(el);
       if (!(el.value || '').trim()) {
+        if (group) group.classList.add('has-error');
+      }
+    });
+  });
+
+  ['provinsiTujuan1', 'provinsiTujuan2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const group = el.closest('.form-group');
+    updateFieldFilledStatus(el);
+    ['input', 'change'].forEach(evt => {
+      el.addEventListener(evt, () => {
+        updateFieldFilledStatus(el);
+        if ((el.value || '').trim()) {
+          if (group) group.classList.remove('has-error');
+        }
+      });
+    });
+    el.addEventListener('blur', () => {
+      updateFieldFilledStatus(el);
+      if (!(el.value || '').trim() && typeof isMultiProvActive === 'function' && isMultiProvActive()) {
         if (group) group.classList.add('has-error');
       }
     });

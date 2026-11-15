@@ -1,4 +1,4 @@
-// === data.js ===
+// --- START OF js/data.js ---
 // =====================================================================
 // DATA & STATE (PerdinKu)
 // Data pegawai, data master SBM, dan state aplikasi
@@ -11,7 +11,6 @@ const employees = [
   { id: 0, nama: 'Yenita Sari, S.H., M.H.', nip: '197905172002122002', pangkat: 'Pembina Tingkat 1', gol: 'IV/b', jabatan: 'Kepala Biro Komunikasi Publik' },
   { id: 1, nama: 'Arif Fajar Alfalaqy, S.Sos., M.Sc.', nip: '198305152008011009', pangkat: 'Pembina', gol: 'IV/a', jabatan: 'Kabag. Pengelolaan Dokumentasi dan Hubungan Media' },
   { id: 2, nama: 'Rendhi Mirad, S.Sos., M.S.E.', nip: '198205212006041002', pangkat: 'Pembina', gol: 'IV/a', jabatan: 'Kabag. Pelayanan Publik dan Publikasi' },
-  { id: 3, nama: 'Dwi Handoko, S.Kom., M.Si., M.MT.', nip: '198811112010121002', pangkat: 'Penata Tingkat I', gol: 'III/d', jabatan: 'Kepala Subbagian Tata Usaha' },
   { id: 4, nama: 'Ristyan Mega Putra, S.Sos, M.Si.', nip: '198310142010121001', pangkat: 'Penata Tingkat I', gol: 'III/d', jabatan: 'Pranata Humas Ahli Muda' },
   { id: 5, nama: 'Ahmad Jayadi, S.Hum, M.T.', nip: '198702182010121003', pangkat: 'Penata Tingkat I', gol: 'III/d', jabatan: 'Kepala Subbagian Tata Usaha' },
   { id: 6, nama: 'Erwin Alimudin, S.Ds.', nip: '199305222019031006', pangkat: 'Penata Muda Tingkat I', gol: 'III/b', jabatan: 'Pranata Humas Ahli Pertama' },
@@ -70,49 +69,50 @@ const employees = [
 
 // =====================================================================
 // DATA SBM (dari sheet Master - PMK)
-// Fields: uh=uang harian 100%, jktPP=transport JKT PP, taxi=taxi lokal,
+// Fields: uh=uang harian 100%, diklat=uang harian diklat, fullboard=uang harian fullboard,
+//         jktPP=transport JKT PP, taxi=taxi lokal,
 //         h4=hotel Eselon III/Gol IV, h3=hotel Eselon IV/Gol III,
 //         h2=hotel Eselon II, h1=hotel Eselon I, tiket=tiket pesawat PP
 // =====================================================================
 const sbmData = [
-  { id: 1, provinsi: 'NANGROE ACEH DARUSSALAM', ibukota: 'Banda Aceh', uh: 360000, jktPP: 512000, taxi: 254000, dpr: 766000, h1: 4774000, h2: 3526000, h4: 1578000, h3: 770000, tiket: 4492000 }, 
-  { id: 2, provinsi: 'SUMATERA UTARA', ibukota: 'Medan', uh: 370000, jktPP: 512000, taxi: 616000, dpr: 1128000, h1: 4960000, h2: 2195000, h4: 1188000, h3: 699000, tiket: 3808000 }, 
-  { id: 3, provinsi: 'RIAU', ibukota: 'Pekanbaru', uh: 370000, jktPP: 512000, taxi: 202000, dpr: 714000, h1: 3820000, h2: 3119000, h4: 1650000, h3: 852000, tiket: 3016000 }, 
-  { id: 4, provinsi: 'KEPULAUAN RIAU', ibukota: 'Tanjung Pinang', uh: 370000, jktPP: 512000, taxi: 330000, dpr: 842000, h1: 5772000, h2: 2318000, h4: 1297000, h3: 792000, tiket: 0 }, 
-  { id: 5, provinsi: 'JAMBI', ibukota: 'Jambi', uh: 370000, jktPP: 512000, taxi: 294000, dpr: 806000, h1: 5004000, h2: 4102000, h4: 1225000, h3: 580000, tiket: 2460000 }, 
-  { id: 6, provinsi: 'SUMATERA BARAT', ibukota: 'Padang', uh: 380000, jktPP: 512000, taxi: 380000, dpr: 892000, h1: 5236000, h2: 3332000, h4: 1353000, h3: 701000, tiket: 2952000 }, 
-  { id: 7, provinsi: 'SUMATERA SELATAN', ibukota: 'Palembang', uh: 380000, jktPP: 512000, taxi: 358000, dpr: 870000, h1: 6298000, h2: 3083000, h4: 1966000, h3: 861000, tiket: 2268000 }, 
-  { id: 8, provinsi: 'LAMPUNG', ibukota: 'Bandar Lampung', uh: 380000, jktPP: 512000, taxi: 336000, dpr: 848000, h1: 4491000, h2: 2488000, h4: 1539000, h3: 580000, tiket: 1583000 }, 
-  { id: 9, provinsi: 'BENGKULU', ibukota: 'Bengkulu', uh: 380000, jktPP: 512000, taxi: 218000, dpr: 730000, h1: 2140000, h2: 1628000, h4: 1546000, h3: 692000, tiket: 2621000 }, 
-  { id: 10, provinsi: 'BANGKA BELITUNG', ibukota: 'Pangkal Pinang', uh: 410000, jktPP: 512000, taxi: 194000, dpr: 706000, h1: 4134000, h2: 2838000, h4: 1957000, h3: 676000, tiket: 2139000 }, 
-  { id: 11, provinsi: 'BANTEN', ibukota: 'Serang', uh: 370000, jktPP: 0, taxi: 536000, dpr: 536000, h1: 5725000, h2: 2373000, h4: 1301000, h3: 724000, tiket: 0 }, 
-  { id: 12, provinsi: 'JAWA BARAT', ibukota: 'Bandung', uh: 430000, jktPP: 512000, taxi: 400000, dpr: 912000, h1: 5812000, h2: 2755000, h4: 1298000, h3: 686000, tiket: 0 }, 
-  { id: 13, provinsi: 'DKI JAKARTA', ibukota: 'Jakarta', uh: 530000, jktPP: 0, taxi: 512000, dpr: 512000, h1: 8720000, h2: 2063000, h4: 992000, h3: 730000, tiket: 0 }, 
-  { id: 14, provinsi: 'JAWA TENGAH', ibukota: 'Semarang', uh: 370000, jktPP: 512000, taxi: 216000, dpr: 728000, h1: 5728000, h2: 1998000, h4: 1201000, h3: 810000, tiket: 2182000 }, 
-  { id: 15, provinsi: 'D.I. YOGYAKARTA', ibukota: 'Yogyakarta', uh: 420000, jktPP: 512000, taxi: 534000, dpr: 1046000, h1: 5017000, h2: 2695000, h4: 1495000, h3: 845000, tiket: 2268000 }, 
-  { id: 16, provinsi: 'JAWA TIMUR', ibukota: 'Surabaya', uh: 410000, jktPP: 512000, taxi: 466000, dpr: 978000, h1: 4449000, h2: 2007000, h4: 1153000, h3: 814000, tiket: 2674000 }, 
-  { id: 17, provinsi: 'BALI', ibukota: 'Denpasar', uh: 480000, jktPP: 512000, taxi: 454000, dpr: 966000, h1: 6848000, h2: 2433000, h4: 1685000, h3: 1138000, tiket: 3262000 }, 
-  { id: 18, provinsi: 'NUSA TENGGARA BARAT', ibukota: 'Mataram', uh: 440000, jktPP: 512000, taxi: 462000, dpr: 974000, h1: 4375000, h2: 2648000, h4: 1418000, h3: 907000, tiket: 3230000 }, 
-  { id: 19, provinsi: 'NUSA TENGGARA TIMUR', ibukota: 'Kupang', uh: 430000, jktPP: 512000, taxi: 232000, dpr: 744000, h1: 3750000, h2: 2133000, h4: 1355000, h3: 688000, tiket: 5081000 }, 
-  { id: 20, provinsi: 'KALIMANTAN BARAT', ibukota: 'Pontianak', uh: 380000, jktPP: 512000, taxi: 342000, dpr: 854000, h1: 2654000, h2: 1923000, h4: 1125000, h3: 538000, tiket: 2781000 }, 
-  { id: 21, provinsi: 'KALIMANTAN TENGAH', ibukota: 'Palangkaraya', uh: 360000, jktPP: 512000, taxi: 268000, dpr: 780000, h1: 4901000, h2: 3391000, h4: 1160000, h3: 659000, tiket: 2984000 }, 
-  { id: 22, provinsi: 'KALIMANTAN SELATAN', ibukota: 'Banjarmasin', uh: 380000, jktPP: 512000, taxi: 360000, dpr: 872000, h1: 4797000, h2: 3316000, h4: 1500000, h3: 697000, tiket: 2995000 }, 
-  { id: 23, provinsi: 'KALIMANTAN TIMUR', ibukota: 'Samarinda', uh: 430000, jktPP: 512000, taxi: 1066000, dpr: 1578000, h1: 4000000, h2: 2188000, h4: 1507000, h3: 804000, tiket: 3797000 }, 
-  { id: 24, provinsi: 'KALIMANTAN UTARA', ibukota: 'Tanjung Selor', uh: 430000, jktPP: 512000, taxi: 436000, dpr: 948000, h1: 4000000, h2: 2735000, h4: 1507000, h3: 904000, tiket: 4057000 }, 
-  { id: 25, provinsi: 'SULAWESI UTARA', ibukota: 'Manado', uh: 370000, jktPP: 512000, taxi: 276000, dpr: 788000, h1: 4919000, h2: 2290000, h4: 1270000, h3: 978000, tiket: 5102000 }, 
-  { id: 26, provinsi: 'GORONTALO', ibukota: 'Gorontalo', uh: 370000, jktPP: 512000, taxi: 530000, dpr: 1042000, h1: 4168000, h2: 3107000, h4: 1606000, h3: 955000, tiket: 4824000 }, 
-  { id: 27, provinsi: 'SULAWESI BARAT', ibukota: 'Mamuju', uh: 410000, jktPP: 512000, taxi: 626000, dpr: 1138000, h1: 4076000, h2: 3098000, h4: 1344000, h3: 704000, tiket: 4867000 }, 
-  { id: 28, provinsi: 'SULAWESI SELATAN', ibukota: 'Makassar', uh: 430000, jktPP: 512000, taxi: 374000, dpr: 886000, h1: 4820000, h2: 1938000, h4: 1423000, h3: 745000, tiket: 3829000 }, 
-  { id: 29, provinsi: 'SULAWESI TENGAH', ibukota: 'Palu', uh: 370000, jktPP: 512000, taxi: 330000, dpr: 842000, h1: 2309000, h2: 2027000, h4: 1679000, h3: 951000, tiket: 5113000 }, 
-  { id: 30, provinsi: 'SULAWESI TENGGARA', ibukota: 'Kendari', uh: 380000, jktPP: 512000, taxi: 342000, dpr: 854000, h1: 3088800, h2: 2574000, h4: 1297000, h3: 786000, tiket: 4182000 }, 
-  { id: 31, provinsi: 'MALUKU', ibukota: 'Ambon', uh: 380000, jktPP: 512000, taxi: 576000, dpr: 1088000, h1: 3467000, h2: 3240000, h4: 1059000, h3: 667000, tiket: 7081000 }, 
-  { id: 32, provinsi: 'MALUKU UTARA', ibukota: 'Sofifi', uh: 430000, jktPP: 512000, taxi: 430000, dpr: 942000, h1: 4612000, h2: 3843000, h4: 1160000, h3: 654000, tiket: 0 }, 
-  { id: 33, provinsi: 'PAPUA', ibukota: 'Jayapura', uh: 580000, jktPP: 512000, taxi: 1026000, dpr: 1538000, h1: 3872000, h2: 3318000, h4: 2521000, h3: 1038000, tiket: 8193000 }, 
-  { id: 34, provinsi: 'PAPUA BARAT', ibukota: 'Manokwari', uh: 480000, jktPP: 512000, taxi: 472000, dpr: 984000, h1: 3872000, h2: 3341000, h4: 2056000, h3: 967000, tiket: 10824000 }, 
-  { id: 35, provinsi: 'PAPUA BARAT DAYA', ibukota: '-', uh: 480000, jktPP: 0, taxi: 0, dpr: 0, h1: 3872000, h2: 3341000, h4: 2056000, h3: 967000, tiket: 0 }, 
-  { id: 36, provinsi: 'PAPUA TENGAH', ibukota: '-', uh: 580000, jktPP: 0, taxi: 0, dpr: 0, h1: 3859000, h2: 3318000, h4: 2521000, h3: 1038000, tiket: 0 }, 
-  { id: 37, provinsi: 'PAPUA SELATAN', ibukota: '-', uh: 580000, jktPP: 0, taxi: 0, dpr: 0, h1: 5673000, h2: 4877000, h4: 3706000, h3: 1526000, tiket: 0 }, 
-  { id: 38, provinsi: 'PAPUA PEGUNUNGAN', ibukota: '-', uh: 580000, jktPP: 0, taxi: 0, dpr: 0, h1: 5711000, h2: 4911000, h4: 3731000, h3: 1536000, tiket: 0 }, 
+  { id: 1, provinsi: 'NANGROE ACEH DARUSSALAM', ibukota: 'Banda Aceh', uh: 360000, diklat: 110000, fullboard: 130000, makan: 51000, snack: 21000, jktPP: 512000, taxi: 254000, dpr: 766000, h1: 4774000, h2: 3526000, h4: 1578000, h3: 770000, tiket: 4492000 }, 
+  { id: 2, provinsi: 'SUMATERA UTARA', ibukota: 'Medan', uh: 370000, diklat: 110000, fullboard: 130000, makan: 47000, snack: 17000, jktPP: 512000, taxi: 616000, dpr: 1128000, h1: 4960000, h2: 2195000, h4: 1188000, h3: 699000, tiket: 3808000 }, 
+  { id: 3, provinsi: 'RIAU', ibukota: 'Pekanbaru', uh: 370000, diklat: 110000, fullboard: 130000, makan: 47000, snack: 21000, jktPP: 512000, taxi: 202000, dpr: 714000, h1: 3820000, h2: 3119000, h4: 1650000, h3: 852000, tiket: 3016000 }, 
+  { id: 4, provinsi: 'KEPULAUAN RIAU', ibukota: 'Tanjung Pinang', uh: 370000, diklat: 110000, fullboard: 130000, makan: 47000, snack: 21000, jktPP: 512000, taxi: 330000, dpr: 842000, h1: 5772000, h2: 2318000, h4: 1297000, h3: 792000, tiket: 0 }, 
+  { id: 5, provinsi: 'JAMBI', ibukota: 'Jambi', uh: 370000, diklat: 110000, fullboard: 130000, makan: 43000, snack: 19000, jktPP: 512000, taxi: 294000, dpr: 806000, h1: 5004000, h2: 4102000, h4: 1225000, h3: 580000, tiket: 2460000 }, 
+  { id: 6, provinsi: 'SUMATERA BARAT', ibukota: 'Padang', uh: 380000, diklat: 110000, fullboard: 130000, makan: 45000, snack: 19000, jktPP: 512000, taxi: 380000, dpr: 892000, h1: 5236000, h2: 3332000, h4: 1353000, h3: 701000, tiket: 2952000 }, 
+  { id: 7, provinsi: 'SUMATERA SELATAN', ibukota: 'Palembang', uh: 380000, diklat: 110000, fullboard: 130000, makan: 48000, snack: 22000, jktPP: 512000, taxi: 358000, dpr: 870000, h1: 6298000, h2: 3083000, h4: 1966000, h3: 861000, tiket: 2268000 }, 
+  { id: 8, provinsi: 'LAMPUNG', ibukota: 'Bandar Lampung', uh: 380000, diklat: 110000, fullboard: 130000, makan: 45000, snack: 21000, jktPP: 512000, taxi: 336000, dpr: 848000, h1: 4491000, h2: 2488000, h4: 1539000, h3: 580000, tiket: 1583000 }, 
+  { id: 9, provinsi: 'BENGKULU', ibukota: 'Bengkulu', uh: 380000, diklat: 110000, fullboard: 130000, makan: 44000, snack: 21000, jktPP: 512000, taxi: 218000, dpr: 730000, h1: 2140000, h2: 1628000, h4: 1546000, h3: 692000, tiket: 2621000 }, 
+  { id: 10, provinsi: 'BANGKA BELITUNG', ibukota: 'Pangkal Pinang', uh: 410000, diklat: 120000, fullboard: 130000, makan: 47000, snack: 21000, jktPP: 512000, taxi: 194000, dpr: 706000, h1: 4134000, h2: 2838000, h4: 1957000, h3: 676000, tiket: 2139000 }, 
+  { id: 11, provinsi: 'BANTEN', ibukota: 'Serang', uh: 370000, diklat: 110000, fullboard: 130000, makan: 54000, snack: 21000, jktPP: 0, taxi: 536000, dpr: 536000, h1: 5725000, h2: 2373000, h4: 1301000, h3: 724000, tiket: 0 }, 
+  { id: 12, provinsi: 'JAWA BARAT', ibukota: 'Bandung', uh: 430000, diklat: 130000, fullboard: 130000, makan: 54000, snack: 22000, jktPP: 512000, taxi: 400000, dpr: 912000, h1: 5812000, h2: 2755000, h4: 1298000, h3: 686000, tiket: 0 }, 
+  { id: 13, provinsi: 'DKI JAKARTA', ibukota: 'Jakarta', uh: 530000, diklat: 160000, fullboard: 130000, makan: 53000, snack: 24000, jktPP: 0, taxi: 512000, dpr: 512000, h1: 8720000, h2: 2063000, h4: 992000, h3: 730000, tiket: 0 }, 
+  { id: 14, provinsi: 'JAWA TENGAH', ibukota: 'Semarang', uh: 370000, diklat: 110000, fullboard: 130000, makan: 57000, snack: 17000, jktPP: 512000, taxi: 216000, dpr: 728000, h1: 5728000, h2: 1998000, h4: 1201000, h3: 810000, tiket: 2182000 }, 
+  { id: 15, provinsi: 'D.I. YOGYAKARTA', ibukota: 'Yogyakarta', uh: 420000, diklat: 130000, fullboard: 130000, makan: 44000, snack: 20000, jktPP: 512000, taxi: 534000, dpr: 1046000, h1: 5017000, h2: 2695000, h4: 1495000, h3: 845000, tiket: 2268000 }, 
+  { id: 16, provinsi: 'JAWA TIMUR', ibukota: 'Surabaya', uh: 410000, diklat: 120000, fullboard: 130000, makan: 49000, snack: 23000, jktPP: 512000, taxi: 466000, dpr: 978000, h1: 4449000, h2: 2007000, h4: 1153000, h3: 814000, tiket: 2674000 }, 
+  { id: 17, provinsi: 'BALI', ibukota: 'Denpasar', uh: 480000, diklat: 140000, fullboard: 130000, makan: 52000, snack: 22000, jktPP: 512000, taxi: 454000, dpr: 966000, h1: 6848000, h2: 2433000, h4: 1685000, h3: 1138000, tiket: 3262000 }, 
+  { id: 18, provinsi: 'NUSA TENGGARA BARAT', ibukota: 'Mataram', uh: 440000, diklat: 130000, fullboard: 130000, makan: 46000, snack: 21000, jktPP: 512000, taxi: 462000, dpr: 974000, h1: 4375000, h2: 2648000, h4: 1418000, h3: 907000, tiket: 3230000 }, 
+  { id: 19, provinsi: 'NUSA TENGGARA TIMUR', ibukota: 'Kupang', uh: 430000, diklat: 130000, fullboard: 130000, makan: 47000, snack: 23000, jktPP: 512000, taxi: 232000, dpr: 744000, h1: 3750000, h2: 2133000, h4: 1355000, h3: 688000, tiket: 5081000 }, 
+  { id: 20, provinsi: 'KALIMANTAN BARAT', ibukota: 'Pontianak', uh: 380000, diklat: 110000, fullboard: 130000, makan: 51000, snack: 17000, jktPP: 512000, taxi: 342000, dpr: 854000, h1: 2654000, h2: 1923000, h4: 1125000, h3: 538000, tiket: 2781000 }, 
+  { id: 21, provinsi: 'KALIMANTAN TENGAH', ibukota: 'Palangkaraya', uh: 360000, diklat: 110000, fullboard: 130000, makan: 42000, snack: 16000, jktPP: 512000, taxi: 268000, dpr: 780000, h1: 4901000, h2: 3391000, h4: 1160000, h3: 659000, tiket: 2984000 }, 
+  { id: 22, provinsi: 'KALIMANTAN SELATAN', ibukota: 'Banjarmasin', uh: 380000, diklat: 110000, fullboard: 130000, makan: 46000, snack: 22000, jktPP: 512000, taxi: 360000, dpr: 872000, h1: 4797000, h2: 3316000, h4: 1500000, h3: 697000, tiket: 2995000 }, 
+  { id: 23, provinsi: 'KALIMANTAN TIMUR', ibukota: 'Samarinda', uh: 430000, diklat: 130000, fullboard: 130000, makan: 51000, snack: 24000, jktPP: 512000, taxi: 1066000, dpr: 1578000, h1: 4000000, h2: 2188000, h4: 1507000, h3: 804000, tiket: 3797000 }, 
+  { id: 24, provinsi: 'KALIMANTAN UTARA', ibukota: 'Tanjung Selor', uh: 430000, diklat: 130000, fullboard: 130000, makan: 51000, snack: 24000, jktPP: 512000, taxi: 436000, dpr: 948000, h1: 4000000, h2: 2735000, h4: 1507000, h3: 904000, tiket: 4057000 }, 
+  { id: 25, provinsi: 'SULAWESI UTARA', ibukota: 'Manado', uh: 370000, diklat: 110000, fullboard: 130000, makan: 48000, snack: 23000, jktPP: 512000, taxi: 276000, dpr: 788000, h1: 4919000, h2: 2290000, h4: 1270000, h3: 978000, tiket: 5102000 }, 
+  { id: 26, provinsi: 'GORONTALO', ibukota: 'Gorontalo', uh: 370000, diklat: 110000, fullboard: 130000, makan: 45000, snack: 22000, jktPP: 512000, taxi: 530000, dpr: 1042000, h1: 4168000, h2: 3107000, h4: 1606000, h3: 955000, tiket: 4824000 }, 
+  { id: 27, provinsi: 'SULAWESI BARAT', ibukota: 'Mamuju', uh: 410000, diklat: 120000, fullboard: 130000, makan: 45000, snack: 22000, jktPP: 512000, taxi: 626000, dpr: 1138000, h1: 4076000, h2: 3098000, h4: 1344000, h3: 704000, tiket: 4867000 }, 
+  { id: 28, provinsi: 'SULAWESI SELATAN', ibukota: 'Makassar', uh: 430000, diklat: 130000, fullboard: 130000, makan: 47000, snack: 23000, jktPP: 512000, taxi: 374000, dpr: 886000, h1: 4820000, h2: 1938000, h4: 1423000, h3: 745000, tiket: 3829000 }, 
+  { id: 29, provinsi: 'SULAWESI TENGAH', ibukota: 'Palu', uh: 370000, diklat: 110000, fullboard: 130000, makan: 45000, snack: 22000, jktPP: 512000, taxi: 330000, dpr: 842000, h1: 2309000, h2: 2027000, h4: 1679000, h3: 951000, tiket: 5113000 }, 
+  { id: 30, provinsi: 'SULAWESI TENGGARA', ibukota: 'Kendari', uh: 380000, diklat: 110000, fullboard: 130000, makan: 45000, snack: 22000, jktPP: 512000, taxi: 342000, dpr: 854000, h1: 3088800, h2: 2574000, h4: 1297000, h3: 786000, tiket: 4182000 }, 
+  { id: 31, provinsi: 'MALUKU', ibukota: 'Ambon', uh: 380000, diklat: 110000, fullboard: 130000, makan: 50000, snack: 24000, jktPP: 512000, taxi: 576000, dpr: 1088000, h1: 3467000, h2: 3240000, h4: 1059000, h3: 667000, tiket: 7081000 }, 
+  { id: 32, provinsi: 'MALUKU UTARA', ibukota: 'Sofifi', uh: 430000, diklat: 130000, fullboard: 130000, makan: 48000, snack: 24000, jktPP: 512000, taxi: 430000, dpr: 942000, h1: 4612000, h2: 3843000, h4: 1160000, h3: 654000, tiket: 0 }, 
+  { id: 33, provinsi: 'PAPUA', ibukota: 'Jayapura', uh: 580000, diklat: 170000, fullboard: 130000, makan: 65000, snack: 30000, jktPP: 512000, taxi: 1026000, dpr: 1538000, h1: 3872000, h2: 3318000, h4: 2521000, h3: 1038000, tiket: 8193000 }, 
+  { id: 34, provinsi: 'PAPUA BARAT', ibukota: 'Manokwari', uh: 480000, diklat: 140000, fullboard: 130000, makan: 58000, snack: 28000, jktPP: 512000, taxi: 472000, dpr: 984000, h1: 3872000, h2: 3341000, h4: 2056000, h3: 967000, tiket: 10824000 }, 
+  { id: 35, provinsi: 'PAPUA BARAT DAYA', ibukota: '-', uh: 480000, diklat: 140000, fullboard: 130000, makan: 58000, snack: 28000, jktPP: 0, taxi: 0, dpr: 0, h1: 3872000, h2: 3341000, h4: 2056000, h3: 967000, tiket: 0 }, 
+  { id: 36, provinsi: 'PAPUA TENGAH', ibukota: '-', uh: 580000, diklat: 170000, fullboard: 130000, makan: 75000, snack: 35000, jktPP: 0, taxi: 0, dpr: 0, h1: 3859000, h2: 3318000, h4: 2521000, h3: 1038000, tiket: 0 }, 
+  { id: 37, provinsi: 'PAPUA SELATAN', ibukota: '-', uh: 580000, diklat: 170000, fullboard: 130000, makan: 75000, snack: 35000, jktPP: 0, taxi: 0, dpr: 0, h1: 5673000, h2: 4877000, h4: 3706000, h3: 1526000, tiket: 0 }, 
+  { id: 38, provinsi: 'PAPUA PEGUNUNGAN', ibukota: '-', uh: 580000, diklat: 170000, fullboard: 130000, makan: 85000, snack: 40000, jktPP: 0, taxi: 0, dpr: 0, h1: 5711000, h2: 4911000, h4: 3731000, h3: 1536000, tiket: 0 }, 
 ];
 
 // =====================================================================
@@ -131,8 +131,9 @@ try {
 }
 
 
+// --- END OF js/data.js ---
 
-// === utils.js ===
+// --- START OF js/utils.js ---
 // =====================================================================
 // FORMAT HELPERS & UTILITIES (PerdinKu)
 // Helper format mata uang, tanggal, terbilang, teks
@@ -194,8 +195,9 @@ function terbilang(angka) {
 }
 
 
+// --- END OF js/utils.js ---
 
-// === calc.js ===
+// --- START OF js/calc.js ---
 // =====================================================================
 // SBM & PERHITUNGAN BIAYA (PerdinKu)
 // Perhitungan uang harian, hotel, transportasi, DPR, dan tarif SBM
@@ -205,7 +207,12 @@ function terbilang(angka) {
 // SBM & LAMA TUGAS
 // =====================================================================
 function getSBM() {
-  const id = parseInt(document.getElementById('provinsiTujuan').value);
+  if (isMultiProvActive()) {
+    const id1 = parseInt(document.getElementById('provinsiTujuan1')?.value || document.getElementById('provinsiTujuan')?.value);
+    const s1 = sbmData.find(s => s.id === id1);
+    if (s1) return s1;
+  }
+  const id = parseInt(document.getElementById('provinsiTujuan')?.value);
   return sbmData.find(s => s.id === id) || null;
 }
 
@@ -218,6 +225,137 @@ function formatProvinsi(nama) {
     .join(' ');
 }
 
+function getProvShortName(provName) {
+  if (!provName) return '';
+  const up = String(provName).toUpperCase();
+  if (up.includes('BARAT') && up.includes('NUSA TENGGARA')) return 'NTB';
+  if (up.includes('TIMUR') && up.includes('NUSA TENGGARA')) return 'NTT';
+  if (up === 'DKI JAKARTA') return 'DKI Jakarta';
+  if (up === 'D.I. YOGYAKARTA' || up === 'DI YOGYAKARTA' || up === 'DAERAH ISTIMEWA YOGYAKARTA') return 'D.I. Yogyakarta';
+  return formatProvinsi(provName);
+}
+
+function isMultiProvActive() {
+  return !!document.getElementById('cbMultiProvinsi')?.checked;
+}
+
+function getMultiProvData() {
+  if (!isMultiProvActive()) return null;
+  const id1 = parseInt(document.getElementById('provinsiTujuan1')?.value || document.getElementById('provinsiTujuan')?.value);
+  const id2 = parseInt(document.getElementById('provinsiTujuan2')?.value);
+  const sbm1 = sbmData.find(s => s.id === id1) || null;
+  const sbm2 = sbmData.find(s => s.id === id2) || null;
+  if (!sbm1 || !sbm2) return null;
+
+  const totalDays = getDays().days || 1;
+  let d1 = parseInt(document.getElementById('hariProvinsi1')?.value);
+  let d2 = parseInt(document.getElementById('hariProvinsi2')?.value);
+
+  if (isNaN(d1) || d1 <= 0) d1 = Math.max(1, Math.floor(totalDays / 2));
+  if (isNaN(d2) || d2 <= 0) d2 = Math.max(1, totalDays - d1);
+
+  return {
+    sbm1,
+    sbm2,
+    days1: d1,
+    days2: d2
+  };
+}
+
+function toggleMultiProvinsi() {
+  const isChecked = !!document.getElementById('cbMultiProvinsi')?.checked;
+  const sec = document.getElementById('multiProvSection');
+  const mainProvGroup = document.getElementById('mainProvinsiGroup') || document.querySelector('[data-field="provinsiTujuan"]');
+  if (sec) sec.style.display = isChecked ? 'block' : 'none';
+  if (mainProvGroup) {
+    mainProvGroup.style.display = isChecked ? 'none' : '';
+    if (isChecked) mainProvGroup.classList.remove('has-error');
+  }
+
+  if (isChecked) {
+    const mainProv = document.getElementById('provinsiTujuan')?.value;
+    const prov1 = document.getElementById('provinsiTujuan1');
+    if (prov1 && mainProv && !prov1.value) {
+      prov1.value = mainProv;
+    }
+    const totalDays = getDays().days || 1;
+    const elDays1 = document.getElementById('hariProvinsi1');
+    const elDays2 = document.getElementById('hariProvinsi2');
+    if (elDays1 && (!elDays1.value || parseInt(elDays1.value) <= 0)) {
+      elDays1.value = Math.max(1, Math.floor(totalDays / 2));
+    }
+    if (elDays2 && (!elDays2.value || parseInt(elDays2.value) <= 0)) {
+      elDays2.value = Math.max(1, totalDays - parseInt(elDays1.value || 1));
+    }
+    const lblTotal = document.getElementById('multiProvTotalLama');
+    if (lblTotal) lblTotal.textContent = `${totalDays} Hari`;
+  } else {
+    const prov1Val = document.getElementById('provinsiTujuan1')?.value;
+    const mainProv = document.getElementById('provinsiTujuan');
+    if (mainProv && prov1Val && !mainProv.value) {
+      mainProv.value = prov1Val;
+      changeProvince();
+    }
+  }
+  updateSBMPreview();
+  if (typeof renderCurrentTab === 'function') renderCurrentTab();
+}
+
+function onMultiProvChange(idx) {
+  const p1 = document.getElementById('provinsiTujuan1');
+  const p2 = document.getElementById('provinsiTujuan2');
+  const main = document.getElementById('provinsiTujuan');
+  if (p1 && p1.value && main) {
+    main.value = p1.value;
+  }
+  if (p1 && typeof updateFieldFilledStatus === 'function') updateFieldFilledStatus(p1);
+  if (p2 && typeof updateFieldFilledStatus === 'function') updateFieldFilledStatus(p2);
+  const sbm = getSBM();
+  if (sbm) {
+    const makanRate = sbm.makan || 0;
+    const snackRate = sbm.snack || 0;
+    const elMakan = document.getElementById('tarifMakan');
+    if (elMakan) elMakan.value = makanRate ? rp(makanRate) : '0';
+    const elSnack = document.getElementById('tarifSnack');
+    if (elSnack) elSnack.value = snackRate ? rp(snackRate) : '0';
+  }
+  updateSBMPreview();
+  if (typeof renderCurrentTab === 'function') renderCurrentTab();
+}
+
+function onMultiProvDaysChange(idx) {
+  const totalDays = getDays().days || 1;
+  const el1 = document.getElementById('hariProvinsi1');
+  const el2 = document.getElementById('hariProvinsi2');
+  if (!el1 || !el2) return;
+
+  if (idx === 1) {
+    let d1 = parseInt(el1.value);
+    if (!isNaN(d1)) {
+      if (d1 >= totalDays && totalDays > 1) {
+        d1 = totalDays - 1;
+        el1.value = d1;
+      }
+      if (d1 > 0) {
+        el2.value = Math.max(1, totalDays - d1);
+      }
+    }
+  } else if (idx === 2) {
+    let d2 = parseInt(el2.value);
+    if (!isNaN(d2)) {
+      if (d2 >= totalDays && totalDays > 1) {
+        d2 = totalDays - 1;
+        el2.value = d2;
+      }
+      if (d2 > 0) {
+        el1.value = Math.max(1, totalDays - d2);
+      }
+    }
+  }
+  updateSBMPreview();
+  if (typeof renderCurrentTab === 'function') renderCurrentTab();
+}
+
 function kotaDenganProvinsi(kota) {
   const text = String(kota || '').trim();
   const sbm = getSBM();
@@ -228,21 +366,34 @@ function kotaDenganProvinsi(kota) {
   return `${text}, ${provinsi}`;
 }
 
-function changeProvince() {
-  saveProvinceFoodRates();
-  currentRateProvinceId = document.getElementById('provinsiTujuan').value;
-  const rates = provinceFoodRates[currentRateProvinceId] || {};
-  document.getElementById('tarifMakan').value = rates.makan || 0;
-  document.getElementById('tarifSnack').value = rates.snack || 0;
-  document.getElementById('dprManual').value = '';
-  const cbDPR = document.getElementById('cbDPR');
-  if (getSBM()?.provinsi === 'DKI JAKARTA' && !cbDPR.checked) {
-    cbDPR.checked = true;
-    dprAutoCheckedForDki = true;
-  } else if (getSBM()?.provinsi !== 'DKI JAKARTA' && dprAutoCheckedForDki) {
-    cbDPR.checked = false;
-    dprAutoCheckedForDki = false;
+function getTujuanDisplay(kotaTeks) {
+  const text = String(kotaTeks || '').trim();
+  const multi = getMultiProvData();
+  if (multi) {
+    const p1 = formatProvinsi(multi.sbm1.provinsi);
+    const p2 = formatProvinsi(multi.sbm2.provinsi);
+    if (text) return `${text} (${p1} & ${p2})`;
+    return `${p1} & ${p2}`;
   }
+  if (text) return kotaDenganProvinsi(text);
+  const sbm = getSBM();
+  return sbm ? `${sbm.ibukota}, ${formatProvinsi(sbm.provinsi)}` : '-';
+}
+
+function changeProvince() {
+  currentRateProvinceId = document.getElementById('provinsiTujuan').value;
+  const sbm = getSBM();
+  const makanRate = sbm ? (sbm.makan || 0) : 0;
+  const snackRate = sbm ? (sbm.snack || 0) : 0;
+  const elMakan = document.getElementById('tarifMakan');
+  if (elMakan) elMakan.value = makanRate ? rp(makanRate) : '0';
+  const elSnack = document.getElementById('tarifSnack');
+  if (elSnack) elSnack.value = snackRate ? rp(snackRate) : '0';
+  const elDpr = document.getElementById('dprManual');
+  if (elDpr) elDpr.value = '';
+  const cbDPR = document.getElementById('cbDPR');
+  if (cbDPR) cbDPR.checked = false;
+  dprAutoCheckedForDki = false;
   updateDPRInput();
   updateSBMPreview();
   updateSbmWarnings();
@@ -253,10 +404,8 @@ function markDPRManual() {
 }
 
 function updateDPRInput() {
-  const sbm = getSBM();
-  const isDkiJakarta = sbm?.provinsi === 'DKI JAKARTA';
-  const isDprChecked = document.getElementById('cbDPR').checked;
-  document.getElementById('dprManualField').style.display = isDprChecked && sbm && !isDkiJakarta ? 'block' : 'none';
+  const el = document.getElementById('dprManualField');
+  if (el) el.style.display = 'none';
 }
 
 function saveProvinceFoodRates() {
@@ -269,8 +418,26 @@ function saveProvinceFoodRates() {
 }
 
 function toggleKonsumsiFields() {
-  document.getElementById('konsumsiFields').style.display =
-    document.getElementById('jenisKegiatan').value === 'rapat' ? 'grid' : 'none';
+  const jenis = document.getElementById('jenisKegiatan')?.value || 'biasa';
+  const optBiasaWrap = document.getElementById('optKonsumsiBiasaWrap');
+  const konsumsiFields = document.getElementById('konsumsiFields');
+  const cbKonsumsiBiasa = document.getElementById('cbKonsumsiBiasa');
+
+  if (jenis === 'rapat') {
+    if (optBiasaWrap) optBiasaWrap.style.display = 'none';
+    if (konsumsiFields) konsumsiFields.style.display = 'grid';
+  } else if (jenis === 'biasa') {
+    if (optBiasaWrap) optBiasaWrap.style.display = 'flex';
+    if (konsumsiFields) {
+      konsumsiFields.style.display = cbKonsumsiBiasa?.checked ? 'grid' : 'none';
+    }
+  } else {
+    // fullboard or diklat
+    if (optBiasaWrap) optBiasaWrap.style.display = 'none';
+    if (konsumsiFields) konsumsiFields.style.display = 'none';
+  }
+  updateSBMPreview();
+  if (typeof renderCurrentTab === 'function') renderCurrentTab();
 }
 
 function toggleHotelFields() {
@@ -531,7 +698,22 @@ function updateSBMPreview() {
   if (!sbm) { pv.style.display = 'none'; return; }
   pv.style.display = 'block';
   const isDkiJakarta = sbm.provinsi === 'DKI JAKARTA';
-  document.getElementById('sbm_uh').textContent = isDkiJakarta ? `${rp(0)} (tidak dibayarkan)` : rp(sbm.uh);
+  const multi = getMultiProvData();
+  if (multi) {
+    const p1 = getProvShortName(multi.sbm1.provinsi);
+    const p2 = getProvShortName(multi.sbm2.provinsi);
+    document.getElementById('sbm_uh').textContent = `${rp(multi.sbm1.uh)} (${p1}) & ${rp(multi.sbm2.uh)} (${p2})`;
+  } else {
+    document.getElementById('sbm_uh').textContent = isDkiJakarta ? `${rp(0)} (tidak dibayarkan)` : rp(sbm.uh);
+  }
+  const elDiklat = document.getElementById('sbm_diklat');
+  if (elDiklat) elDiklat.textContent = isDkiJakarta ? `${rp(0)} (tidak dibayarkan)` : rp(sbm.diklat || 110000);
+  const elFullboard = document.getElementById('sbm_fullboard');
+  if (elFullboard) elFullboard.textContent = isDkiJakarta ? `${rp(0)} (tidak dibayarkan)` : rp(sbm.fullboard || 130000);
+  const elMakan = document.getElementById('sbm_makan');
+  if (elMakan) elMakan.textContent = rp(sbm.makan || 0);
+  const elSnack = document.getElementById('sbm_snack');
+  if (elSnack) elSnack.textContent = rp(sbm.snack || 0);
   document.getElementById('sbm_h4').textContent = rp(sbm.h4);
   document.getElementById('sbm_h3').textContent = rp(sbm.h3);
   document.getElementById('sbm_jkt').textContent = sbm.jktPP ? rp(sbm.jktPP) : '(tidak ada/dalam kota)';
@@ -647,6 +829,30 @@ function hitungLama() {
   const d1 = new Date(tgl1), d2 = new Date(tgl2);
   const diffDays = Math.round((d2 - d1) / 86400000) + 1;
   document.getElementById('lamaTugas').value = diffDays <= 0 ? 'Tanggal tidak valid' : `${diffDays} Hari`;
+  const elHariMakan = document.getElementById('hariMakan');
+  if (elHariMakan && !elHariMakan.value && diffDays > 0) {
+    elHariMakan.placeholder = `${diffDays} (default)`;
+  }
+  const elHariSnack = document.getElementById('hariSnack');
+  if (elHariSnack && !elHariSnack.value && diffDays > 0) {
+    elHariSnack.placeholder = `${diffDays} (default)`;
+  }
+  const lblMultiTotal = document.getElementById('multiProvTotalLama');
+  if (lblMultiTotal && diffDays > 0) {
+    lblMultiTotal.textContent = `${diffDays} Hari`;
+  }
+  if (isMultiProvActive() && diffDays > 0) {
+    const el1 = document.getElementById('hariProvinsi1');
+    const el2 = document.getElementById('hariProvinsi2');
+    if (el1 && el2) {
+      const d1 = parseInt(el1.value) || 0;
+      const d2 = parseInt(el2.value) || 0;
+      if (d1 <= 0 || d2 <= 0 || (d1 + d2 !== diffDays)) {
+        el1.value = Math.max(1, Math.floor(diffDays / 2));
+        el2.value = Math.max(1, diffDays - parseInt(el1.value));
+      }
+    }
+  }
   if (typeof renderTripDates === 'function') renderTripDates();
 }
 
@@ -734,7 +940,31 @@ function hitungBiaya(emp) {
     dropoff: item.dropoff
   }));
   const customTotal = customCosts.reduce((total, item) => total + item.amount, 0);
-  if (!sbm) return { uh: 0, uhGross: 0, mealDeduction: 0, snackDeduction: 0, hotel: 0, representatif: 0, representatifRate: 0, dpr: 0, tiket: 0, customCosts, total: customTotal };
+  const jenisKeg = document.getElementById('jenisKegiatan')?.value || 'biasa';
+  if (!sbm) {
+    return {
+      uh: 0,
+      uhGross: 0,
+      uhBaseRate: 0,
+      uhTitle: 'Uang Harian',
+      effectivePercent: 1,
+      jenisKeg,
+      mealDeduction: 0,
+      snackDeduction: 0,
+      mealRate: 0,
+      mealCount: 0,
+      snackRate: 0,
+      snackCount: 0,
+      hotel: 0,
+      hotelDetails: [],
+      representatif: 0,
+      representatifRate: 0,
+      dpr: 0,
+      tiket: 0,
+      customCosts,
+      total: customTotal
+    };
+  }
   const { days, nights } = getEmpDays(emp.id);
   const cbUH = document.getElementById('cbUH').checked;
   const cbHotel = document.getElementById('cbHotel').checked;
@@ -742,13 +972,78 @@ function hitungBiaya(emp) {
   const cbTiket = document.getElementById('cbTiket').checked;
   const uhPercent = Number(document.getElementById('uhPersentase').value) || 1;
   const isDkiJakarta = sbm.provinsi === 'DKI JAKARTA';
-  const uhGross = cbUH && !isDkiJakarta ? sbm.uh * days * uhPercent : 0;
-  const isMeeting = document.getElementById('jenisKegiatan').value === 'rapat';
-  const mealRequested = isMeeting ? (Number(document.getElementById('tarifMakan').value) || 0) * (Number(document.getElementById('jumlahMakan').value) || 0) * days : 0;
-  const snackRequested = isMeeting ? (Number(document.getElementById('tarifSnack').value) || 0) * (Number(document.getElementById('jumlahSnack').value) || 0) * days : 0;
+
+  let uhBaseRate = 0;
+  let uhTitle = '';
+  let effectivePercent = 1;
+
+  if (jenisKeg === 'diklat') {
+    uhBaseRate = sbm.diklat || 110000;
+    uhTitle = 'Uang Harian Diklat';
+    effectivePercent = 1;
+  } else if (jenisKeg === 'fullboard') {
+    uhBaseRate = sbm.fullboard || 130000;
+    uhTitle = 'Uang Harian Fullboard';
+    effectivePercent = 1;
+  } else {
+    // 'biasa', 'rapat', or 'lainnya'
+    uhBaseRate = sbm.uh;
+    effectivePercent = uhPercent;
+    uhTitle = `Uang Harian ${Math.round(uhPercent * 100)}%`;
+  }
+
+  const multiProv = getMultiProvData();
+  const isMultiProv = !!multiProv;
+  let uhGross1 = 0, uhGross2 = 0;
+  let uhRate1 = 0, uhRate2 = 0;
+  let days1 = 0, days2 = 0;
+  let sbm1 = null, sbm2 = null;
+
+  if (isMultiProv) {
+    sbm1 = multiProv.sbm1;
+    sbm2 = multiProv.sbm2;
+    days1 = multiProv.days1;
+    days2 = multiProv.days2;
+
+    if (jenisKeg === 'diklat') {
+      uhRate1 = sbm1.diklat || 110000;
+      uhRate2 = sbm2.diklat || 110000;
+    } else if (jenisKeg === 'fullboard') {
+      uhRate1 = sbm1.fullboard || 130000;
+      uhRate2 = sbm2.fullboard || 130000;
+    } else {
+      uhRate1 = sbm1.uh || 0;
+      uhRate2 = sbm2.uh || 0;
+    }
+    uhGross1 = cbUH ? Math.round(uhRate1 * days1 * effectivePercent) : 0;
+    uhGross2 = cbUH ? Math.round(uhRate2 * days2 * effectivePercent) : 0;
+  }
+
+  const uhGross = isMultiProv
+    ? (uhGross1 + uhGross2)
+    : (cbUH && !isDkiJakarta ? Math.round(uhBaseRate * days * effectivePercent) : 0);
+
+  const isMeeting = jenisKeg === 'rapat';
+  const isBiasaWithKonsumsi = jenisKeg === 'biasa' && !!document.getElementById('cbKonsumsiBiasa')?.checked;
+  const hasKonsumsi = isMeeting || isBiasaWithKonsumsi;
+
+  const mealRate = sbm?.makan || (isMultiProv ? sbm1?.makan : 0) || 0;
+  const snackRate = sbm?.snack || (isMultiProv ? sbm1?.snack : 0) || 0;
+  const mealCount = Number(document.getElementById('jumlahMakan')?.value) || 0;
+  const snackCount = Number(document.getElementById('jumlahSnack')?.value) || 0;
+
+  const rawHariMakan = Number(document.getElementById('hariMakan')?.value);
+  const mealDays = (!isNaN(rawHariMakan) && rawHariMakan > 0) ? rawHariMakan : days;
+
+  const rawHariSnack = Number(document.getElementById('hariSnack')?.value);
+  const snackDays = (!isNaN(rawHariSnack) && rawHariSnack > 0) ? rawHariSnack : days;
+
+  const mealRequested = (hasKonsumsi && mealCount > 0) ? mealRate * mealCount * mealDays : 0;
+  const snackRequested = (hasKonsumsi && snackCount > 0) ? snackRate * snackCount * snackDays : 0;
   const mealDeduction = Math.min(uhGross, mealRequested);
   const snackDeduction = Math.min(Math.max(0, uhGross - mealDeduction), snackRequested);
   const uh = uhGross - mealDeduction - snackDeduction;
+
   const hotelEntries = getHotelEntries();
   let hotel = 0;
   const hotelDetails = [];
@@ -770,11 +1065,48 @@ function hitungBiaya(emp) {
   const representatif = representatifRate * days;
   const dprVal = cbDPR ? (isDkiJakarta ? 170000 : Number(document.getElementById('dprManual').value) || 0) : 0;
   const tiketVal = cbTiket ? sbm.tiket : 0;
-  return { uh, uhGross, mealDeduction, snackDeduction, hotel, hotelDetails, representatif, representatifRate, dpr: dprVal, tiket: tiketVal, customCosts, total: uh + hotel + representatif + dprVal + tiketVal + customTotal };
+  return {
+    uh,
+    uhGross,
+    uhBaseRate,
+    uhTitle,
+    effectivePercent,
+    jenisKeg,
+    mealDeduction,
+    snackDeduction,
+    mealRate,
+    mealCount,
+    mealDays,
+    snackRate,
+    snackCount,
+    snackDays,
+    hotel,
+    hotelDetails,
+    representatif,
+    representatifRate,
+    dpr: dprVal,
+    tiket: tiketVal,
+    customCosts,
+    total: uh + hotel + representatif + dprVal + tiketVal + customTotal,
+    isMultiProv,
+    multiProvData: isMultiProv ? {
+      sbm1,
+      sbm2,
+      days1,
+      days2,
+      uhRate1,
+      uhRate2,
+      uhGross1,
+      uhGross2,
+      title1: `Uang Harian ${getProvShortName(sbm1.provinsi)}`,
+      title2: `Uang Harian ${getProvShortName(sbm2.provinsi)}`
+    } : null
+  };
 }
 
+// --- END OF js/calc.js ---
 
-// === documents.js ===
+// --- START OF js/documents.js ---
 // =====================================================================
 // TEMPLATE DOKUMEN CETAK & REKAPITULASI (PerdinKu)
 // Kuitansi, SPPD, Rincian, DPR, Lembar Kendali, Rekap Kuitansi,
@@ -816,7 +1148,7 @@ function renderRekapKuitansi() {
   const monthYear = `${month} ${year}`;
   const makLengkap = `${kodeKegiatan}.${kodeSubKegiatan}.${mak}`;
   const kotaTeks = document.getElementById('kotaTujuan').value.trim();
-  const paymentText = [agenda || `Perjalanan dinas ke ${kotaTeks ? kotaDenganProvinsi(kotaTeks) : '-'}`, kegiatan ? `Output ${kegiatan}` : '']
+  const paymentText = [agenda || `Perjalanan dinas ke ${kotaTeks ? getTujuanDisplay(kotaTeks) : '-'}`, kegiatan ? `Output ${kegiatan}` : '']
     .filter(Boolean)
     .join(', ');
 
@@ -936,7 +1268,7 @@ function renderKuitansiPerorangan() {
   const alamat = document.getElementById('cfg_alamatKuitansi').value;
   const kotaAsal = document.getElementById('cfg_kotaAsal').value;
   const kotaTeks = document.getElementById('kotaTujuan').value.trim();
-  const tujuan = kotaTeks ? kotaDenganProvinsi(kotaTeks) : (getSBM()?.ibukota || '-');
+  const tujuan = getTujuanDisplay(kotaTeks);
   const paymentText = `Biaya Perjalanan Dinas atas nama ${emp.nama}`;
   const mak = `${document.getElementById('kodeKegiatan').value} ${document.getElementById('kodeSubKegiatan').value} ${document.getElementById('mak').value}`;
   const noSPD = spdPerEmployee[emp.id] || '-';
@@ -1083,7 +1415,7 @@ function renderSPPDPerorangan() {
   const mak = document.getElementById('mak').value;
   const agenda = document.getElementById('agenda').value.trim() || '-';
   const kotaTeks = document.getElementById('kotaTujuan').value.trim();
-  const tujuan = kotaTeks ? kotaDenganProvinsi(kotaTeks) : (sbm ? `${sbm.ibukota}, ${formatProvinsi(sbm.provinsi)}` : '-');
+  const tujuan = getTujuanDisplay(kotaTeks);
   const noSPD = spdPerEmployee[emp.id] || '-';
   const tanggalSPD = formatTgl(document.getElementById('tglSPD').value);
   const tripDays = expandTripDays(empSegments);
@@ -1095,7 +1427,8 @@ function renderSPPDPerorangan() {
   const noST = document.getElementById('noST').value.trim() || '-';
   const tglST = formatTgl(document.getElementById('tglST').value);
   const pangkat = emp.pangkat && emp.pangkat !== '-' ? emp.pangkat : '-';
-  const transport = document.getElementById('cbTiket').checked ? 'Pesawat Udara' : 'Transportasi Darat';
+  const hasPesawatCost = typeof getCustomCosts === 'function' && getCustomCosts().some(c => /pesawat|udara/i.test(c.name) || (c.kind === 'tiket' && /pesawat/i.test(c.name)));
+  const transport = (document.getElementById('cbTiket')?.checked || hasPesawatCost) ? 'Pesawat Udara' : 'Transportasi Darat';
   const lamaKata = terbilang(days).replace(/\s*Rupiah$/, '').toLowerCase();
   const pengikutRows = [1, 2, 3, 4, 5].map(() => `
         <tr><td></td><td></td><td></td></tr>`).join('');
@@ -1210,7 +1543,7 @@ function renderLembarKendali() {
   const verifNipRaw = document.getElementById('cfg_verifikatorNip').value.trim().replace(/^NIP\.?\s*/i, '');
   const jenisPerjalanan = document.getElementById('lk_jenisPerjalanan').value;
   const kotaTeks = document.getElementById('kotaTujuan').value.trim();
-  const tujuan = kotaTeks ? kotaDenganProvinsi(kotaTeks) : (sbm ? `${sbm.ibukota}, ${formatProvinsi(sbm.provinsi)}` : '-');
+  const tujuan = getTujuanDisplay(kotaTeks);
   const tujuanPerjalanan = document.getElementById('agenda').value.trim() || tujuan;
   const akunKegiatan = `${document.getElementById('kodeKegiatan').value}.${document.getElementById('kodeSubKegiatan').value}.${document.getElementById('mak').value}`;
   const checklistItems = [
@@ -1228,7 +1561,7 @@ function renderLembarKendali() {
     'Kuitansi Pembayaran Hotel',
     'Laporan Perjalanan Dinas',
     'SP2D (Lembar Dua)',
-    'Tanda Tangan pada Link Monitoring Perdin'
+    'Tanda Tangan pada Link Monitoring Perjadin'
   ];
 
   out.innerHTML = `
@@ -1362,7 +1695,7 @@ function renderRekapRincian() {
   const kegiatan = document.getElementById('cfg_kegiatan').value;
   const bank = document.getElementById('cfg_bank').value;
   const kotaTeks = document.getElementById('kotaTujuan').value.trim();
-  const tujuan = kotaTeks ? kotaDenganProvinsi(kotaTeks) : (sbm ? `${sbm.ibukota}, ${formatProvinsi(sbm.provinsi)}` : '-');
+  const tujuan = getTujuanDisplay(kotaTeks);
   const tanggalBerangkat = document.getElementById('tglBerangkat').value;
   const tanggalKembali = document.getElementById('tglKembali').value;
   const cbUH = document.getElementById('cbUH').checked;
@@ -1526,8 +1859,7 @@ function renderRekapSPT() {
   const mak = document.getElementById('mak').value;
   const kegiatan = document.getElementById('cfg_kegiatan').value;
   const kotaTeks = document.getElementById('kotaTujuan').value.trim();
-  const kotaTujuan = kotaTeks ? kotaDenganProvinsi(kotaTeks) :
-    (sbm ? `${sbm.ibukota}, ${formatProvinsi(sbm.provinsi)}` : '-');
+  const kotaTujuan = getTujuanDisplay(kotaTeks);
   const tanggalSPT = formatTgl(document.getElementById('tglST').value);
   const nomorSPT = document.getElementById('noST').value || '-';
   const ppkNama = document.getElementById('cfg_ppkNama').value;
@@ -1603,7 +1935,7 @@ function renderNominatif() {
   const tglBrkt = document.getElementById('tglBerangkat').value;
   const tglKmb = document.getElementById('tglKembali').value;
   const kotaTeks = document.getElementById('kotaTujuan').value.trim();
-  const kotaTujuan = kotaTeks ? kotaDenganProvinsi(kotaTeks) : (sbm ? sbm.ibukota + ', ' + formatProvinsi(sbm.provinsi) : '-');
+  const kotaTujuan = getTujuanDisplay(kotaTeks);
   const satker = document.getElementById('cfg_satker').value;
   const kodeSatker = document.getElementById('cfg_kodeSatker').value;
   const kodeKeg = document.getElementById('kodeKegiatan').value;
@@ -1770,7 +2102,7 @@ function mergeRincianKeterangan(rowsHtml) {
   const rows = [...tbody.children];
   let blankStart = null;
   rows.forEach((tr, index) => {
-    const ket = tr.querySelector('td.rincian-ket-cell');
+    const ket = [...tr.children].find(c => c.classList && c.classList.contains('rincian-ket-cell'));
     if (!ket) {
       blankStart = null;
       return;
@@ -1780,11 +2112,13 @@ function mergeRincianKeterangan(rowsHtml) {
       return;
     }
     if (blankStart !== null && tr.dataset.mergeKetUp === 'true') {
-      const target = rows[blankStart].querySelector('td.rincian-ket-cell');
-      target.innerHTML = ket.innerHTML;
-      target.rowSpan = index - blankStart + 1;
-      for (let i = blankStart + 1; i <= index; i++) {
-        rows[i].querySelector('td.rincian-ket-cell')?.remove();
+      const target = [...rows[blankStart].children].find(c => c.classList && c.classList.contains('rincian-ket-cell'));
+      if (target) {
+        target.innerHTML = ket.innerHTML;
+        target.rowSpan = index - blankStart + 1;
+        for (let i = blankStart + 1; i <= index; i++) {
+          [...rows[i].children].find(c => c.classList && c.classList.contains('rincian-ket-cell'))?.remove();
+        }
       }
     }
     blankStart = null;
@@ -1800,7 +2134,7 @@ function renderRincian() {
   const { days, nights } = getEmpDays(emp.id);
   const b = hitungBiaya(emp);
   const kotaTeks = document.getElementById('kotaTujuan').value.trim();
-  const kotaTujuan = kotaTeks ? kotaDenganProvinsi(kotaTeks) : (sbm ? sbm.ibukota : '-');
+  const kotaTujuan = getTujuanDisplay(kotaTeks);
   const noSPD = spdPerEmployee[emp.id] || '___/SPD/Birkom/___/____';
   const tglSPD = document.getElementById('tglSPD').value;
   const kotaAsal = document.getElementById('cfg_kotaAsal').value;
@@ -1817,17 +2151,117 @@ function renderRincian() {
 
   let rincianRows = '';
   let no = 1;
-  const uhKeterangan = uhPercent < 1 ? 'Menggunakan Kendaraan Dinas Operasional' : '';
-  if (cbUH && b.uhGross > 0) {
-    rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td>Uang Harian ${uhPercent*100}%<br><span style="padding-left:12px">${days} hari &nbsp; X &nbsp; Rp &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ${Number(sbm?sbm.uh:0).toLocaleString('id-ID')}</span></td><td class="tr">${rp(b.uhGross)}</td><td class="rincian-ket-cell">${uhKeterangan}</td></tr>`;
-  }
-  if (b.mealDeduction > 0) {
-    const mealCount = Number(document.getElementById('jumlahMakan').value) || 0;
-    rincianRows += `<tr><td class="tc">${no++}</td><td>Pengurangan uang makan<br><span style="font-size:10px;color:#718096">${days} hari × ${mealCount} kali × ${rp(Number(document.getElementById('tarifMakan').value)||0)}</span></td><td class="tr">- ${rp(b.mealDeduction)}</td><td class="rincian-ket-cell"></td></tr>`;
-  }
-  if (b.snackDeduction > 0) {
-    const snackCount = Number(document.getElementById('jumlahSnack').value) || 0;
-    rincianRows += `<tr><td class="tc">${no++}</td><td>Pengurangan snack<br><span style="font-size:10px;color:#718096">${days} hari × ${snackCount} kali × ${rp(Number(document.getElementById('tarifSnack').value)||0)}</span></td><td class="tr">- ${rp(b.snackDeduction)}</td><td class="rincian-ket-cell"></td></tr>`;
+  const uhKeterangan = b.jenisKeg === 'fullboard'
+    ? 'Paket Fullboard'
+    : b.jenisKeg === 'diklat'
+    ? 'Diklat / Pelatihan'
+    : (uhPercent < 1 ? 'Menggunakan Kendaraan Dinas Operasional' : '');
+
+  if (cbUH && (b.uhGross > 0 || b.uh > 0)) {
+    if (b.isMultiProv && b.multiProvData) {
+      let deductionBlock = '';
+      if (b.mealDeduction > 0 || b.snackDeduction > 0) {
+        let deductionRows = '';
+        if (b.mealDeduction > 0) {
+          deductionRows += `
+            <tr>
+              <td style="padding-left:24px;">
+                * Makan<br>
+                <span style="padding-left:12px;">${b.mealDays} hari &times; ${b.mealCount} kali &times; ${rp(b.mealRate)}</span>
+              </td>
+              <td class="tr" style="vertical-align:bottom;">- ${rp(b.mealDeduction)}</td>
+              <td></td>
+            </tr>`;
+        }
+        if (b.snackDeduction > 0) {
+          deductionRows += `
+            <tr>
+              <td style="padding-left:24px;">
+                * Snack<br>
+                <span style="padding-left:12px;">${b.snackDays} hari &times; ${b.snackCount} kali &times; ${rp(b.snackRate)}</span>
+              </td>
+              <td class="tr" style="vertical-align:bottom;">- ${rp(b.snackDeduction)}</td>
+              <td></td>
+            </tr>`;
+        }
+        deductionBlock = `
+          <tr>
+            <td style="padding-left:12px;">Terpotong konsumsi:</td>
+            <td></td>
+            <td></td>
+          </tr>
+          ${deductionRows}`;
+      }
+
+      rincianRows += `<tr>
+        <td class="tc">${no++}</td>
+        <td colspan="3" style="padding:0">
+          <table class="rincian-subtbl">
+            <colgroup><col><col style="width:130px"><col style="width:120px"></colgroup>
+            <tbody>
+              <tr>
+                <td>${b.multiProvData.title1}<br><span style="padding-left:12px">${b.multiProvData.days1} hari &nbsp; X &nbsp; ${rp(b.multiProvData.uhRate1)}</span></td>
+                <td class="tr" style="vertical-align:bottom;">${rp(b.multiProvData.uhGross1)}</td>
+                <td>${uhKeterangan}</td>
+              </tr>
+              <tr>
+                <td>${b.multiProvData.title2}<br><span style="padding-left:12px">${b.multiProvData.days2} hari &nbsp; X &nbsp; ${rp(b.multiProvData.uhRate2)}</span></td>
+                <td class="tr" style="vertical-align:bottom;">${rp(b.multiProvData.uhGross2)}</td>
+                <td></td>
+              </tr>
+              ${deductionBlock}
+            </tbody>
+          </table>
+        </td>
+      </tr>`;
+    } else if (b.mealDeduction > 0 || b.snackDeduction > 0) {
+      let deductionRows = '';
+      if (b.mealDeduction > 0) {
+        deductionRows += `
+          <tr>
+            <td style="padding-left:24px;">
+              * Makan<br>
+              <span style="padding-left:12px;">${b.mealDays} hari &times; ${b.mealCount} kali &times; ${rp(b.mealRate)}</span>
+            </td>
+            <td class="tr" style="vertical-align:bottom;">- ${rp(b.mealDeduction)}</td>
+            <td></td>
+          </tr>`;
+      }
+      if (b.snackDeduction > 0) {
+        deductionRows += `
+          <tr>
+            <td style="padding-left:24px;">
+              * Snack<br>
+              <span style="padding-left:12px;">${b.snackDays} hari &times; ${b.snackCount} kali &times; ${rp(b.snackRate)}</span>
+            </td>
+            <td class="tr" style="vertical-align:bottom;">- ${rp(b.snackDeduction)}</td>
+            <td></td>
+          </tr>`;
+      }
+      rincianRows += `<tr>
+        <td class="tc">${no++}</td>
+        <td colspan="3" style="padding:0">
+          <table class="rincian-subtbl">
+            <colgroup><col><col style="width:130px"><col style="width:120px"></colgroup>
+            <tbody>
+              <tr>
+                <td>${b.uhTitle || 'Uang Harian'}<br><span style="padding-left:12px">${days} hari &nbsp; X &nbsp; ${rp(b.uhBaseRate)}</span></td>
+                <td class="tr" style="vertical-align:bottom;">${rp(b.uhGross)}</td>
+                <td>${uhKeterangan}</td>
+              </tr>
+              <tr>
+                <td style="padding-left:12px;">Terpotong konsumsi:</td>
+                <td></td>
+                <td></td>
+              </tr>
+              ${deductionRows}
+            </tbody>
+          </table>
+        </td>
+      </tr>`;
+    } else {
+      rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td>${b.uhTitle || 'Uang Harian'}<br><span style="padding-left:12px">${days} hari &nbsp; X &nbsp; ${rp(b.uhBaseRate)}</span></td><td class="tr">${rp(b.uh)}</td><td class="rincian-ket-cell">${uhKeterangan}</td></tr>`;
+    }
   }
   if (b.representatif > 0) {
     const representatifKet = sbm && sbm.provinsi === 'DKI JAKARTA' ? 'Dalam kota' : 'Luar kota';
@@ -1859,7 +2293,7 @@ function renderRincian() {
         <td class="tc">${no++}</td>
         <td colspan="3" style="padding:0">
           <table class="rincian-subtbl">
-            <colgroup><col><col><col style="width:120px"></colgroup>
+            <colgroup><col><col style="width:130px"><col style="width:120px"></colgroup>
             <tbody>
               <tr><td>${dprUraian}</td><td class="tr"><strong>${rp(transportTotal)}</strong></td><td></td></tr>
               <tr><td style="padding-left:12px"><em>Rincian Transport:</em></td><td></td><td></td></tr>
@@ -1890,7 +2324,7 @@ function renderRincian() {
       </table>
 
       <table class="rincian-tbl">
-        <colgroup><col style="width:40px"><col><col><col style="width:120px"></colgroup>
+        <colgroup><col style="width:40px"><col><col style="width:130px"><col style="width:120px"></colgroup>
         <thead>
           <tr>
             <th>NO</th>
@@ -1903,7 +2337,7 @@ function renderRincian() {
           ${mergeRincianKeterangan(rincianRows) || '<tr><td colspan="4" style="text-align:center;color:#a0aec0;padding:16px">Tidak ada komponen biaya yang dipilih</td></tr>'}
           <tr class="rincian-total-row">
             <td colspan="2" style="text-align:center;font-weight:700">J u m l a h</td>
-            <td style="text-align:center;font-weight:700">${rp(b.total)}</td>
+            <td class="tr" style="font-weight:700">${rp(b.total)}</td>
             <td></td>
           </tr>
         </tbody>
@@ -2032,7 +2466,7 @@ function renderDPR() {
   const alamat = document.getElementById('cfg_alamatKuitansi').value;
   const kotaAsal = document.getElementById('cfg_kotaAsal').value;
   const kotaTeks = document.getElementById('kotaTujuan').value.trim();
-  const tujuan = kotaTeks ? kotaDenganProvinsi(kotaTeks) : '-';
+  const tujuan = getTujuanDisplay(kotaTeks);
   const noSPD = spdPerEmployee[emp.id] || '-';
   const tanggalSPD = formatTgl(document.getElementById('tglSPD').value);
   const ppkNama = document.getElementById('cfg_ppkNama').value;
@@ -2113,8 +2547,9 @@ function printDPR() {
   window.print();
 }
 
+// --- END OF js/documents.js ---
 
-// === excel.js ===
+// --- START OF js/excel.js ---
 // =====================================================================
 // EKSPOR & IMPOR EXCEL (PerdinKu)
 // Penyimpanan data dan pembacaan ulang berkas spreadsheet perjalanan
@@ -2142,10 +2577,18 @@ const EXCEL_TRIP_FIELDS = [
   ['Persentase Uang Harian', 'uhPersentase', 'select'],
   ['Nominal DPR Manual', 'dprManual', 'number'],
   ['Jenis Kegiatan', 'jenisKegiatan', 'select'],
-  ['Tarif Makan per Kali', 'tarifMakan', 'number'],
+  ['Tarif Makan SBM', 'tarifMakan', 'text'],
+  ['Hari Disediakan Makan', 'hariMakan', 'number'],
   ['Makan Disediakan per Hari', 'jumlahMakan', 'number'],
-  ['Tarif Snack per Kali', 'tarifSnack', 'number'],
+  ['Tarif Snack SBM', 'tarifSnack', 'text'],
+  ['Hari Disediakan Snack', 'hariSnack', 'number'],
   ['Snack Disediakan per Hari', 'jumlahSnack', 'number'],
+  ['Multi-Provinsi', 'cbMultiProvinsi', 'check'],
+  ['Provinsi Tujuan 1', 'provinsiTujuan1', 'select'],
+  ['Hari di Provinsi 1', 'hariProvinsi1', 'number'],
+  ['Provinsi Tujuan 2', 'provinsiTujuan2', 'select'],
+  ['Hari di Provinsi 2', 'hariProvinsi2', 'number'],
+  ['Konsumsi Perjalanan Biasa', 'cbKonsumsiBiasa', 'check'],
   ['Lembar Kendali - Tanggal Masuk Berkas', 'lk_tanggalMasuk', 'date'],
   ['Lembar Kendali - Pelaksana', 'lk_pelaksana', 'text'],
   ['Lembar Kendali - Nomor SPM', 'lk_nomorSPM', 'text'],
@@ -2440,6 +2883,9 @@ function applyPerjadinExcel(wb) {
     }
   });
 
+  if (typeof toggleMultiProvinsi === 'function') toggleMultiProvinsi();
+  if (typeof toggleKonsumsiFields === 'function') toggleKonsumsiFields();
+
   excelSheetRows(wb, 'Pengaturan').slice(1).forEach(row => {
     const label = String(row[0] ?? '').trim();
     const field = EXCEL_SETTING_FIELDS.find(([l]) => l === label);
@@ -2565,8 +3011,9 @@ function applyPerjadinExcel(wb) {
   return { employees: selectedEmpIds.size, unknown: unknownNames };
 }
 
+// --- END OF js/excel.js ---
 
-// === ui.js ===
+// --- START OF js/ui.js ---
 // =====================================================================
 // ANTARMUKA & INTERAKSI PENGGUNA (PerdinKu)
 // Tema (Dark/Light), Navigasi Tab, Sidebar, Popup Selamat Datang,
@@ -2616,13 +3063,16 @@ initTheme();
 // INIT
 // =====================================================================
 document.addEventListener('DOMContentLoaded', () => {
-  // Populate provinsi dropdown
-  const sel = document.getElementById('provinsiTujuan');
-  sbmData.forEach(s => {
-    const opt = document.createElement('option');
-    opt.value = s.id;
-    opt.textContent = formatProvinsi(s.provinsi);
-    sel.appendChild(opt);
+  // Populate provinsi dropdowns
+  ['provinsiTujuan', 'provinsiTujuan1', 'provinsiTujuan2'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    sbmData.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = formatProvinsi(s.provinsi);
+      sel.appendChild(opt);
+    });
   });
   renderEmployeeList();
   const datePill = document.getElementById('datePill');
@@ -2664,6 +3114,28 @@ function validateTripForm() {
   const missing = [];
 
   REQUIRED_FIELDS.forEach(f => {
+    if (f.id === 'provinsiTujuan' && typeof isMultiProvActive === 'function' && isMultiProvActive()) {
+      const p1 = document.getElementById('provinsiTujuan1');
+      const p2 = document.getElementById('provinsiTujuan2');
+      const g1 = p1?.closest('.form-group');
+      const g2 = p2?.closest('.form-group');
+      const v1 = (p1?.value || '').trim();
+      const v2 = (p2?.value || '').trim();
+      if (!v1) {
+        if (g1) g1.classList.add('has-error');
+        missing.push({ el: p1, label: 'Provinsi Tujuan 1', id: 'provinsiTujuan1' });
+      } else if (g1) {
+        g1.classList.remove('has-error');
+      }
+      if (!v2) {
+        if (g2) g2.classList.add('has-error');
+        missing.push({ el: p2, label: 'Provinsi Tujuan 2', id: 'provinsiTujuan2' });
+      } else if (g2) {
+        g2.classList.remove('has-error');
+      }
+      return;
+    }
+
     const el = document.getElementById(f.id);
     if (!el) return;
     const val = (el.value || '').trim();
@@ -2690,6 +3162,21 @@ function validateTripForm() {
       customError: true
     });
     dateMismatch = true;
+  }
+
+  // Cek multi-provinsi pembagian hari
+  if (typeof isMultiProvActive === 'function' && isMultiProvActive()) {
+    const totalDays = (typeof getDays === 'function' ? getDays().days : 0) || 1;
+    const h1 = parseInt(document.getElementById('hariProvinsi1')?.value) || 0;
+    const h2 = parseInt(document.getElementById('hariProvinsi2')?.value) || 0;
+    if (totalDays > 1 && (h1 <= 0 || h2 <= 0 || (h1 + h2 !== totalDays))) {
+      missing.push({
+        el: document.getElementById('hariProvinsi1'),
+        label: `Pembagian hari (${h1} hr + ${h2} hr) harus sesuai total lama tugas (${totalDays} Hari)`,
+        id: 'hariProvinsi1',
+        customError: true
+      });
+    }
   }
 
   // Cek minimal 1 pegawai
@@ -2799,10 +3286,31 @@ function setupRealtimeValidation() {
       }
     });
   });
+
+  ['provinsiTujuan1', 'provinsiTujuan2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const group = el.closest('.form-group');
+    updateFieldFilledStatus(el);
+    ['input', 'change'].forEach(evt => {
+      el.addEventListener(evt, () => {
+        updateFieldFilledStatus(el);
+        if ((el.value || '').trim()) {
+          if (group) group.classList.remove('has-error');
+        }
+      });
+    });
+    el.addEventListener('blur', () => {
+      updateFieldFilledStatus(el);
+      if (!(el.value || '').trim() && typeof isMultiProvActive === 'function' && isMultiProvActive()) {
+        if (group) group.classList.add('has-error');
+      }
+    });
+  });
 }
 
 // =====================================================================
-// APP SPLASH LOADER (3 DETIK) & TAB LAZY LOADING
+// APP SPLASH LOADER (5 DETIK) & TAB LAZY LOADING
 // =====================================================================
 function initAppLoader() {
   const loader = document.getElementById('appLoader');
@@ -2811,13 +3319,14 @@ function initAppLoader() {
   const pct = document.getElementById('loaderPct');
   const status = document.getElementById('loaderStatus');
 
-  const duration = 2800; // ~3 detik
+  const duration = 4800; // ~5 detik (4.8s progress + fade out = 5.2s total)
   const startTime = performance.now();
 
   const stages = [
-    { threshold: 25, text: 'Memuat modul dan komponen sistem...' },
-    { threshold: 55, text: 'Sinkronisasi tarif PMK SBM 2026...' },
-    { threshold: 85, text: 'Menyiapkan template dokumen & SPPD...' },
+    { threshold: 18, text: 'Memuat modul dan komponen sistem...' },
+    { threshold: 38, text: 'Sinkronisasi tarif PMK SBM 2026...' },
+    { threshold: 62, text: 'Menyiapkan template dokumen & SPPD...' },
+    { threshold: 82, text: 'Menginisialisasi modul kuitansi & nominatif...' },
     { threshold: 99, text: 'Memuat antarmuka pengguna...' },
     { threshold: 100, text: 'Aplikasi siap digunakan!' }
   ];
@@ -2845,6 +3354,34 @@ function initAppLoader() {
   }
 
   requestAnimationFrame(tick);
+}
+
+let pageLoaderTimer = null;
+
+function showPageTransitionLoader(targetName, onSwitch) {
+  const loader = document.getElementById('pageLoader');
+  const textEl = document.getElementById('pageLoaderText');
+
+  if (textEl) {
+    const meta = tabMeta[targetName];
+    const pageName = meta ? meta[0] : 'Halaman';
+    textEl.textContent = `Memuat ${pageName}...`;
+  }
+
+  if (!loader) {
+    if (onSwitch) onSwitch();
+    return;
+  }
+
+  loader.classList.add('is-active');
+
+  if (pageLoaderTimer) clearTimeout(pageLoaderTimer);
+  pageLoaderTimer = setTimeout(() => {
+    if (onSwitch) onSwitch();
+    setTimeout(() => {
+      loader.classList.remove('is-active');
+    }, 100);
+  }, 420);
 }
 
 function triggerTabProgress(callback) {
@@ -2897,18 +3434,21 @@ const tabMeta = {
 };
 
 function showTab(name) {
+  const currentActive = document.querySelector('.tab-content.active');
+  if (currentActive && currentActive.id === 'tab-' + name) {
+    return;
+  }
   if (name !== 'input' && name !== 'pengaturan') {
     const val = validateTripForm();
     if (!val.valid) {
       showValidationToast(val.missing, val.dateMismatch ? 'Tanggal kembali tidak boleh sebelum tanggal berangkat!' : null);
       return;
     }
-    triggerTabProgress(() => {
-      switchTabPanel(name);
-    });
-    return;
   }
-  switchTabPanel(name);
+  triggerTabProgress();
+  showPageTransitionLoader(name, () => {
+    switchTabPanel(name);
+  });
 }
 
 function switchTabPanel(name) {
@@ -3134,4 +3674,4 @@ function clearAll() {
   updateSbmWarnings();
 }
 
-
+// --- END OF js/ui.js ---

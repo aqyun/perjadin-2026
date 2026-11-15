@@ -25,10 +25,18 @@ const EXCEL_TRIP_FIELDS = [
   ['Persentase Uang Harian', 'uhPersentase', 'select'],
   ['Nominal DPR Manual', 'dprManual', 'number'],
   ['Jenis Kegiatan', 'jenisKegiatan', 'select'],
-  ['Tarif Makan per Kali', 'tarifMakan', 'number'],
+  ['Tarif Makan SBM', 'tarifMakan', 'text'],
+  ['Hari Disediakan Makan', 'hariMakan', 'number'],
   ['Makan Disediakan per Hari', 'jumlahMakan', 'number'],
-  ['Tarif Snack per Kali', 'tarifSnack', 'number'],
+  ['Tarif Snack SBM', 'tarifSnack', 'text'],
+  ['Hari Disediakan Snack', 'hariSnack', 'number'],
   ['Snack Disediakan per Hari', 'jumlahSnack', 'number'],
+  ['Multi-Provinsi', 'cbMultiProvinsi', 'check'],
+  ['Provinsi Tujuan 1', 'provinsiTujuan1', 'select'],
+  ['Hari di Provinsi 1', 'hariProvinsi1', 'number'],
+  ['Provinsi Tujuan 2', 'provinsiTujuan2', 'select'],
+  ['Hari di Provinsi 2', 'hariProvinsi2', 'number'],
+  ['Konsumsi Perjalanan Biasa', 'cbKonsumsiBiasa', 'check'],
   ['Lembar Kendali - Tanggal Masuk Berkas', 'lk_tanggalMasuk', 'date'],
   ['Lembar Kendali - Pelaksana', 'lk_pelaksana', 'text'],
   ['Lembar Kendali - Nomor SPM', 'lk_nomorSPM', 'text'],
@@ -322,6 +330,9 @@ function applyPerjadinExcel(wb) {
       el.value = String(value ?? '').trim();
     }
   });
+
+  if (typeof toggleMultiProvinsi === 'function') toggleMultiProvinsi();
+  if (typeof toggleKonsumsiFields === 'function') toggleKonsumsiFields();
 
   excelSheetRows(wb, 'Pengaturan').slice(1).forEach(row => {
     const label = String(row[0] ?? '').trim();
