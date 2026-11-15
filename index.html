@@ -152,6 +152,12 @@
       <span class="nav-ico"><svg class="ico"><use href="#i-sliders"></use></svg></span>
       <span class="nav-text">Pengaturan</span>
     </button>
+
+    <p class="nav-label">Referensi</p>
+    <button type="button" class="tab-btn" onclick="openPmkModal()" title="Cek Dokumen Resmi PMK SBM TA 2026">
+      <span class="nav-ico"><svg class="ico"><use href="#i-file-lines"></use></svg></span>
+      <span class="nav-text">Cek File PMK SBM</span>
+    </button>
   </nav>
 
   <div class="sidebar-foot">
@@ -237,6 +243,101 @@
   </div>
 </div>
 
+<!-- ============================================================ PMK VIEWER MODAL -->
+<div class="pmk-overlay no-print" id="pmkOverlay" role="dialog" aria-modal="true" aria-labelledby="pmkTitle" onclick="handlePmkBackdrop(event)">
+  <div class="pmk-modal" id="pmkModal">
+    <div class="pmk-header">
+      <div class="pmk-title-wrap">
+        <div class="pmk-badge-row">
+          <span class="pmk-badge">Dokumen Resmi SBM 2026</span>
+          <span class="pmk-badge-sec">PMK No. 32 Tahun 2025</span>
+        </div>
+        <h2 class="pmk-title" id="pmkTitle">Standar Biaya Masukan Tahun Anggaran 2026</h2>
+        <p class="pmk-subtitle">Peraturan Menteri Keuangan RI Nomor 32 Tahun 2025 (110 Halaman)</p>
+      </div>
+      <div class="pmk-actions">
+        <a href="PMK_Nomor_32_Tahun_2025_SBM_2026.pdf#page=15" target="_blank" rel="noopener noreferrer" class="pmk-btn" id="pmkNewTabBtn" title="Buka PDF di tab baru peramban pada halaman yang sedang dilihat">
+          <svg class="ico"><use href="#i-receipt"></use></svg>
+          <span>Tab Baru</span>
+        </a>
+        <a href="PMK_Nomor_32_Tahun_2025_SBM_2026.pdf" download="PMK_Nomor_32_Tahun_2025_SBM_2026.pdf" class="pmk-btn" title="Unduh salinan PDF PMK 32/2025">
+          <svg class="ico"><use href="#i-load"></use></svg>
+          <span>Unduh</span>
+        </a>
+        <button type="button" class="pmk-close" onclick="closePmkModal()" aria-label="Tutup pratinjau PMK" title="Tutup (Esc)">
+          <svg class="ico"><use href="#i-close"></use></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Quick Navigation Pills -->
+    <div class="pmk-nav-bar">
+      <span class="pmk-nav-label">Tabel Standar:</span>
+      <div class="pmk-pills-wrap">
+        <button type="button" class="pmk-pill active" data-page="15" onclick="jumpPmkPage(15, this)" title="Tabel Satuan Biaya Uang Harian & Uang Representasi">
+          <span class="pill-page">Hal 15</span>
+          <span class="pill-name">Uang Harian</span>
+        </button>
+        <button type="button" class="pmk-pill" data-page="19" onclick="jumpPmkPage(19, this)" title="Tabel Satuan Biaya Penginapan Perjalanan Dinas Dalam Negeri">
+          <span class="pill-page">Hal 19</span>
+          <span class="pill-name">Penginapan/Hotel</span>
+        </button>
+        <button type="button" class="pmk-pill" data-page="20" onclick="jumpPmkPage(20, this)" title="Satuan Biaya Paket Rapat Luar Kantor (Halfday, Fullday, Fullboard)">
+          <span class="pill-page">Hal 20</span>
+          <span class="pill-name">Rapat Fullboard</span>
+        </button>
+        <button type="button" class="pmk-pill" data-page="30" onclick="jumpPmkPage(30, this)" title="Satuan Biaya Sewa Kendaraan">
+          <span class="pill-page">Hal 30</span>
+          <span class="pill-name">Sewa Mobil</span>
+        </button>
+        <button type="button" class="pmk-pill" data-page="37" onclick="jumpPmkPage(37, this)" title="Satuan Biaya Konsumsi Rapat & Snack">
+          <span class="pill-page">Hal 37</span>
+          <span class="pill-name">Makan & Snack</span>
+        </button>
+        <button type="button" class="pmk-pill" data-page="68" onclick="jumpPmkPage(68, this)" title="Satuan Biaya Transportasi dari DKI Jakarta ke Daerah Sekitarnya">
+          <span class="pill-page">Hal 68</span>
+          <span class="pill-name">Transport Jakarta-Bodetabek</span>
+        </button>
+        <button type="button" class="pmk-pill" data-page="69" onclick="jumpPmkPage(69, this)" title="Dasar Hukum Biaya Transpor Kegiatan Dalam Kota PP Rp 170.000 (DPR Jakarta)">
+          <span class="pill-page">Hal 69</span>
+          <span class="pill-name">Transpor Dalam Kota (DPR Rp 170.000)</span>
+        </button>
+        <button type="button" class="pmk-pill" data-page="86" onclick="jumpPmkPage(86, this)" title="Satuan Biaya Tiket Pesawat Perjalanan Dinas Dalam Negeri PP">
+          <span class="pill-page">Hal 86</span>
+          <span class="pill-name">Tiket Pesawat PP</span>
+        </button>
+      </div>
+      <div class="pmk-goto-wrap">
+        <span class="pmk-goto-label">Hal:</span>
+        <input type="number" id="pmkPageInput" min="1" max="110" value="15" class="pmk-goto-input" title="Ketik nomor halaman (1-110) lalu tekan Enter" onkeydown="if(event.key==='Enter'){event.preventDefault();jumpPmkFromInput();}">
+        <button type="button" class="pmk-goto-btn" onclick="jumpPmkFromInput()" title="Lompat ke halaman yang diketik">Go</button>
+      </div>
+    </div>
+
+    <!-- Viewer Body -->
+    <div class="pmk-body">
+      <iframe id="pmkPdfFrame" class="pmk-iframe" title="PDF Viewer PMK SBM 2026" src="about:blank"></iframe>
+      <div class="pmk-fallback" id="pmkFallback" style="display:none;">
+        <div class="pmk-fallback-card">
+          <svg class="ico pmk-fallback-ico"><use href="#i-alert"></use></svg>
+          <h3>Pratinjau PDF di Peramban</h3>
+          <p>Jika pratinjau PDF tidak tampil langsung di dalam peramban, Anda dapat membukanya di tab baru atau mengunduh dokumen resminya.</p>
+          <div class="pmk-fallback-actions">
+            <a href="PMK_Nomor_32_Tahun_2025_SBM_2026.pdf" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+              <svg class="ico"><use href="#i-receipt"></use></svg>
+              <span>Buka di Tab Baru</span>
+            </a>
+            <a href="PMK_Nomor_32_Tahun_2025_SBM_2026.pdf" download="PMK_Nomor_32_Tahun_2025_SBM_2026.pdf" class="btn btn-secondary">
+              <svg class="ico"><use href="#i-load"></use></svg>
+              <span>Unduh File PMK</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="app-main">
   <header class="topbar no-print">
     <button type="button" class="icon-btn burger" onclick="toggleSidebar()" aria-label="Buka menu" aria-expanded="false" aria-controls="sidebar">
@@ -247,6 +348,10 @@
       <h1 id="pageTitle">Input Perjalanan</h1>
     </div>
     <div class="topbar-tools">
+      <button type="button" class="btn-topbar-pmk" onclick="openPmkModal()" title="Cek Dokumen Resmi PMK SBM TA 2026">
+        <svg class="ico"><use href="#i-file-lines"></use></svg>
+        <span>Cek File PMK</span>
+      </button>
       <button type="button" class="icon-btn info-btn" onclick="openWelcome()" title="Panduan & Info PerdinKu" aria-label="Panduan & Info PerdinKu">
         <svg class="ico"><use href="#i-info"></use></svg>
       </button>
@@ -433,20 +538,23 @@
           <div id="sbmPreview" style="display:none">
             <div class="sbm-head">
               <span class="sbm-title"><svg class="ico"><use href="#i-chart"></use></svg>Tarif SBM Provinsi Terpilih</span>
-              <span class="sbm-note">Tarif PMK</span>
+              <button type="button" class="btn-sbm-pmk" onclick="openPmkModal()" title="Cek Dokumen Resmi PMK SBM 2026">
+                <svg class="ico"><use href="#i-file-lines"></use></svg>
+                <span>Cek Dasar PMK</span>
+              </button>
             </div>
             <div class="sbm-preview">
-              <div class="sbm-row"><span class="sbm-label">Uang Harian 100%</span><span class="sbm-val" id="sbm_uh">-</span></div>
-              <div class="sbm-row"><span class="sbm-label">Uang Harian Diklat</span><span class="sbm-val" id="sbm_diklat">-</span></div>
-              <div class="sbm-row"><span class="sbm-label">Uang Harian Fullboard</span><span class="sbm-val" id="sbm_fullboard">-</span></div>
-              <div class="sbm-row"><span class="sbm-label">Makan Rapat SBM</span><span class="sbm-val" id="sbm_makan">-</span></div>
-              <div class="sbm-row"><span class="sbm-label">Snack Rapat SBM</span><span class="sbm-val" id="sbm_snack">-</span></div>
-              <div class="sbm-row"><span class="sbm-label">Penginapan Gol IV / Eselon III</span><span class="sbm-val" id="sbm_h4">-</span></div>
-              <div class="sbm-row"><span class="sbm-label">Penginapan Gol III / Eselon IV</span><span class="sbm-val" id="sbm_h3">-</span></div>
-              <div class="sbm-row"><span class="sbm-label">DPR Jakarta PP</span><span class="sbm-val" id="sbm_jkt">-</span></div>
-              <div class="sbm-row"><span class="sbm-label">Taxi Lokal</span><span class="sbm-val" id="sbm_taxi">-</span></div>
-              <div class="sbm-row"><span class="sbm-label">DPR dibayarkan</span><span class="sbm-val" id="sbm_dpr">-</span></div>
-              <div class="sbm-row"><span class="sbm-label">Tiket Pesawat PP</span><span class="sbm-val" id="sbm_tiket">-</span></div>
+              <div class="sbm-row is-clickable" onclick="openPmkModal(15)" title="Klik untuk cek dasar tarif di PMK Hal 15 (Uang Harian)"><span class="sbm-label">Uang Harian 100% ↗</span><span class="sbm-val" id="sbm_uh">-</span></div>
+              <div class="sbm-row is-clickable" onclick="openPmkModal(15)" title="Klik untuk cek dasar tarif di PMK Hal 15 (Uang Harian Diklat)"><span class="sbm-label">Uang Harian Diklat ↗</span><span class="sbm-val" id="sbm_diklat">-</span></div>
+              <div class="sbm-row is-clickable" onclick="openPmkModal(20)" title="Klik untuk cek dasar tarif di PMK Hal 20 (Rapat Fullboard)"><span class="sbm-label">Uang Harian Fullboard ↗</span><span class="sbm-val" id="sbm_fullboard">-</span></div>
+              <div class="sbm-row is-clickable" onclick="openPmkModal(37)" title="Klik untuk cek dasar tarif di PMK Hal 37 (Makan Rapat)"><span class="sbm-label">Makan Rapat SBM ↗</span><span class="sbm-val" id="sbm_makan">-</span></div>
+              <div class="sbm-row is-clickable" onclick="openPmkModal(37)" title="Klik untuk cek dasar tarif di PMK Hal 37 (Snack Rapat)"><span class="sbm-label">Snack Rapat SBM ↗</span><span class="sbm-val" id="sbm_snack">-</span></div>
+              <div class="sbm-row is-clickable" onclick="openPmkModal(19)" title="Klik untuk cek dasar tarif di PMK Hal 19 (Penginapan Gol IV)"><span class="sbm-label">Penginapan Gol IV ↗</span><span class="sbm-val" id="sbm_h4">-</span></div>
+              <div class="sbm-row is-clickable" onclick="openPmkModal(19)" title="Klik untuk cek dasar tarif di PMK Hal 19 (Penginapan Gol III)"><span class="sbm-label">Penginapan Gol III ↗</span><span class="sbm-val" id="sbm_h3">-</span></div>
+              <div class="sbm-row is-clickable" onclick="openPmkModal(68)" title="Klik untuk cek dasar tarif di PMK Hal 68 (Transport Jakarta-Sekitar)"><span class="sbm-label">DPR Jakarta PP ↗</span><span class="sbm-val" id="sbm_jkt">-</span></div>
+              <div class="sbm-row is-clickable" onclick="openPmkModal(68)" title="Klik untuk cek dasar tarif di PMK Hal 68 (Sewa Kendaraan & Transport)"><span class="sbm-label">Taxi Lokal ↗</span><span class="sbm-val" id="sbm_taxi">-</span></div>
+              <div class="sbm-row is-clickable" onclick="openPmkModal(69)" title="Klik untuk cek dasar tarif di PMK Hal 69 (DPR Dalam Kota Rp 170.000)"><span class="sbm-label">DPR dibayarkan ↗</span><span class="sbm-val" id="sbm_dpr">-</span></div>
+              <div class="sbm-row is-clickable" onclick="openPmkModal(86)" title="Klik untuk cek dasar tarif di PMK Hal 86 (Tiket Pesawat PP)"><span class="sbm-label">Tiket Pesawat PP ↗</span><span class="sbm-val" id="sbm_tiket">-</span></div>
             </div>
           </div>
         </div>
@@ -469,7 +577,7 @@
               <span class="opt-text">
                 <strong>Uang Harian</strong>
                 <small>Dihitung per hari perjalanan</small>
-                <small id="noteJakartaDPR" style="display:none; color:#2563eb; font-size:10px; margin-top:3px; line-height:1.35;">*Khusus DKI Jakarta tidak mendapatkan uang harian. Tetapi, DPR yang dibayarkan sebesar Rp170.000</small>
+                <small id="noteJakartaDPR" class="note-dki-dpr is-clickable" style="display:none;" onclick="openPmkModal(69)" title="Klik untuk membuka dokumen resmi PMK Hal 69">*Khusus DKI Jakarta tidak mendapatkan uang harian. Tetapi, DPR yang dibayarkan sebesar Rp170.000 <span class="note-link">(Cek PMK Hal 69 ↗)</span></small>
               </span>
             </label>
             <label class="opt-tile">
