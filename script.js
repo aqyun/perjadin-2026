@@ -1,104 +1,71 @@
+// === data.js ===
 // =====================================================================
-// MODE TAMPILAN (terang / gelap / otomatis)
+// DATA & STATE (PerdinKu)
+// Data pegawai, data master SBM, dan state aplikasi
 // =====================================================================
-const THEME_STORAGE_KEY = 'perjadin-theme';
-const themeMedia = window.matchMedia('(prefers-color-scheme: dark)');
-
-function getThemeMode() {
-  const saved = localStorage.getItem(THEME_STORAGE_KEY);
-  return ['light', 'dark', 'auto'].includes(saved) ? saved : 'auto';
-}
-
-function applyThemeMode(mode) {
-  const dark = mode === 'dark' || (mode === 'auto' && themeMedia.matches);
-  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
-}
-
-function markThemeButtons(mode) {
-  document.querySelectorAll('.theme-opt').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.themeMode === mode);
-  });
-}
-
-function setThemeMode(mode) {
-  localStorage.setItem(THEME_STORAGE_KEY, mode);
-  applyThemeMode(mode);
-  markThemeButtons(mode);
-}
-
-function initTheme() {
-  const mode = getThemeMode();
-  applyThemeMode(mode);
-  markThemeButtons(mode);
-  const onChange = () => { if (getThemeMode() === 'auto') applyThemeMode('auto'); };
-  if (themeMedia.addEventListener) themeMedia.addEventListener('change', onChange);
-  else themeMedia.addListener(onChange);
-}
-
-initTheme();
 
 // =====================================================================
 // DATA PEGAWAI (dari sheet KARYAWAN)
 // =====================================================================
 const employees = [
-  {id: 0,nama:'Yenita Sari, S.H., M.H.',nip:'197905172002122002',pangkat:'Pembina Tingkat 1',gol:'IV/b',jabatan:'Kepala Biro Komunikasi Publik'},
-  {id: 1,nama:'Arif Fajar Alfalaqy, S.Sos., M.Sc.',nip:'198305152008011009',pangkat:'Pembina',gol:'IV/a',jabatan:'Kabag. Pengelolaan Dokumentasi dan Hubungan Media'},
-  {id: 2,nama:'Rendhi Mirad, S.Sos., M.S.E.',nip:'198205212006041002',pangkat:'Pembina',gol:'IV/a',jabatan:'Kabag. Pelayanan Publik dan Publikasi'},
-  {id: 3,nama:'Dwi Handoko, S.Kom., M.Si., M.MT.',nip:'198811112010121002',pangkat:'Penata Tingkat I',gol:'III/d',jabatan:'Kepala Subbagian Tata Usaha'},
-  {id: 4,nama:'Ristyan Mega Putra, S.Sos, M.Si.',nip:'198310142010121001',pangkat:'Penata Tingkat I',gol:'III/d',jabatan:'Pranata Humas Ahli Muda'},
-  {id: 5,nama:'Ahmad Jayadi, S.Hum, M.T.',nip:'198702182010121003',pangkat:'Penata Tingkat I',gol:'III/d',jabatan:'Kepala Subbagian Tata Usaha'},
-  {id: 6,nama:'Erwin Alimudin, S.Ds.',nip:'199305222019031006',pangkat:'Penata Muda Tingkat I',gol:'III/b',jabatan:'Pranata Humas Ahli Pertama'},
+  { id: 0, nama: 'Yenita Sari, S.H., M.H.', nip: '197905172002122002', pangkat: 'Pembina Tingkat 1', gol: 'IV/b', jabatan: 'Kepala Biro Komunikasi Publik' },
+  { id: 1, nama: 'Arif Fajar Alfalaqy, S.Sos., M.Sc.', nip: '198305152008011009', pangkat: 'Pembina', gol: 'IV/a', jabatan: 'Kabag. Pengelolaan Dokumentasi dan Hubungan Media' },
+  { id: 2, nama: 'Rendhi Mirad, S.Sos., M.S.E.', nip: '198205212006041002', pangkat: 'Pembina', gol: 'IV/a', jabatan: 'Kabag. Pelayanan Publik dan Publikasi' },
+  { id: 3, nama: 'Dwi Handoko, S.Kom., M.Si., M.MT.', nip: '198811112010121002', pangkat: 'Penata Tingkat I', gol: 'III/d', jabatan: 'Kepala Subbagian Tata Usaha' },
+  { id: 4, nama: 'Ristyan Mega Putra, S.Sos, M.Si.', nip: '198310142010121001', pangkat: 'Penata Tingkat I', gol: 'III/d', jabatan: 'Pranata Humas Ahli Muda' },
+  { id: 5, nama: 'Ahmad Jayadi, S.Hum, M.T.', nip: '198702182010121003', pangkat: 'Penata Tingkat I', gol: 'III/d', jabatan: 'Kepala Subbagian Tata Usaha' },
+  { id: 6, nama: 'Erwin Alimudin, S.Ds.', nip: '199305222019031006', pangkat: 'Penata Muda Tingkat I', gol: 'III/b', jabatan: 'Pranata Humas Ahli Pertama' },
   { id: 7, nama: 'Bio Bhirawan, S.T., M.Si.', nip: '199209052019031004', pangkat: 'Penata Muda Tingkat I', gol: 'III/b', jabatan: 'Analis Perumahan' },
-  {id: 8,nama:'Ishaq Abdullah, S.Ars.',nip:'199505122020121002',pangkat:'Penata Muda Tingkat I',gol:'III/b',jabatan:'Penata Kelola Perumahan Ahli Pertama'},
-  {id: 9,nama:'Annisa Zetta Afiatni, S.I.Kom.',nip:'199401312023212027',pangkat:'-',gol:'IX',jabatan:'Pranata Humas Ahli Pertama'},
-  {id: 10,nama:'Gita Nawangsari Estika Putri, S.Kom.I.',nip:'199401042023212032',pangkat:'-',gol:'IX',jabatan:'Pranata Humas Ahli Pertama'},
-  {id: 11,nama:'Nur Rahma Aziza, S.I.Kom.',nip:'199901012023212005',pangkat:'-',gol:'IX',jabatan:'Pranata Humas Ahli Pertama'},
-  {id: 12,nama:'Bambang Ismanto, A.Md.',nip:'199505252024211005',pangkat:'-',gol:'VII',jabatan:'Pranata Komputer Terampil'},
-  {id: 13,nama:'Lisa Rahmawati Dewi Syam, S.H., M.H.',nip:'199009162025212062',pangkat:'-',gol:'IX',jabatan:'Arsiparis Ahli Pertama'},
-  {id: 14,nama:'Refly Saprilaturyandi, S.Kom.',nip:'198504232025211049',pangkat:'-',gol:'IX',jabatan:'Pranata Komputer Ahli Pertama'},
-  {id: 15,nama:'Rudiyana Harris, S.E.',nip:'198912202025211044',pangkat:'-',gol:'IX',jabatan:'Analis Kebijakan Ahli Pertama'},
-  {id: 16,nama:'Fitrah Faizal, S.T.',nip:'198802242025211047',pangkat:'-',gol:'IX',jabatan:'Penata Layanan Operasional'},
-  {id: 17,nama:'Wahyu Ady Sulistyo, S.T.',nip:'198407022025211043',pangkat:'-',gol:'IX',jabatan:'Penata Layanan Operasional'},
-  {id: 18,nama:'Aisyah Putri Robbani, S.Ars',nip:'199706262025062015',pangkat:'Penata Muda',gol:'III/a',jabatan:'Penata Kelola Bangunan Gedung dan Kawasan Permukiman Ahli Pertama'},
-  {id: 19,nama:'Akhdiyat Dewa Galenica, S.I.Kom.',nip:'200212262025061003',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
-  {id: 20,nama:'Ameta Dian Fachirah Tarigan, S.I.Kom',nip:'199906202025062017',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
-  {id: 21,nama:'Aqyun Rista Maulidin, S.Tr.Kom.',nip:'200205302025062010',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Komputer Ahli Pertama'},
-  {id: 22,nama:'Ardilamita Febrimasya, S.K.Pm.',nip:'200203122025062008',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
-  {id: 23,nama:'Atini Rahmatika Fauzi Murod, S.K.Pm.',nip:'199903172025062014',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
-  {id: 24,nama:'Avifah Setiyani, S.I.Kom.',nip:'199909222025062015',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
-  {id: 25,nama:'Deshinta Firstiana Sari, S.I.Kom.',nip:'198912152025062003',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
-  {id: 26,nama:'Digna Margareth Rismauli, S.I.Kom.',nip:'199310142025062008',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
-  {id: 27,nama:'Dimas Novel Calvindoro Damarjati, S.I.Kom.',nip:'199906182025061012',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
-  {id: 28,nama:'Emanuel Van Fernando Sibarani, S.I.Kom',nip:'199611092025061011',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
-  {id: 29,nama:'Fatmawati, S.T.',nip:'200002182025062015',pangkat:'Penata Muda',gol:'III/a',jabatan:'Penata Kelola Perumahan Ahli Pertama'},
-  {id: 30,nama:'Gayatri Puspita Sari, S.I.Kom',nip:'200001172025062013',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
-  {id: 31,nama:'Indar Amila Azizah, S.I.Kom',nip:'200006052025062023',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
-  {id: 32,nama:'Kinanti Juli Astuti, S.I.Kom.',nip:'200107292025062013',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
-  {id: 33,nama:'Leonardo Abet Zebe, S.Ars',nip:'200206092025061006',pangkat:'Penata Muda',gol:'III/a',jabatan:'Penata Kelola Perumahan Ahli Pertama'},
-  {id: 34,nama:'Madya Puspa Faradina, B.A.',nip:'199711182025062011',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
-  {id: 35,nama:'Maharani Bilqist Caroline, S.T.',nip:'200009262025062013',pangkat:'Penata Muda',gol:'III/a',jabatan:'Penata Kelola Bangunan Gedung dan Kawasan Permukiman Ahli Pertama'},
-  {id: 36,nama:'Melly Nur Fatimah, S.T.',nip:'199805282025062014',pangkat:'Penata Muda',gol:'III/a',jabatan:'Penata Kelola Perumahan Ahli Pertama'},
-  {id: 37,nama:'Michael Prilas Simanjuntak, S.T.',nip:'200204112025061006',pangkat:'Penata Muda',gol:'III/a',jabatan:'Penata Kelola Perumahan Ahli Pertama'},
-  {id: 38,nama:'Muhammad Ihsan Yudanto, S.T.',nip:'199802252025061010',pangkat:'Penata Muda',gol:'III/a',jabatan:'Penata Kelola Perumahan Ahli Pertama'},
-  {id: 39,nama:'Muhammad Ilham Bintang, S.K.Pm.',nip:'200010192025061007',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
-  {id: 40,nama:'Nabela Aristya Fajrin, S.Akt.',nip:'200003022025062014',pangkat:'Penata Muda',gol:'III/a',jabatan:'Analis Pengelolaan Keuangan APBN Ahli Pertama'},
-  {id: 41,nama:'Novia Dwi Purwanti, S.K.Pm.',nip:'200111112025062016',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
-  {id: 42,nama:'Raden Bintang Agna Fadhila, S.I.Kom.',nip:'200111022025061007',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
-  {id: 43,nama:'Ratu Budhi Sejati, S.I.Kom.',nip:'199610232025062013',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
-  {id: 44,nama:'Ridho Halasan Sinaga, S.I.Kom.',nip:'200108122025061008',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
-  {id: 45,nama:'Rifky Aji Rahmandita, S.I.Kom',nip:'199902242025061006',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
-  {id: 46,nama:'Risyanti Ananti Putri, S.IP',nip:'199906192025062020',pangkat:'Penata Muda',gol:'III/a',jabatan:'Arsiparis Ahli Pertama'},
-  {id: 47,nama:'Sahrul Hari Nugroho, S.T',nip:'199906032025061009',pangkat:'Penata Muda',gol:'III/a',jabatan:'Penata Kelola Bangunan Gedung dan Kawasan Permukiman'},
-  {id: 48,nama:'Shafa Kamila, S.I.Kom.',nip:'200111162025062019',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
-  {id: 49,nama:'Utari Liani Narulita, S.I.Kom.',nip:'200104142025062021',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
-  {id: 50,nama:'Vania Adita Siagian, S.T.',nip:'199910242025062017',pangkat:'Penata Muda',gol:'III/a',jabatan:'Penata Kelola Perumahan Ahli Pertama'},
-  {id: 51,nama:'Vera Siringo Ringo, S.Ikom.',nip:'199602052025062013',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
-  {id: 52,nama:'Widya Cantika Sisnawar, S.I.Kom.',nip:'200101192025062013',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
-  {id: 53,nama:'Yogi Andre Yonatan Pakpahan, S.P.W.K',nip:'199511272025061006',pangkat:'Penata Muda',gol:'III/a',jabatan:'Penata Kelola Bangunan Gedung dan Kawasan Permukiman Ahli Pertama'},
-  {id: 54,nama:'Yovita Rimbawati, S.I.Kom.',nip:'199107312025062006',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
-  {id: 55,nama:'Zahra Puspa Noviandini, S.Ars.',nip:'199711012025062009',pangkat:'Penata Muda',gol:'III/a',jabatan:'Penata Kelola Perumahan Ahli Pertama'},
-  {id: 56,nama:'Zhafira Alya Miftach, S.I.Kom',nip:'199910012025062019',pangkat:'Penata Muda',gol:'III/a',jabatan:'Pranata Hubungan Masyarakat Ahli Pertama'},
-  {id: 57,nama:'Adolfus Manuel, S.Ak.',nip:'-',pangkat:'-',gol:'-',jabatan:'Staf Biro Umum'},
+  { id: 8, nama: 'Ishaq Abdullah, S.Ars.', nip: '199505122020121002', pangkat: 'Penata Muda Tingkat I', gol: 'III/b', jabatan: 'Penata Kelola Perumahan Ahli Pertama' },
+  { id: 9, nama: 'Annisa Zetta Afiatni, S.I.Kom.', nip: '199401312023212027', pangkat: '-', gol: 'IX', jabatan: 'Pranata Humas Ahli Pertama' },
+  { id: 10, nama: 'Gita Nawangsari Estika Putri, S.Kom.I.', nip: '199401042023212032', pangkat: '-', gol: 'IX', jabatan: 'Pranata Humas Ahli Pertama' },
+  { id: 11, nama: 'Nur Rahma Aziza, S.I.Kom.', nip: '199901012023212005', pangkat: '-', gol: 'IX', jabatan: 'Pranata Humas Ahli Pertama' },
+  { id: 12, nama: 'Bambang Ismanto, A.Md.', nip: '199505252024211005', pangkat: '-', gol: 'VII', jabatan: 'Pranata Komputer Terampil' },
+  { id: 13, nama: 'Lisa Rahmawati Dewi Syam, S.H., M.H.', nip: '199009162025212062', pangkat: '-', gol: 'IX', jabatan: 'Arsiparis Ahli Pertama' },
+  { id: 14, nama: 'Refly Saprilaturyandi, S.Kom.', nip: '198504232025211049', pangkat: '-', gol: 'IX', jabatan: 'Pranata Komputer Ahli Pertama' },
+  { id: 15, nama: 'Rudiyana Harris, S.E.', nip: '198912202025211044', pangkat: '-', gol: 'IX', jabatan: 'Analis Kebijakan Ahli Pertama' },
+  { id: 16, nama: 'Fitrah Faizal, S.T.', nip: '198802242025211047', pangkat: '-', gol: 'IX', jabatan: 'Penata Layanan Operasional' },
+  { id: 17, nama: 'Wahyu Ady Sulistyo, S.T.', nip: '198407022025211043', pangkat: '-', gol: 'IX', jabatan: 'Penata Layanan Operasional' },
+  { id: 18, nama: 'Aisyah Putri Robbani, S.Ars', nip: '199706262025062015', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Penata Kelola Bangunan Gedung dan Kawasan Permukiman Ahli Pertama' },
+  { id: 19, nama: 'Akhdiyat Dewa Galenica, S.I.Kom.', nip: '200212262025061003', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Pranata Hubungan Masyarakat Ahli Pertama' },
+  { id: 20, nama: 'Ameta Dian Fachirah Tarigan, S.I.Kom', nip: '199906202025062017', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Pranata Hubungan Masyarakat Ahli Pertama' },
+  { id: 21, nama: 'Aqyun Rista Maulidin, S.Tr.Kom.', nip: '200205302025062010', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Pranata Komputer Ahli Pertama' },
+  { id: 22, nama: 'Ardilamita Febrimasya, S.K.Pm.', nip: '200203122025062008', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Pranata Hubungan Masyarakat Ahli Pertama' },
+  { id: 23, nama: 'Atini Rahmatika Fauzi Murod, S.K.Pm.', nip: '199903172025062014', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Pranata Hubungan Masyarakat Ahli Pertama' },
+  { id: 24, nama: 'Avifah Setiyani, S.I.Kom.', nip: '199909222025062015', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Pranata Hubungan Masyarakat Ahli Pertama' },
+  { id: 25, nama: 'Deshinta Firstiana Sari, S.I.Kom.', nip: '198912152025062003', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Pranata Hubungan Masyarakat Ahli Pertama' },
+  { id: 26, nama: 'Digna Margareth Rismauli, S.I.Kom.', nip: '199310142025062008', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Pranata Hubungan Masyarakat Ahli Pertama' },
+  { id: 27, nama: 'Dimas Novel Calvindoro Damarjati, S.I.Kom.', nip: '199906182025061012', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Pranata Hubungan Masyarakat Ahli Pertama' },
+  { id: 28, nama: 'Emanuel Van Fernando Sibarani, S.I.Kom', nip: '199611092025061011', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Pranata Hubungan Masyarakat Ahli Pertama' },
+  { id: 29, nama: 'Fatmawati, S.T.', nip: '200002182025062015', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Penata Kelola Perumahan Ahli Pertama' },
+  { id: 30, nama: 'Gayatri Puspita Sari, S.I.Kom', nip: '200001172025062013', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Pranata Hubungan Masyarakat Ahli Pertama' },
+  { id: 31, nama: 'Indar Amila Azizah, S.I.Kom', nip: '200006052025062023', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Pranata Hubungan Masyarakat Ahli Pertama' },
+  { id: 32, nama: 'Kinanti Juli Astuti, S.I.Kom.', nip: '200107292025062013', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Pranata Hubungan Masyarakat Ahli Pertama' },
+  { id: 33, nama: 'Leonardo Abet Zebe, S.Ars', nip: '200206092025061006', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Penata Kelola Perumahan Ahli Pertama' },
+  { id: 34, nama: 'Madya Puspa Faradina, B.A.', nip: '199711182025062011', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Pranata Hubungan Masyarakat Ahli Pertama' },
+  { id: 35, nama: 'Maharani Bilqist Caroline, S.T.', nip: '200009262025062013', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Penata Kelola Bangunan Gedung dan Kawasan Permukiman Ahli Pertama' },
+  { id: 36, nama: 'Melly Nur Fatimah, S.T.', nip: '199805282025062014', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Penata Kelola Perumahan Ahli Pertama' },
+  { id: 37, nama: 'Michael Prilas Simanjuntak, S.T.', nip: '200204112025061006', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Penata Kelola Perumahan Ahli Pertama' },
+  { id: 38, nama: 'Muhammad Ihsan Yudanto, S.T.', nip: '199802252025061010', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Penata Kelola Perumahan Ahli Pertama' },
+  { id: 39, nama: 'Muhammad Ilham Bintang, S.K.Pm.', nip: '200010192025061007', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Pranata Hubungan Masyarakat Ahli Pertama' },
+  { id: 40, nama: 'Nabela Aristya Fajrin, S.Akt.', nip: '200003022025062014', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Analis Pengelolaan Keuangan APBN Ahli Pertama' },
+  { id: 41, nama: 'Novia Dwi Purwanti, S.K.Pm.', nip: '200111112025062016', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Pranata Hubungan Masyarakat Ahli Pertama' },
+  { id: 42, nama: 'Raden Bintang Agna Fadhila, S.I.Kom.', nip: '200111022025061007', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Pranata Hubungan Masyarakat Ahli Pertama' },
+  { id: 43, nama: 'Ratu Budhi Sejati, S.I.Kom.', nip: '199610232025062013', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Pranata Hubungan Masyarakat Ahli Pertama' },
+  { id: 44, nama: 'Ridho Halasan Sinaga, S.I.Kom.', nip: '200108122025061008', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Pranata Hubungan Masyarakat Ahli Pertama' },
+  { id: 45, nama: 'Rifky Aji Rahmandita, S.I.Kom', nip: '199902242025061006', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Pranata Hubungan Masyarakat Ahli Pertama' },
+  { id: 46, nama: 'Risyanti Ananti Putri, S.IP', nip: '199906192025062020', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Arsiparis Ahli Pertama' },
+  { id: 47, nama: 'Sahrul Hari Nugroho, S.T', nip: '199906032025061009', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Penata Kelola Bangunan Gedung dan Kawasan Permukiman' },
+  { id: 48, nama: 'Shafa Kamila, S.I.Kom.', nip: '200111162025062019', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Pranata Hubungan Masyarakat Ahli Pertama' },
+  { id: 49, nama: 'Utari Liani Narulita, S.I.Kom.', nip: '200104142025062021', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Pranata Hubungan Masyarakat Ahli Pertama' },
+  { id: 50, nama: 'Vania Adita Siagian, S.T.', nip: '199910242025062017', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Penata Kelola Perumahan Ahli Pertama' },
+  { id: 51, nama: 'Vera Siringo Ringo, S.Ikom.', nip: '199602052025062013', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Pranata Hubungan Masyarakat Ahli Pertama' },
+  { id: 52, nama: 'Widya Cantika Sisnawar, S.I.Kom.', nip: '200101192025062013', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Pranata Hubungan Masyarakat Ahli Pertama' },
+  { id: 53, nama: 'Yogi Andre Yonatan Pakpahan, S.P.W.K', nip: '199511272025061006', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Penata Kelola Bangunan Gedung dan Kawasan Permukiman Ahli Pertama' },
+  { id: 54, nama: 'Yovita Rimbawati, S.I.Kom.', nip: '199107312025062006', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Pranata Hubungan Masyarakat Ahli Pertama' },
+  { id: 55, nama: 'Zahra Puspa Noviandini, S.Ars.', nip: '199711012025062009', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Penata Kelola Perumahan Ahli Pertama' },
+  { id: 56, nama: 'Zhafira Alya Miftach, S.I.Kom', nip: '199910012025062019', pangkat: 'Penata Muda', gol: 'III/a', jabatan: 'Pranata Hubungan Masyarakat Ahli Pertama' },
+  { id: 57, nama: 'Adolfus Manuel, S.Ak.', nip: '-', pangkat: '-', gol: '-', jabatan: 'Staf Biro Umum' },
 ];
 
 // =====================================================================
@@ -108,44 +75,44 @@ const employees = [
 //         h2=hotel Eselon II, h1=hotel Eselon I, tiket=tiket pesawat PP
 // =====================================================================
 const sbmData = [
-  {id:1,provinsi:'NANGROE ACEH DARUSSALAM',ibukota:'Banda Aceh',uh:360000,jktPP:512000,taxi:254000,dpr:766000,h1:4774000,h2:3526000,h4:1578000,h3:770000,tiket:4492000},
-  {id:2,provinsi:'SUMATERA UTARA',ibukota:'Medan',uh:370000,jktPP:512000,taxi:616000,dpr:1128000,h1:4960000,h2:2195000,h4:1188000,h3:699000,tiket:3808000},
-  {id:3,provinsi:'RIAU',ibukota:'Pekanbaru',uh:370000,jktPP:512000,taxi:202000,dpr:714000,h1:3820000,h2:3119000,h4:1650000,h3:852000,tiket:3016000},
-  {id:4,provinsi:'KEPULAUAN RIAU',ibukota:'Tanjung Pinang',uh:370000,jktPP:512000,taxi:330000,dpr:842000,h1:5772000,h2:2318000,h4:1297000,h3:792000,tiket:0},
-  {id:5,provinsi:'JAMBI',ibukota:'Jambi',uh:370000,jktPP:512000,taxi:294000,dpr:806000,h1:5004000,h2:4102000,h4:1225000,h3:580000,tiket:2460000},
-  {id:6,provinsi:'SUMATERA BARAT',ibukota:'Padang',uh:380000,jktPP:512000,taxi:380000,dpr:892000,h1:5236000,h2:3332000,h4:1353000,h3:701000,tiket:2952000},
-  {id:7,provinsi:'SUMATERA SELATAN',ibukota:'Palembang',uh:380000,jktPP:512000,taxi:358000,dpr:870000,h1:6298000,h2:3083000,h4:1966000,h3:861000,tiket:2268000},
-  {id:8,provinsi:'LAMPUNG',ibukota:'Bandar Lampung',uh:380000,jktPP:512000,taxi:336000,dpr:848000,h1:4491000,h2:2488000,h4:1539000,h3:580000,tiket:1583000},
-  {id:9,provinsi:'BENGKULU',ibukota:'Bengkulu',uh:380000,jktPP:512000,taxi:218000,dpr:730000,h1:2140000,h2:1628000,h4:1546000,h3:692000,tiket:2621000},
-  {id:10,provinsi:'BANGKA BELITUNG',ibukota:'Pangkal Pinang',uh:410000,jktPP:512000,taxi:194000,dpr:706000,h1:4134000,h2:2838000,h4:1957000,h3:676000,tiket:2139000},
-  {id:11,provinsi:'BANTEN',ibukota:'Serang',uh:370000,jktPP:0,taxi:536000,dpr:536000,h1:5725000,h2:2373000,h4:1301000,h3:724000,tiket:0},
-  {id:12,provinsi:'JAWA BARAT',ibukota:'Bandung',uh:430000,jktPP:512000,taxi:400000,dpr:912000,h1:5812000,h2:2755000,h4:1298000,h3:686000,tiket:0},
-  {id:13,provinsi:'DKI JAKARTA',ibukota:'Jakarta',uh:530000,jktPP:0,taxi:512000,dpr:512000,h1:8720000,h2:2063000,h4:992000,h3:730000,tiket:0},
-  {id:14,provinsi:'JAWA TENGAH',ibukota:'Semarang',uh:370000,jktPP:512000,taxi:216000,dpr:728000,h1:5728000,h2:1998000,h4:1201000,h3:810000,tiket:2182000},
-  {id:15,provinsi:'D.I. YOGYAKARTA',ibukota:'Yogyakarta',uh:420000,jktPP:512000,taxi:534000,dpr:1046000,h1:5017000,h2:2695000,h4:1495000,h3:845000,tiket:2268000},
-  {id:16,provinsi:'JAWA TIMUR',ibukota:'Surabaya',uh:410000,jktPP:512000,taxi:466000,dpr:978000,h1:4449000,h2:2007000,h4:1153000,h3:814000,tiket:2674000},
-  {id:17,provinsi:'BALI',ibukota:'Denpasar',uh:480000,jktPP:512000,taxi:454000,dpr:966000,h1:6848000,h2:2433000,h4:1685000,h3:1138000,tiket:3262000},
-  {id:18,provinsi:'NUSA TENGGARA BARAT',ibukota:'Mataram',uh:440000,jktPP:512000,taxi:462000,dpr:974000,h1:4375000,h2:2648000,h4:1418000,h3:907000,tiket:3230000},
-  {id:19,provinsi:'NUSA TENGGARA TIMUR',ibukota:'Kupang',uh:430000,jktPP:512000,taxi:232000,dpr:744000,h1:3750000,h2:2133000,h4:1355000,h3:688000,tiket:5081000},
-  {id:20,provinsi:'KALIMANTAN BARAT',ibukota:'Pontianak',uh:380000,jktPP:512000,taxi:342000,dpr:854000,h1:2654000,h2:1923000,h4:1125000,h3:538000,tiket:2781000},
-  {id:21,provinsi:'KALIMANTAN TENGAH',ibukota:'Palangkaraya',uh:360000,jktPP:512000,taxi:268000,dpr:780000,h1:4901000,h2:3391000,h4:1160000,h3:659000,tiket:2984000},
-  {id:22,provinsi:'KALIMANTAN SELATAN',ibukota:'Banjarmasin',uh:380000,jktPP:512000,taxi:360000,dpr:872000,h1:4797000,h2:3316000,h4:1500000,h3:697000,tiket:2995000},
-  {id:23,provinsi:'KALIMANTAN TIMUR',ibukota:'Samarinda',uh:430000,jktPP:512000,taxi:1066000,dpr:1578000,h1:4000000,h2:2188000,h4:1507000,h3:804000,tiket:3797000},
-  {id:24,provinsi:'KALIMANTAN UTARA',ibukota:'Tanjung Selor',uh:430000,jktPP:512000,taxi:436000,dpr:948000,h1:4000000,h2:2735000,h4:1507000,h3:904000,tiket:4057000},
-  {id:25,provinsi:'SULAWESI UTARA',ibukota:'Manado',uh:370000,jktPP:512000,taxi:276000,dpr:788000,h1:4919000,h2:2290000,h4:1270000,h3:978000,tiket:5102000},
-  {id:26,provinsi:'GORONTALO',ibukota:'Gorontalo',uh:370000,jktPP:512000,taxi:530000,dpr:1042000,h1:4168000,h2:3107000,h4:1606000,h3:955000,tiket:4824000},
-  {id:27,provinsi:'SULAWESI BARAT',ibukota:'Mamuju',uh:410000,jktPP:512000,taxi:626000,dpr:1138000,h1:4076000,h2:3098000,h4:1344000,h3:704000,tiket:4867000},
-  {id:28,provinsi:'SULAWESI SELATAN',ibukota:'Makassar',uh:430000,jktPP:512000,taxi:374000,dpr:886000,h1:4820000,h2:1938000,h4:1423000,h3:745000,tiket:3829000},
-  {id:29,provinsi:'SULAWESI TENGAH',ibukota:'Palu',uh:370000,jktPP:512000,taxi:330000,dpr:842000,h1:2309000,h2:2027000,h4:1679000,h3:951000,tiket:5113000},
-  {id:30,provinsi:'SULAWESI TENGGARA',ibukota:'Kendari',uh:380000,jktPP:512000,taxi:342000,dpr:854000,h1:3088800,h2:2574000,h4:1297000,h3:786000,tiket:4182000},
-  {id:31,provinsi:'MALUKU',ibukota:'Ambon',uh:380000,jktPP:512000,taxi:576000,dpr:1088000,h1:3467000,h2:3240000,h4:1059000,h3:667000,tiket:7081000},
-  {id:32,provinsi:'MALUKU UTARA',ibukota:'Sofifi',uh:430000,jktPP:512000,taxi:430000,dpr:942000,h1:4612000,h2:3843000,h4:1160000,h3:654000,tiket:0},
-  {id:33,provinsi:'PAPUA',ibukota:'Jayapura',uh:580000,jktPP:512000,taxi:1026000,dpr:1538000,h1:3872000,h2:3318000,h4:2521000,h3:1038000,tiket:8193000},
-  {id:34,provinsi:'PAPUA BARAT',ibukota:'Manokwari',uh:480000,jktPP:512000,taxi:472000,dpr:984000,h1:3872000,h2:3341000,h4:2056000,h3:967000,tiket:10824000},
-  {id:35,provinsi:'PAPUA BARAT DAYA',ibukota:'-',uh:480000,jktPP:0,taxi:0,dpr:0,h1:3872000,h2:3341000,h4:2056000,h3:967000,tiket:0},
-  {id:36,provinsi:'PAPUA TENGAH',ibukota:'-',uh:580000,jktPP:0,taxi:0,dpr:0,h1:3859000,h2:3318000,h4:2521000,h3:1038000,tiket:0},
-  {id:37,provinsi:'PAPUA SELATAN',ibukota:'-',uh:580000,jktPP:0,taxi:0,dpr:0,h1:5673000,h2:4877000,h4:3706000,h3:1526000,tiket:0},
-  {id:38,provinsi:'PAPUA PEGUNUNGAN',ibukota:'-',uh:580000,jktPP:0,taxi:0,dpr:0,h1:5711000,h2:4911000,h4:3731000,h3:1536000,tiket:0},
+  { id: 1, provinsi: 'NANGROE ACEH DARUSSALAM', ibukota: 'Banda Aceh', uh: 360000, jktPP: 512000, taxi: 254000, dpr: 766000, h1: 4774000, h2: 3526000, h4: 1578000, h3: 770000, tiket: 4492000 }, 
+  { id: 2, provinsi: 'SUMATERA UTARA', ibukota: 'Medan', uh: 370000, jktPP: 512000, taxi: 616000, dpr: 1128000, h1: 4960000, h2: 2195000, h4: 1188000, h3: 699000, tiket: 3808000 }, 
+  { id: 3, provinsi: 'RIAU', ibukota: 'Pekanbaru', uh: 370000, jktPP: 512000, taxi: 202000, dpr: 714000, h1: 3820000, h2: 3119000, h4: 1650000, h3: 852000, tiket: 3016000 }, 
+  { id: 4, provinsi: 'KEPULAUAN RIAU', ibukota: 'Tanjung Pinang', uh: 370000, jktPP: 512000, taxi: 330000, dpr: 842000, h1: 5772000, h2: 2318000, h4: 1297000, h3: 792000, tiket: 0 }, 
+  { id: 5, provinsi: 'JAMBI', ibukota: 'Jambi', uh: 370000, jktPP: 512000, taxi: 294000, dpr: 806000, h1: 5004000, h2: 4102000, h4: 1225000, h3: 580000, tiket: 2460000 }, 
+  { id: 6, provinsi: 'SUMATERA BARAT', ibukota: 'Padang', uh: 380000, jktPP: 512000, taxi: 380000, dpr: 892000, h1: 5236000, h2: 3332000, h4: 1353000, h3: 701000, tiket: 2952000 }, 
+  { id: 7, provinsi: 'SUMATERA SELATAN', ibukota: 'Palembang', uh: 380000, jktPP: 512000, taxi: 358000, dpr: 870000, h1: 6298000, h2: 3083000, h4: 1966000, h3: 861000, tiket: 2268000 }, 
+  { id: 8, provinsi: 'LAMPUNG', ibukota: 'Bandar Lampung', uh: 380000, jktPP: 512000, taxi: 336000, dpr: 848000, h1: 4491000, h2: 2488000, h4: 1539000, h3: 580000, tiket: 1583000 }, 
+  { id: 9, provinsi: 'BENGKULU', ibukota: 'Bengkulu', uh: 380000, jktPP: 512000, taxi: 218000, dpr: 730000, h1: 2140000, h2: 1628000, h4: 1546000, h3: 692000, tiket: 2621000 }, 
+  { id: 10, provinsi: 'BANGKA BELITUNG', ibukota: 'Pangkal Pinang', uh: 410000, jktPP: 512000, taxi: 194000, dpr: 706000, h1: 4134000, h2: 2838000, h4: 1957000, h3: 676000, tiket: 2139000 }, 
+  { id: 11, provinsi: 'BANTEN', ibukota: 'Serang', uh: 370000, jktPP: 0, taxi: 536000, dpr: 536000, h1: 5725000, h2: 2373000, h4: 1301000, h3: 724000, tiket: 0 }, 
+  { id: 12, provinsi: 'JAWA BARAT', ibukota: 'Bandung', uh: 430000, jktPP: 512000, taxi: 400000, dpr: 912000, h1: 5812000, h2: 2755000, h4: 1298000, h3: 686000, tiket: 0 }, 
+  { id: 13, provinsi: 'DKI JAKARTA', ibukota: 'Jakarta', uh: 530000, jktPP: 0, taxi: 512000, dpr: 512000, h1: 8720000, h2: 2063000, h4: 992000, h3: 730000, tiket: 0 }, 
+  { id: 14, provinsi: 'JAWA TENGAH', ibukota: 'Semarang', uh: 370000, jktPP: 512000, taxi: 216000, dpr: 728000, h1: 5728000, h2: 1998000, h4: 1201000, h3: 810000, tiket: 2182000 }, 
+  { id: 15, provinsi: 'D.I. YOGYAKARTA', ibukota: 'Yogyakarta', uh: 420000, jktPP: 512000, taxi: 534000, dpr: 1046000, h1: 5017000, h2: 2695000, h4: 1495000, h3: 845000, tiket: 2268000 }, 
+  { id: 16, provinsi: 'JAWA TIMUR', ibukota: 'Surabaya', uh: 410000, jktPP: 512000, taxi: 466000, dpr: 978000, h1: 4449000, h2: 2007000, h4: 1153000, h3: 814000, tiket: 2674000 }, 
+  { id: 17, provinsi: 'BALI', ibukota: 'Denpasar', uh: 480000, jktPP: 512000, taxi: 454000, dpr: 966000, h1: 6848000, h2: 2433000, h4: 1685000, h3: 1138000, tiket: 3262000 }, 
+  { id: 18, provinsi: 'NUSA TENGGARA BARAT', ibukota: 'Mataram', uh: 440000, jktPP: 512000, taxi: 462000, dpr: 974000, h1: 4375000, h2: 2648000, h4: 1418000, h3: 907000, tiket: 3230000 }, 
+  { id: 19, provinsi: 'NUSA TENGGARA TIMUR', ibukota: 'Kupang', uh: 430000, jktPP: 512000, taxi: 232000, dpr: 744000, h1: 3750000, h2: 2133000, h4: 1355000, h3: 688000, tiket: 5081000 }, 
+  { id: 20, provinsi: 'KALIMANTAN BARAT', ibukota: 'Pontianak', uh: 380000, jktPP: 512000, taxi: 342000, dpr: 854000, h1: 2654000, h2: 1923000, h4: 1125000, h3: 538000, tiket: 2781000 }, 
+  { id: 21, provinsi: 'KALIMANTAN TENGAH', ibukota: 'Palangkaraya', uh: 360000, jktPP: 512000, taxi: 268000, dpr: 780000, h1: 4901000, h2: 3391000, h4: 1160000, h3: 659000, tiket: 2984000 }, 
+  { id: 22, provinsi: 'KALIMANTAN SELATAN', ibukota: 'Banjarmasin', uh: 380000, jktPP: 512000, taxi: 360000, dpr: 872000, h1: 4797000, h2: 3316000, h4: 1500000, h3: 697000, tiket: 2995000 }, 
+  { id: 23, provinsi: 'KALIMANTAN TIMUR', ibukota: 'Samarinda', uh: 430000, jktPP: 512000, taxi: 1066000, dpr: 1578000, h1: 4000000, h2: 2188000, h4: 1507000, h3: 804000, tiket: 3797000 }, 
+  { id: 24, provinsi: 'KALIMANTAN UTARA', ibukota: 'Tanjung Selor', uh: 430000, jktPP: 512000, taxi: 436000, dpr: 948000, h1: 4000000, h2: 2735000, h4: 1507000, h3: 904000, tiket: 4057000 }, 
+  { id: 25, provinsi: 'SULAWESI UTARA', ibukota: 'Manado', uh: 370000, jktPP: 512000, taxi: 276000, dpr: 788000, h1: 4919000, h2: 2290000, h4: 1270000, h3: 978000, tiket: 5102000 }, 
+  { id: 26, provinsi: 'GORONTALO', ibukota: 'Gorontalo', uh: 370000, jktPP: 512000, taxi: 530000, dpr: 1042000, h1: 4168000, h2: 3107000, h4: 1606000, h3: 955000, tiket: 4824000 }, 
+  { id: 27, provinsi: 'SULAWESI BARAT', ibukota: 'Mamuju', uh: 410000, jktPP: 512000, taxi: 626000, dpr: 1138000, h1: 4076000, h2: 3098000, h4: 1344000, h3: 704000, tiket: 4867000 }, 
+  { id: 28, provinsi: 'SULAWESI SELATAN', ibukota: 'Makassar', uh: 430000, jktPP: 512000, taxi: 374000, dpr: 886000, h1: 4820000, h2: 1938000, h4: 1423000, h3: 745000, tiket: 3829000 }, 
+  { id: 29, provinsi: 'SULAWESI TENGAH', ibukota: 'Palu', uh: 370000, jktPP: 512000, taxi: 330000, dpr: 842000, h1: 2309000, h2: 2027000, h4: 1679000, h3: 951000, tiket: 5113000 }, 
+  { id: 30, provinsi: 'SULAWESI TENGGARA', ibukota: 'Kendari', uh: 380000, jktPP: 512000, taxi: 342000, dpr: 854000, h1: 3088800, h2: 2574000, h4: 1297000, h3: 786000, tiket: 4182000 }, 
+  { id: 31, provinsi: 'MALUKU', ibukota: 'Ambon', uh: 380000, jktPP: 512000, taxi: 576000, dpr: 1088000, h1: 3467000, h2: 3240000, h4: 1059000, h3: 667000, tiket: 7081000 }, 
+  { id: 32, provinsi: 'MALUKU UTARA', ibukota: 'Sofifi', uh: 430000, jktPP: 512000, taxi: 430000, dpr: 942000, h1: 4612000, h2: 3843000, h4: 1160000, h3: 654000, tiket: 0 }, 
+  { id: 33, provinsi: 'PAPUA', ibukota: 'Jayapura', uh: 580000, jktPP: 512000, taxi: 1026000, dpr: 1538000, h1: 3872000, h2: 3318000, h4: 2521000, h3: 1038000, tiket: 8193000 }, 
+  { id: 34, provinsi: 'PAPUA BARAT', ibukota: 'Manokwari', uh: 480000, jktPP: 512000, taxi: 472000, dpr: 984000, h1: 3872000, h2: 3341000, h4: 2056000, h3: 967000, tiket: 10824000 }, 
+  { id: 35, provinsi: 'PAPUA BARAT DAYA', ibukota: '-', uh: 480000, jktPP: 0, taxi: 0, dpr: 0, h1: 3872000, h2: 3341000, h4: 2056000, h3: 967000, tiket: 0 }, 
+  { id: 36, provinsi: 'PAPUA TENGAH', ibukota: '-', uh: 580000, jktPP: 0, taxi: 0, dpr: 0, h1: 3859000, h2: 3318000, h4: 2521000, h3: 1038000, tiket: 0 }, 
+  { id: 37, provinsi: 'PAPUA SELATAN', ibukota: '-', uh: 580000, jktPP: 0, taxi: 0, dpr: 0, h1: 5673000, h2: 4877000, h4: 3706000, h3: 1526000, tiket: 0 }, 
+  { id: 38, provinsi: 'PAPUA PEGUNUNGAN', ibukota: '-', uh: 580000, jktPP: 0, taxi: 0, dpr: 0, h1: 5711000, h2: 4911000, h4: 3731000, h3: 1536000, tiket: 0 }, 
 ];
 
 // =====================================================================
@@ -163,279 +130,76 @@ try {
   provinceFoodRates = {};
 }
 
+
+
+// === utils.js ===
 // =====================================================================
-// INIT
+// FORMAT HELPERS & UTILITIES (PerdinKu)
+// Helper format mata uang, tanggal, terbilang, teks
 // =====================================================================
-document.addEventListener('DOMContentLoaded', () => {
-  // Populate provinsi dropdown
-  const sel = document.getElementById('provinsiTujuan');
-  sbmData.forEach(s => {
-    const opt = document.createElement('option');
-    opt.value = s.id;
-    opt.textContent = formatProvinsi(s.provinsi);
-    sel.appendChild(opt);
-  });
-  renderEmployeeList();
-  const datePill = document.getElementById('datePill');
-  if (datePill) {
-    datePill.textContent = new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date());
+
+// =====================================================================
+// FORMAT HELPERS
+// =====================================================================
+function rp(n) {
+  if (!n || n === 0) return 'Rp 0';
+  return 'Rp ' + Number(n).toLocaleString('id-ID');
+}
+
+function formatTgl(str) {
+  if (!str) return '-';
+  const d = new Date(str);
+  const months = [
+    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+  ];
+  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function jabatanDuaBaris(text) {
+  return String(text || '').replace(
+    /Pejabat Pembuat Komitmen\s+(?=Sekretariat Jenderal)/,
+    'Pejabat Pembuat Komitmen<br>'
+  );
+}
+
+function terbilang(angka) {
+  const satuan = [
+    '', 'Satu', 'Dua', 'Tiga', 'Empat', 'Lima', 'Enam', 'Tujuh', 'Delapan', 'Sembilan',
+    'Sepuluh', 'Sebelas', 'Dua Belas', 'Tiga Belas', 'Empat Belas', 'Lima Belas', 'Enam Belas',
+    'Tujuh Belas', 'Delapan Belas', 'Sembilan Belas'
+  ];
+
+  if (angka === 0) return 'Nol';
+  if (angka < 20) return satuan[angka];
+  if (angka < 100) {
+    const tens = Math.floor(angka / 10);
+    const tenWord = tens * 10 === 20 ? satuan[2] : satuan[tens];
+    return tenWord + ' Puluh ' + (satuan[angka % 10] || '').trim();
   }
-  // Set default dates
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('tglST').value = today;
-  document.getElementById('tglSPD').value = today;
-  document.getElementById('tglBerangkat').value = today;
-  document.getElementById('tglKembali').value = today;
-  hitungLama();
-  updateSbmWarnings();
-  initWelcomeModal();
-});
 
-// =====================================================================
-// TABS
-// =====================================================================
-const tabMeta = {
-  input: ['Input Perjalanan', 'Formulir'],
-  nominatif: ['Daftar Nominatif', 'Rekapitulasi'],
-  'rekap-kuitansi': ['Rekap Kuitansi', 'Rekapitulasi'],
-  'kuitansi-perorangan': ['Kuitansi Perorangan', 'Dokumen'],
-  'sppd-perorangan': ['SPPD Perorangan', 'Dokumen'],
-  'lembar-kendali': ['Lembar Kendali', 'Rekapitulasi'],
-  'rekap-rincian': ['Rekap Rincian', 'Rekapitulasi'],
-  'rekap-spt': ['Rekap Surat Tugas', 'Rekapitulasi'],
-  rincian: ['Rincian per Orang', 'Dokumen'],
-  dpr: ['DPR Perorangan', 'Dokumen'],
-  pengaturan: ['Pengaturan', 'Sistem']
-};
-
-function showTab(name) {
-  const panel = document.getElementById('tab-' + name);
-  if (!panel) return;
-  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  panel.classList.add('active');
-  const activeBtn = document.querySelector(`.tab-btn[data-tab="${name}"]`);
-  if (activeBtn) activeBtn.classList.add('active');
-  const meta = tabMeta[name] || ['Perjalanan Dinas', 'Menu'];
-  const titleEl = document.getElementById('pageTitle');
-  const eyebrowEl = document.getElementById('pageEyebrow');
-  if (titleEl) titleEl.textContent = meta[0];
-  if (eyebrowEl) eyebrowEl.textContent = meta[1];
-  closeSidebar();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  if (name === 'rincian') populateRincianSelect();
-  if (name === 'dpr') populateDPRSelect();
-  if (name === 'nominatif') renderNominatif();
-  if (name === 'rekap-kuitansi') renderRekapKuitansi();
-  if (name === 'kuitansi-perorangan') populateKuitansiPeroranganSelect();
-  if (name === 'sppd-perorangan') populateSPPDSelect();
-  if (name === 'lembar-kendali') renderLembarKendali();
-  if (name === 'rekap-rincian') renderRekapRincian();
-  if (name === 'rekap-spt') renderRekapSPT();
-}
-
-function toggleSidebar() {
-  document.body.classList.toggle('sidebar-open');
-  const btn = document.querySelector('.burger');
-  if (btn) btn.setAttribute('aria-expanded', document.body.classList.contains('sidebar-open') ? 'true' : 'false');
-}
-
-function closeSidebar() {
-  document.body.classList.remove('sidebar-open');
-  const btn = document.querySelector('.burger');
-  if (btn) btn.setAttribute('aria-expanded', 'false');
-}
-
-// =====================================================================
-// JENDELA / POPUP SELAMAT DATANG (WELCOME MODAL)
-// =====================================================================
-function openWelcome() {
-  const overlay = document.getElementById('welcomeOverlay');
-  if (!overlay) return;
-  overlay.classList.add('is-open');
-  document.body.style.overflow = 'hidden';
-}
-
-function closeWelcome() {
-  const overlay = document.getElementById('welcomeOverlay');
-  if (!overlay) return;
-  const checkbox = document.getElementById('welcomeDontShow');
-  if (checkbox && checkbox.checked) {
-    try {
-      localStorage.setItem('perdinku_welcome_dismissed', '1');
-    } catch (e) {}
+  function helper(n) {
+    if (n === 0) return '';
+    if (n < 20) return satuan[n] + ' ';
+    if (n < 100) return satuan[Math.floor(n / 10)] + ' Puluh ' + (n % 10 ? satuan[n % 10] + ' ' : '');
+    if (n < 200) return 'Seratus ' + helper(n - 100);
+    if (n < 1000) return satuan[Math.floor(n / 100)] + ' Ratus ' + helper(n % 100);
+    if (n < 2000) return 'Seribu ' + helper(n - 1000);
+    if (n < 1000000) return helper(Math.floor(n / 1000)) + 'Ribu ' + helper(n % 1000);
+    if (n < 1000000000) return helper(Math.floor(n / 1000000)) + 'Juta ' + helper(n % 1000000);
+    return helper(Math.floor(n / 1000000000)) + 'Miliar ' + helper(n % 1000000000);
   }
-  overlay.classList.remove('is-open');
-  document.body.style.overflow = '';
+
+  return helper(angka).trim() + ' Rupiah';
 }
 
-function handleWelcomeBackdrop(event) {
-  if (event.target && event.target.id === 'welcomeOverlay') {
-    closeWelcome();
-  }
-}
 
-function initWelcomeModal() {
-  let isDismissed = false;
-  try {
-    isDismissed = localStorage.getItem('perdinku_welcome_dismissed') === '1';
-  } catch (e) {}
 
-  if (!isDismissed) {
-    setTimeout(() => {
-      openWelcome();
-    }, 450);
-  }
-}
-
-document.addEventListener('keydown', event => {
-  if (event.key === 'Escape') {
-    closeSidebar();
-    closeWelcome();
-  }
-});
-
-document.addEventListener('input', () => { updateSbmWarnings(); refreshHotelSummaries(); });
-document.addEventListener('change', () => { updateSbmWarnings(); refreshHotelSummaries(); });
-
+// === calc.js ===
 // =====================================================================
-// EMPLOYEE LIST
+// SBM & PERHITUNGAN BIAYA (PerdinKu)
+// Perhitungan uang harian, hotel, transportasi, DPR, dan tarif SBM
 // =====================================================================
-function getInitials(nama) {
-  return nama.replace(/[^A-Za-z\s]/g, '').trim().split(/\s+/).slice(0, 2).map(w => w[0] || '').join('').toUpperCase();
-}
-
-function renderEmployeeList() {
-  const box = document.getElementById('empListBox');
-  const q = document.getElementById('empSearch').value.toLowerCase();
-  const filtered = employees.filter(e => e.nama.toLowerCase().includes(q) || e.jabatan.toLowerCase().includes(q));
-  box.innerHTML = filtered.map(e => `
-    <div class="emp-item ${selectedEmpIds.has(e.id)?'selected':''}" onclick="toggleEmployee(${e.id})">
-      <input type="checkbox" ${selectedEmpIds.has(e.id)?'checked':''} onclick="event.stopPropagation();toggleEmployee(${e.id})">
-      <span class="emp-avatar">${getInitials(e.nama)}</span>
-      <div class="emp-text">
-        <div class="emp-name">${e.nama}</div>
-        <div class="emp-detail">Gol. ${e.gol}<span class="sep">·</span>${e.jabatan}<span class="sep">·</span>NIP: ${e.nip}</div>
-      </div>
-    </div>
-  `).join('') || '<div style="padding:16px;text-align:center;color:#9aabc0;font-size:13px">Tidak ada hasil</div>';
-}
-
-function filterEmployees() { renderEmployeeList(); }
-
-function toggleEmployee(id) {
-  if (selectedEmpIds.has(id)) { selectedEmpIds.delete(id); empTripSegments.delete(id); }
-  else selectedEmpIds.add(id);
-  renderEmployeeList();
-  renderSelectedTags();
-  renderTripDates();
-  refreshCustomCostAssignments();
-  refreshHotelGuests();
-  updateSbmWarnings();
-}
-
-function renderSelectedTags() {
-  const box = document.getElementById('selectedBox');
-  const count = document.getElementById('countSelected');
-  if (selectedEmpIds.size === 0) {
-    box.innerHTML = '<span class="empty-note">Belum ada pegawai dipilih</span>';
-    count.textContent = '0';
-    return;
-  }
-  count.textContent = selectedEmpIds.size;
-  box.innerHTML = [...selectedEmpIds].map(id => {
-    const e = employees.find(x => x.id === id);
-    return `<span class="emp-tag">${e.nama.split(',')[0]} <span class="rm" onclick="toggleEmployee(${id})">×</span></span>`;
-  }).join('');
-}
-
-function renderTripDates() {
-  const block = document.getElementById('tripDatesBlock');
-  const list = document.getElementById('tripDatesList');
-  if (!block || !list) return;
-  if (selectedEmpIds.size === 0) { block.style.display = 'none'; list.innerHTML = ''; return; }
-  block.style.display = '';
-  const g1 = document.getElementById('tglBerangkat').value;
-  const g2 = document.getElementById('tglKembali').value;
-  const globalText = g1 && g2 ? `${formatTgl(g1)} – ${formatTgl(g2)}` : 'belum diisi';
-  list.innerHTML = [...selectedEmpIds].map(id => {
-    const e = employees.find(x => x.id === id);
-    if (!e) return '';
-    const name = e.nama.split(',')[0];
-    const segs = empTripSegments.get(id) || [];
-    if (!segs.length) {
-      return `<div class="trip-row">
-        <div class="trip-name" title="${e.nama}">${name}</div>
-        <div class="trip-follow">Ikut tanggal perjalanan (${globalText})</div>
-        <button type="button" class="trip-btn" onclick="setEmpDates(${id})">Atur tanggal</button>
-      </div>`;
-    }
-    const segHtml = segs.map((s, i) => `
-      <span class="trip-seg">
-        <input type="date" value="${s.start}" onchange="updateEmpSegment(${id},${i},'start',this.value)">
-        <span class="trip-sep">s.d.</span>
-        <input type="date" value="${s.end}" onchange="updateEmpSegment(${id},${i},'end',this.value)">
-        <button type="button" class="trip-seg-rm" title="Hapus tanggal" onclick="removeEmpSegment(${id},${i})">×</button>
-      </span>`).join('');
-    return `<div class="trip-row">
-      <div class="trip-name" title="${e.nama}">${name}</div>
-      <div class="trip-segs">${segHtml}</div>
-      <div class="trip-actions">
-        <button type="button" class="trip-btn" onclick="addEmpSegment(${id})">+ Tanggal</button>
-        <button type="button" class="trip-btn trip-btn-reset" onclick="resetEmpDates(${id})">Ikut global</button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function setEmpDates(id) {
-  const g1 = document.getElementById('tglBerangkat').value;
-  const g2 = document.getElementById('tglKembali').value || g1;
-  if (!g1) return;
-  empTripSegments.set(id, [{ start: g1, end: g2 }]);
-  renderTripDates();
-}
-
-function addEmpSegment(id) {
-  const segs = [...(empTripSegments.get(id) || [])];
-  segs.push({ start: '', end: '' });
-  empTripSegments.set(id, segs);
-  renderTripDates();
-}
-
-function updateEmpSegment(id, index, field, value) {
-  const segs = [...(empTripSegments.get(id) || [])];
-  if (!segs[index]) return;
-  segs[index][field] = value;
-  if (field === 'start' && (!segs[index].end || segs[index].end < value)) segs[index].end = value;
-  if (field === 'end' && segs[index].start && value && value < segs[index].start) segs[index].start = value;
-  empTripSegments.set(id, segs);
-  renderTripDates();
-}
-
-function removeEmpSegment(id, index) {
-  const segs = [...(empTripSegments.get(id) || [])];
-  segs.splice(index, 1);
-  if (segs.length) empTripSegments.set(id, segs);
-  else empTripSegments.delete(id);
-  renderTripDates();
-}
-
-function resetEmpDates(id) {
-  empTripSegments.delete(id);
-  renderTripDates();
-}
-
-function clearAll() {
-  selectedEmpIds.clear();
-  empTripSegments.clear();
-  renderEmployeeList();
-  renderSelectedTags();
-  renderTripDates();
-  refreshCustomCostAssignments();
-  refreshHotelGuests();
-  updateSbmWarnings();
-}
 
 // =====================================================================
 // SBM & LAMA TUGAS
@@ -1009,45 +773,13 @@ function hitungBiaya(emp) {
   return { uh, uhGross, mealDeduction, snackDeduction, hotel, hotelDetails, representatif, representatifRate, dpr: dprVal, tiket: tiketVal, customCosts, total: uh + hotel + representatif + dprVal + tiketVal + customTotal };
 }
 
+
+// === documents.js ===
 // =====================================================================
-// FORMAT HELPERS
+// TEMPLATE DOKUMEN CETAK & REKAPITULASI (PerdinKu)
+// Kuitansi, SPPD, Rincian, DPR, Lembar Kendali, Rekap Kuitansi,
+// Rekap Rincian, Rekap SPT, dan Daftar Nominatif
 // =====================================================================
-function rp(n) {
-  if (!n || n === 0) return 'Rp 0';
-  return 'Rp ' + Number(n).toLocaleString('id-ID');
-}
-
-function formatTgl(str) {
-  if (!str) return '-';
-  const d = new Date(str);
-  const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
-}
-
-function jabatanDuaBaris(text) {
-  return String(text || '').replace(/Pejabat Pembuat Komitmen\s+(?=Sekretariat Jenderal)/, 'Pejabat Pembuat Komitmen<br>');
-}
-
-function terbilang(angka) {
-  const satuan = ['','Satu','Dua','Tiga','Empat','Lima','Enam','Tujuh','Delapan','Sembilan',
-    'Sepuluh','Sebelas','Dua Belas','Tiga Belas','Empat Belas','Lima Belas','Enam Belas',
-    'Tujuh Belas','Delapan Belas','Sembilan Belas'];
-  if (angka === 0) return 'Nol';
-  if (angka < 20) return satuan[angka];
-  if (angka < 100) return satuan[Math.floor(angka/10)*10===20?2:Math.floor(angka/10)] + (Math.floor(angka/10)>1?' Puluh ':' Puluh ') + satuan[angka % 10];
-  function helper(n) {
-    if (n === 0) return '';
-    if (n < 20) return satuan[n] + ' ';
-    if (n < 100) return satuan[Math.floor(n/10)] + ' Puluh ' + (n%10?satuan[n%10]+' ':'');
-    if (n < 200) return 'Seratus ' + helper(n - 100);
-    if (n < 1000) return satuan[Math.floor(n/100)] + ' Ratus ' + helper(n % 100);
-    if (n < 2000) return 'Seribu ' + helper(n - 1000);
-    if (n < 1000000) return helper(Math.floor(n/1000)) + 'Ribu ' + helper(n % 1000);
-    if (n < 1000000000) return helper(Math.floor(n/1000000)) + 'Juta ' + helper(n % 1000000);
-    return helper(Math.floor(n/1000000000)) + 'Miliar ' + helper(n % 1000000000);
-  }
-  return helper(angka).trim() + ' Rupiah';
-}
 
 // =====================================================================
 // RENDER DAFTAR NOMINATIF
@@ -2381,6 +2113,13 @@ function printDPR() {
   window.print();
 }
 
+
+// === excel.js ===
+// =====================================================================
+// EKSPOR & IMPOR EXCEL (PerdinKu)
+// Penyimpanan data dan pembacaan ulang berkas spreadsheet perjalanan
+// =====================================================================
+
 // =====================================================================
 // SIMPAN / MUAT EXCEL
 // =====================================================================
@@ -2825,3 +2564,574 @@ function applyPerjadinExcel(wb) {
   }
   return { employees: selectedEmpIds.size, unknown: unknownNames };
 }
+
+
+// === ui.js ===
+// =====================================================================
+// ANTARMUKA & INTERAKSI PENGGUNA (PerdinKu)
+// Tema (Dark/Light), Navigasi Tab, Sidebar, Popup Selamat Datang,
+// Pilihan Pegawai, dan Inisialisasi Aplikasi
+// =====================================================================
+
+// =====================================================================
+// MODE TAMPILAN (terang / gelap / otomatis)
+// =====================================================================
+const THEME_STORAGE_KEY = 'perjadin-theme';
+const themeMedia = window.matchMedia('(prefers-color-scheme: dark)');
+
+function getThemeMode() {
+  const saved = localStorage.getItem(THEME_STORAGE_KEY);
+  return ['light', 'dark', 'auto'].includes(saved) ? saved : 'auto';
+}
+
+function applyThemeMode(mode) {
+  const dark = mode === 'dark' || (mode === 'auto' && themeMedia.matches);
+  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+}
+
+function markThemeButtons(mode) {
+  document.querySelectorAll('.theme-opt').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.themeMode === mode);
+  });
+}
+
+function setThemeMode(mode) {
+  localStorage.setItem(THEME_STORAGE_KEY, mode);
+  applyThemeMode(mode);
+  markThemeButtons(mode);
+}
+
+function initTheme() {
+  const mode = getThemeMode();
+  applyThemeMode(mode);
+  markThemeButtons(mode);
+  const onChange = () => { if (getThemeMode() === 'auto') applyThemeMode('auto'); };
+  if (themeMedia.addEventListener) themeMedia.addEventListener('change', onChange);
+  else themeMedia.addListener(onChange);
+}
+
+initTheme();
+
+// =====================================================================
+// INIT
+// =====================================================================
+document.addEventListener('DOMContentLoaded', () => {
+  // Populate provinsi dropdown
+  const sel = document.getElementById('provinsiTujuan');
+  sbmData.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s.id;
+    opt.textContent = formatProvinsi(s.provinsi);
+    sel.appendChild(opt);
+  });
+  renderEmployeeList();
+  const datePill = document.getElementById('datePill');
+  if (datePill) {
+    datePill.textContent = new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date());
+  }
+  // Set default dates
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('tglST').value = today;
+  document.getElementById('tglSPD').value = today;
+  document.getElementById('tglBerangkat').value = today;
+  document.getElementById('tglKembali').value = today;
+  hitungLama();
+  updateSbmWarnings();
+  setupRealtimeValidation();
+  initAppLoader();
+});
+
+// =====================================================================
+// FORM VALIDATION & REQUIRED INDICATORS (!)
+// =====================================================================
+const REQUIRED_FIELDS = [
+  { id: 'noST', label: 'Nomor Surat Tugas (ST)' },
+  { id: 'tglST', label: 'Tanggal Surat Tugas' },
+  { id: 'tglSPD', label: 'Tanggal SPD' },
+  { id: 'tglBerangkat', label: 'Tanggal Berangkat' },
+  { id: 'tglKembali', label: 'Tanggal Kembali' },
+  { id: 'provinsiTujuan', label: 'Provinsi Tujuan' },
+  { id: 'kotaTujuan', label: 'Kota / Kabupaten Tujuan' },
+  { id: 'agenda', label: 'Agenda Perjalanan Dinas' },
+  { id: 'kodeKegiatan', label: 'Kode Kegiatan' },
+  { id: 'kodeSubKegiatan', label: 'Kode Sub Kegiatan' },
+  { id: 'mak', label: 'MAK' }
+];
+
+let valToastTimer = null;
+
+function validateTripForm() {
+  const missing = [];
+
+  REQUIRED_FIELDS.forEach(f => {
+    const el = document.getElementById(f.id);
+    if (!el) return;
+    const val = (el.value || '').trim();
+    const group = el.closest('.form-group');
+    if (!val) {
+      if (group) group.classList.add('has-error');
+      missing.push({ el, label: f.label, id: f.id });
+    } else {
+      if (group) group.classList.remove('has-error');
+    }
+  });
+
+  // Cek tanggal kembali >= tanggal berangkat
+  const tgl1 = document.getElementById('tglBerangkat')?.value;
+  const tgl2 = document.getElementById('tglKembali')?.value;
+  let dateMismatch = false;
+  if (tgl1 && tgl2 && tgl2 < tgl1) {
+    const group = document.getElementById('tglKembali')?.closest('.form-group');
+    if (group) group.classList.add('has-error');
+    missing.push({
+      el: document.getElementById('tglKembali'),
+      label: 'Tanggal Kembali (harus \u2265 Tanggal Berangkat)',
+      id: 'tglKembali',
+      customError: true
+    });
+    dateMismatch = true;
+  }
+
+  // Cek minimal 1 pegawai
+  const selBox = document.getElementById('selectedBox');
+  const empErr = document.getElementById('empErrorMsg');
+  if (selectedEmpIds.size === 0) {
+    if (selBox) selBox.classList.add('has-error');
+    if (empErr) empErr.classList.add('is-visible');
+    missing.push({
+      el: selBox || document.getElementById('empSearch'),
+      label: 'Minimal 1 Pegawai Ditugaskan',
+      id: 'selectedBox'
+    });
+  } else {
+    if (selBox) selBox.classList.remove('has-error');
+    if (empErr) empErr.classList.remove('is-visible');
+  }
+
+  return {
+    valid: missing.length === 0,
+    missing,
+    dateMismatch
+  };
+}
+
+function showValidationToast(missing, customMsg) {
+  const toast = document.getElementById('valToast');
+  if (!toast) return;
+  const titleEl = document.getElementById('valToastTitle');
+  const descEl = document.getElementById('valToastDesc');
+
+  if (customMsg) {
+    if (titleEl) titleEl.textContent = 'Periksa Isian Anda';
+    if (descEl) descEl.textContent = customMsg;
+  } else if (missing && missing.length > 0) {
+    const count = missing.length;
+    const labels = missing.slice(0, 3).map(m => m.label).join(', ') + (count > 3 ? ` (+${count - 3} lainnya)` : '');
+    if (titleEl) titleEl.textContent = `${count} Isian Wajib Belum Lengkap`;
+    if (descEl) descEl.textContent = `Mohon lengkapi isian bertanda (!): ${labels}.`;
+  }
+
+  toast.classList.add('is-show');
+
+  if (missing && missing.length > 0 && missing[0].el) {
+    missing[0].el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (typeof missing[0].el.focus === 'function') {
+      try { missing[0].el.focus(); } catch (e) {}
+    }
+  }
+
+  if (valToastTimer) clearTimeout(valToastTimer);
+  valToastTimer = setTimeout(() => {
+    hideValidationToast();
+  }, 5000);
+}
+
+function hideValidationToast() {
+  const toast = document.getElementById('valToast');
+  if (toast) toast.classList.remove('is-show');
+  if (valToastTimer) {
+    clearTimeout(valToastTimer);
+    valToastTimer = null;
+  }
+}
+
+function updateFieldFilledStatus(el) {
+  if (!el) return;
+  const ctrl = el.closest('.field-control');
+  if (!ctrl) return;
+  const icon = ctrl.querySelector('.field-inner-icon');
+  const val = (el.value || '').trim();
+  if (val) {
+    ctrl.classList.add('is-filled');
+    if (icon) {
+      icon.textContent = '✓';
+      icon.title = 'Terisi';
+    }
+  } else {
+    ctrl.classList.remove('is-filled');
+    if (icon) {
+      icon.textContent = '!';
+      icon.title = 'Wajib diisi';
+    }
+  }
+}
+
+function setupRealtimeValidation() {
+  REQUIRED_FIELDS.forEach(f => {
+    const el = document.getElementById(f.id);
+    if (!el) return;
+    const group = el.closest('.form-group');
+    // Set initial status
+    updateFieldFilledStatus(el);
+
+    ['input', 'change'].forEach(evt => {
+      el.addEventListener(evt, () => {
+        updateFieldFilledStatus(el);
+        if ((el.value || '').trim()) {
+          if (group) group.classList.remove('has-error');
+        }
+      });
+    });
+    el.addEventListener('blur', () => {
+      updateFieldFilledStatus(el);
+      if (!(el.value || '').trim()) {
+        if (group) group.classList.add('has-error');
+      }
+    });
+  });
+}
+
+// =====================================================================
+// APP SPLASH LOADER (3 DETIK) & TAB LAZY LOADING
+// =====================================================================
+function initAppLoader() {
+  const loader = document.getElementById('appLoader');
+  if (!loader) return;
+  const fill = document.getElementById('loaderFill');
+  const pct = document.getElementById('loaderPct');
+  const status = document.getElementById('loaderStatus');
+
+  const duration = 2800; // ~3 detik
+  const startTime = performance.now();
+
+  const stages = [
+    { threshold: 25, text: 'Memuat modul dan komponen sistem...' },
+    { threshold: 55, text: 'Sinkronisasi tarif PMK SBM 2026...' },
+    { threshold: 85, text: 'Menyiapkan template dokumen & SPPD...' },
+    { threshold: 99, text: 'Memuat antarmuka pengguna...' },
+    { threshold: 100, text: 'Aplikasi siap digunakan!' }
+  ];
+
+  function tick(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(1, elapsed / duration);
+    const ease = progress < 0.5 ? 2 * progress * progress : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+    const currentPct = Math.round(ease * 100);
+
+    if (fill) fill.style.width = currentPct + '%';
+    if (pct) pct.textContent = currentPct + '%';
+
+    const stage = stages.find(s => currentPct <= s.threshold) || stages[stages.length - 1];
+    if (status && stage) status.textContent = stage.text;
+
+    if (progress < 1) {
+      requestAnimationFrame(tick);
+    } else {
+      setTimeout(() => {
+        loader.classList.add('is-hidden');
+        initWelcomeModalAfterLoader();
+      }, 350);
+    }
+  }
+
+  requestAnimationFrame(tick);
+}
+
+function triggerTabProgress(callback) {
+  const bar = document.getElementById('tabProgress');
+  if (!bar) {
+    if (callback) callback();
+    return;
+  }
+  bar.classList.remove('is-done');
+  bar.classList.add('is-loading');
+
+  setTimeout(() => {
+    if (callback) callback();
+    bar.classList.remove('is-loading');
+    bar.classList.add('is-done');
+    setTimeout(() => {
+      bar.classList.remove('is-done');
+    }, 450);
+  }, 220);
+}
+
+function initWelcomeModalAfterLoader() {
+  let isDismissed = false;
+  try {
+    isDismissed = localStorage.getItem('perdinku_welcome_dismissed') === '1';
+  } catch (e) {}
+
+  if (!isDismissed) {
+    setTimeout(() => {
+      openWelcome();
+    }, 300);
+  }
+}
+
+// =====================================================================
+// TABS
+// =====================================================================
+const tabMeta = {
+  input: ['Input Perjalanan', 'Formulir'],
+  nominatif: ['Daftar Nominatif', 'Rekapitulasi'],
+  'rekap-kuitansi': ['Rekap Kuitansi', 'Rekapitulasi'],
+  'kuitansi-perorangan': ['Kuitansi Perorangan', 'Dokumen'],
+  'sppd-perorangan': ['SPPD Perorangan', 'Dokumen'],
+  'lembar-kendali': ['Lembar Kendali', 'Rekapitulasi'],
+  'rekap-rincian': ['Rekap Rincian', 'Rekapitulasi'],
+  'rekap-spt': ['Rekap Surat Tugas', 'Rekapitulasi'],
+  rincian: ['Rincian per Orang', 'Dokumen'],
+  dpr: ['DPR Perorangan', 'Dokumen'],
+  pengaturan: ['Pengaturan', 'Sistem']
+};
+
+function showTab(name) {
+  if (name !== 'input' && name !== 'pengaturan') {
+    const val = validateTripForm();
+    if (!val.valid) {
+      showValidationToast(val.missing, val.dateMismatch ? 'Tanggal kembali tidak boleh sebelum tanggal berangkat!' : null);
+      return;
+    }
+    triggerTabProgress(() => {
+      switchTabPanel(name);
+    });
+    return;
+  }
+  switchTabPanel(name);
+}
+
+function switchTabPanel(name) {
+  const panel = document.getElementById('tab-' + name);
+  if (!panel) return;
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  panel.classList.add('active');
+  const activeBtn = document.querySelector(`.tab-btn[data-tab="${name}"]`);
+  if (activeBtn) activeBtn.classList.add('active');
+  const meta = tabMeta[name] || ['Perjalanan Dinas', 'Menu'];
+  const titleEl = document.getElementById('pageTitle');
+  const eyebrowEl = document.getElementById('pageEyebrow');
+  if (titleEl) titleEl.textContent = meta[0];
+  if (eyebrowEl) eyebrowEl.textContent = meta[1];
+  closeSidebar();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (name === 'rincian') populateRincianSelect();
+  if (name === 'dpr') populateDPRSelect();
+  if (name === 'nominatif') renderNominatif();
+  if (name === 'rekap-kuitansi') renderRekapKuitansi();
+  if (name === 'kuitansi-perorangan') populateKuitansiPeroranganSelect();
+  if (name === 'sppd-perorangan') populateSPPDSelect();
+  if (name === 'lembar-kendali') renderLembarKendali();
+  if (name === 'rekap-rincian') renderRekapRincian();
+  if (name === 'rekap-spt') renderRekapSPT();
+}
+
+function toggleSidebar() {
+  document.body.classList.toggle('sidebar-open');
+  const btn = document.querySelector('.burger');
+  if (btn) btn.setAttribute('aria-expanded', document.body.classList.contains('sidebar-open') ? 'true' : 'false');
+}
+
+function closeSidebar() {
+  document.body.classList.remove('sidebar-open');
+  const btn = document.querySelector('.burger');
+  if (btn) btn.setAttribute('aria-expanded', 'false');
+}
+
+// =====================================================================
+// JENDELA / POPUP SELAMAT DATANG (WELCOME MODAL)
+// =====================================================================
+function openWelcome() {
+  const overlay = document.getElementById('welcomeOverlay');
+  if (!overlay) return;
+  overlay.classList.add('is-open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeWelcome() {
+  const overlay = document.getElementById('welcomeOverlay');
+  if (!overlay) return;
+  const checkbox = document.getElementById('welcomeDontShow');
+  if (checkbox && checkbox.checked) {
+    try {
+      localStorage.setItem('perdinku_welcome_dismissed', '1');
+    } catch (e) {}
+  }
+  overlay.classList.remove('is-open');
+  document.body.style.overflow = '';
+}
+
+function handleWelcomeBackdrop(event) {
+  if (event.target && event.target.id === 'welcomeOverlay') {
+    closeWelcome();
+  }
+}
+
+function initWelcomeModal() {
+  initWelcomeModalAfterLoader();
+}
+
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape') {
+    closeSidebar();
+    closeWelcome();
+  }
+});
+
+document.addEventListener('input', () => { updateSbmWarnings(); refreshHotelSummaries(); });
+document.addEventListener('change', () => { updateSbmWarnings(); refreshHotelSummaries(); });
+
+// =====================================================================
+// EMPLOYEE LIST
+// =====================================================================
+function getInitials(nama) {
+  return nama.replace(/[^A-Za-z\s]/g, '').trim().split(/\s+/).slice(0, 2).map(w => w[0] || '').join('').toUpperCase();
+}
+
+function renderEmployeeList() {
+  const box = document.getElementById('empListBox');
+  const q = document.getElementById('empSearch').value.toLowerCase();
+  const filtered = employees.filter(e => e.nama.toLowerCase().includes(q) || e.jabatan.toLowerCase().includes(q));
+  box.innerHTML = filtered.map(e => `
+    <div class="emp-item ${selectedEmpIds.has(e.id)?'selected':''}" onclick="toggleEmployee(${e.id})">
+      <input type="checkbox" ${selectedEmpIds.has(e.id)?'checked':''} onclick="event.stopPropagation();toggleEmployee(${e.id})">
+      <span class="emp-avatar">${getInitials(e.nama)}</span>
+      <div class="emp-text">
+        <div class="emp-name">${e.nama}</div>
+        <div class="emp-detail">Gol. ${e.gol}<span class="sep">·</span>${e.jabatan}<span class="sep">·</span>NIP: ${e.nip}</div>
+      </div>
+    </div>
+  `).join('') || '<div style="padding:16px;text-align:center;color:#9aabc0;font-size:13px">Tidak ada hasil</div>';
+}
+
+function filterEmployees() { renderEmployeeList(); }
+
+function toggleEmployee(id) {
+  if (selectedEmpIds.has(id)) { selectedEmpIds.delete(id); empTripSegments.delete(id); }
+  else selectedEmpIds.add(id);
+  renderEmployeeList();
+  renderSelectedTags();
+  renderTripDates();
+  refreshCustomCostAssignments();
+  refreshHotelGuests();
+  updateSbmWarnings();
+}
+
+function renderSelectedTags() {
+  const box = document.getElementById('selectedBox');
+  const count = document.getElementById('countSelected');
+  const empErr = document.getElementById('empErrorMsg');
+  if (selectedEmpIds.size === 0) {
+    box.innerHTML = '<span class="empty-note">Belum ada pegawai dipilih</span>';
+    count.textContent = '0';
+    return;
+  }
+  if (box) box.classList.remove('has-error');
+  if (empErr) empErr.classList.remove('is-visible');
+  count.textContent = selectedEmpIds.size;
+  box.innerHTML = [...selectedEmpIds].map(id => {
+    const e = employees.find(x => x.id === id);
+    return `<span class="emp-tag">${e.nama.split(',')[0]} <span class="rm" onclick="toggleEmployee(${id})">×</span></span>`;
+  }).join('');
+}
+
+function renderTripDates() {
+  const block = document.getElementById('tripDatesBlock');
+  const list = document.getElementById('tripDatesList');
+  if (!block || !list) return;
+  if (selectedEmpIds.size === 0) { block.style.display = 'none'; list.innerHTML = ''; return; }
+  block.style.display = '';
+  const g1 = document.getElementById('tglBerangkat').value;
+  const g2 = document.getElementById('tglKembali').value;
+  const globalText = g1 && g2 ? `${formatTgl(g1)} – ${formatTgl(g2)}` : 'belum diisi';
+  list.innerHTML = [...selectedEmpIds].map(id => {
+    const e = employees.find(x => x.id === id);
+    if (!e) return '';
+    const name = e.nama.split(',')[0];
+    const segs = empTripSegments.get(id) || [];
+    if (!segs.length) {
+      return `<div class="trip-row">
+        <div class="trip-name" title="${e.nama}">${name}</div>
+        <div class="trip-follow">Ikut tanggal perjalanan (${globalText})</div>
+        <button type="button" class="trip-btn" onclick="setEmpDates(${id})">Atur tanggal</button>
+      </div>`;
+    }
+    const segHtml = segs.map((s, i) => `
+      <span class="trip-seg">
+        <input type="date" value="${s.start}" onchange="updateEmpSegment(${id},${i},'start',this.value)">
+        <span class="trip-sep">s.d.</span>
+        <input type="date" value="${s.end}" onchange="updateEmpSegment(${id},${i},'end',this.value)">
+        <button type="button" class="trip-seg-rm" title="Hapus tanggal" onclick="removeEmpSegment(${id},${i})">×</button>
+      </span>`).join('');
+    return `<div class="trip-row">
+      <div class="trip-name" title="${e.nama}">${name}</div>
+      <div class="trip-segs">${segHtml}</div>
+      <div class="trip-actions">
+        <button type="button" class="trip-btn" onclick="addEmpSegment(${id})">+ Tanggal</button>
+        <button type="button" class="trip-btn trip-btn-reset" onclick="resetEmpDates(${id})">Ikut global</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function setEmpDates(id) {
+  const g1 = document.getElementById('tglBerangkat').value;
+  const g2 = document.getElementById('tglKembali').value || g1;
+  if (!g1) return;
+  empTripSegments.set(id, [{ start: g1, end: g2 }]);
+  renderTripDates();
+}
+
+function addEmpSegment(id) {
+  const segs = [...(empTripSegments.get(id) || [])];
+  segs.push({ start: '', end: '' });
+  empTripSegments.set(id, segs);
+  renderTripDates();
+}
+
+function updateEmpSegment(id, index, field, value) {
+  const segs = [...(empTripSegments.get(id) || [])];
+  if (!segs[index]) return;
+  segs[index][field] = value;
+  if (field === 'start' && (!segs[index].end || segs[index].end < value)) segs[index].end = value;
+  if (field === 'end' && segs[index].start && value && value < segs[index].start) segs[index].start = value;
+  empTripSegments.set(id, segs);
+  renderTripDates();
+}
+
+function removeEmpSegment(id, index) {
+  const segs = [...(empTripSegments.get(id) || [])];
+  segs.splice(index, 1);
+  if (segs.length) empTripSegments.set(id, segs);
+  else empTripSegments.delete(id);
+  renderTripDates();
+}
+
+function resetEmpDates(id) {
+  empTripSegments.delete(id);
+  renderTripDates();
+}
+
+function clearAll() {
+  selectedEmpIds.clear();
+  empTripSegments.clear();
+  renderEmployeeList();
+  renderSelectedTags();
+  renderTripDates();
+  refreshCustomCostAssignments();
+  refreshHotelGuests();
+  updateSbmWarnings();
+}
+
+

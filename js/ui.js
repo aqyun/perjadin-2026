@@ -68,8 +68,276 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('tglKembali').value = today;
   hitungLama();
   updateSbmWarnings();
-  initWelcomeModal();
+  setupRealtimeValidation();
+  initAppLoader();
 });
+
+// =====================================================================
+// FORM VALIDATION & REQUIRED INDICATORS (!)
+// =====================================================================
+const REQUIRED_FIELDS = [
+  { id: 'noST', label: 'Nomor Surat Tugas (ST)' },
+  { id: 'tglST', label: 'Tanggal Surat Tugas' },
+  { id: 'tglSPD', label: 'Tanggal SPD' },
+  { id: 'tglBerangkat', label: 'Tanggal Berangkat' },
+  { id: 'tglKembali', label: 'Tanggal Kembali' },
+  { id: 'provinsiTujuan', label: 'Provinsi Tujuan' },
+  { id: 'kotaTujuan', label: 'Kota / Kabupaten Tujuan' },
+  { id: 'agenda', label: 'Agenda Perjalanan Dinas' },
+  { id: 'kodeKegiatan', label: 'Kode Kegiatan' },
+  { id: 'kodeSubKegiatan', label: 'Kode Sub Kegiatan' },
+  { id: 'mak', label: 'MAK' }
+];
+
+let valToastTimer = null;
+
+function validateTripForm() {
+  const missing = [];
+
+  REQUIRED_FIELDS.forEach(f => {
+    const el = document.getElementById(f.id);
+    if (!el) return;
+    const val = (el.value || '').trim();
+    const group = el.closest('.form-group');
+    if (!val) {
+      if (group) group.classList.add('has-error');
+      missing.push({ el, label: f.label, id: f.id });
+    } else {
+      if (group) group.classList.remove('has-error');
+    }
+  });
+
+  // Cek tanggal kembali >= tanggal berangkat
+  const tgl1 = document.getElementById('tglBerangkat')?.value;
+  const tgl2 = document.getElementById('tglKembali')?.value;
+  let dateMismatch = false;
+  if (tgl1 && tgl2 && tgl2 < tgl1) {
+    const group = document.getElementById('tglKembali')?.closest('.form-group');
+    if (group) group.classList.add('has-error');
+    missing.push({
+      el: document.getElementById('tglKembali'),
+      label: 'Tanggal Kembali (harus \u2265 Tanggal Berangkat)',
+      id: 'tglKembali',
+      customError: true
+    });
+    dateMismatch = true;
+  }
+
+  // Cek minimal 1 pegawai
+  const selBox = document.getElementById('selectedBox');
+  const empErr = document.getElementById('empErrorMsg');
+  if (selectedEmpIds.size === 0) {
+    if (selBox) selBox.classList.add('has-error');
+    if (empErr) empErr.classList.add('is-visible');
+    missing.push({
+      el: selBox || document.getElementById('empSearch'),
+      label: 'Minimal 1 Pegawai Ditugaskan',
+      id: 'selectedBox'
+    });
+  } else {
+    if (selBox) selBox.classList.remove('has-error');
+    if (empErr) empErr.classList.remove('is-visible');
+  }
+
+  return {
+    valid: missing.length === 0,
+    missing,
+    dateMismatch
+  };
+}
+
+function showValidationToast(missing, customMsg) {
+  const toast = document.getElementById('valToast');
+  if (!toast) return;
+  const titleEl = document.getElementById('valToastTitle');
+  const descEl = document.getElementById('valToastDesc');
+
+  if (customMsg) {
+    if (titleEl) titleEl.textContent = 'Periksa Isian Anda';
+    if (descEl) descEl.textContent = customMsg;
+  } else if (missing && missing.length > 0) {
+    const count = missing.length;
+    const labels = missing.slice(0, 3).map(m => m.label).join(', ') + (count > 3 ? ` (+${count - 3} lainnya)` : '');
+    if (titleEl) titleEl.textContent = `${count} Isian Wajib Belum Lengkap`;
+    if (descEl) descEl.textContent = `Mohon lengkapi isian bertanda (!): ${labels}.`;
+  }
+
+  toast.classList.add('is-show');
+
+  if (missing && missing.length > 0 && missing[0].el) {
+    missing[0].el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (typeof missing[0].el.focus === 'function') {
+      try { missing[0].el.focus(); } catch (e) {}
+    }
+  }
+
+  if (valToastTimer) clearTimeout(valToastTimer);
+  valToastTimer = setTimeout(() => {
+    hideValidationToast();
+  }, 5000);
+}
+
+function hideValidationToast() {
+  const toast = document.getElementById('valToast');
+  if (toast) toast.classList.remove('is-show');
+  if (valToastTimer) {
+    clearTimeout(valToastTimer);
+    valToastTimer = null;
+  }
+}
+
+function updateFieldFilledStatus(el) {
+  if (!el) return;
+  const ctrl = el.closest('.field-control');
+  if (!ctrl) return;
+  const icon = ctrl.querySelector('.field-inner-icon');
+  const val = (el.value || '').trim();
+  if (val) {
+    ctrl.classList.add('is-filled');
+    if (icon) {
+      icon.textContent = '✓';
+      icon.title = 'Terisi';
+    }
+  } else {
+    ctrl.classList.remove('is-filled');
+    if (icon) {
+      icon.textContent = '!';
+      icon.title = 'Wajib diisi';
+    }
+  }
+}
+
+function setupRealtimeValidation() {
+  REQUIRED_FIELDS.forEach(f => {
+    const el = document.getElementById(f.id);
+    if (!el) return;
+    const group = el.closest('.form-group');
+    // Set initial status
+    updateFieldFilledStatus(el);
+
+    ['input', 'change'].forEach(evt => {
+      el.addEventListener(evt, () => {
+        updateFieldFilledStatus(el);
+        if ((el.value || '').trim()) {
+          if (group) group.classList.remove('has-error');
+        }
+      });
+    });
+    el.addEventListener('blur', () => {
+      updateFieldFilledStatus(el);
+      if (!(el.value || '').trim()) {
+        if (group) group.classList.add('has-error');
+      }
+    });
+  });
+}
+
+// =====================================================================
+// APP SPLASH LOADER (5 DETIK) & TAB LAZY LOADING
+// =====================================================================
+function initAppLoader() {
+  const loader = document.getElementById('appLoader');
+  if (!loader) return;
+  const fill = document.getElementById('loaderFill');
+  const pct = document.getElementById('loaderPct');
+  const status = document.getElementById('loaderStatus');
+
+  const duration = 4800; // ~5 detik (4.8s progress + fade out = 5.2s total)
+  const startTime = performance.now();
+
+  const stages = [
+    { threshold: 18, text: 'Memuat modul dan komponen sistem...' },
+    { threshold: 38, text: 'Sinkronisasi tarif PMK SBM 2026...' },
+    { threshold: 62, text: 'Menyiapkan template dokumen & SPPD...' },
+    { threshold: 82, text: 'Menginisialisasi modul kuitansi & nominatif...' },
+    { threshold: 99, text: 'Memuat antarmuka pengguna...' },
+    { threshold: 100, text: 'Aplikasi siap digunakan!' }
+  ];
+
+  function tick(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(1, elapsed / duration);
+    const ease = progress < 0.5 ? 2 * progress * progress : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+    const currentPct = Math.round(ease * 100);
+
+    if (fill) fill.style.width = currentPct + '%';
+    if (pct) pct.textContent = currentPct + '%';
+
+    const stage = stages.find(s => currentPct <= s.threshold) || stages[stages.length - 1];
+    if (status && stage) status.textContent = stage.text;
+
+    if (progress < 1) {
+      requestAnimationFrame(tick);
+    } else {
+      setTimeout(() => {
+        loader.classList.add('is-hidden');
+        initWelcomeModalAfterLoader();
+      }, 350);
+    }
+  }
+
+  requestAnimationFrame(tick);
+}
+
+let pageLoaderTimer = null;
+
+function showPageTransitionLoader(targetName, onSwitch) {
+  const loader = document.getElementById('pageLoader');
+  const textEl = document.getElementById('pageLoaderText');
+
+  if (textEl) {
+    const meta = tabMeta[targetName];
+    const pageName = meta ? meta[0] : 'Halaman';
+    textEl.textContent = `Memuat ${pageName}...`;
+  }
+
+  if (!loader) {
+    if (onSwitch) onSwitch();
+    return;
+  }
+
+  loader.classList.add('is-active');
+
+  if (pageLoaderTimer) clearTimeout(pageLoaderTimer);
+  pageLoaderTimer = setTimeout(() => {
+    if (onSwitch) onSwitch();
+    setTimeout(() => {
+      loader.classList.remove('is-active');
+    }, 100);
+  }, 420);
+}
+
+function triggerTabProgress(callback) {
+  const bar = document.getElementById('tabProgress');
+  if (!bar) {
+    if (callback) callback();
+    return;
+  }
+  bar.classList.remove('is-done');
+  bar.classList.add('is-loading');
+
+  setTimeout(() => {
+    if (callback) callback();
+    bar.classList.remove('is-loading');
+    bar.classList.add('is-done');
+    setTimeout(() => {
+      bar.classList.remove('is-done');
+    }, 450);
+  }, 220);
+}
+
+function initWelcomeModalAfterLoader() {
+  let isDismissed = false;
+  try {
+    isDismissed = localStorage.getItem('perdinku_welcome_dismissed') === '1';
+  } catch (e) {}
+
+  if (!isDismissed) {
+    setTimeout(() => {
+      openWelcome();
+    }, 300);
+  }
+}
 
 // =====================================================================
 // TABS
@@ -89,6 +357,24 @@ const tabMeta = {
 };
 
 function showTab(name) {
+  const currentActive = document.querySelector('.tab-content.active');
+  if (currentActive && currentActive.id === 'tab-' + name) {
+    return;
+  }
+  if (name !== 'input' && name !== 'pengaturan') {
+    const val = validateTripForm();
+    if (!val.valid) {
+      showValidationToast(val.missing, val.dateMismatch ? 'Tanggal kembali tidak boleh sebelum tanggal berangkat!' : null);
+      return;
+    }
+  }
+  triggerTabProgress();
+  showPageTransitionLoader(name, () => {
+    switchTabPanel(name);
+  });
+}
+
+function switchTabPanel(name) {
   const panel = document.getElementById('tab-' + name);
   if (!panel) return;
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -156,16 +442,7 @@ function handleWelcomeBackdrop(event) {
 }
 
 function initWelcomeModal() {
-  let isDismissed = false;
-  try {
-    isDismissed = localStorage.getItem('perdinku_welcome_dismissed') === '1';
-  } catch (e) {}
-
-  if (!isDismissed) {
-    setTimeout(() => {
-      openWelcome();
-    }, 450);
-  }
+  initWelcomeModalAfterLoader();
 }
 
 document.addEventListener('keydown', event => {
@@ -217,11 +494,14 @@ function toggleEmployee(id) {
 function renderSelectedTags() {
   const box = document.getElementById('selectedBox');
   const count = document.getElementById('countSelected');
+  const empErr = document.getElementById('empErrorMsg');
   if (selectedEmpIds.size === 0) {
     box.innerHTML = '<span class="empty-note">Belum ada pegawai dipilih</span>';
     count.textContent = '0';
     return;
   }
+  if (box) box.classList.remove('has-error');
+  if (empErr) empErr.classList.remove('is-visible');
   count.textContent = selectedEmpIds.size;
   box.innerHTML = [...selectedEmpIds].map(id => {
     const e = employees.find(x => x.id === id);
