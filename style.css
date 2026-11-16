@@ -2909,15 +2909,6 @@ input[type="number"] {
   font-size: 12px !important;
 }
 
-.nominatif-area .meta-tbl {
-  margin: 12px 0 16px;
-  line-height: 1.45;
-}
-
-.nominatif-area .meta-tbl td {
-  padding: 3px 4px;
-}
-
 #tab-nominatif {
   page: nominatif;
 }
@@ -3706,10 +3697,9 @@ input[type="number"] {
 }
 
 .rekap-spt-meta td {
-  padding: 4px 4px;
+  padding: 1px 3px;
   vertical-align: top;
   font-size: 12px;
-  line-height: 1.45;
 }
 
 .rekap-spt-meta td:first-child {
@@ -6602,13 +6592,6 @@ MODE GELAP — layar saja; kertas dokumen & cetak tetap putih
     font-size: 12px !important;
     color: #000 !important;
   }
-  body.print-nominatif .nominatif-area .meta-tbl {
-    margin: 12px 0 16px !important;
-    line-height: 1.45 !important;
-  }
-  body.print-nominatif .nominatif-area .meta-tbl td {
-    padding: 3px 4px !important;
-  }
   /* Isi yang dalam tabel: 11px */
   body.print-nominatif .nominatif-table {
     font-size: 11px !important;
@@ -6655,9 +6638,8 @@ MODE GELAP — layar saja; kertas dokumen & cetak tetap putih
     margin-bottom: 20px !important;
   }
   body.print-rekap-spt .rekap-spt-meta td {
-    padding: 3px 4px !important;
+    padding: 1px 3px !important;
     font-size: 12px !important;
-    line-height: 1.45 !important;
   }
   body.print-rekap-spt .rekap-spt-table {
     font-size: 12px !important;
