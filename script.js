@@ -2069,8 +2069,8 @@ function renderNominatif() {
       <div class="nominatif-wrapper">
         <table class="data-tbl nominatif-table">
           <colgroup>
-            <col style="width:4%"><col style="width:23%"><col style="width:5%"><col style="width:16%">
-            <col style="width:13%"><col style="width:9.5%"><col style="width:10%"><col style="width:8.5%"><col style="width:11%">
+            <col style="width:3.5%"><col style="width:20%"><col style="width:4.5%"><col style="width:18.5%">
+            <col style="width:13%"><col style="width:8.5%"><col style="width:8.5%"><col style="width:7.5%"><col style="width:16%">
           </colgroup>
           <thead>
             <tr>
