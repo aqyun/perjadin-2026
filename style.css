@@ -3002,7 +3002,7 @@ input[type="number"] {
 }
 
 @page nominatif {
-  size: landscape;
+  size: portrait;
   margin: 50px 8mm 8mm;
 }
 
@@ -3345,19 +3345,41 @@ input[type="number"] {
   vertical-align: middle;
 }
 
+.lembar-kendali-meta td, .lembar-kendali-meta th {
+  border: 1px solid #111;
+  padding: 4px 6px;
+  vertical-align: middle;
+}
+
+.lembar-kendali-meta th {
+  text-align: left;
+  font-weight: 700;
+}
+
+.lembar-kendali-meta td {
+  text-align: left;
+  vertical-align: middle;
+}
+
 .lembar-kendali-meta-label {
   border-right: 0!important;
-  white-space: nowrap;
+  white-space: normal!important;
+  word-break: normal;
+  line-height: 1.25;
 }
 
 .lembar-kendali-meta-separator {
   border-left: 0!important;
   border-right: 0!important;
   text-align: center!important;
+  width: 14px;
 }
 
 .lembar-kendali-meta-value {
   border-left: 0!important;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  line-height: 1.35;
 }
 
 .lembar-kendali-info, .lembar-kendali-checklist {
@@ -3676,6 +3698,25 @@ input[type="number"] {
   font-size: 12px;
 }
 
+.rekap-spt-table td.rekap-spt-emp-cell {
+  padding: 0 !important;
+  vertical-align: top;
+}
+
+.rekap-spt-emp-nama {
+  padding: 6px 6px;
+  border-bottom: 1px solid #222;
+  word-break: break-word;
+  line-height: 1.35;
+}
+
+.rekap-spt-emp-nip {
+  padding: 5px 6px;
+  white-space: nowrap;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
 .rekap-spt-center {
   text-align: center;
 }
@@ -3692,7 +3733,7 @@ input[type="number"] {
 }
 
 @page rekap-spt {
-  size: landscape;
+  size: portrait;
   margin: 50px 10mm 10mm;
 }
 
@@ -6359,4 +6400,193 @@ MODE GELAP — layar saja; kertas dokumen & cetak tetap putih
     color: #8fb8ff;
   }
 
+}
+
+
+/* ---------- Nomor SPD per pegawai (Wajib) ---------- */
+
+.emp-spd-block {
+  margin-top: 14px;
+  padding: 11px;
+  border: 1px solid #e4edf9;
+  border-radius: 14px;
+  background: #fbfdff;
+}
+
+.emp-spd-block .selected-head {
+  margin: 0 0 9px;
+}
+
+.emp-spd-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.emp-spd-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 8px 12px;
+  border: 1px solid #e9f1fb;
+  border-radius: 11px;
+  background: #fff;
+}
+
+.emp-spd-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+  flex: 1;
+}
+
+.emp-spd-name {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #28405f;
+}
+
+.emp-spd-sub {
+  font-size: 10px;
+  color: #8b9cb3;
+}
+
+.emp-spd-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1.5;
+  min-width: 230px;
+}
+
+.emp-spd-input-wrap label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #556987;
+  white-space: nowrap;
+}
+
+.emp-spd-input {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid #d7e3f2;
+  border-radius: 8px;
+  font-size: 11.5px;
+  color: #28405f;
+  background: #fff;
+  transition: border-color .15s, box-shadow .15s;
+}
+
+.emp-spd-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.emp-spd-input.has-error {
+  border-color: #ef4444 !important;
+  background-color: #fef2f2 !important;
+}
+
+.spd-missing-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-weight: 700;
+  font-size: 11px;
+  border: 1px solid #fecaca;
+}
+
+/* Print optimizations for Portrait Nominatif & Rekap SPT */
+@media print {
+  body.print-nominatif .nominatif-table {
+    font-size: 10px !important;
+  }
+  body.print-nominatif .nominatif-table th,
+  body.print-nominatif .nominatif-table td {
+    padding: 5px 3px !important;
+    font-size: 10px !important;
+  }
+  body.print-nominatif .nominatif-terbilang {
+    font-size: 10.5px !important;
+    padding: 6px 8px !important;
+  }
+  body.print-nominatif .nominatif-area .sig-row {
+    margin-top: 18px !important;
+    font-size: 11px !important;
+  }
+  body.print-rekap-spt .rekap-spt-table {
+    font-size: 11px !important;
+  }
+  body.print-rekap-spt .rekap-spt-table th,
+  body.print-rekap-spt .rekap-spt-table td {
+    padding: 6px 4px !important;
+  }
+  body.print-rekap-spt .rekap-spt-table td.rekap-spt-emp-cell {
+    padding: 0 !important;
+  }
+  body.print-rekap-spt .rekap-spt-emp-nama {
+    padding: 5px 4px !important;
+    border-bottom: 1px solid #222 !important;
+  }
+  body.print-rekap-spt .rekap-spt-emp-nip {
+    padding: 4px 4px !important;
+    font-size: 10.5px !important;
+  }
+  body.print-rekap-spt .rekap-spt-signature {
+    margin-top: 16px !important;
+    font-size: 11px !important;
+  }
+  body.print-rekap-spt .rekap-spt-signature-space {
+    height: 60px !important;
+  }
+  body.print-lembar-kendali .lembar-kendali-meta-label {
+    white-space: normal !important;
+  }
+  body.print-lembar-kendali .lembar-kendali-meta-value {
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+  }
+}
+
+/* Dark mode for emp-spd-block */
+html[data-theme="dark"] .emp-spd-block {
+  background: #101c31;
+  border-color: #223752;
+}
+
+html[data-theme="dark"] .emp-spd-row {
+  background: var(--surface-2);
+  border-color: #26395a;
+}
+
+html[data-theme="dark"] .emp-spd-name {
+  color: #dbe7f7;
+}
+
+html[data-theme="dark"] .emp-spd-sub {
+  color: #7489a8;
+}
+
+html[data-theme="dark"] .emp-spd-input-wrap label {
+  color: #9db1cf;
+}
+
+html[data-theme="dark"] .emp-spd-input {
+  background: var(--surface);
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+
+html[data-theme="dark"] .emp-spd-input:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+}
+
+html[data-theme="dark"] .emp-spd-input.has-error {
+  border-color: #f87171 !important;
+  background-color: rgba(239, 68, 68, 0.12) !important;
 }

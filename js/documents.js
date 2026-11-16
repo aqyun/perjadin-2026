@@ -127,11 +127,41 @@ function onKuitansiPeroranganEmployeeChange() {
   renderKuitansiPerorangan();
 }
 
+function syncEmpSpdInputs(empId, val) {
+  if (!empId) return;
+  spdPerEmployee[empId] = val;
+  const kpSelect = document.getElementById('kuitansiPeroranganPegawai');
+  if (kpSelect && Number(kpSelect.value) === empId) {
+    const kpInput = document.getElementById('kuitansiPeroranganNoSPD');
+    if (kpInput && kpInput.value !== val) kpInput.value = val;
+    if (kpInput && val) kpInput.classList.remove('has-error');
+  }
+  const sppdSelect = document.getElementById('sppdPegawai');
+  if (sppdSelect && Number(sppdSelect.value) === empId) {
+    const sppdInput = document.getElementById('sppdNoSPD');
+    if (sppdInput && sppdInput.value !== val) sppdInput.value = val;
+    if (sppdInput && val) sppdInput.classList.remove('has-error');
+  }
+  const rincianSelect = document.getElementById('rincianPegawai');
+  if (rincianSelect && Number(rincianSelect.value) === empId) {
+    const rincianInput = document.getElementById('rincianNoSPD');
+    if (rincianInput && rincianInput.value !== val) rincianInput.value = val;
+    if (rincianInput && val) rincianInput.classList.remove('has-error');
+  }
+  const dprSelect = document.getElementById('dprPegawai');
+  if (dprSelect && Number(dprSelect.value) === empId) {
+    const dprInput = document.getElementById('dprNoSPD');
+    if (dprInput && dprInput.value !== val) dprInput.value = val;
+    if (dprInput && val) dprInput.classList.remove('has-error');
+  }
+}
+
 function saveKuitansiPeroranganSPD() {
   const select = document.getElementById('kuitansiPeroranganPegawai');
   if (select.value === '') return;
+  const empId = Number(select.value);
   const value = document.getElementById('kuitansiPeroranganNoSPD').value.trim();
-  spdPerEmployee[Number(select.value)] = value;
+  syncEmpSpdInputs(empId, value);
   renderKuitansiPerorangan();
 }
 
@@ -162,7 +192,8 @@ function renderKuitansiPerorangan() {
   const tujuan = getTujuanDisplay(kotaTeks);
   const paymentText = `Biaya Perjalanan Dinas atas nama ${emp.nama}`;
   const mak = `${document.getElementById('kodeKegiatan').value} ${document.getElementById('kodeSubKegiatan').value} ${document.getElementById('mak').value}`;
-  const noSPD = spdPerEmployee[emp.id] || '-';
+  const rawSPD = (spdPerEmployee[emp.id] || '').trim();
+  const noSPD = rawSPD || '<span class="spd-missing-badge">[No. SPD Wajib Diisi]</span>';
   const ppkNama = document.getElementById('cfg_ppkNama').value;
   const ppkNip = document.getElementById('cfg_ppkNip').value;
   const bendNama = document.getElementById('cfg_bendNama').value;
@@ -230,6 +261,21 @@ function renderKuitansiPerorangan() {
 }
 
 function printKuitansiPerorangan() {
+  const select = document.getElementById('kuitansiPeroranganPegawai');
+  const empId = Number(select.value);
+  const emp = employees.find(e => e.id === empId);
+  const noSPD = (spdPerEmployee[empId] || '').trim();
+  if (!noSPD) {
+    const msg = `Nomor SPD Perorangan untuk ${emp ? emp.nama.split(',')[0] : 'pegawai'} WAJIB diisi sebelum mencetak!`;
+    if (typeof showValidationToast === 'function') {
+      showValidationToast([{ label: 'No. SPD Perorangan' }], msg);
+    } else {
+      alert(msg);
+    }
+    const input = document.getElementById('kuitansiPeroranganNoSPD');
+    if (input) { input.focus(); input.classList.add('has-error'); }
+    return;
+  }
   const clearPrintMode = () => document.body.classList.remove('print-kuitansi-perorangan');
   document.body.classList.add('print-kuitansi-perorangan');
   window.addEventListener('afterprint', clearPrintMode, { once: true });
@@ -274,7 +320,9 @@ function onSPPDEmployeeChange() {
 function saveSPPDNo() {
   const select = document.getElementById('sppdPegawai');
   if (select.value === '') return;
-  spdPerEmployee[Number(select.value)] = document.getElementById('sppdNoSPD').value.trim();
+  const empId = Number(select.value);
+  const value = document.getElementById('sppdNoSPD').value.trim();
+  syncEmpSpdInputs(empId, value);
   renderSPPDPerorangan();
 }
 
@@ -307,7 +355,8 @@ function renderSPPDPerorangan() {
   const agenda = document.getElementById('agenda').value.trim() || '-';
   const kotaTeks = document.getElementById('kotaTujuan').value.trim();
   const tujuan = getTujuanDisplay(kotaTeks);
-  const noSPD = spdPerEmployee[emp.id] || '-';
+  const rawSPD = (spdPerEmployee[emp.id] || '').trim();
+  const noSPD = rawSPD || '<span class="spd-missing-badge">[No. SPD Wajib Diisi]</span>';
   const tanggalSPD = formatTgl(document.getElementById('tglSPD').value);
   const tripDays = expandTripDays(empSegments);
   const tripContiguous = tripDays.length > 0 && tripDays.length === daySpan(tripDays[0], tripDays[tripDays.length - 1]);
@@ -401,6 +450,21 @@ function renderSPPDPerorangan() {
 }
 
 function printSPPDPerorangan() {
+  const select = document.getElementById('sppdPegawai');
+  const empId = Number(select.value);
+  const emp = employees.find(e => e.id === empId);
+  const noSPD = (spdPerEmployee[empId] || '').trim();
+  if (!noSPD) {
+    const msg = `Nomor SPD Perorangan untuk ${emp ? emp.nama.split(',')[0] : 'pegawai'} WAJIB diisi sebelum mencetak!`;
+    if (typeof showValidationToast === 'function') {
+      showValidationToast([{ label: 'No. SPD Perorangan' }], msg);
+    } else {
+      alert(msg);
+    }
+    const input = document.getElementById('sppdNoSPD');
+    if (input) { input.focus(); input.classList.add('has-error'); }
+    return;
+  }
   const clearPrintMode = () => document.body.classList.remove('print-sppd');
   document.body.classList.add('print-sppd');
   window.addEventListener('afterprint', clearPrintMode, { once: true });
@@ -470,11 +534,22 @@ function renderLembarKendali() {
       <div class="lembar-kendali-section-title lembar-kendali-section-title-berkas">Tanggal Masuk Berkas: ${formatTgl(tanggalMasuk)}</div>
       <table class="lembar-kendali-meta">
         <colgroup>
-          <col style="width:14%"><col style="width:13%"><col style="width:2%"><col style="width:35%">
+          <col style="width:15%"><col style="width:14%"><col style="width:2%"><col style="width:33%">
           <col style="width:14%"><col style="width:2%"><col style="width:20%">
         </colgroup>
-        <tr><th colspan="2" class="lembar-kendali-meta-label">PELAKSANA PERTANGGUNGJAWABAN</th><td class="lembar-kendali-meta-separator">:</td><td class="lembar-kendali-meta-value">${pelaksana}</td><th class="lembar-kendali-meta-label">SPM</th><td class="lembar-kendali-meta-separator">:</td><td class="lembar-kendali-meta-value">${nomorSPM}</td></tr>
-        <tr><td colspan="4"></td><th class="lembar-kendali-meta-label">SP2D</th><td class="lembar-kendali-meta-separator">:</td><td class="lembar-kendali-meta-value">${nomorSPD}</td></tr>
+        <tr>
+          <th colspan="2" rowspan="2" class="lembar-kendali-meta-label">PELAKSANA PERTANGGUNGJAWABAN</th>
+          <td rowspan="2" class="lembar-kendali-meta-separator">:</td>
+          <td rowspan="2" class="lembar-kendali-meta-value">${pelaksana}</td>
+          <th class="lembar-kendali-meta-label">SPM</th>
+          <td class="lembar-kendali-meta-separator">:</td>
+          <td class="lembar-kendali-meta-value">${nomorSPM}</td>
+        </tr>
+        <tr>
+          <th class="lembar-kendali-meta-label">SP2D</th>
+          <td class="lembar-kendali-meta-separator">:</td>
+          <td class="lembar-kendali-meta-value">${nomorSPD}</td>
+        </tr>
       </table>
 
       <div class="lembar-kendali-section-title lembar-kendali-section-title-checklist">CHECKLIST PENGENDALIAN PERJALANAN DINAS</div>
@@ -790,7 +865,10 @@ function renderRekapSPT() {
             <tr>
               <td class="rekap-spt-center">${index + 1}</td>
               <td class="rekap-spt-center">${mak}</td>
-              <td>${emp.nama}<br><span>NIP. ${emp.nip}</span></td>
+              <td class="rekap-spt-emp-cell">
+                <div class="rekap-spt-emp-nama">${emp.nama}</div>
+                <div class="rekap-spt-emp-nip">NIP. ${emp.nip}</div>
+              </td>
               <td>Perjalanan Dinas ke</td>
               <td class="rekap-spt-center">${kotaTujuan}</td>
               <td class="rekap-spt-center">${tanggalSPT}</td>
@@ -984,7 +1062,9 @@ function onRincianEmployeeChange() {
 function saveRincianSPD() {
   const select = document.getElementById('rincianPegawai');
   if (select.value === '') return;
-  spdPerEmployee[Number(select.value)] = document.getElementById('rincianNoSPD').value.trim();
+  const empId = Number(select.value);
+  const value = document.getElementById('rincianNoSPD').value.trim();
+  syncEmpSpdInputs(empId, value);
   renderRincian();
 }
 
@@ -1027,7 +1107,8 @@ function renderRincian() {
   const b = hitungBiaya(emp);
   const kotaTeks = document.getElementById('kotaTujuan').value.trim();
   const kotaTujuan = getTujuanDisplay(kotaTeks);
-  const noSPD = spdPerEmployee[emp.id] || '___/SPD/Birkom/___/____';
+  const rawSPD = (spdPerEmployee[emp.id] || '').trim();
+  const noSPD = rawSPD || '<span class="spd-missing-badge">[No. SPD Wajib Diisi]</span>';
   const tglSPD = document.getElementById('tglSPD').value;
   const kotaAsal = document.getElementById('cfg_kotaAsal').value;
   const ppkNama = document.getElementById('cfg_ppkNama').value;
@@ -1281,6 +1362,21 @@ function renderRincian() {
 }
 
 function printRincian() {
+  const select = document.getElementById('rincianPegawai');
+  const empId = Number(select.value);
+  const emp = employees.find(e => e.id === empId);
+  const noSPD = (spdPerEmployee[empId] || '').trim();
+  if (!noSPD) {
+    const msg = `Nomor SPD Perorangan untuk ${emp ? emp.nama.split(',')[0] : 'pegawai'} WAJIB diisi sebelum mencetak!`;
+    if (typeof showValidationToast === 'function') {
+      showValidationToast([{ label: 'No. SPD Perorangan' }], msg);
+    } else {
+      alert(msg);
+    }
+    const input = document.getElementById('rincianNoSPD');
+    if (input) { input.focus(); input.classList.add('has-error'); }
+    return;
+  }
   const clearPrintMode = () => document.body.classList.remove('print-rincian');
   document.body.classList.add('print-rincian');
   window.addEventListener('afterprint', clearPrintMode, { once: true });
@@ -1327,7 +1423,9 @@ function onDPREmployeeChange() {
 function saveDPRNoSPD() {
   const select = document.getElementById('dprPegawai');
   if (select.value === '') return;
-  spdPerEmployee[Number(select.value)] = document.getElementById('dprNoSPD').value.trim();
+  const empId = Number(select.value);
+  const value = document.getElementById('dprNoSPD').value.trim();
+  syncEmpSpdInputs(empId, value);
   renderDPR();
 }
 
@@ -1355,7 +1453,8 @@ function renderDPR() {
   const kotaAsal = document.getElementById('cfg_kotaAsal').value;
   const kotaTeks = document.getElementById('kotaTujuan').value.trim();
   const tujuan = getTujuanDisplay(kotaTeks);
-  const noSPD = spdPerEmployee[emp.id] || '-';
+  const rawSPD = (spdPerEmployee[emp.id] || '').trim();
+  const noSPD = rawSPD || '<span class="spd-missing-badge">[No. SPD Wajib Diisi]</span>';
   const tanggalSPD = formatTgl(document.getElementById('tglSPD').value);
   const ppkNama = document.getElementById('cfg_ppkNama').value;
   const ppkNip = document.getElementById('cfg_ppkNip').value;
@@ -1429,6 +1528,21 @@ function renderDPR() {
 }
 
 function printDPR() {
+  const select = document.getElementById('dprPegawai');
+  const empId = Number(select.value);
+  const emp = employees.find(e => e.id === empId);
+  const noSPD = (spdPerEmployee[empId] || '').trim();
+  if (!noSPD) {
+    const msg = `Nomor SPD Perorangan untuk ${emp ? emp.nama.split(',')[0] : 'pegawai'} WAJIB diisi sebelum mencetak!`;
+    if (typeof showValidationToast === 'function') {
+      showValidationToast([{ label: 'No. SPD Perorangan' }], msg);
+    } else {
+      alert(msg);
+    }
+    const input = document.getElementById('dprNoSPD');
+    if (input) { input.focus(); input.classList.add('has-error'); }
+    return;
+  }
   const clearPrintMode = () => document.body.classList.remove('print-dpr');
   document.body.classList.add('print-dpr');
   window.addEventListener('afterprint', clearPrintMode, { once: true });

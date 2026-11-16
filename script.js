@@ -837,7 +837,7 @@ function hitungLama() {
   const tgl2 = document.getElementById('tglKembali').value;
   if (!tgl1 || !tgl2) {
     if (typeof renderTripDates === 'function') renderTripDates();
-    return;
+      return;
   }
   const d1 = new Date(tgl1), d2 = new Date(tgl2);
   const diffDays = Math.round((d2 - d1) / 86400000) + 1;
@@ -867,7 +867,7 @@ function hitungLama() {
     }
   }
   if (typeof renderTripDates === 'function') renderTripDates();
-}
+  }
 
 function getDays() {
   const tgl1 = document.getElementById('tglBerangkat').value;
@@ -1251,11 +1251,41 @@ function onKuitansiPeroranganEmployeeChange() {
   renderKuitansiPerorangan();
 }
 
+function syncEmpSpdInputs(empId, val) {
+  if (!empId) return;
+  spdPerEmployee[empId] = val;
+  const kpSelect = document.getElementById('kuitansiPeroranganPegawai');
+  if (kpSelect && Number(kpSelect.value) === empId) {
+    const kpInput = document.getElementById('kuitansiPeroranganNoSPD');
+    if (kpInput && kpInput.value !== val) kpInput.value = val;
+    if (kpInput && val) kpInput.classList.remove('has-error');
+  }
+  const sppdSelect = document.getElementById('sppdPegawai');
+  if (sppdSelect && Number(sppdSelect.value) === empId) {
+    const sppdInput = document.getElementById('sppdNoSPD');
+    if (sppdInput && sppdInput.value !== val) sppdInput.value = val;
+    if (sppdInput && val) sppdInput.classList.remove('has-error');
+  }
+  const rincianSelect = document.getElementById('rincianPegawai');
+  if (rincianSelect && Number(rincianSelect.value) === empId) {
+    const rincianInput = document.getElementById('rincianNoSPD');
+    if (rincianInput && rincianInput.value !== val) rincianInput.value = val;
+    if (rincianInput && val) rincianInput.classList.remove('has-error');
+  }
+  const dprSelect = document.getElementById('dprPegawai');
+  if (dprSelect && Number(dprSelect.value) === empId) {
+    const dprInput = document.getElementById('dprNoSPD');
+    if (dprInput && dprInput.value !== val) dprInput.value = val;
+    if (dprInput && val) dprInput.classList.remove('has-error');
+  }
+}
+
 function saveKuitansiPeroranganSPD() {
   const select = document.getElementById('kuitansiPeroranganPegawai');
   if (select.value === '') return;
+  const empId = Number(select.value);
   const value = document.getElementById('kuitansiPeroranganNoSPD').value.trim();
-  spdPerEmployee[Number(select.value)] = value;
+  syncEmpSpdInputs(empId, value);
   renderKuitansiPerorangan();
 }
 
@@ -1354,6 +1384,21 @@ function renderKuitansiPerorangan() {
 }
 
 function printKuitansiPerorangan() {
+  const select = document.getElementById('kuitansiPeroranganPegawai');
+  const empId = Number(select.value);
+  const emp = employees.find(e => e.id === empId);
+  const noSPD = (spdPerEmployee[empId] || '').trim();
+  if (!noSPD) {
+    const msg = `Nomor SPD Perorangan untuk ${emp ? emp.nama.split(',')[0] : 'pegawai'} WAJIB diisi sebelum mencetak!`;
+    if (typeof showValidationToast === 'function') {
+      showValidationToast([{ label: 'No. SPD Perorangan' }], msg);
+    } else {
+      alert(msg);
+    }
+    const input = document.getElementById('kuitansiPeroranganNoSPD');
+    if (input) { input.focus(); input.classList.add('has-error'); }
+    return;
+  }
   const clearPrintMode = () => document.body.classList.remove('print-kuitansi-perorangan');
   document.body.classList.add('print-kuitansi-perorangan');
   window.addEventListener('afterprint', clearPrintMode, { once: true });
@@ -1398,7 +1443,9 @@ function onSPPDEmployeeChange() {
 function saveSPPDNo() {
   const select = document.getElementById('sppdPegawai');
   if (select.value === '') return;
-  spdPerEmployee[Number(select.value)] = document.getElementById('sppdNoSPD').value.trim();
+  const empId = Number(select.value);
+  const value = document.getElementById('sppdNoSPD').value.trim();
+  syncEmpSpdInputs(empId, value);
   renderSPPDPerorangan();
 }
 
@@ -1525,6 +1572,21 @@ function renderSPPDPerorangan() {
 }
 
 function printSPPDPerorangan() {
+  const select = document.getElementById('sppdPegawai');
+  const empId = Number(select.value);
+  const emp = employees.find(e => e.id === empId);
+  const noSPD = (spdPerEmployee[empId] || '').trim();
+  if (!noSPD) {
+    const msg = `Nomor SPD Perorangan untuk ${emp ? emp.nama.split(',')[0] : 'pegawai'} WAJIB diisi sebelum mencetak!`;
+    if (typeof showValidationToast === 'function') {
+      showValidationToast([{ label: 'No. SPD Perorangan' }], msg);
+    } else {
+      alert(msg);
+    }
+    const input = document.getElementById('sppdNoSPD');
+    if (input) { input.focus(); input.classList.add('has-error'); }
+    return;
+  }
   const clearPrintMode = () => document.body.classList.remove('print-sppd');
   document.body.classList.add('print-sppd');
   window.addEventListener('afterprint', clearPrintMode, { once: true });
@@ -1594,11 +1656,22 @@ function renderLembarKendali() {
       <div class="lembar-kendali-section-title lembar-kendali-section-title-berkas">Tanggal Masuk Berkas: ${formatTgl(tanggalMasuk)}</div>
       <table class="lembar-kendali-meta">
         <colgroup>
-          <col style="width:14%"><col style="width:13%"><col style="width:2%"><col style="width:35%">
+          <col style="width:15%"><col style="width:14%"><col style="width:2%"><col style="width:33%">
           <col style="width:14%"><col style="width:2%"><col style="width:20%">
         </colgroup>
-        <tr><th colspan="2" class="lembar-kendali-meta-label">PELAKSANA PERTANGGUNGJAWABAN</th><td class="lembar-kendali-meta-separator">:</td><td class="lembar-kendali-meta-value">${pelaksana}</td><th class="lembar-kendali-meta-label">SPM</th><td class="lembar-kendali-meta-separator">:</td><td class="lembar-kendali-meta-value">${nomorSPM}</td></tr>
-        <tr><td colspan="4"></td><th class="lembar-kendali-meta-label">SP2D</th><td class="lembar-kendali-meta-separator">:</td><td class="lembar-kendali-meta-value">${nomorSPD}</td></tr>
+        <tr>
+          <th colspan="2" rowspan="2" class="lembar-kendali-meta-label">PELAKSANA PERTANGGUNGJAWABAN</th>
+          <td rowspan="2" class="lembar-kendali-meta-separator">:</td>
+          <td rowspan="2" class="lembar-kendali-meta-value">${pelaksana}</td>
+          <th class="lembar-kendali-meta-label">SPM</th>
+          <td class="lembar-kendali-meta-separator">:</td>
+          <td class="lembar-kendali-meta-value">${nomorSPM}</td>
+        </tr>
+        <tr>
+          <th class="lembar-kendali-meta-label">SP2D</th>
+          <td class="lembar-kendali-meta-separator">:</td>
+          <td class="lembar-kendali-meta-value">${nomorSPD}</td>
+        </tr>
       </table>
 
       <div class="lembar-kendali-section-title lembar-kendali-section-title-checklist">CHECKLIST PENGENDALIAN PERJALANAN DINAS</div>
@@ -1914,7 +1987,10 @@ function renderRekapSPT() {
             <tr>
               <td class="rekap-spt-center">${index + 1}</td>
               <td class="rekap-spt-center">${mak}</td>
-              <td>${emp.nama}<br><span>NIP. ${emp.nip}</span></td>
+              <td class="rekap-spt-emp-cell">
+                <div class="rekap-spt-emp-nama">${emp.nama}</div>
+                <div class="rekap-spt-emp-nip">NIP. ${emp.nip}</div>
+              </td>
               <td>Perjalanan Dinas ke</td>
               <td class="rekap-spt-center">${kotaTujuan}</td>
               <td class="rekap-spt-center">${tanggalSPT}</td>
@@ -2108,7 +2184,9 @@ function onRincianEmployeeChange() {
 function saveRincianSPD() {
   const select = document.getElementById('rincianPegawai');
   if (select.value === '') return;
-  spdPerEmployee[Number(select.value)] = document.getElementById('rincianNoSPD').value.trim();
+  const empId = Number(select.value);
+  const value = document.getElementById('rincianNoSPD').value.trim();
+  syncEmpSpdInputs(empId, value);
   renderRincian();
 }
 
@@ -2405,6 +2483,21 @@ function renderRincian() {
 }
 
 function printRincian() {
+  const select = document.getElementById('rincianPegawai');
+  const empId = Number(select.value);
+  const emp = employees.find(e => e.id === empId);
+  const noSPD = (spdPerEmployee[empId] || '').trim();
+  if (!noSPD) {
+    const msg = `Nomor SPD Perorangan untuk ${emp ? emp.nama.split(',')[0] : 'pegawai'} WAJIB diisi sebelum mencetak!`;
+    if (typeof showValidationToast === 'function') {
+      showValidationToast([{ label: 'No. SPD Perorangan' }], msg);
+    } else {
+      alert(msg);
+    }
+    const input = document.getElementById('rincianNoSPD');
+    if (input) { input.focus(); input.classList.add('has-error'); }
+    return;
+  }
   const clearPrintMode = () => document.body.classList.remove('print-rincian');
   document.body.classList.add('print-rincian');
   window.addEventListener('afterprint', clearPrintMode, { once: true });
@@ -2451,7 +2544,9 @@ function onDPREmployeeChange() {
 function saveDPRNoSPD() {
   const select = document.getElementById('dprPegawai');
   if (select.value === '') return;
-  spdPerEmployee[Number(select.value)] = document.getElementById('dprNoSPD').value.trim();
+  const empId = Number(select.value);
+  const value = document.getElementById('dprNoSPD').value.trim();
+  syncEmpSpdInputs(empId, value);
   renderDPR();
 }
 
@@ -2553,6 +2648,21 @@ function renderDPR() {
 }
 
 function printDPR() {
+  const select = document.getElementById('dprPegawai');
+  const empId = Number(select.value);
+  const emp = employees.find(e => e.id === empId);
+  const noSPD = (spdPerEmployee[empId] || '').trim();
+  if (!noSPD) {
+    const msg = `Nomor SPD Perorangan untuk ${emp ? emp.nama.split(',')[0] : 'pegawai'} WAJIB diisi sebelum mencetak!`;
+    if (typeof showValidationToast === 'function') {
+      showValidationToast([{ label: 'No. SPD Perorangan' }], msg);
+    } else {
+      alert(msg);
+    }
+    const input = document.getElementById('dprNoSPD');
+    if (input) { input.focus(); input.classList.add('has-error'); }
+    return;
+  }
   const clearPrintMode = () => document.body.classList.remove('print-dpr');
   document.body.classList.add('print-dpr');
   window.addEventListener('afterprint', clearPrintMode, { once: true });
@@ -2946,7 +3056,7 @@ function applyPerjadinExcel(wb) {
   renderEmployeeList();
   renderSelectedTags();
   renderTripDates();
-
+  
   document.getElementById('hotelList').innerHTML = '';
   excelSheetRows(wb, 'Hotel').slice(1).forEach(row => {
     const name = String(row[1] ?? '').trim();
@@ -3016,9 +3126,32 @@ function applyPerjadinExcel(wb) {
   refreshHotelGuests();
   updateSbmWarnings();
 
+  // Reset semua status error dan update status filled agar tidak ada merah-merah saat import / revisi / baca
+  document.querySelectorAll('.form-group.has-error').forEach(g => g.classList.remove('has-error'));
+  document.querySelectorAll('.field-error-msg.is-visible').forEach(m => m.classList.remove('is-visible'));
+  const selBox = document.getElementById('selectedBox');
+  if (selBox) selBox.classList.remove('has-error');
+  const empErr = document.getElementById('empErrorMsg');
+  if (empErr) empErr.classList.remove('is-visible');
+  if (typeof hideValidationToast === 'function') hideValidationToast();
+
+  if (typeof updateFieldFilledStatus === 'function') {
+    REQUIRED_FIELDS.forEach(f => {
+      const el = document.getElementById(f.id);
+      if (el) updateFieldFilledStatus(el);
+    });
+    ['provinsiTujuan1', 'provinsiTujuan2'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) updateFieldFilledStatus(el);
+    });
+  }
+
   const activeTab = document.querySelector('.tab-content.active');
   if (activeTab && activeTab.id.startsWith('tab-')) {
-    showTab(activeTab.id.slice(4));
+    const tabName = activeTab.id.slice(4);
+    if (tabName !== 'input') {
+      if (typeof switchTabPanel === 'function') switchTabPanel(tabName);
+    }
   }
   return { employees: selectedEmpIds.size, unknown: unknownNames };
 }
@@ -3206,39 +3339,33 @@ function validateTripForm() {
     if (selBox) selBox.classList.remove('has-error');
     if (empErr) empErr.classList.remove('is-visible');
   }
+  if (valToastTimer) clearTimeout(valToastTimer);
+  valToastTimer = setTimeout(() => {
+    hideValidationToast();
+  }, 5000);
 
-  return {
-    valid: missing.length === 0,
-    missing,
-    dateMismatch
-  };
+  // Return validation result so callers can check validity
+  return { valid: missing.length === 0, missing, dateMismatch };
 }
 
-function showValidationToast(missing, customMsg) {
+function showValidationToast(missingList, customMsg) {
   const toast = document.getElementById('valToast');
   if (!toast) return;
-  const titleEl = document.getElementById('valToastTitle');
-  const descEl = document.getElementById('valToastDesc');
-
-  if (customMsg) {
-    if (titleEl) titleEl.textContent = 'Periksa Isian Anda';
-    if (descEl) descEl.textContent = customMsg;
-  } else if (missing && missing.length > 0) {
-    const count = missing.length;
-    const labels = missing.slice(0, 3).map(m => m.label).join(', ') + (count > 3 ? ` (+${count - 3} lainnya)` : '');
-    if (titleEl) titleEl.textContent = `${count} Isian Wajib Belum Lengkap`;
-    if (descEl) descEl.textContent = `Mohon lengkapi isian bertanda (!): ${labels}.`;
-  }
-
-  toast.classList.add('is-show');
-
-  if (missing && missing.length > 0 && missing[0].el) {
-    missing[0].el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    if (typeof missing[0].el.focus === 'function') {
-      try { missing[0].el.focus(); } catch (e) {}
+  const title = document.getElementById('valToastTitle');
+  const desc = document.getElementById('valToastDesc');
+  if (title) title.textContent = 'Isian Wajib Belum Lengkap';
+  if (desc) {
+    if (customMsg) {
+      desc.textContent = customMsg;
+    } else if (missingList && missingList.length > 0) {
+      const names = missingList.slice(0, 3).map(m => m.label).join(', ');
+      const more = missingList.length > 3 ? ` (+${missingList.length - 3} lainnya)` : '';
+      desc.textContent = `Mohon lengkapi: ${names}${more}`;
+    } else {
+      desc.textContent = 'Mohon lengkapi semua isian bertanda (!) sebelum membuat dokumen.';
     }
   }
-
+  toast.classList.add('is-show');
   if (valToastTimer) clearTimeout(valToastTimer);
   valToastTimer = setTimeout(() => {
     hideValidationToast();
@@ -3577,7 +3704,7 @@ function toggleEmployee(id) {
   renderEmployeeList();
   renderSelectedTags();
   renderTripDates();
-  refreshCustomCostAssignments();
+    refreshCustomCostAssignments();
   refreshHotelGuests();
   updateSbmWarnings();
 }
@@ -3645,14 +3772,14 @@ function setEmpDates(id) {
   if (!g1) return;
   empTripSegments.set(id, [{ start: g1, end: g2 }]);
   renderTripDates();
-}
+  }
 
 function addEmpSegment(id) {
   const segs = [...(empTripSegments.get(id) || [])];
   segs.push({ start: '', end: '' });
   empTripSegments.set(id, segs);
   renderTripDates();
-}
+  }
 
 function updateEmpSegment(id, index, field, value) {
   const segs = [...(empTripSegments.get(id) || [])];
@@ -3662,7 +3789,7 @@ function updateEmpSegment(id, index, field, value) {
   if (field === 'end' && segs[index].start && value && value < segs[index].start) segs[index].start = value;
   empTripSegments.set(id, segs);
   renderTripDates();
-}
+  }
 
 function removeEmpSegment(id, index) {
   const segs = [...(empTripSegments.get(id) || [])];
@@ -3670,12 +3797,12 @@ function removeEmpSegment(id, index) {
   if (segs.length) empTripSegments.set(id, segs);
   else empTripSegments.delete(id);
   renderTripDates();
-}
+  }
 
 function resetEmpDates(id) {
   empTripSegments.delete(id);
   renderTripDates();
-}
+  }
 
 function clearAll() {
   selectedEmpIds.clear();
@@ -3683,7 +3810,7 @@ function clearAll() {
   renderEmployeeList();
   renderSelectedTags();
   renderTripDates();
-  refreshCustomCostAssignments();
+    refreshCustomCostAssignments();
   refreshHotelGuests();
   updateSbmWarnings();
 }

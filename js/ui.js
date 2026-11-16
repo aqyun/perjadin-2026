@@ -179,38 +179,33 @@ function validateTripForm() {
     if (empErr) empErr.classList.remove('is-visible');
   }
 
-  return {
-    valid: missing.length === 0,
-    missing,
-    dateMismatch
-  };
+  if (valToastTimer) clearTimeout(valToastTimer);
+  valToastTimer = setTimeout(() => {
+    hideValidationToast();
+  }, 5000);
+
+  // Return validation result so callers can check validity
+  return { valid: missing.length === 0, missing, dateMismatch };
 }
 
-function showValidationToast(missing, customMsg) {
+function showValidationToast(missingList, customMsg) {
   const toast = document.getElementById('valToast');
   if (!toast) return;
-  const titleEl = document.getElementById('valToastTitle');
-  const descEl = document.getElementById('valToastDesc');
-
-  if (customMsg) {
-    if (titleEl) titleEl.textContent = 'Periksa Isian Anda';
-    if (descEl) descEl.textContent = customMsg;
-  } else if (missing && missing.length > 0) {
-    const count = missing.length;
-    const labels = missing.slice(0, 3).map(m => m.label).join(', ') + (count > 3 ? ` (+${count - 3} lainnya)` : '');
-    if (titleEl) titleEl.textContent = `${count} Isian Wajib Belum Lengkap`;
-    if (descEl) descEl.textContent = `Mohon lengkapi isian bertanda (!): ${labels}.`;
-  }
-
-  toast.classList.add('is-show');
-
-  if (missing && missing.length > 0 && missing[0].el) {
-    missing[0].el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    if (typeof missing[0].el.focus === 'function') {
-      try { missing[0].el.focus(); } catch (e) {}
+  const title = document.getElementById('valToastTitle');
+  const desc = document.getElementById('valToastDesc');
+  if (title) title.textContent = 'Isian Wajib Belum Lengkap';
+  if (desc) {
+    if (customMsg) {
+      desc.textContent = customMsg;
+    } else if (missingList && missingList.length > 0) {
+      const names = missingList.slice(0, 3).map(m => m.label).join(', ');
+      const more = missingList.length > 3 ? ` (+${missingList.length - 3} lainnya)` : '';
+      desc.textContent = `Mohon lengkapi: ${names}${more}`;
+    } else {
+      desc.textContent = 'Mohon lengkapi semua isian bertanda (!) sebelum membuat dokumen.';
     }
   }
-
+  toast.classList.add('is-show');
   if (valToastTimer) clearTimeout(valToastTimer);
   valToastTimer = setTimeout(() => {
     hideValidationToast();
@@ -633,7 +628,7 @@ function toggleEmployee(id) {
   renderEmployeeList();
   renderSelectedTags();
   renderTripDates();
-  refreshCustomCostAssignments();
+    refreshCustomCostAssignments();
   refreshHotelGuests();
   updateSbmWarnings();
 }
@@ -701,14 +696,14 @@ function setEmpDates(id) {
   if (!g1) return;
   empTripSegments.set(id, [{ start: g1, end: g2 }]);
   renderTripDates();
-}
+  }
 
 function addEmpSegment(id) {
   const segs = [...(empTripSegments.get(id) || [])];
   segs.push({ start: '', end: '' });
   empTripSegments.set(id, segs);
   renderTripDates();
-}
+  }
 
 function updateEmpSegment(id, index, field, value) {
   const segs = [...(empTripSegments.get(id) || [])];
@@ -718,7 +713,7 @@ function updateEmpSegment(id, index, field, value) {
   if (field === 'end' && segs[index].start && value && value < segs[index].start) segs[index].start = value;
   empTripSegments.set(id, segs);
   renderTripDates();
-}
+  }
 
 function removeEmpSegment(id, index) {
   const segs = [...(empTripSegments.get(id) || [])];
@@ -726,12 +721,12 @@ function removeEmpSegment(id, index) {
   if (segs.length) empTripSegments.set(id, segs);
   else empTripSegments.delete(id);
   renderTripDates();
-}
+  }
 
 function resetEmpDates(id) {
   empTripSegments.delete(id);
   renderTripDates();
-}
+  }
 
 function clearAll() {
   selectedEmpIds.clear();
@@ -739,7 +734,7 @@ function clearAll() {
   renderEmployeeList();
   renderSelectedTags();
   renderTripDates();
-  refreshCustomCostAssignments();
+    refreshCustomCostAssignments();
   refreshHotelGuests();
   updateSbmWarnings();
 }

@@ -452,9 +452,32 @@ function applyPerjadinExcel(wb) {
   refreshHotelGuests();
   updateSbmWarnings();
 
+  // Reset semua status error dan update status filled agar tidak ada merah-merah saat import / revisi / baca
+  document.querySelectorAll('.form-group.has-error').forEach(g => g.classList.remove('has-error'));
+  document.querySelectorAll('.field-error-msg.is-visible').forEach(m => m.classList.remove('is-visible'));
+  const selBox = document.getElementById('selectedBox');
+  if (selBox) selBox.classList.remove('has-error');
+  const empErr = document.getElementById('empErrorMsg');
+  if (empErr) empErr.classList.remove('is-visible');
+  if (typeof hideValidationToast === 'function') hideValidationToast();
+
+  if (typeof updateFieldFilledStatus === 'function') {
+    REQUIRED_FIELDS.forEach(f => {
+      const el = document.getElementById(f.id);
+      if (el) updateFieldFilledStatus(el);
+    });
+    ['provinsiTujuan1', 'provinsiTujuan2'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) updateFieldFilledStatus(el);
+    });
+  }
+
   const activeTab = document.querySelector('.tab-content.active');
   if (activeTab && activeTab.id.startsWith('tab-')) {
-    showTab(activeTab.id.slice(4));
+    const tabName = activeTab.id.slice(4);
+    if (tabName !== 'input') {
+      if (typeof switchTabPanel === 'function') switchTabPanel(tabName);
+    }
   }
   return { employees: selectedEmpIds.size, unknown: unknownNames };
 }
