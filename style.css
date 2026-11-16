@@ -3228,12 +3228,16 @@ input[type="number"] {
 
 .kuitansi-perorangan-ministry {
   font-size: 12px;
-  color: #07668d;
+  color: #0E5B73;
   white-space: nowrap;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
 
 .kuitansi-perorangan-ministry span {
-  color: #c6b36b;
+  color: #D5C58A;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
 
 .kuitansi-perorangan-reference {
@@ -3365,12 +3369,16 @@ input[type="number"] {
 
 .lembar-kendali-ministry {
   font-size: 14px;
-  color: #07668d;
+  color: #0E5B73;
   white-space: nowrap;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
 
 .lembar-kendali-ministry span {
-  color: #c6b36b;
+  color: #D5C58A;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
 
 .lembar-kendali-header .lembar-kendali-secretariat {
