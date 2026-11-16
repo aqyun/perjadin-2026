@@ -2888,44 +2888,71 @@ input[type="number"] {
   color: #000 !important;
 }
 
+/* Judul: 16px */
 .nominatif-area .doc-title h2 {
   font-size: 16px !important;
   font-weight: 700;
   color: #000 !important;
 }
 
-.nominatif-area *:not(h2) {
+/* Selain isi tabel dan judul: 12px */
+.nominatif-area,
+.nominatif-area .meta-tbl,
+.nominatif-area .meta-tbl td,
+.nominatif-area .nominatif-terbilang,
+.nominatif-area .nominatif-terbilang *,
+.nominatif-area .rekap-rincian-date-note,
+.nominatif-area .sig-row,
+.nominatif-area .sig-box,
+.nominatif-area .sig-box div,
+.nominatif-area .sig-nip {
   font-size: 12px !important;
+}
+
+.nominatif-area .meta-tbl {
+  margin: 12px 0 16px;
+  line-height: 1.45;
+}
+
+.nominatif-area .meta-tbl td {
+  padding: 3px 4px;
 }
 
 #tab-nominatif {
   page: nominatif;
 }
 
+/* Isi yang dalam tabel: 11px */
 .nominatif-table {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
   color: #000;
   background: #fff;
-  font-size: 11px;
+  font-size: 11px !important;
   margin: 12px 0 0;
 }
 
-.nominatif-table th, .nominatif-table td {
+.nominatif-table th,
+.nominatif-table td {
   border: 1px solid #000;
   padding: 8px 4px;
   vertical-align: middle;
   overflow-wrap: anywhere;
   color: #000;
-  font-size: 11px;
+  font-size: 11px !important;
+}
+
+.nominatif-table td * {
+  border: none !important;
+  font-size: 11px !important;
 }
 
 .nominatif-table th {
   background: #fff;
   color: #000;
   text-align: center;
-  font-size: 11px;
+  font-size: 11px !important;
   line-height: 1.25;
 }
 
@@ -2994,6 +3021,14 @@ input[type="number"] {
   gap: 6px;
   font-weight: 400;
   color: #000;
+  border: none !important;
+  background: transparent !important;
+}
+
+.nominatif-amount span {
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
 }
 
 .nominatif-amount span:last-child {
@@ -3593,15 +3628,16 @@ input[type="number"] {
 }
 
 .nominatif-area .data-tbl.nominatif-table th, .nominatif-area .data-tbl.nominatif-table td {
-  border: 1px solid #111;
+  border: 1px solid #000;
   padding: 8px 4px;
-  font-size: 12px;
+  font-size: 11px !important;
+  color: #000 !important;
 }
 
 .nominatif-area .data-tbl.nominatif-table th {
   background: #fff;
-  color: #111;
-  font-size: 12px;
+  color: #000 !important;
+  font-size: 11px !important;
 }
 
 .nominatif-area .data-tbl.nominatif-table tr:nth-child(even) td {
@@ -3610,8 +3646,9 @@ input[type="number"] {
 
 .nominatif-area .data-tbl.nominatif-table .nominatif-total td {
   background: #fff;
-  border-top: 1px solid #111;
+  border-top: 1px solid #000;
   font-weight: 700;
+  color: #000 !important;
 }
 
 .terbilang-box {
@@ -3658,28 +3695,30 @@ input[type="number"] {
   font-family: Arial,sans-serif;
   font-size: 16px;
   font-weight: 700;
-  margin: 0 0 12px;
+  margin: 0 0 18px;
 }
 
 .rekap-spt-meta {
   width: 100%;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
   border-collapse: collapse;
   font-size: 12px;
 }
 
 .rekap-spt-meta td {
-  padding: 1px 3px;
+  padding: 4px 4px;
   vertical-align: top;
   font-size: 12px;
+  line-height: 1.45;
 }
 
 .rekap-spt-meta td:first-child {
-  width: 150px;
+  width: 165px;
 }
 
 .rekap-spt-meta td:nth-child(2) {
-  width: 12px;
+  width: 16px;
+  text-align: center;
 }
 
 .rekap-spt-table {
@@ -6546,13 +6585,31 @@ MODE GELAP — layar saja; kertas dokumen & cetak tetap putih
   body.print-nominatif .nominatif-area * {
     color: #000 !important;
   }
+  /* Judul: 16px */
   body.print-nominatif .nominatif-area .doc-title h2 {
     font-size: 16px !important;
     color: #000 !important;
   }
-  body.print-nominatif .nominatif-area *:not(h2) {
-    font-size: 11px !important;
+  /* Selain isi tabel dan judul: 12px */
+  body.print-nominatif .nominatif-area .meta-tbl td,
+  body.print-nominatif .nominatif-terbilang,
+  body.print-nominatif .nominatif-terbilang *,
+  body.print-nominatif .nominatif-area .rekap-rincian-date-note,
+  body.print-nominatif .nominatif-area .sig-row,
+  body.print-nominatif .nominatif-area .sig-box,
+  body.print-nominatif .nominatif-area .sig-box div,
+  body.print-nominatif .nominatif-area .sig-nip {
+    font-size: 12px !important;
+    color: #000 !important;
   }
+  body.print-nominatif .nominatif-area .meta-tbl {
+    margin: 12px 0 16px !important;
+    line-height: 1.45 !important;
+  }
+  body.print-nominatif .nominatif-area .meta-tbl td {
+    padding: 3px 4px !important;
+  }
+  /* Isi yang dalam tabel: 11px */
   body.print-nominatif .nominatif-table {
     font-size: 11px !important;
     color: #000 !important;
@@ -6562,7 +6619,11 @@ MODE GELAP — layar saja; kertas dokumen & cetak tetap putih
     padding: 5px 3px !important;
     font-size: 11px !important;
     color: #000 !important;
-    border-color: #000 !important;
+    border: 1px solid #000 !important;
+  }
+  body.print-nominatif .nominatif-table td * {
+    border: none !important;
+    font-size: 11px !important;
   }
   body.print-nominatif .nominatif-table td.nominatif-nip {
     padding: 5px 2px !important;
@@ -6578,25 +6639,25 @@ MODE GELAP — layar saja; kertas dokumen & cetak tetap putih
     font-size: 11px !important;
   }
   body.print-nominatif .nominatif-terbilang {
-    font-size: 11px !important;
     padding: 6px 8px !important;
-    color: #000 !important;
     border-color: #000 !important;
   }
   body.print-nominatif .nominatif-area .sig-row {
     margin-top: 18px !important;
-    font-size: 11px !important;
-    color: #000 !important;
-  }
-  body.print-nominatif .nominatif-area .sig-box div {
-    font-size: 11px !important;
-    color: #000 !important;
   }
   body.print-rekap-spt .rekap-spt-area {
     font-size: 12px !important;
   }
+  body.print-rekap-spt .rekap-spt-area h2 {
+    margin-bottom: 18px !important;
+  }
+  body.print-rekap-spt .rekap-spt-meta {
+    margin-bottom: 20px !important;
+  }
   body.print-rekap-spt .rekap-spt-meta td {
+    padding: 3px 4px !important;
     font-size: 12px !important;
+    line-height: 1.45 !important;
   }
   body.print-rekap-spt .rekap-spt-table {
     font-size: 12px !important;
