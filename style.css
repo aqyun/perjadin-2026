@@ -2880,6 +2880,22 @@ input[type="number"] {
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   font: 12px Arial,sans-serif;
+  color: #000;
+}
+
+.nominatif-area,
+.nominatif-area * {
+  color: #000 !important;
+}
+
+.nominatif-area .doc-title h2 {
+  font-size: 16px !important;
+  font-weight: 700;
+  color: #000 !important;
+}
+
+.nominatif-area *:not(h2) {
+  font-size: 12px !important;
 }
 
 #tab-nominatif {
@@ -2890,22 +2906,24 @@ input[type="number"] {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
-  color: #111;
+  color: #000;
   background: #fff;
   font-size: 12px;
   margin: 12px 0 0;
 }
 
 .nominatif-table th, .nominatif-table td {
-  border: 1px solid #111;
-  padding: 12px 4px;
+  border: 1px solid #000;
+  padding: 8px 4px;
   vertical-align: middle;
   overflow-wrap: anywhere;
+  color: #000;
+  font-size: 12px;
 }
 
 .nominatif-table th {
   background: #fff;
-  color: #111;
+  color: #000;
   text-align: center;
   font-size: 12px;
   line-height: 1.25;
@@ -2949,12 +2967,14 @@ input[type="number"] {
 
 .nominatif-table .nominatif-total td {
   font-weight: 700;
-  border-top: 1px solid #111;
+  border-top: 1px solid #000;
   text-align: center;
+  color: #000;
 }
 
 .nominatif-nip {
   font-size: 12px;
+  color: #000;
 }
 
 .nominatif-amount {
@@ -2962,6 +2982,7 @@ input[type="number"] {
   justify-content: space-between;
   gap: 6px;
   font-weight: 400;
+  color: #000;
 }
 
 .nominatif-amount span:last-child {
@@ -2970,6 +2991,7 @@ input[type="number"] {
 
 .nominatif-amount-total {
   font-weight: 700;
+  color: #000;
 }
 
 .nominatif-terbilang {
@@ -2978,9 +3000,9 @@ input[type="number"] {
   gap: 6px;
   margin: 8px 0 0;
   padding: 6px 10px;
-  border: 1px solid #111;
+  border: 1px solid #000;
   background: #fff;
-  color: #111;
+  color: #000;
   font-size: 12px;
 }
 
@@ -3632,11 +3654,13 @@ input[type="number"] {
   width: 100%;
   margin-bottom: 18px;
   border-collapse: collapse;
+  font-size: 12px;
 }
 
 .rekap-spt-meta td {
   padding: 1px 3px;
   vertical-align: top;
+  font-size: 12px;
 }
 
 .rekap-spt-meta td:first-child {
@@ -3708,12 +3732,13 @@ input[type="number"] {
   border-bottom: 1px solid #222;
   word-break: break-word;
   line-height: 1.35;
+  font-size: 12px;
 }
 
 .rekap-spt-emp-nip {
   padding: 5px 6px;
   white-space: nowrap;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.35;
 }
 
@@ -3728,8 +3753,12 @@ input[type="number"] {
   font-size: 12px;
 }
 
+.rekap-spt-signature div {
+  font-size: 12px;
+}
+
 .rekap-spt-signature-space {
-  height: 80px;
+  height: 80px !important;
 }
 
 @page rekap-spt {
@@ -6502,28 +6531,56 @@ MODE GELAP — layar saja; kertas dokumen & cetak tetap putih
 
 /* Print optimizations for Portrait Nominatif & Rekap SPT */
 @media print {
+  body.print-nominatif .nominatif-area,
+  body.print-nominatif .nominatif-area * {
+    color: #000 !important;
+  }
+  body.print-nominatif .nominatif-area .doc-title h2 {
+    font-size: 16px !important;
+    color: #000 !important;
+  }
+  body.print-nominatif .nominatif-area *:not(h2) {
+    font-size: 12px !important;
+  }
   body.print-nominatif .nominatif-table {
-    font-size: 10px !important;
+    font-size: 12px !important;
+    color: #000 !important;
   }
   body.print-nominatif .nominatif-table th,
   body.print-nominatif .nominatif-table td {
     padding: 5px 3px !important;
-    font-size: 10px !important;
+    font-size: 12px !important;
+    color: #000 !important;
+    border-color: #000 !important;
   }
   body.print-nominatif .nominatif-terbilang {
-    font-size: 10.5px !important;
+    font-size: 12px !important;
     padding: 6px 8px !important;
+    color: #000 !important;
+    border-color: #000 !important;
   }
   body.print-nominatif .nominatif-area .sig-row {
     margin-top: 18px !important;
-    font-size: 11px !important;
+    font-size: 12px !important;
+    color: #000 !important;
+  }
+  body.print-nominatif .nominatif-area .sig-box div {
+    font-size: 12px !important;
+    color: #000 !important;
+  }
+  body.print-rekap-spt .rekap-spt-area {
+    font-size: 12px !important;
+  }
+  body.print-rekap-spt .rekap-spt-meta td {
+    font-size: 12px !important;
   }
   body.print-rekap-spt .rekap-spt-table {
-    font-size: 11px !important;
+    font-size: 12px !important;
   }
   body.print-rekap-spt .rekap-spt-table th,
   body.print-rekap-spt .rekap-spt-table td {
     padding: 6px 4px !important;
+    font-size: 12px !important;
   }
   body.print-rekap-spt .rekap-spt-table td.rekap-spt-emp-cell {
     padding: 0 !important;
@@ -6531,17 +6588,21 @@ MODE GELAP — layar saja; kertas dokumen & cetak tetap putih
   body.print-rekap-spt .rekap-spt-emp-nama {
     padding: 5px 4px !important;
     border-bottom: 1px solid #222 !important;
+    font-size: 12px !important;
   }
   body.print-rekap-spt .rekap-spt-emp-nip {
     padding: 4px 4px !important;
-    font-size: 10.5px !important;
+    font-size: 12px !important;
   }
   body.print-rekap-spt .rekap-spt-signature {
     margin-top: 16px !important;
-    font-size: 11px !important;
+    font-size: 12px !important;
+  }
+  body.print-rekap-spt .rekap-spt-signature div {
+    font-size: 12px !important;
   }
   body.print-rekap-spt .rekap-spt-signature-space {
-    height: 60px !important;
+    height: 80px !important;
   }
   body.print-lembar-kendali .lembar-kendali-meta-label {
     white-space: normal !important;

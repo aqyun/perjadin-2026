@@ -2002,7 +2002,7 @@ function renderRekapSPT() {
 
       <div class="rekap-spt-signature">
         <div>${jabatanDuaBaris(ppkJabatan)}</div>
-        <div class="rekap-spt-signature-space"></div>
+        <div class="rekap-spt-signature-space" style="height: 80px;"></div>
         <div>${ppkNama}</div>
         <div>${ppkNip}</div>
       </div>
