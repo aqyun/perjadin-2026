@@ -2050,6 +2050,12 @@ function renderNominatif() {
     return { emp, b, idx: idx + 1, segs: getEmpSegments(emp.id), days: getEmpDays(emp.id).days };
   });
   const multiSegRows = rows.filter(r => r.segs.length > 1);
+  const formatNominatifTgl = (str) => {
+    if (!str || str === '-') return '-';
+    const parts = str.split(' ');
+    if (parts.length === 3) return `${parts[0]}&nbsp;${parts[1]}<br>${parts[2]}`;
+    return str.replace(/ (\d{4})$/, '<br>$1');
+  };
 
   out.innerHTML = `
     <div class="nominatif-area">
@@ -2069,8 +2075,8 @@ function renderNominatif() {
       <div class="nominatif-wrapper">
         <table class="data-tbl nominatif-table">
           <colgroup>
-            <col style="width:3.5%"><col style="width:20%"><col style="width:4.5%"><col style="width:18.5%">
-            <col style="width:13%"><col style="width:8.5%"><col style="width:8.5%"><col style="width:7.5%"><col style="width:16%">
+            <col style="width:3.5%"><col style="width:21%"><col style="width:4.5%"><col style="width:17.5%">
+            <col style="width:13%"><col style="width:10.5%"><col style="width:10.5%"><col style="width:7%"><col style="width:12.5%">
           </colgroup>
           <thead>
             <tr>
@@ -2097,8 +2103,8 @@ function renderNominatif() {
                 <td class="tc">${r.emp.gol}</td>
                 <td class="tc nominatif-nip">${r.emp.nip}</td>
                 <td class="tc">${kotaTujuan}</td>
-                <td class="tc">${formatTgl(r.segs.length ? r.segs[0].start : tglBrkt).replace(/ (\d{4})$/, '<br>$1')}</td>
-                <td class="tc">${formatTgl(r.segs.length ? r.segs[r.segs.length - 1].end : tglKmb).replace(/ (\d{4})$/, '<br>$1')}</td>
+                <td class="tc nominatif-date-cell">${formatNominatifTgl(formatTgl(r.segs.length ? r.segs[0].start : tglBrkt))}</td>
+                <td class="tc nominatif-date-cell">${formatNominatifTgl(formatTgl(r.segs.length ? r.segs[r.segs.length - 1].end : tglKmb))}</td>
                 <td class="tc">${r.days} hari</td>
                 <td><div class="nominatif-amount"><span>Rp</span><span>${Number(r.b.total).toLocaleString('id-ID')}</span></div></td>
               </tr>
