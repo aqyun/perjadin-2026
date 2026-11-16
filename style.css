@@ -2909,6 +2909,29 @@ input[type="number"] {
   font-size: 12px !important;
 }
 
+.nominatif-area .meta-tbl {
+  width: 100%;
+  margin: 0 0 20px;
+  border-collapse: collapse;
+}
+
+.nominatif-area .meta-tbl td {
+  padding: 2px 3px !important;
+  vertical-align: top;
+  font-size: 12px !important;
+  color: #000 !important;
+}
+
+.nominatif-area .meta-tbl td:first-child {
+  width: 260px !important;
+  font-weight: 400;
+}
+
+.nominatif-area .meta-tbl td:nth-child(2) {
+  width: 14px !important;
+  text-align: center;
+}
+
 #tab-nominatif {
   page: nominatif;
 }
@@ -3697,7 +3720,7 @@ input[type="number"] {
 }
 
 .rekap-spt-meta td {
-  padding: 1px 3px;
+  padding: 2px 3px;
   vertical-align: top;
   font-size: 12px;
 }
@@ -6592,6 +6615,22 @@ MODE GELAP — layar saja; kertas dokumen & cetak tetap putih
     font-size: 12px !important;
     color: #000 !important;
   }
+  body.print-nominatif .nominatif-area .meta-tbl {
+    margin: 0 0 20px !important;
+    border-collapse: collapse !important;
+  }
+  body.print-nominatif .nominatif-area .meta-tbl td {
+    padding: 2px 3px !important;
+    font-size: 12px !important;
+    color: #000 !important;
+  }
+  body.print-nominatif .nominatif-area .meta-tbl td:first-child {
+    width: 260px !important;
+  }
+  body.print-nominatif .nominatif-area .meta-tbl td:nth-child(2) {
+    width: 14px !important;
+    text-align: center !important;
+  }
   /* Isi yang dalam tabel: 11px */
   body.print-nominatif .nominatif-table {
     font-size: 11px !important;
@@ -6638,7 +6677,7 @@ MODE GELAP — layar saja; kertas dokumen & cetak tetap putih
     margin-bottom: 20px !important;
   }
   body.print-rekap-spt .rekap-spt-meta td {
-    padding: 1px 3px !important;
+    padding: 2px 3px !important;
     font-size: 12px !important;
   }
   body.print-rekap-spt .rekap-spt-table {
