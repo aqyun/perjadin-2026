@@ -70,8 +70,13 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('tglBerangkat').value = today;
   document.getElementById('tglKembali').value = today;
   hitungLama();
+  if (typeof toggleUHFields === 'function') toggleUHFields();
+  if (typeof toggleHotelFields === 'function') toggleHotelFields();
   updateSbmWarnings();
   setupRealtimeValidation();
+  updateKKPBadgesAndNav();
+  if (typeof updateAllSpdSuffixLabels === 'function') updateAllSpdSuffixLabels();
+  if (typeof syncJenisPerjalananFromMak === 'function') syncJenisPerjalananFromMak();
   initAppLoader();
 });
 
@@ -443,7 +448,13 @@ function switchTabPanel(name) {
   const meta = tabMeta[name] || ['Perjalanan Dinas', 'Menu'];
   const titleEl = document.getElementById('pageTitle');
   const eyebrowEl = document.getElementById('pageEyebrow');
-  if (titleEl) titleEl.textContent = meta[0];
+  const isKKP = (document.getElementById('metodePembayaran')?.value || document.getElementById('lk_metodePembayaran')?.value || 'LS') === 'KKP';
+  if (titleEl) {
+    if (name === 'dpr' && isKKP) titleEl.textContent = 'DPR KKP Perorangan';
+    else if (name === 'rekap-kuitansi' && isKKP) titleEl.textContent = 'Rekap Kuitansi KKP';
+    else if (name === 'kuitansi-perorangan' && isKKP) titleEl.textContent = 'Kuitansi KKP Perorangan';
+    else titleEl.textContent = meta[0];
+  }
   if (eyebrowEl) eyebrowEl.textContent = meta[1];
   closeSidebar();
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -456,6 +467,58 @@ function switchTabPanel(name) {
   if (name === 'lembar-kendali') renderLembarKendali();
   if (name === 'rekap-rincian') renderRekapRincian();
   if (name === 'rekap-spt') renderRekapSPT();
+}
+
+function onMetodePembayaranChange(val) {
+  const f1 = document.getElementById('metodePembayaran');
+  const f2 = document.getElementById('lk_metodePembayaran');
+  if (f1 && f1.value !== val) f1.value = val;
+  if (f2 && f2.value !== val) f2.value = val;
+  updateKKPBadgesAndNav();
+  if (typeof renderCurrentTab === 'function') {
+    renderCurrentTab();
+  } else {
+    const activeTab = document.querySelector('.tab-content.active');
+    if (activeTab) {
+      const tabId = activeTab.id.replace(/^tab-/, '');
+      if (tabId === 'lembar-kendali' && typeof renderLembarKendali === 'function') renderLembarKendali();
+      if (tabId === 'rekap-kuitansi' && typeof renderRekapKuitansi === 'function') renderRekapKuitansi();
+      if (tabId === 'kuitansi-perorangan' && typeof renderKuitansiPerorangan === 'function') renderKuitansiPerorangan();
+      if (tabId === 'dpr' && typeof renderDPR === 'function') renderDPR();
+    }
+  }
+}
+
+function updateKKPBadgesAndNav() {
+  const isKKP = (document.getElementById('metodePembayaran')?.value || document.getElementById('lk_metodePembayaran')?.value || 'LS') === 'KKP';
+  const dprNav = document.querySelector('.tab-btn[data-tab="dpr"] .nav-text');
+  if (dprNav) {
+    dprNav.textContent = isKKP ? 'DPR KKP' : 'DPR Perorangan';
+  }
+  const dprCard = document.querySelector('.action-card[onclick*="showTab(\'dpr\')"] .action-body strong');
+  if (dprCard) {
+    dprCard.textContent = isKKP ? 'DPR KKP Perorangan' : 'DPR Perorangan';
+  }
+  const dprCardSub = document.querySelector('.action-card[onclick*="showTab(\'dpr\')"] .action-body small');
+  if (dprCardSub) {
+    dprCardSub.textContent = isKKP ? 'Daftar pengeluaran riil KKP' : 'Daftar pengeluaran riil';
+  }
+  const titleEl = document.getElementById('dprCardTitle');
+  if (titleEl) {
+    titleEl.textContent = isKKP ? 'Pilih Pegawai untuk DPR KKP' : 'Pilih Pegawai untuk DPR';
+  }
+  const subEl = document.getElementById('dprCardSub');
+  if (subEl) {
+    subEl.textContent = isKKP ? 'Daftar pengeluaran riil perjalanan dinas jabatan dengan KKP per orang' : 'Daftar pengeluaran riil per orang';
+  }
+  const btnPrint = document.getElementById('labelPrintDPR');
+  if (btnPrint) {
+    btnPrint.textContent = isKKP ? 'Cetak DPR KKP' : 'Cetak DPR';
+  }
+  const btnPrintAll = document.getElementById('labelPrintAllDPR');
+  if (btnPrintAll) {
+    btnPrintAll.textContent = isKKP ? 'Cetak Semua DPR KKP' : 'Cetak Semua DPR';
+  }
 }
 
 function toggleSidebar() {
@@ -591,6 +654,7 @@ document.addEventListener('keydown', event => {
     closeSidebar();
     closeWelcome();
     closePmkModal();
+    if (typeof closeMealDuplicateModal === 'function') closeMealDuplicateModal();
   }
 });
 

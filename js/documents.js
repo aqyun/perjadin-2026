@@ -42,10 +42,11 @@ function renderRekapKuitansi() {
   const paymentText = [agenda || `Perjalanan dinas ke ${kotaTeks ? getTujuanDisplay(kotaTeks) : '-'}`, kegiatan ? `Output ${kegiatan}` : '']
     .filter(Boolean)
     .join(', ');
+  const isKKP = (document.getElementById('metodePembayaran')?.value || document.getElementById('lk_metodePembayaran')?.value || 'LS') === 'KKP';
 
   out.innerHTML = `
     <section class="kuitansi-area">
-      <h2>KUITANSI LS</h2>
+      <h2>${isKKP ? 'KUITANSI KKP' : 'KUITANSI LS'}</h2>
       <div class="kuitansi-frame">
         <table class="kuitansi-reference">
           <tr><td>TA</td><td>:</td><td>${year}</td></tr>
@@ -116,10 +117,59 @@ function populateKuitansiPeroranganSelect() {
   renderKuitansiPerorangan();
 }
 
+function getSpdSuffix() {
+  const tglVal = document.getElementById('tglST')?.value || document.getElementById('tglSPD')?.value || '';
+  let month = '10';
+  let year = '2026';
+  if (tglVal) {
+    const parts = tglVal.split('-');
+    if (parts.length >= 2) {
+      year = parts[0] || '2026';
+      month = parts[1] || '10';
+    }
+  } else {
+    const now = new Date();
+    month = String(now.getMonth() + 1).padStart(2, '0');
+    year = String(now.getFullYear());
+  }
+  return `/SPD/Birkom/${month}/${year}`;
+}
+
+function getSpdNumberPrefix(fullSpd) {
+  if (!fullSpd) return '';
+  const str = String(fullSpd).trim();
+  const idx = str.indexOf('/');
+  if (idx !== -1) {
+    return str.substring(0, idx).trim();
+  }
+  return str;
+}
+
+function buildFullSpdFromInput(numInput) {
+  if (!numInput) return '';
+  const num = String(numInput).trim();
+  if (!num) return '';
+  if (num.includes('/')) {
+    return num;
+  }
+  return `${num}${getSpdSuffix()}`;
+}
+
+function updateAllSpdSuffixLabels() {
+  const suffix = getSpdSuffix();
+  ['kuitansiPeroranganNoSPDSuffix', 'sppdNoSPDSuffix', 'rincianNoSPDSuffix', 'dprNoSPDSuffix'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = suffix;
+  });
+}
+
 function loadKuitansiPeroranganSPD() {
   const select = document.getElementById('kuitansiPeroranganPegawai');
-  if (select.value === '') return;
-  document.getElementById('kuitansiPeroranganNoSPD').value = spdPerEmployee[Number(select.value)] || '';
+  if (!select || select.value === '') return;
+  const fullVal = spdPerEmployee[Number(select.value)] || '';
+  const input = document.getElementById('kuitansiPeroranganNoSPD');
+  if (input) input.value = getSpdNumberPrefix(fullVal);
+  updateAllSpdSuffixLabels();
 }
 
 function onKuitansiPeroranganEmployeeChange() {
@@ -130,38 +180,63 @@ function onKuitansiPeroranganEmployeeChange() {
 function syncEmpSpdInputs(empId, val) {
   if (!empId) return;
   spdPerEmployee[empId] = val;
+  const prefix = getSpdNumberPrefix(val);
+
   const kpSelect = document.getElementById('kuitansiPeroranganPegawai');
   if (kpSelect && Number(kpSelect.value) === empId) {
     const kpInput = document.getElementById('kuitansiPeroranganNoSPD');
-    if (kpInput && kpInput.value !== val) kpInput.value = val;
-    if (kpInput && val) kpInput.classList.remove('has-error');
+    if (kpInput && kpInput.value !== prefix) kpInput.value = prefix;
+    if (kpInput) {
+      if (prefix) {
+        kpInput.classList.remove('has-error');
+        kpInput.closest('.spd-prefix-wrap')?.classList.remove('has-error');
+      }
+    }
   }
   const sppdSelect = document.getElementById('sppdPegawai');
   if (sppdSelect && Number(sppdSelect.value) === empId) {
     const sppdInput = document.getElementById('sppdNoSPD');
-    if (sppdInput && sppdInput.value !== val) sppdInput.value = val;
-    if (sppdInput && val) sppdInput.classList.remove('has-error');
+    if (sppdInput && sppdInput.value !== prefix) sppdInput.value = prefix;
+    if (sppdInput) {
+      if (prefix) {
+        sppdInput.classList.remove('has-error');
+        sppdInput.closest('.spd-prefix-wrap')?.classList.remove('has-error');
+      }
+    }
   }
   const rincianSelect = document.getElementById('rincianPegawai');
   if (rincianSelect && Number(rincianSelect.value) === empId) {
     const rincianInput = document.getElementById('rincianNoSPD');
-    if (rincianInput && rincianInput.value !== val) rincianInput.value = val;
-    if (rincianInput && val) rincianInput.classList.remove('has-error');
+    if (rincianInput && rincianInput.value !== prefix) rincianInput.value = prefix;
+    if (rincianInput) {
+      if (prefix) {
+        rincianInput.classList.remove('has-error');
+        rincianInput.closest('.spd-prefix-wrap')?.classList.remove('has-error');
+      }
+    }
   }
   const dprSelect = document.getElementById('dprPegawai');
   if (dprSelect && Number(dprSelect.value) === empId) {
     const dprInput = document.getElementById('dprNoSPD');
-    if (dprInput && dprInput.value !== val) dprInput.value = val;
-    if (dprInput && val) dprInput.classList.remove('has-error');
+    if (dprInput && dprInput.value !== prefix) dprInput.value = prefix;
+    if (dprInput) {
+      if (prefix) {
+        dprInput.classList.remove('has-error');
+        dprInput.closest('.spd-prefix-wrap')?.classList.remove('has-error');
+      }
+    }
   }
+  updateAllSpdSuffixLabels();
 }
 
 function saveKuitansiPeroranganSPD() {
   const select = document.getElementById('kuitansiPeroranganPegawai');
-  if (select.value === '') return;
+  if (!select || select.value === '') return;
   const empId = Number(select.value);
-  const value = document.getElementById('kuitansiPeroranganNoSPD').value.trim();
-  syncEmpSpdInputs(empId, value);
+  const input = document.getElementById('kuitansiPeroranganNoSPD');
+  const numVal = input ? input.value.trim() : '';
+  const fullVal = buildFullSpdFromInput(numVal);
+  syncEmpSpdInputs(empId, fullVal);
   renderKuitansiPerorangan();
 }
 
@@ -198,6 +273,7 @@ function renderKuitansiPerorangan() {
   const ppkNip = document.getElementById('cfg_ppkNip').value;
   const bendNama = document.getElementById('cfg_bendNama').value;
   const bendNip = document.getElementById('cfg_bendNip').value;
+  const isKKP = (document.getElementById('metodePembayaran')?.value || document.getElementById('lk_metodePembayaran')?.value || 'LS') === 'KKP';
 
   out.innerHTML = `
     <section class="kuitansi-perorangan-area">
@@ -217,7 +293,7 @@ function renderKuitansiPerorangan() {
         <tr><td>Mata Anggaran</td><td>:</td><td>${mak}</td></tr>
       </table>
 
-      <h2 class="kuitansi-perorangan-title">K W I T A N S I</h2>
+      <h2 class="kuitansi-perorangan-title">${isKKP ? 'KUITANSI KKP' : 'K W I T A N S I'}</h2>
       <table class="kuitansi-perorangan-details">
         <tr><td>Sudah Terima dari</td><td>:</td><td>${jabatanDuaBaris(document.getElementById('cfg_ppkJabatan').value)}</td></tr>
         <tr><td>Uang Sebesar</td><td>:</td><td>Rp. &nbsp; ${Number(biaya.total).toLocaleString('id-ID')}</td></tr>
@@ -273,7 +349,11 @@ function printKuitansiPerorangan() {
       alert(msg);
     }
     const input = document.getElementById('kuitansiPeroranganNoSPD');
-    if (input) { input.focus(); input.classList.add('has-error'); }
+    if (input) { 
+      input.focus(); 
+      input.classList.add('has-error'); 
+      input.closest('.spd-prefix-wrap')?.classList.add('has-error');
+    }
     return;
   }
   const clearPrintMode = () => document.body.classList.remove('print-kuitansi-perorangan');
@@ -308,8 +388,11 @@ function populateSPPDSelect() {
 
 function loadSPPDNo() {
   const select = document.getElementById('sppdPegawai');
-  if (select.value === '') return;
-  document.getElementById('sppdNoSPD').value = spdPerEmployee[Number(select.value)] || '';
+  if (!select || select.value === '') return;
+  const fullVal = spdPerEmployee[Number(select.value)] || '';
+  const input = document.getElementById('sppdNoSPD');
+  if (input) input.value = getSpdNumberPrefix(fullVal);
+  updateAllSpdSuffixLabels();
 }
 
 function onSPPDEmployeeChange() {
@@ -319,10 +402,12 @@ function onSPPDEmployeeChange() {
 
 function saveSPPDNo() {
   const select = document.getElementById('sppdPegawai');
-  if (select.value === '') return;
+  if (!select || select.value === '') return;
   const empId = Number(select.value);
-  const value = document.getElementById('sppdNoSPD').value.trim();
-  syncEmpSpdInputs(empId, value);
+  const input = document.getElementById('sppdNoSPD');
+  const numVal = input ? input.value.trim() : '';
+  const fullVal = buildFullSpdFromInput(numVal);
+  syncEmpSpdInputs(empId, fullVal);
   renderSPPDPerorangan();
 }
 
@@ -462,13 +547,45 @@ function printSPPDPerorangan() {
       alert(msg);
     }
     const input = document.getElementById('sppdNoSPD');
-    if (input) { input.focus(); input.classList.add('has-error'); }
+    if (input) { 
+      input.focus(); 
+      input.classList.add('has-error'); 
+      input.closest('.spd-prefix-wrap')?.classList.add('has-error');
+    }
     return;
   }
   const clearPrintMode = () => document.body.classList.remove('print-sppd');
   document.body.classList.add('print-sppd');
   window.addEventListener('afterprint', clearPrintMode, { once: true });
   window.print();
+}
+
+const MAK_RULES = {
+  '524111': { desc: 'Kegiatan di luar kota', jenis: 'Luar Kota (luar jakarta)' },
+  '524119': { desc: 'Rapat di luar kota', jenis: 'Luar Kota (luar jakarta)' },
+  '524113': { desc: 'Kegiatan di dalam kota', jenis: 'Dalam Kota' },
+  '524114': { desc: 'Rapat di dalam kota', jenis: 'Dalam Kota' }
+};
+
+function syncJenisPerjalananFromMak() {
+  const makInput = document.getElementById('mak');
+  const elJenis = document.getElementById('lk_jenisPerjalanan');
+  const hintEl = document.getElementById('makDescHint');
+  if (!makInput) return;
+  const raw = makInput.value.trim();
+  const match = raw.match(/\b(524111|524119|524113|524114)\b/);
+  const code = match ? match[1] : raw;
+  const rule = MAK_RULES[code];
+
+  if (hintEl) {
+    hintEl.textContent = rule
+      ? `Akun: ${rule.desc} → Lembar Kendali: ${rule.jenis}`
+      : 'Pilihan MAK: 524111 (Luar Kota), 524113 (Dalam Kota), 524114 (Rapat Dalam Kota), 524119 (Rapat Luar Kota)';
+  }
+
+  if (elJenis && rule) {
+    elJenis.value = rule.jenis;
+  }
 }
 
 function renderLembarKendali() {
@@ -496,11 +613,16 @@ function renderLembarKendali() {
   const tanggalKembali = formatTgl(tripEnd);
   const verifNama = document.getElementById('cfg_verifikatorNama').value.trim();
   const verifNipRaw = document.getElementById('cfg_verifikatorNip').value.trim().replace(/^NIP\.?\s*/i, '');
-  const jenisPerjalanan = document.getElementById('lk_jenisPerjalanan').value;
+  const elJenis = document.getElementById('lk_jenisPerjalanan');
+  if (elJenis && !elJenis.dataset.userEdited) {
+    syncJenisPerjalananFromMak();
+  }
+  const jenisPerjalanan = elJenis ? elJenis.value : 'Luar Kota (luar jakarta)';
   const kotaTeks = document.getElementById('kotaTujuan').value.trim();
   const tujuan = getTujuanDisplay(kotaTeks);
   const tujuanPerjalanan = document.getElementById('agenda').value.trim() || tujuan;
   const akunKegiatan = `${document.getElementById('kodeKegiatan').value}.${document.getElementById('kodeSubKegiatan').value}.${document.getElementById('mak').value}`;
+  const isKKP = (document.getElementById('metodePembayaran')?.value || document.getElementById('lk_metodePembayaran')?.value || 'LS') === 'KKP';
   const checklistItems = [
     'Surat Undangan (Jika Ada)',
     'Surat Tugas',
@@ -508,8 +630,8 @@ function renderLembarKendali() {
     'Daftar Nominatif',
     'Daftar Rincian Perjalanan Dinas',
     'Daftar Rekap SPT',
-    'Daftar Pengeluaran Riil (DPR)',
-    'Kuitansi LS',
+    isKKP ? 'Daftar Pengeluaran Riil (DPR KKP)' : 'Daftar Pengeluaran Riil (DPR)',
+    isKKP ? 'Kuitansi KKP' : 'Kuitansi LS',
     'Bukti Pembayaran Transportasi (Kereta/Pesawat/Kapal Laut/Bus)',
     'Boarding Pass',
     'Bukti Pembayaran Taksi, BBM, Tol',
@@ -552,7 +674,7 @@ function renderLembarKendali() {
         </tr>
       </table>
 
-      <div class="lembar-kendali-section-title lembar-kendali-section-title-checklist">CHECKLIST PENGENDALIAN PERJALANAN DINAS</div>
+      <div class="lembar-kendali-section-title lembar-kendali-section-title-checklist">${isKKP ? 'CHECKLIST PENGENDALIAN PERJALANAN DINAS (KKP)' : 'CHECKLIST PENGENDALIAN PERJALANAN DINAS'}</div>
       <table class="lembar-kendali-info">
         <colgroup>
           <col style="width:14%"><col style="width:13%"><col style="width:2%"><col style="width:35%">
@@ -1056,8 +1178,11 @@ function populateRincianSelect() {
 
 function loadRincianSPD() {
   const select = document.getElementById('rincianPegawai');
+  if (!select || select.value === '') return;
+  const fullVal = spdPerEmployee[Number(select.value)] || '';
   const input = document.getElementById('rincianNoSPD');
-  input.value = select.value === '' ? '' : (spdPerEmployee[Number(select.value)] || '');
+  if (input) input.value = getSpdNumberPrefix(fullVal);
+  updateAllSpdSuffixLabels();
 }
 
 function onRincianEmployeeChange() {
@@ -1067,10 +1192,12 @@ function onRincianEmployeeChange() {
 
 function saveRincianSPD() {
   const select = document.getElementById('rincianPegawai');
-  if (select.value === '') return;
+  if (!select || select.value === '') return;
   const empId = Number(select.value);
-  const value = document.getElementById('rincianNoSPD').value.trim();
-  syncEmpSpdInputs(empId, value);
+  const input = document.getElementById('rincianNoSPD');
+  const numVal = input ? input.value.trim() : '';
+  const fullVal = buildFullSpdFromInput(numVal);
+  syncEmpSpdInputs(empId, fullVal);
   renderRincian();
 }
 
@@ -1130,6 +1257,8 @@ function renderRincian() {
 
   let rincianRows = '';
   let no = 1;
+  const isMealManual = !!b.isMealManual || !!document.getElementById('cbTarifMakanManual')?.checked;
+  const mealKet = isMealManual ? 'Biaya makan at-cost' : '';
   const uhKeterangan = b.jenisKeg === 'fullboard'
     ? 'Paket Fullboard'
     : b.jenisKeg === 'diklat'
@@ -1142,15 +1271,30 @@ function renderRincian() {
       if (b.mealDeduction > 0 || b.snackDeduction > 0) {
         let deductionRows = '';
         if (b.mealDeduction > 0) {
-          deductionRows += `
-            <tr>
-              <td style="padding-left:24px;">
-                * Makan<br>
-                <span style="padding-left:12px;">${b.mealDays} hari &times; ${b.mealCount} kali &times; ${rp(b.mealRate)}</span>
-              </td>
-              <td class="tr" style="vertical-align:bottom;">- ${rp(b.mealDeduction)}</td>
-              <td></td>
-            </tr>`;
+          if (b.mealDetails && b.mealDetails.length > 0) {
+            const detailRowsHtml = b.mealDetails.map(m =>
+              `<span style="padding-left:12px; display:block;">• ${escHtml(m.day)} (${escHtml(m.session)}): 1 &times; ${rp(m.price)}</span>`
+            ).join('');
+            deductionRows += `
+              <tr>
+                <td style="padding-left:24px;">
+                  * Makan (${b.mealDetails.length} kali makan):<br>
+                  ${detailRowsHtml}
+                </td>
+                <td class="tr" style="vertical-align:bottom;">- ${rp(b.mealDeduction)}</td>
+                <td style="vertical-align:bottom;">${mealKet}</td>
+              </tr>`;
+          } else {
+            deductionRows += `
+              <tr>
+                <td style="padding-left:24px;">
+                  * Makan<br>
+                  <span style="padding-left:12px;">${b.mealDays} hari &times; ${b.mealCount} kali &times; ${rp(b.mealRate)}</span>
+                </td>
+                <td class="tr" style="vertical-align:bottom;">- ${rp(b.mealDeduction)}</td>
+                <td style="vertical-align:bottom;">${mealKet}</td>
+              </tr>`;
+          }
         }
         if (b.snackDeduction > 0) {
           deductionRows += `
@@ -1196,15 +1340,30 @@ function renderRincian() {
     } else if (b.mealDeduction > 0 || b.snackDeduction > 0) {
       let deductionRows = '';
       if (b.mealDeduction > 0) {
-        deductionRows += `
-          <tr>
-            <td style="padding-left:24px;">
-              * Makan<br>
-              <span style="padding-left:12px;">${b.mealDays} hari &times; ${b.mealCount} kali &times; ${rp(b.mealRate)}</span>
-            </td>
-            <td class="tr" style="vertical-align:bottom;">- ${rp(b.mealDeduction)}</td>
-            <td></td>
-          </tr>`;
+        if (b.mealDetails && b.mealDetails.length > 0) {
+          const detailRowsHtml = b.mealDetails.map(m =>
+            `<span style="padding-left:12px; display:block;">• ${escHtml(m.day)} (${escHtml(m.session)}): 1 &times; ${rp(m.price)}</span>`
+          ).join('');
+          deductionRows += `
+            <tr>
+              <td style="padding-left:24px;">
+                * Makan (${b.mealDetails.length} kali makan):<br>
+                ${detailRowsHtml}
+              </td>
+              <td class="tr" style="vertical-align:bottom;">- ${rp(b.mealDeduction)}</td>
+              <td style="vertical-align:bottom;">${mealKet}</td>
+            </tr>`;
+        } else {
+          deductionRows += `
+            <tr>
+              <td style="padding-left:24px;">
+                * Makan<br>
+                <span style="padding-left:12px;">${b.mealDays} hari &times; ${b.mealCount} kali &times; ${rp(b.mealRate)}</span>
+              </td>
+              <td class="tr" style="vertical-align:bottom;">- ${rp(b.mealDeduction)}</td>
+              <td style="vertical-align:bottom;">${mealKet}</td>
+            </tr>`;
+        }
       }
       if (b.snackDeduction > 0) {
         deductionRows += `
@@ -1380,7 +1539,11 @@ function printRincian() {
       alert(msg);
     }
     const input = document.getElementById('rincianNoSPD');
-    if (input) { input.focus(); input.classList.add('has-error'); }
+    if (input) { 
+      input.focus(); 
+      input.classList.add('has-error'); 
+      input.closest('.spd-prefix-wrap')?.classList.add('has-error');
+    }
     return;
   }
   const clearPrintMode = () => document.body.classList.remove('print-rincian');
@@ -1418,7 +1581,11 @@ function populateDPRSelect() {
 
 function loadDPRNo() {
   const select = document.getElementById('dprPegawai');
-  document.getElementById('dprNoSPD').value = select.value === '' ? '' : (spdPerEmployee[Number(select.value)] || '');
+  if (!select || select.value === '') return;
+  const fullVal = spdPerEmployee[Number(select.value)] || '';
+  const input = document.getElementById('dprNoSPD');
+  if (input) input.value = getSpdNumberPrefix(fullVal);
+  updateAllSpdSuffixLabels();
 }
 
 function onDPREmployeeChange() {
@@ -1428,33 +1595,240 @@ function onDPREmployeeChange() {
 
 function saveDPRNoSPD() {
   const select = document.getElementById('dprPegawai');
-  if (select.value === '') return;
+  if (!select || select.value === '') return;
   const empId = Number(select.value);
-  const value = document.getElementById('dprNoSPD').value.trim();
-  syncEmpSpdInputs(empId, value);
+  const input = document.getElementById('dprNoSPD');
+  const numVal = input ? input.value.trim() : '';
+  const fullVal = buildFullSpdFromInput(numVal);
+  syncEmpSpdInputs(empId, fullVal);
   renderDPR();
 }
 
-function renderDPR() {
-  const out = document.getElementById('dprOut');
-  const select = document.getElementById('dprPegawai');
-  if (select.value === '') {
-    out.innerHTML = '';
-    return;
-  }
-  const emp = employees.find(employee => employee.id === Number(select.value));
-  if (!emp) {
-    out.innerHTML = '';
-    return;
+function buildDPRKKPHtml(emp, extraClass = '') {
+  const alamat = document.getElementById('cfg_alamatSatker')?.value || '';
+  const kotaAsal = document.getElementById('cfg_kotaAsal')?.value || 'Jakarta';
+  const rawSPD = (spdPerEmployee[emp.id] || '').trim();
+  const noSPD = rawSPD || '<span class="spd-missing-badge">[No. SPD Wajib Diisi]</span>';
+  const tanggalSPD = formatTgl(document.getElementById('tglSPD').value);
+
+  const kkpNama = document.getElementById('cfg_kkpNama')?.value || 'Ishaq Abdullah, S.Ars.';
+  const kkpNip = document.getElementById('cfg_kkpNip')?.value || '199505122020121002';
+  const kkpPangkat = document.getElementById('cfg_kkpPangkat')?.value || 'Penata Muda Tk. I/ IIIb';
+  const kkpJabatan = document.getElementById('cfg_kkpJabatan')?.value || 'Penata Kelola Perumahan Ahli Pertama';
+  const kkpUnit = document.getElementById('cfg_kkpUnit')?.value || 'Biro Komunikasi Publik';
+  const kkpKartuNama = document.getElementById('cfg_kkpKartuNama')?.value || 'Ishaq Abdullah';
+  const kkpNomor = document.getElementById('cfg_kkpNomor')?.value || '4895 9403 0010 3147';
+
+  // Anggaran parsing
+  const rawSub = (document.getElementById('kodeSubKegiatan')?.value || '').trim();
+  const mak = (document.getElementById('mak')?.value || '524111').trim();
+  const uraianAkunKKP = (document.getElementById('cfg_kegiatan')?.value || '').trim() || 'Penyelenggaraan Kegiatan Protokoler Kementerian';
+
+  let kodeKegiatanKKP = '7665';
+  let kodeOutputKKP = 'EBA';
+  let kodeKomponenAkunKKP = `959.100.A.<br>${mak}`;
+
+  if (rawSub) {
+    const parts = rawSub.split('.');
+    if (parts.length >= 2) {
+      kodeKegiatanKKP = parts[0];
+      kodeOutputKKP = parts[1];
+      const komp = parts.slice(2).join('.');
+      kodeKomponenAkunKKP = komp ? `${komp}.<br>${mak}` : mak;
+    } else {
+      kodeKegiatanKKP = rawSub;
+      kodeKomponenAkunKKP = mak;
+    }
   }
 
-  const sbm = getSBM();
-  if (!sbm || sbm.provinsi !== 'DKI JAKARTA') {
-    out.innerHTML = '<div class="alert-warn">⚠️ Lembar Daftar Pengeluaran Riil (DPR) hanya untuk Perjalanan Dinas dalam kota DKI Jakarta (DPR Rp 170.000). Untuk provinsi selain DKI Jakarta, pengeluaran riil tidak tersedia.</div>';
-    return;
-  }
   const biaya = hitungBiaya(emp);
 
+  // Kumpulkan rincian pengeluaran riil KKP yang diinputkan (bukan uang harian & bukan transport, terutama tiket dan hotel)
+  const kkpItems = [];
+
+  // 1. Hotel / Penginapan
+  if (biaya.hotel > 0) {
+    if (biaya.hotelDetails && biaya.hotelDetails.length > 1) {
+      biaya.hotelDetails.forEach(h => {
+        if (h.total > 0) {
+          const hName = h.name ? (/^hotel/i.test(h.name) ? h.name : `Hotel (${h.name})`) : 'Hotel';
+          kkpItems.push({ nama: hName, jumlah: h.total, adaBukti: true });
+        }
+      });
+    } else {
+      const firstHotel = biaya.hotelDetails && biaya.hotelDetails[0];
+      const hName = (firstHotel && firstHotel.name)
+        ? (/^hotel/i.test(firstHotel.name) ? firstHotel.name : `Hotel (${firstHotel.name})`)
+        : 'Hotel';
+      kkpItems.push({ nama: hName, jumlah: biaya.hotel, adaBukti: true });
+    }
+  }
+
+  // 2. Tiket Pesawat SBM (jika dicentang / aktif)
+  if (biaya.tiket > 0) {
+    kkpItems.push({
+      nama: 'Tiket Pesawat',
+      jumlah: biaya.tiket,
+      adaBukti: true
+    });
+  }
+
+  // 3. Rincian Biaya Tambahan (customCosts: Tiket / Biaya yang bukan transport dan bukan uang harian)
+  if (biaya.customCosts && biaya.customCosts.length > 0) {
+    biaya.customCosts.forEach(item => {
+      if (item.amount <= 0) return;
+      const isTransport = item.isTransport || (typeof TRANSPORT_COST_RE !== 'undefined' && TRANSPORT_COST_RE.test(item.name));
+      const isTicket = item.isTicket || (typeof TICKET_COST_RE !== 'undefined' && TICKET_COST_RE.test(item.name));
+      // Hanya masukkan biaya yang BUKAN transport lokal/taksi/tol/bbm (fokus pada Tiket atau pengeluaran riil KKP lainnya)
+      if (!isTransport) {
+        let label = item.name;
+        if (isTicket && typeof getTicketCostLabel === 'function') {
+          label = getTicketCostLabel(item.name);
+        }
+        kkpItems.push({
+          nama: label,
+          jumlah: item.amount,
+          adaBukti: true
+        });
+      }
+    });
+  }
+
+  // Jika belum ada pengeluaran hotel / tiket sama sekali (nominal 0)
+  if (kkpItems.length === 0) {
+    const cbHotel = document.getElementById('cbHotel')?.checked;
+    kkpItems.push({
+      nama: cbHotel ? 'Hotel' : 'Hotel / Tiket',
+      jumlah: 0,
+      adaBukti: false
+    });
+  }
+
+  let tableRowsHtml = '';
+  let totalKKP = 0;
+
+  kkpItems.forEach((item, idx) => {
+    totalKKP += item.jumlah;
+    tableRowsHtml += `
+          <tr>
+            <td class="tc">${idx + 1}</td>
+            <td class="tc">${escHtml(item.nama)}</td>
+            <td class="tc">${kodeKegiatanKKP}</td>
+            <td class="tc">${kodeOutputKKP}</td>
+            <td class="tc">${kodeKomponenAkunKKP}</td>
+            <td class="tc">${escHtml(uraianAkunKKP)}</td>
+            <td class="tc">${item.jumlah > 0 ? '√' : ''}</td>
+            <td class="tc"></td>
+            <td class="tr">${rp(item.jumlah)}</td>
+          </tr>
+    `;
+  });
+
+  // Tambahkan 1 baris kosong estetika seperti format resmi
+  tableRowsHtml += `
+          <tr>
+            <td>&nbsp;</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+  `;
+
+  return `
+    <section class="dpr-kkp-area${extraClass}">
+      <header class="kuitansi-perorangan-header lembar-kendali-header">
+        <img src="logo-pkp.webp" alt="" class="kuitansi-perorangan-logo lembar-kendali-logo">
+        <div>
+          <div class="kuitansi-perorangan-ministry lembar-kendali-ministry">KEMENTERIAN PERUMAHAN DAN KAWASAN PERMUKIMAN <span>REPUBLIK INDONESIA</span></div>
+          <strong class="lembar-kendali-secretariat">SEKRETARIAT JENDERAL</strong>
+          <div class="lembar-kendali-unit">SATUAN KERJA</div>
+          ${alamat ? `<div class="lembar-kendali-address">${alamat}</div>` : ''}
+        </div>
+      </header>
+
+      <div class="dpr-kkp-title">
+        DAFTAR PENGELUARAN RIIL KEGIATAN PERJALANAN DINAS JABATAN<br>
+        DENGAN KARTU KREDIT PEMERINTAH
+      </div>
+
+      <div style="margin: 12px 0 4px 0;">Yang bertandatangan di bawah ini:</div>
+      <table class="dpr-kkp-meta">
+        <tr><td style="width:260px;">Nama</td><td style="width:15px;">:</td><td>${kkpNama}</td></tr>
+        <tr><td>NIP</td><td>:</td><td>${kkpNip}</td></tr>
+        <tr><td>Pangkat/ Gol. Ruang</td><td>:</td><td>${kkpPangkat}</td></tr>
+        <tr><td>Jabatan</td><td>:</td><td>${kkpJabatan}</td></tr>
+        <tr><td>Unit Kerja</td><td>:</td><td>${kkpUnit}</td></tr>
+        <tr><td>Nama Pemegang Kartu Kredit Pemerintah</td><td>:</td><td>${kkpKartuNama}</td></tr>
+        <tr><td>Nomor Kartu Kredit Pemerintah</td><td>:</td><td>${kkpNomor}</td></tr>
+      </table>
+
+      <p style="margin: 10px 0 6px 0; text-align: justify; line-height: 1.4;">
+        Berdasarkan Surat Perjalanan Dinas (SPD) Nomor ${noSPD} tanggal ${tanggalSPD}, dengan ini kami menyatakan dengan sesungguhnya bahwa:
+      </p>
+      <div style="margin-bottom: 6px;">1. Rincian pengeluaran riil kegiatan perjalanan dinas jabatan dengan kartu kredit pemerintah sebagai berikut:</div>
+
+      <table class="dpr-kkp-table">
+        <thead>
+          <tr>
+            <th rowspan="2" style="width: 5%;">No.</th>
+            <th rowspan="2" style="width: 17%;">Rincian Pengeluaran</th>
+            <th colspan="4" style="width: 50%;">Pembebanan Anggaran</th>
+            <th colspan="2" style="width: 13%;">Bukti</th>
+            <th rowspan="2" style="width: 15%;">Jumlah</th>
+          </tr>
+          <tr>
+            <th style="width: 11%;">Kode Kegiatan</th>
+            <th style="width: 10%;">Kode Output</th>
+            <th style="width: 14%;">Kode Komponen dan Akun</th>
+            <th style="width: 15%;">Uraian Akun</th>
+            <th style="width: 6.5%;">Ada</th>
+            <th style="width: 6.5%;">Tidak</th>
+          </tr>
+        </thead>
+        <tbody>
+${tableRowsHtml}
+          <tr class="dpr-kkp-total-row">
+            <td colspan="8" class="tc" style="font-weight: bold;">Total</td>
+            <td class="tr" style="font-weight: bold;">${rp(totalKKP)}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="margin-top: 10px; line-height: 1.4; text-align: justify;">
+        2. Jumlah uang tersebut pada angka 1 di atas benar-benar dikeluarkan untuk pembayaran perjalanan dinas dan apabila di kemudian hari terdapat kelebihan atas pembayaran, kami bersedia untuk menyetorkan kelebihan tersebut ke Kas Negara.
+      </div>
+      <p style="margin-top: 10px; margin-bottom: 20px; text-align: justify;">
+        Demikian pernyataan ini kami buat dengan sebenarnya, untuk dipergunakan sebagaimana mestinya.
+      </p>
+
+      <table class="dpr-kkp-signatures">
+        <tr>
+          <td style="width: 50%; vertical-align: top;">
+            <div>Mengetahui:</div>
+            <div>Pemegang Kartu Kredit Pemerintah</div>
+            <div style="height: 60px;"></div>
+            <div style="font-weight: 500;">${kkpNama}</div>
+            <div>NIP. ${kkpNip}</div>
+          </td>
+          <td style="width: 50%; vertical-align: top; padding-left: 20px;">
+            <div>${kotaAsal}, ${tanggalSPD}</div>
+            <div>Pelaksana SPD,</div>
+            <div style="height: 60px;"></div>
+            <div style="font-weight: 500;">${emp.nama}</div>
+            <div>NIP. ${emp.nip}</div>
+          </td>
+        </tr>
+      </table>
+    </section>
+  `;
+}
+
+function buildDPRLSHtml(emp, extraClass = '') {
   const alamat = document.getElementById('cfg_alamatKuitansi').value;
   const kotaAsal = document.getElementById('cfg_kotaAsal').value;
   const kotaTeks = document.getElementById('kotaTujuan').value.trim();
@@ -1465,10 +1839,11 @@ function renderDPR() {
   const ppkNama = document.getElementById('cfg_ppkNama').value;
   const ppkNip = document.getElementById('cfg_ppkNip').value;
   const ppkJabatan = document.getElementById('cfg_ppkJabatan').value;
+  const biaya = hitungBiaya(emp);
   const dprAmount = Number(biaya.dpr);
 
-  out.innerHTML = `
-    <section class="dpr-area">
+  return `
+    <section class="dpr-area${extraClass}">
       <header class="kuitansi-perorangan-header lembar-kendali-header">
         <img src="logo-pkp.webp" alt="" class="kuitansi-perorangan-logo lembar-kendali-logo">
         <div>
@@ -1533,6 +1908,34 @@ function renderDPR() {
   `;
 }
 
+function renderDPR() {
+  const out = document.getElementById('dprOut');
+  const select = document.getElementById('dprPegawai');
+  if (select.value === '') {
+    out.innerHTML = '';
+    return;
+  }
+  const emp = employees.find(employee => employee.id === Number(select.value));
+  if (!emp) {
+    out.innerHTML = '';
+    return;
+  }
+
+  const isKKP = (document.getElementById('metodePembayaran')?.value || document.getElementById('lk_metodePembayaran')?.value || 'LS') === 'KKP';
+
+  if (!isKKP) {
+    const sbm = getSBM();
+    if (!sbm || sbm.provinsi !== 'DKI JAKARTA') {
+      out.innerHTML = '<div class="alert-warn">⚠️ Lembar Daftar Pengeluaran Riil (DPR) hanya untuk Perjalanan Dinas dalam kota DKI Jakarta (DPR Rp 170.000). Untuk berkas LS di luar DKI Jakarta, DPR tidak diperlukan. (Jika kegiatan ini menggunakan Kartu Kredit Pemerintah, pilih metode <strong>KKP</strong> pada Informasi Perjalanan).</div>';
+      return;
+    }
+    out.innerHTML = buildDPRLSHtml(emp);
+    return;
+  }
+
+  out.innerHTML = buildDPRKKPHtml(emp);
+}
+
 function printDPR() {
   const select = document.getElementById('dprPegawai');
   const empId = Number(select.value);
@@ -1546,10 +1949,54 @@ function printDPR() {
       alert(msg);
     }
     const input = document.getElementById('dprNoSPD');
-    if (input) { input.focus(); input.classList.add('has-error'); }
+    if (input) { 
+      input.focus(); 
+      input.classList.add('has-error'); 
+      input.closest('.spd-prefix-wrap')?.classList.add('has-error');
+    }
     return;
   }
   const clearPrintMode = () => document.body.classList.remove('print-dpr');
+  document.body.classList.add('print-dpr');
+  window.addEventListener('afterprint', clearPrintMode, { once: true });
+  window.print();
+}
+
+function printAllDPR() {
+  if (selectedEmpIds.size === 0) return;
+  const missing = [];
+  [...selectedEmpIds].forEach(id => {
+    const no = (spdPerEmployee[id] || '').trim();
+    if (!no) {
+      const e = employees.find(emp => emp.id === id);
+      missing.push(e ? e.nama.split(',')[0] : `ID ${id}`);
+    }
+  });
+  if (missing.length > 0) {
+    const msg = `Nomor SPD Perorangan wajib diisi untuk semua pegawai sebelum mencetak! (Belum diisi: ${missing.join(', ')})`;
+    if (typeof showValidationToast === 'function') {
+      showValidationToast([{ label: 'No. SPD Perorangan' }], msg);
+    } else {
+      alert(msg);
+    }
+    return;
+  }
+
+  const out = document.getElementById('dprOut');
+  const isKKP = (document.getElementById('metodePembayaran')?.value || document.getElementById('lk_metodePembayaran')?.value || 'LS') === 'KKP';
+
+  let allHtml = '';
+  const emps = [...selectedEmpIds].map(id => employees.find(e => e.id === id)).filter(Boolean);
+  emps.forEach((emp, idx) => {
+    const pageBreakClass = (idx < emps.length - 1) ? ' page-break' : '';
+    allHtml += isKKP ? buildDPRKKPHtml(emp, pageBreakClass) : buildDPRLSHtml(emp, pageBreakClass);
+  });
+
+  out.innerHTML = allHtml;
+  const clearPrintMode = () => {
+    document.body.classList.remove('print-dpr');
+    renderDPR();
+  };
   document.body.classList.add('print-dpr');
   window.addEventListener('afterprint', clearPrintMode, { once: true });
   window.print();

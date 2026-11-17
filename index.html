@@ -338,6 +338,48 @@
   </div>
 </div>
 
+<!-- ============================================================ DUPLICATE MEAL MODAL -->
+<div class="welcome-overlay no-print" id="mealDuplicateOverlay" role="dialog" aria-modal="true" aria-labelledby="mealDuplicateTitle" onclick="handleMealDuplicateBackdrop(event)">
+  <div class="welcome-modal" style="max-width: 440px; padding: 28px 24px; text-align: center;">
+    <button type="button" class="icon-btn welcome-close" onclick="closeMealDuplicateModal()" aria-label="Tutup pesan">
+      <svg class="ico"><use href="#i-close"></use></svg>
+    </button>
+    <div style="width: 54px; height: 54px; border-radius: 50%; background: #fee2e2; color: #dc2626; display: inline-flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 700; margin-bottom: 14px;">
+      !
+    </div>
+    <h3 id="mealDuplicateTitle" style="font-size: 17px; font-weight: 700; color: var(--text-1, #1e293b); margin: 0 0 8px 0;">
+      Sesi Makan Sudah Diinput
+    </h3>
+    <p id="mealDuplicateMsg" style="font-size: 13.5px; color: var(--text-2, #64748b); line-height: 1.5; margin: 0 0 20px 0;">
+      Sesi Makan Siang untuk Hari 1 sudah diinput sebelumnya sehingga tidak bisa diinput ganda.
+    </p>
+    <button type="button" class="btn btn-primary" style="min-width: 120px; font-weight: 600;" onclick="closeMealDuplicateModal()">
+      Mengerti
+    </button>
+  </div>
+</div>
+
+<!-- ============================================================ SBM MEAL LIMIT MODAL -->
+<div class="welcome-overlay no-print" id="mealLimitOverlay" role="dialog" aria-modal="true" aria-labelledby="mealLimitTitle" onclick="handleMealLimitBackdrop(event)">
+  <div class="welcome-modal" style="max-width: 440px; padding: 28px 24px; text-align: center;">
+    <button type="button" class="icon-btn welcome-close" onclick="closeMealLimitModal()" aria-label="Tutup pesan">
+      <svg class="ico"><use href="#i-close"></use></svg>
+    </button>
+    <div style="width: 54px; height: 54px; border-radius: 50%; background: #fef3c7; color: #d97706; display: inline-flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 700; margin-bottom: 14px;">
+      !
+    </div>
+    <h3 id="mealLimitTitle" style="font-size: 17px; font-weight: 700; color: var(--text-1, #1e293b); margin: 0 0 8px 0;">
+      Melebihi Batas SBM Daerah
+    </h3>
+    <p id="mealLimitMsg" style="font-size: 13.5px; color: var(--text-2, #64748b); line-height: 1.5; margin: 0 0 20px 0;">
+      Tarif makan riil per orang tidak boleh melebihi tarif Standar Biaya Masukan (SBM) daerah tujuan.
+    </p>
+    <button type="button" class="btn btn-primary" style="min-width: 120px; font-weight: 600;" onclick="closeMealLimitModal()">
+      Mengerti
+    </button>
+  </div>
+</div>
+
 <div class="app-main">
   <header class="topbar no-print">
     <button type="button" class="icon-btn burger" onclick="toggleSidebar()" aria-label="Buka menu" aria-expanded="false" aria-controls="sidebar">
@@ -519,7 +561,7 @@
             <div class="form-group" data-field="kodeSubKegiatan">
               <label for="kodeSubKegiatan">Kode Sub Kegiatan <span class="req-star">*</span></label>
               <div class="field-control">
-                <input type="text" id="kodeSubKegiatan" value="7667.EBA.970.101.A">
+                <input type="text" id="kodeSubKegiatan" value="7665.EBA.959.100.A">
                 <span class="field-inner-icon" title="Wajib diisi">!</span>
               </div>
               <span class="field-error-msg">Kode sub kegiatan wajib diisi</span>
@@ -527,10 +569,26 @@
             <div class="form-group" data-field="mak">
               <label for="mak">MAK <span class="req-star">*</span></label>
               <div class="field-control">
-                <input type="text" id="mak" value="524111">
+                <input type="text" id="mak" value="524111" list="makList" oninput="if(document.getElementById('lk_jenisPerjalanan')) document.getElementById('lk_jenisPerjalanan').dataset.userEdited=''; syncJenisPerjalananFromMak(); if(typeof renderLembarKendali==='function')renderLembarKendali();">
                 <span class="field-inner-icon" title="Wajib diisi">!</span>
               </div>
+              <datalist id="makList">
+                <option value="524111">524111 (Kegiatan di luar kota)</option>
+                <option value="524113">524113 (Kegiatan di dalam kota)</option>
+                <option value="524114">524114 (Rapat di dalam kota)</option>
+                <option value="524119">524119 (Rapat di luar kota)</option>
+              </datalist>
               <span class="field-error-msg">MAK wajib diisi</span>
+              <small class="field-tip" id="makDescHint">Akun: Kegiatan di luar kota &rarr; Lembar Kendali: Luar Kota</small>
+            </div>
+            <div class="form-group" data-field="metodePembayaran">
+              <label for="metodePembayaran">Jenis Berkas / Pembayaran <span class="req-star">*</span></label>
+              <div class="field-control is-select">
+                <select id="metodePembayaran" onchange="onMetodePembayaranChange(this.value)">
+                  <option value="LS">LS (Pembayaran Langsung)</option>
+                  <option value="KKP">KKP (Kartu Kredit Pemerintah)</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -573,7 +631,7 @@
         <div class="card-body">
           <div class="opt-grid">
             <label class="opt-tile">
-              <input type="checkbox" id="cbUH" checked>
+              <input type="checkbox" id="cbUH" checked onchange="toggleUHFields()">
               <span class="opt-text">
                 <strong>Uang Harian</strong>
                 <small>Dihitung per hari perjalanan</small>
@@ -593,57 +651,107 @@
 
           <div id="sbmWarnings" class="sbm-warnings" style="display:none"></div>
 
-          <div class="cost-extra-grid">
-            <div class="form-group">
-              <label for="uhPersentase">Persentase Uang Harian</label>
-              <select id="uhPersentase">
-                <option value="1">100%</option>
-                <option value="0.6">60%</option>
-              </select>
+          <!-- Pengaturan Uang Harian & Konsumsi (Otomatis Sembunyi jika Uang Harian Tidak Dipilih) -->
+          <div id="uhFields" class="uh-fields">
+            <div class="cost-extra-grid">
+              <div class="form-group">
+                <label for="uhPersentase">Persentase Uang Harian</label>
+                <select id="uhPersentase">
+                  <option value="1">100%</option>
+                  <option value="0.6">60%</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="jenisKegiatan">Jenis Kegiatan</label>
+                <select id="jenisKegiatan" onchange="toggleKonsumsiFields()">
+                  <option value="biasa">Perjalanan Dinas Biasa</option>
+                  <option value="rapat">Rapat / Bimbingan Teknis</option>
+                  <option value="fullboard">Paket Meeting Fullboard</option>
+                  <option value="diklat">Diklat (Pendidikan &amp; Pelatihan)</option>
+                </select>
+              </div>
             </div>
-            <div class="form-group">
-              <label for="jenisKegiatan">Jenis Kegiatan</label>
-              <select id="jenisKegiatan" onchange="toggleKonsumsiFields()">
-                <option value="biasa">Perjalanan Dinas Biasa</option>
-                <option value="rapat">Rapat / Bimbingan Teknis</option>
-                <option value="fullboard">Paket Meeting Fullboard</option>
-                <option value="diklat">Diklat (Pendidikan &amp; Pelatihan)</option>
-              </select>
-            </div>
-          </div>
 
-          <div id="optKonsumsiBiasaWrap" class="opt-konsumsi-biasa-wrap" style="display:flex;">
-            <label class="opt-check-inline opt-konsumsi-pill">
-              <input type="checkbox" id="cbKonsumsiBiasa" onchange="toggleKonsumsiFields()">
-              <span>Disediakan Makan/Snack (Potong Konsumsi)</span>
-            </label>
-          </div>
+            <div id="optKonsumsiBiasaWrap" class="opt-konsumsi-biasa-wrap" style="display:flex;">
+              <label class="opt-check-inline opt-konsumsi-pill">
+                <input type="checkbox" id="cbKonsumsiBiasa" onchange="toggleKonsumsiFields()">
+                <span>Disediakan Makan/Snack (Potong Konsumsi)</span>
+              </label>
+            </div>
 
-          <div id="konsumsiFields" class="form-grid konsumsi-grid" style="display:none">
-            <div class="alert-info form-group full">Tarif makan dan snack otomatis mengikuti Standar Biaya Masukan (SBM PMK) provinsi tujuan. Anda cukup menentukan jumlah hari dan berapa kali konsumsi disediakan.</div>
-            <div class="form-group">
-              <label for="tarifMakan">Tarif Makan SBM (Rp/kali)</label>
-              <input type="text" id="tarifMakan" class="is-readonly" readonly value="0">
-            </div>
-            <div class="form-group">
-              <label for="hariMakan">Hari Disediakan Makan</label>
-              <input type="number" id="hariMakan" min="0" step="1" value="" placeholder="Hari (default: lama tugas)">
-            </div>
-            <div class="form-group">
-              <label for="jumlahMakan">Makan per Hari (Kali)</label>
-              <input type="number" id="jumlahMakan" min="0" max="3" step="1" value="0" placeholder="0 - 3 kali">
-            </div>
-            <div class="form-group">
-              <label for="tarifSnack">Tarif Snack SBM (Rp/kali)</label>
-              <input type="text" id="tarifSnack" class="is-readonly" readonly value="0">
-            </div>
-            <div class="form-group">
-              <label for="hariSnack">Hari Disediakan Snack</label>
-              <input type="number" id="hariSnack" min="0" step="1" value="" placeholder="Hari (default: lama tugas)">
-            </div>
-            <div class="form-group">
-              <label for="jumlahSnack">Snack per Hari (Kali)</label>
-              <input type="number" id="jumlahSnack" min="0" max="3" step="1" value="0" placeholder="0 - 3 kali">
+            <div id="konsumsiFields" class="form-grid konsumsi-grid" style="display:none">
+              <div class="alert-info form-group full">Tarif makan dan snack otomatis mengikuti Standar Biaya Masukan (SBM PMK) provinsi tujuan. Anda cukup menentukan jumlah hari dan berapa kali konsumsi disediakan.</div>
+
+              <!-- Checklist Input Manual di Kiri Atas & Mode Toggle -->
+              <div class="form-group full opt-manual-makan-bar">
+                <input type="hidden" id="manualMakanMode" value="flat">
+                <label class="opt-manual-makan-pill" title="Centang untuk input tarif makan manual (tidak mengikuti SBM PMK)">
+                  <input type="checkbox" id="cbTarifMakanManual" onchange="toggleTarifMakanManual()">
+                  <span>Input Tarif Makan Manual (Khusus Peliputan, Dokumentasi, &amp; Publikasi / Non-SBM)</span>
+                </label>
+                <div id="manualMealModeToggle" class="manual-meal-mode-toggle" style="display:none;">
+                  <button type="button" id="btnMealModeFlat" class="meal-mode-btn is-active" onclick="setManualMealMode('flat')">
+                    Tarif Sama Tiap Hari
+                  </button>
+                  <button type="button" id="btnMealModeDetail" class="meal-mode-btn" onclick="setManualMealMode('detail')">
+                    Beda Harga Tiap Hari / Sesi
+                  </button>
+                </div>
+              </div>
+
+              <!-- Baris 1: Konsumsi Makan (3 Kolom Sejajar - Ditampilkan jika mode 'flat' atau SBM) -->
+              <div class="form-group" id="tarifMakanGroup">
+                <label for="tarifMakan" id="labelTarifMakan">Tarif Makan SBM (Rp/kali)</label>
+                <input type="text" id="tarifMakan" class="is-readonly" readonly value="0" placeholder="Rp 0" oninput="onTarifMakanManualInput()">
+              </div>
+              <div class="form-group" id="hariMakanGroup">
+                <label for="hariMakan">Hari Disediakan Makan</label>
+                <input type="number" id="hariMakan" min="0" step="1" value="" placeholder="Hari (default: lama tugas)" oninput="onKonsumsiInputChange()">
+              </div>
+              <div class="form-group" id="jumlahMakanGroup">
+                <label for="jumlahMakan">Makan per Hari (Kali)</label>
+                <input type="number" id="jumlahMakan" min="0" max="3" step="1" value="1" placeholder="0 - 3 kali" oninput="onKonsumsiInputChange()">
+              </div>
+
+              <!-- Detail Beda Harga Tiap Hari / Sesi Makan (Tabel Rapi & Kompak - Menggantikan 3 Kolom di atas saat mode 'detail') -->
+              <div id="manualMealDetailWrap" class="form-group full manual-meal-detail-wrap" style="display:none;">
+                <div class="manual-meal-table-container">
+                  <table class="manual-meal-table">
+                    <thead>
+                      <tr>
+                        <th style="width: 44px; text-align: center;">No.</th>
+                        <th style="width: 25%;">Hari Ke-</th>
+                        <th style="width: 25%;">Waktu / Sesi</th>
+                        <th>Tarif Riil per Orang (Rp)</th>
+                        <th style="width: 50px; text-align: center;">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody id="manualMealTableBody" class="manual-meal-list"></tbody>
+                  </table>
+                </div>
+                <div class="manual-meal-table-footer">
+                  <button type="button" class="btn btn-outline btn-sm" style="font-size:12px; padding:5px 12px; border-radius:8px;" onclick="addManualMealRow()">
+                    <svg class="ico"><use href="#i-plus"></use></svg> Tambah Sesi Makan
+                  </button>
+                  <div id="manualMealSummary" class="manual-meal-summary">
+                    Total Potongan: 0 kali makan = Rp 0
+                  </div>
+                </div>
+              </div>
+
+              <!-- Baris 2: Snack (3 Kolom Sejajar) -->
+              <div class="form-group">
+                <label for="tarifSnack">Tarif Snack SBM (Rp/kali)</label>
+                <input type="text" id="tarifSnack" class="is-readonly" readonly value="0">
+              </div>
+              <div class="form-group">
+                <label for="hariSnack">Hari Disediakan Snack</label>
+                <input type="number" id="hariSnack" min="0" step="1" value="" placeholder="Hari (default: lama tugas)" oninput="onKonsumsiInputChange()">
+              </div>
+              <div class="form-group">
+                <label for="jumlahSnack">Snack per Hari (Kali)</label>
+                <input type="number" id="jumlahSnack" min="0" max="3" step="1" value="0" placeholder="0 - 3 kali" oninput="onKonsumsiInputChange()">
+              </div>
             </div>
           </div>
 
@@ -869,7 +977,10 @@
             </div>
             <div class="form-group">
               <label for="kuitansiPeroranganNoSPD">No. SPD Perorangan <span class="req-star" title="Wajib diisi">*</span></label>
-              <input type="text" id="kuitansiPeroranganNoSPD" placeholder="Contoh: 001/SPD/Birkom/10/2026" oninput="saveKuitansiPeroranganSPD()">
+              <div class="spd-prefix-wrap">
+                <input type="text" id="kuitansiPeroranganNoSPD" class="spd-number-input" placeholder="001" oninput="saveKuitansiPeroranganSPD()">
+                <span class="spd-suffix-label" id="kuitansiPeroranganNoSPDSuffix">/SPD/Birkom/10/2026</span>
+              </div>
             </div>
           </div>
         </div>
@@ -906,7 +1017,10 @@
             </div>
             <div class="form-group">
               <label for="sppdNoSPD">No. SPD Perorangan <span class="req-star" title="Wajib diisi">*</span></label>
-              <input type="text" id="sppdNoSPD" placeholder="Contoh: 001/SPD/Birkom/10/2026" oninput="saveSPPDNo()">
+              <div class="spd-prefix-wrap">
+                <input type="text" id="sppdNoSPD" class="spd-number-input" placeholder="001" oninput="saveSPPDNo()">
+                <span class="spd-suffix-label" id="sppdNoSPDSuffix">/SPD/Birkom/10/2026</span>
+              </div>
             </div>
           </div>
         </div>
@@ -953,9 +1067,16 @@
             </div>
             <div class="form-group">
               <label for="lk_jenisPerjalanan">Jenis Perjalanan Dinas</label>
-              <select id="lk_jenisPerjalanan" onchange="renderLembarKendali()">
-                <option value="Luar Kota">Luar Kota</option>
+              <select id="lk_jenisPerjalanan" onchange="this.dataset.userEdited='1'; renderLembarKendali()">
+                <option value="Luar Kota" selected>Luar Kota</option>
                 <option value="Dalam Kota">Dalam Kota</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="lk_metodePembayaran">Metode Pembayaran</label>
+              <select id="lk_metodePembayaran" onchange="onMetodePembayaranChange(this.value)">
+                <option value="LS">LS (Pembayaran Langsung)</option>
+                <option value="KKP">KKP (Kartu Kredit Pemerintah)</option>
               </select>
             </div>
           </div>
@@ -1021,7 +1142,10 @@
             </div>
             <div class="form-group">
               <label for="rincianNoSPD">No. SPD Perorangan <span class="req-star" title="Wajib diisi">*</span></label>
-              <input type="text" id="rincianNoSPD" placeholder="Contoh: 001/SPD/Birkom/10/2026" oninput="saveRincianSPD()">
+              <div class="spd-prefix-wrap">
+                <input type="text" id="rincianNoSPD" class="spd-number-input" placeholder="001" oninput="saveRincianSPD()">
+                <span class="spd-suffix-label" id="rincianNoSPDSuffix">/SPD/Birkom/10/2026</span>
+              </div>
             </div>
           </div>
         </div>
@@ -1037,15 +1161,16 @@
         </div>
         <div class="btn-row-right">
           <button class="btn btn-primary" onclick="renderDPR()"><svg class="ico"><use href="#i-refresh"></use></svg>Refresh</button>
-          <button class="btn btn-success" onclick="printDPR()"><svg class="ico"><use href="#i-print"></use></svg>Cetak DPR</button>
+          <button class="btn btn-secondary" onclick="printAllDPR()" title="Cetak seluruh lembar DPR untuk semua pegawai terpilih"><svg class="ico"><use href="#i-print"></use></svg><span id="labelPrintAllDPR">Cetak Semua DPR</span></button>
+          <button class="btn btn-success" onclick="printDPR()"><svg class="ico"><use href="#i-print"></use></svg><span id="labelPrintDPR">Cetak DPR</span></button>
         </div>
       </div>
       <div class="card no-print">
         <div class="card-head">
           <span class="card-ico"><svg class="ico"><use href="#i-wallet"></use></svg></span>
           <div class="card-heading">
-            <h2 class="card-title">Pilih Pegawai untuk DPR</h2>
-            <p class="card-sub">Daftar pengeluaran riil per orang</p>
+            <h2 class="card-title" id="dprCardTitle">Pilih Pegawai untuk DPR</h2>
+            <p class="card-sub" id="dprCardSub">Daftar pengeluaran riil per orang</p>
           </div>
         </div>
         <div class="card-body">
@@ -1058,7 +1183,10 @@
             </div>
             <div class="form-group">
               <label for="dprNoSPD">No. SPD Perorangan <span class="req-star" title="Wajib diisi">*</span></label>
-              <input type="text" id="dprNoSPD" placeholder="Contoh: 001/SPD/Birkom/10/2026" oninput="saveDPRNoSPD()">
+              <div class="spd-prefix-wrap">
+                <input type="text" id="dprNoSPD" class="spd-number-input" placeholder="001" oninput="saveDPRNoSPD()">
+                <span class="spd-suffix-label" id="dprNoSPDSuffix">/SPD/Birkom/10/2026</span>
+              </div>
             </div>
           </div>
         </div>
@@ -1166,6 +1294,36 @@
             <div class="form-group">
               <label for="cfg_verifikatorNip">NIP Verifikator PPK</label>
               <input type="text" id="cfg_verifikatorNip">
+            </div>
+
+            <div class="form-section full">Pemegang Kartu Kredit Pemerintah (KKP)</div>
+            <div class="form-group">
+              <label for="cfg_kkpNama">Nama Pemegang KKP</label>
+              <input type="text" id="cfg_kkpNama" value="Ishaq Abdullah, S.Ars.">
+            </div>
+            <div class="form-group">
+              <label for="cfg_kkpNip">NIP Pemegang KKP</label>
+              <input type="text" id="cfg_kkpNip" value="199505122020121002">
+            </div>
+            <div class="form-group">
+              <label for="cfg_kkpPangkat">Pangkat/ Gol. Ruang Pemegang KKP</label>
+              <input type="text" id="cfg_kkpPangkat" value="Penata Muda Tk. I/ IIIb">
+            </div>
+            <div class="form-group">
+              <label for="cfg_kkpJabatan">Jabatan Pemegang KKP</label>
+              <input type="text" id="cfg_kkpJabatan" value="Penata Kelola Perumahan Ahli Pertama">
+            </div>
+            <div class="form-group">
+              <label for="cfg_kkpUnit">Unit Kerja Pemegang KKP</label>
+              <input type="text" id="cfg_kkpUnit" value="Biro Komunikasi Publik">
+            </div>
+            <div class="form-group">
+              <label for="cfg_kkpKartuNama">Nama di Kartu KKP</label>
+              <input type="text" id="cfg_kkpKartuNama" value="Ishaq Abdullah">
+            </div>
+            <div class="form-group full">
+              <label for="cfg_kkpNomor">Nomor Kartu Kredit Pemerintah</label>
+              <input type="text" id="cfg_kkpNomor" value="4895 9403 0010 3147">
             </div>
           </div>
         </div>

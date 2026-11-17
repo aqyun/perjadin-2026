@@ -11,6 +11,13 @@ function rp(n) {
   return 'Rp ' + Number(n).toLocaleString('id-ID');
 }
 
+function parseNumber(val) {
+  if (typeof val === 'number') return isNaN(val) ? 0 : val;
+  if (!val) return 0;
+  const cleaned = String(val).replace(/[^\d]/g, '');
+  return cleaned ? Number(cleaned) : 0;
+}
+
 function formatTgl(str) {
   if (!str) return '-';
   const d = new Date(str);

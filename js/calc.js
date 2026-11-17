@@ -114,8 +114,9 @@ function onMultiProvChange(idx) {
   if (sbm) {
     const makanRate = sbm.makan || 0;
     const snackRate = sbm.snack || 0;
+    const isManualMakan = !!document.getElementById('cbTarifMakanManual')?.checked;
     const elMakan = document.getElementById('tarifMakan');
-    if (elMakan) elMakan.value = makanRate ? rp(makanRate) : '0';
+    if (elMakan && !isManualMakan) elMakan.value = makanRate ? rp(makanRate) : '0';
     const elSnack = document.getElementById('tarifSnack');
     if (elSnack) elSnack.value = snackRate ? rp(snackRate) : '0';
   }
@@ -185,8 +186,9 @@ function changeProvince() {
   const sbm = getSBM();
   const makanRate = sbm ? (sbm.makan || 0) : 0;
   const snackRate = sbm ? (sbm.snack || 0) : 0;
+  const isManualMakan = !!document.getElementById('cbTarifMakanManual')?.checked;
   const elMakan = document.getElementById('tarifMakan');
-  if (elMakan) elMakan.value = makanRate ? rp(makanRate) : '0';
+  if (elMakan && !isManualMakan) elMakan.value = makanRate ? rp(makanRate) : '0';
   const elSnack = document.getElementById('tarifSnack');
   if (elSnack) elSnack.value = snackRate ? rp(snackRate) : '0';
   const elDpr = document.getElementById('dprManual');
@@ -214,10 +216,477 @@ function updateDPRInput() {
 function saveProvinceFoodRates() {
   if (!currentRateProvinceId) return;
   provinceFoodRates[currentRateProvinceId] = {
-    makan: Math.max(0, Number(document.getElementById('tarifMakan').value) || 0),
-    snack: Math.max(0, Number(document.getElementById('tarifSnack').value) || 0)
+    makan: Math.max(0, parseNumber(document.getElementById('tarifMakan')?.value) || 0),
+    snack: Math.max(0, parseNumber(document.getElementById('tarifSnack')?.value) || 0)
   };
   localStorage.setItem('provinceFoodRates', JSON.stringify(provinceFoodRates));
+}
+
+function toggleTarifMakanManual() {
+  const cb = document.getElementById('cbTarifMakanManual');
+  const input = document.getElementById('tarifMakan');
+  const label = document.getElementById('labelTarifMakan');
+  const jmMakan = document.getElementById('jumlahMakan');
+  const cbKonsumsiBiasa = document.getElementById('cbKonsumsiBiasa');
+  const toggleWrap = document.getElementById('manualMealModeToggle');
+  const wrapDetail = document.getElementById('manualMealDetailWrap');
+  const gTarif = document.getElementById('tarifMakanGroup');
+  const gHari = document.getElementById('hariMakanGroup');
+  const gJumlah = document.getElementById('jumlahMakanGroup');
+  if (!input) return;
+
+  const isManual = !!cb?.checked;
+  if (isManual) {
+    if (toggleWrap) toggleWrap.style.display = 'inline-flex';
+    input.removeAttribute('readonly');
+    input.classList.remove('is-readonly');
+    if (label) label.textContent = 'Tarif Makan Manual (Rp/kali)';
+
+    if (cbKonsumsiBiasa && !cbKonsumsiBiasa.checked) {
+      cbKonsumsiBiasa.checked = true;
+      const kf = document.getElementById('konsumsiFields');
+      if (kf) kf.style.display = 'grid';
+    }
+
+    if (jmMakan && (Number(jmMakan.value) <= 0 || !jmMakan.value)) {
+      jmMakan.value = '1';
+    }
+
+    const mode = document.getElementById('manualMakanMode')?.value || 'flat';
+    setManualMealMode(mode);
+  } else {
+    if (toggleWrap) toggleWrap.style.display = 'none';
+    if (wrapDetail) wrapDetail.style.display = 'none';
+    if (gTarif) gTarif.style.display = '';
+    if (gHari) gHari.style.display = '';
+    if (gJumlah) gJumlah.style.display = '';
+
+    input.setAttribute('readonly', 'readonly');
+    input.classList.add('is-readonly');
+    if (label) label.textContent = 'Tarif Makan SBM (Rp/kali)';
+    const sbm = getSBM();
+    const makanRate = sbm ? (sbm.makan || 0) : 0;
+    input.value = makanRate ? rp(makanRate) : '0';
+  }
+  updateSBMPreview();
+  if (typeof renderCurrentTab === 'function') renderCurrentTab();
+}
+
+function setManualMealMode(mode) {
+  const modeInput = document.getElementById('manualMakanMode');
+  if (modeInput) modeInput.value = mode;
+
+  const btnFlat = document.getElementById('btnMealModeFlat');
+  const btnDetail = document.getElementById('btnMealModeDetail');
+  const wrapDetail = document.getElementById('manualMealDetailWrap');
+  const gTarif = document.getElementById('tarifMakanGroup');
+  const gHari = document.getElementById('hariMakanGroup');
+  const gJumlah = document.getElementById('jumlahMakanGroup');
+
+  if (mode === 'detail') {
+    if (btnFlat) btnFlat.classList.remove('is-active');
+    if (btnDetail) btnDetail.classList.add('is-active');
+    if (gTarif) gTarif.style.display = 'none';
+    if (gHari) gHari.style.display = 'none';
+    if (gJumlah) gJumlah.style.display = 'none';
+    if (wrapDetail) wrapDetail.style.display = 'block';
+
+    const tbody = document.getElementById('manualMealTableBody') || document.getElementById('manualMealList');
+    if (tbody && tbody.children.length === 0) {
+      const tripDays = (typeof getDays === 'function' ? getDays().days : 0) || 1;
+      for (let i = 1; i <= tripDays; i++) {
+        addManualMealRow(`Hari ${i}`, 'Makan Siang');
+      }
+    }
+  } else {
+    // flat
+    if (btnFlat) btnFlat.classList.add('is-active');
+    if (btnDetail) btnDetail.classList.remove('is-active');
+    if (wrapDetail) wrapDetail.style.display = 'none';
+    if (gTarif) gTarif.style.display = '';
+    if (gHari) gHari.style.display = '';
+    if (gJumlah) gJumlah.style.display = '';
+  }
+
+  onManualMealRowChange();
+}
+
+function toggleDetailMakanSection(forceState) {
+  setManualMealMode(forceState !== false ? 'detail' : 'flat');
+}
+
+function setManualMakanMode(mode) {
+  setManualMealMode(mode);
+}
+
+function getManualMealDayOptions(selectedDay = 'Hari 1') {
+  const tripDays = (typeof getDays === 'function' ? getDays().days : 0) || 1;
+  const count = Math.max(1, tripDays);
+  let options = '';
+  for (let i = 1; i <= count; i++) {
+    const val = `Hari ${i}`;
+    const sel = val === selectedDay ? 'selected' : '';
+    options += `<option value="${val}" ${sel}>${val}</option>`;
+  }
+  const selMatch = selectedDay && selectedDay.match(/Hari\s+(\d+)/i);
+  if (selMatch && parseInt(selMatch[1]) > count) {
+    options += `<option value="${selectedDay}" selected>${selectedDay}</option>`;
+  }
+  return options;
+}
+
+const MANUAL_MEAL_SESSIONS = ['Makan Siang', 'Makan Malam', 'Makan Pagi', 'Makan Lainnya'];
+
+function getManualMealSessionOptions(selectedSession = 'Makan Siang') {
+  return MANUAL_MEAL_SESSIONS.map(s => `<option value="${s}" ${s === selectedSession ? 'selected' : ''}>${s}</option>`).join('');
+}
+
+function openMealDuplicateModal(day, session) {
+  const overlay = document.getElementById('mealDuplicateOverlay');
+  const msgEl = document.getElementById('mealDuplicateMsg');
+  const titleEl = document.getElementById('mealDuplicateTitle');
+  const sessionName = session || 'Makan Siang';
+  const dayName = day || 'hari tersebut';
+
+  if (day === 'seluruh hari') {
+    if (titleEl) titleEl.textContent = 'Semua Sesi Makan Sudah Diinput';
+    if (msgEl) {
+      const tripDays = (typeof getDays === 'function' ? getDays().days : 0) || 1;
+      msgEl.textContent = `Semua sesi makan untuk ${tripDays} hari perjalanan dinas sudah diinput lengkap. Tidak ada sesi makan yang dapat ditambahkan lagi.`;
+    }
+  } else {
+    if (titleEl) titleEl.textContent = 'Sesi Makan Sudah Diinput';
+    if (msgEl) {
+      msgEl.textContent = `Sesi ${sessionName} untuk ${dayName} sudah diinput sebelumnya. Tidak bisa menambahkan atau memilih sesi makan yang sama dua kali pada hari yang sama.`;
+    }
+  }
+
+  if (overlay) {
+    overlay.classList.add('is-open');
+  } else {
+    alert(`Sesi ${sessionName} untuk ${dayName} sudah diinput sebelumnya!`);
+  }
+
+  if (typeof showValidationToast === 'function') {
+    showValidationToast(null, `Sesi ${sessionName} untuk ${dayName} sudah diinput sebelumnya!`);
+  }
+}
+
+function closeMealDuplicateModal() {
+  const overlay = document.getElementById('mealDuplicateOverlay');
+  if (overlay) overlay.classList.remove('is-open');
+}
+
+function handleMealDuplicateBackdrop(event) {
+  if (event.target && event.target.id === 'mealDuplicateOverlay') {
+    closeMealDuplicateModal();
+  }
+}
+
+function getMaxMealRateForDay(dayStr) {
+  const sbm = typeof getSBM === 'function' ? getSBM() : null;
+  let defaultRate = sbm ? (sbm.makan || 0) : 0;
+
+  if (typeof isMultiProvActive === 'function' && isMultiProvActive()) {
+    const mpData = typeof getMultiProvData === 'function' ? getMultiProvData() : null;
+    if (mpData && dayStr) {
+      const m = String(dayStr).match(/Hari\s+(\d+)/i);
+      const dayNum = m ? parseInt(m[1]) : 1;
+      const d1 = parseInt(document.getElementById('hariProvinsi1')?.value) || 0;
+      if (dayNum > d1 && mpData.sbm2 && mpData.sbm2.makan) {
+        return mpData.sbm2.makan;
+      } else if (mpData.sbm1 && mpData.sbm1.makan) {
+        return mpData.sbm1.makan;
+      }
+    }
+  }
+  return defaultRate;
+}
+
+function openMealLimitModal(dayName, maxRate) {
+  const overlay = document.getElementById('mealLimitOverlay');
+  const titleEl = document.getElementById('mealLimitTitle');
+  const msgEl = document.getElementById('mealLimitMsg');
+  const maxFormatted = typeof rp === 'function' ? rp(maxRate) : `Rp ${maxRate.toLocaleString('id-ID')}`;
+
+  if (titleEl) titleEl.textContent = 'Melebihi Batas SBM Daerah';
+  if (msgEl) {
+    const dayLabel = dayName ? ` untuk ${dayName}` : '';
+    msgEl.innerHTML = `Tarif makan riil per orang${dayLabel} tidak boleh melebihi Standar Biaya Masukan (SBM) daerah tujuan sebesar <strong>${maxFormatted}</strong>. Nilai otomatis disesuaikan ke batas maksimal SBM.`;
+  }
+
+  if (overlay) {
+    overlay.classList.add('is-open');
+  } else {
+    alert(`Tarif makan tidak boleh melebihi Standar Biaya Masukan (SBM) daerah tujuan sebesar ${maxFormatted}!`);
+  }
+
+  if (typeof showValidationToast === 'function') {
+    showValidationToast(null, `Tarif makan melebihi batas SBM ${maxFormatted}! Otomatis disesuaikan.`);
+  }
+}
+
+function closeMealLimitModal() {
+  const overlay = document.getElementById('mealLimitOverlay');
+  if (overlay) overlay.classList.remove('is-open');
+}
+
+function handleMealLimitBackdrop(event) {
+  if (event.target && event.target.id === 'mealLimitOverlay') {
+    closeMealLimitModal();
+  }
+}
+
+function handleManualMealSelectChange(selectEl) {
+  if (!selectEl) return;
+  if (!selectEl.dataset) selectEl.dataset = {};
+  const row = selectEl.closest ? selectEl.closest('.manual-meal-row') : selectEl.parentElement?.closest('.manual-meal-row');
+  if (!row) return;
+
+  const daySel = row.querySelector('.manual-meal-day');
+  const sessionSel = row.querySelector('.manual-meal-session');
+  if (!daySel || !sessionSel) return;
+
+  const currentDay = daySel.value;
+  const currentSession = sessionSel.value;
+
+  const allRows = document.querySelectorAll('.manual-meal-row');
+  let duplicateFound = false;
+
+  allRows.forEach(otherRow => {
+    if (otherRow === row) return;
+    const otherDay = otherRow.querySelector('.manual-meal-day')?.value;
+    const otherSession = otherRow.querySelector('.manual-meal-session')?.value;
+    if (otherDay === currentDay && otherSession === currentSession) {
+      duplicateFound = true;
+    }
+  });
+
+  if (duplicateFound) {
+    const prevVal = selectEl.dataset.prevValue;
+    if (prevVal) {
+      selectEl.value = prevVal;
+    }
+    openMealDuplicateModal(currentDay, currentSession);
+    return;
+  }
+
+  selectEl.dataset.prevValue = selectEl.value;
+
+  if (selectEl.classList.contains('manual-meal-day')) {
+    const priceInput = row.querySelector('.manual-meal-price');
+    if (priceInput) {
+      const curVal = parseNumber(priceInput.value);
+      const newMax = getMaxMealRateForDay(currentDay);
+      if (newMax > 0 && curVal > newMax) {
+        priceInput.value = rp(newMax);
+        openMealLimitModal(currentDay, newMax);
+      }
+    }
+  }
+
+  onManualMealRowChange();
+}
+
+function addManualMealRow(day = null, session = null, price = '') {
+  const tbody = document.getElementById('manualMealTableBody') || document.getElementById('manualMealList');
+  if (!tbody) return null;
+
+  const tripDays = (typeof getDays === 'function' ? getDays().days : 0) || 1;
+  const currentCount = tbody.children.length;
+
+  const takenSet = new Set();
+  const existingRows = tbody.querySelectorAll ? tbody.querySelectorAll('.manual-meal-row') : (tbody.children || []);
+  Array.from(existingRows).forEach(r => {
+    const d = r.querySelector ? r.querySelector('.manual-meal-day')?.value : null;
+    const s = r.querySelector ? r.querySelector('.manual-meal-session')?.value : null;
+    if (d && s) takenSet.add(`${d}||${s}`);
+  });
+
+  if (!day || !session) {
+    let candidateDay = null;
+    let candidateSession = null;
+    const standardSessions = ['Makan Siang', 'Makan Malam', 'Makan Pagi', 'Makan Lainnya'];
+
+    for (const s of standardSessions) {
+      for (let d = 1; d <= tripDays; d++) {
+        const key = `Hari ${d}||${s}`;
+        if (!takenSet.has(key)) {
+          candidateDay = `Hari ${d}`;
+          candidateSession = s;
+          break;
+        }
+      }
+      if (candidateDay) break;
+    }
+
+    if (!candidateDay) {
+      openMealDuplicateModal('seluruh hari', 'Semua sesi makan');
+      return null;
+    }
+
+    day = candidateDay;
+    session = candidateSession;
+  } else {
+    const key = `${day}||${session}`;
+    if (takenSet.has(key)) {
+      openMealDuplicateModal(day, session);
+      return null;
+    }
+  }
+
+  const maxRate = getMaxMealRateForDay(day);
+  let effectivePrice = (price !== null && price !== '' && price !== undefined) ? parseNumber(price) : maxRate;
+  if (maxRate > 0 && effectivePrice > maxRate) {
+    effectivePrice = maxRate;
+  }
+
+  const row = document.createElement('tr');
+  row.className = 'manual-meal-row';
+  row.innerHTML = `
+    <td class="tc manual-meal-row-num">${currentCount + 1}</td>
+    <td>
+      <select class="manual-meal-day" onfocus="this.dataset.prevValue=this.value" onchange="handleManualMealSelectChange(this)">
+        ${getManualMealDayOptions(day)}
+      </select>
+    </td>
+    <td>
+      <select class="manual-meal-session" onfocus="this.dataset.prevValue=this.value" onchange="handleManualMealSelectChange(this)">
+        ${getManualMealSessionOptions(session)}
+      </select>
+    </td>
+    <td>
+      <input type="text" class="manual-meal-price" value="${effectivePrice > 0 ? (typeof rp === 'function' ? rp(effectivePrice) : effectivePrice) : ''}" placeholder="Rp 0" oninput="formatManualMealPriceInput(this); onManualMealRowChange();">
+    </td>
+    <td class="tc">
+      <button type="button" class="manual-meal-btn-del" onclick="removeManualMealRow(this)" title="Hapus sesi makan ini">✕</button>
+    </td>
+  `;
+  tbody.appendChild(row);
+
+  const daySel = row.querySelector('.manual-meal-day');
+  if (daySel) {
+    daySel.value = day;
+    if (!daySel.dataset) daySel.dataset = {};
+    daySel.dataset.prevValue = day;
+  }
+  const sessionSel = row.querySelector('.manual-meal-session');
+  if (sessionSel) {
+    sessionSel.value = session;
+    if (!sessionSel.dataset) sessionSel.dataset = {};
+    sessionSel.dataset.prevValue = session;
+  }
+
+  reindexManualMealRows();
+  onManualMealRowChange();
+  return row;
+}
+
+function refreshManualMealDayOptions() {
+  const tbody = document.getElementById('manualMealTableBody') || document.getElementById('manualMealList');
+  if (!tbody) return;
+  const tripDays = (typeof getDays === 'function' ? getDays().days : 0) || 1;
+
+  const rows = [...(tbody.querySelectorAll ? tbody.querySelectorAll('.manual-meal-row') : (tbody.children || []))];
+  rows.forEach(row => {
+    const dayVal = row.querySelector ? row.querySelector('.manual-meal-day')?.value : null;
+    const m = dayVal && dayVal.match(/Hari\s+(\d+)/i);
+    if (m && parseInt(m[1]) > tripDays && tripDays > 0) {
+      if (typeof row.remove === 'function') row.remove();
+    }
+  });
+
+  const daySelects = tbody.querySelectorAll ? tbody.querySelectorAll('.manual-meal-day') : [];
+  daySelects.forEach(sel => {
+    const currentVal = sel.value;
+    sel.innerHTML = getManualMealDayOptions(currentVal);
+    sel.value = currentVal;
+    if (!sel.dataset) sel.dataset = {};
+    sel.dataset.prevValue = currentVal;
+  });
+
+  reindexManualMealRows();
+  onManualMealRowChange();
+}
+
+function removeManualMealRow(btn) {
+  const row = btn.closest('.manual-meal-row');
+  if (row) {
+    row.remove();
+    reindexManualMealRows();
+    onManualMealRowChange();
+  }
+}
+
+function reindexManualMealRows() {
+  const rows = document.querySelectorAll('.manual-meal-row');
+  rows.forEach((row, idx) => {
+    const numEl = row.querySelector('.manual-meal-row-num');
+    if (numEl) numEl.textContent = idx + 1;
+  });
+}
+
+function formatManualMealPriceInput(input) {
+  const row = input.closest ? input.closest('.manual-meal-row') : input.parentElement?.closest('.manual-meal-row');
+  const dayVal = row?.querySelector ? row.querySelector('.manual-meal-day')?.value : null;
+  const maxRate = getMaxMealRateForDay(dayVal);
+  const num = parseNumber(input.value);
+
+  if (maxRate > 0 && num > maxRate) {
+    input.value = typeof rp === 'function' ? rp(maxRate) : `Rp ${maxRate}`;
+    openMealLimitModal(dayVal, maxRate);
+    return;
+  }
+
+  if (num > 0) {
+    input.value = typeof rp === 'function' ? rp(num) : `Rp ${num}`;
+  } else if (input.value.trim() !== '') {
+    input.value = '';
+  }
+}
+
+function getManualMealEntries() {
+  const rows = document.querySelectorAll('.manual-meal-row');
+  const entries = [];
+  rows.forEach((row, idx) => {
+    const day = row.querySelector('.manual-meal-day')?.value || `Hari ${idx + 1}`;
+    const session = row.querySelector('.manual-meal-session')?.value || 'Makan Siang';
+    const price = parseNumber(row.querySelector('.manual-meal-price')?.value) || 0;
+    if (price > 0) {
+      entries.push({ id: idx + 1, day, session, price });
+    }
+  });
+  return entries;
+}
+
+function updateManualMealSummary() {
+  const sumEl = document.getElementById('manualMealSummary');
+  if (!sumEl) return;
+  const entries = getManualMealEntries();
+  const total = entries.reduce((s, e) => s + e.price, 0);
+  sumEl.textContent = `Total Potongan: ${entries.length} kali makan = ${rp(total)}`;
+}
+
+function onManualMealRowChange() {
+  updateManualMealSummary();
+  updateSBMPreview();
+  if (typeof renderCurrentTab === 'function') renderCurrentTab();
+}
+
+function onTarifMakanManualInput() {
+  const cb = document.getElementById('cbTarifMakanManual');
+  if (!cb?.checked) return;
+  const jmMakan = document.getElementById('jumlahMakan');
+  if (jmMakan && (Number(jmMakan.value) <= 0 || !jmMakan.value)) {
+    jmMakan.value = '1';
+  }
+  updateSBMPreview();
+  if (typeof renderCurrentTab === 'function') renderCurrentTab();
+}
+
+function onKonsumsiInputChange() {
+  updateSBMPreview();
+  if (typeof renderCurrentTab === 'function') renderCurrentTab();
 }
 
 function toggleKonsumsiFields() {
@@ -225,14 +694,23 @@ function toggleKonsumsiFields() {
   const optBiasaWrap = document.getElementById('optKonsumsiBiasaWrap');
   const konsumsiFields = document.getElementById('konsumsiFields');
   const cbKonsumsiBiasa = document.getElementById('cbKonsumsiBiasa');
+  const jmMakan = document.getElementById('jumlahMakan');
 
   if (jenis === 'rapat') {
     if (optBiasaWrap) optBiasaWrap.style.display = 'none';
     if (konsumsiFields) konsumsiFields.style.display = 'grid';
+    if (jmMakan && (Number(jmMakan.value) <= 0 || !jmMakan.value)) {
+      jmMakan.value = '1';
+    }
   } else if (jenis === 'biasa') {
     if (optBiasaWrap) optBiasaWrap.style.display = 'flex';
     if (konsumsiFields) {
       konsumsiFields.style.display = cbKonsumsiBiasa?.checked ? 'grid' : 'none';
+      if (cbKonsumsiBiasa?.checked) {
+        if (jmMakan && (Number(jmMakan.value) <= 0 || !jmMakan.value)) {
+          jmMakan.value = '1';
+        }
+      }
     }
   } else {
     // fullboard or diklat
@@ -240,6 +718,25 @@ function toggleKonsumsiFields() {
     if (konsumsiFields) konsumsiFields.style.display = 'none';
   }
   updateSBMPreview();
+  if (typeof renderCurrentTab === 'function') renderCurrentTab();
+}
+
+function toggleUHFields() {
+  const cb = document.getElementById('cbUH');
+  const uhFields = document.getElementById('uhFields');
+  if (!cb) return;
+
+  const isChecked = !!cb.checked;
+  if (uhFields) {
+    uhFields.style.display = isChecked ? 'block' : 'none';
+  }
+
+  if (isChecked) {
+    toggleKonsumsiFields();
+  }
+
+  updateSBMPreview();
+  updateSbmWarnings();
   if (typeof renderCurrentTab === 'function') renderCurrentTab();
 }
 
@@ -251,13 +748,23 @@ function toggleHotelFields() {
   }
 }
 
-function addHotelRow(nights = 1) {
+function formatHotelPriceInput(input) {
+  const num = parseNumber(input.value);
+  if (num > 0) {
+    input.value = typeof rp === 'function' ? rp(num) : `Rp ${num}`;
+  } else if (input.value.trim() !== '') {
+    input.value = '';
+  }
+}
+
+function addHotelRow(nights = 1, price = '') {
   const row = document.createElement('div');
   row.className = 'hotel-row';
+  const displayPrice = price ? (typeof rp === 'function' ? rp(price) : price) : '';
   row.innerHTML = `
     <label class="hotel-field"><span>Nama hotel (opsional)</span><input type="text" class="hotel-name" placeholder="Contoh: Hotel Nusa Dua"></label>
     <label class="hotel-field hotel-field-nights"><span>Malam</span><input type="number" class="hotel-nights" min="0" step="1" value="${nights}"></label>
-    <label class="hotel-field"><span>Harga per malam (Rp)</span><input type="number" class="hotel-price" min="0" step="1000" placeholder="Isi harga manual"></label>
+    <label class="hotel-field"><span>Harga per malam (Rp)</span><input type="text" class="hotel-price" value="${displayPrice}" placeholder="Isi harga manual" oninput="formatHotelPriceInput(this); updateHotelSummary(this.closest('.hotel-row'))"></label>
     <button class="btn btn-warn btn-sm" type="button" onclick="removeHotelRow(this)">Hapus</button>
     <div class="hotel-guests"></div>
     <div class="hotel-summary"></div>
@@ -292,10 +799,11 @@ function renderHotelGuests(row) {
 }
 
 function updateHotelSummary(row) {
+  if (!row) return;
   const el = row.querySelector('.hotel-summary');
   if (!el) return;
-  const nights = Math.max(0, Number(row.querySelector('.hotel-nights').value) || 0);
-  const price = Math.max(0, Number(row.querySelector('.hotel-price').value) || 0);
+  const nights = Math.max(0, Number(row.querySelector('.hotel-nights')?.value) || 0);
+  const price = Math.max(0, parseNumber(row.querySelector('.hotel-price')?.value) || 0);
   const roomTotal = nights * price;
   if (roomTotal <= 0) {
     el.textContent = '';
@@ -322,9 +830,9 @@ function removeHotelRow(button) {
 
 function getHotelEntries() {
   return [...document.querySelectorAll('#hotelList .hotel-row')].map(row => ({
-    name: row.querySelector('.hotel-name').value.trim(),
-    nights: Math.max(0, Number(row.querySelector('.hotel-nights').value) || 0),
-    price: Math.max(0, Number(row.querySelector('.hotel-price').value) || 0),
+    name: row.querySelector('.hotel-name')?.value.trim() || '',
+    nights: Math.max(0, Number(row.querySelector('.hotel-nights')?.value) || 0),
+    price: Math.max(0, parseNumber(row.querySelector('.hotel-price')?.value) || 0),
     employeeIds: [...row.querySelectorAll('.hotel-guest-check:checked')].map(cb => Number(cb.dataset.employeeId))
   })).filter(item => item.name || item.price > 0);
 }
@@ -349,27 +857,42 @@ function addCustomCost() {
   row.className = 'custom-cost-row';
   row.dataset.kindAuto = '1';
   row.innerHTML = `
-    <div class="form-group">
-      <label>Nama biaya</label>
-      <input type="text" class="custom-cost-name" placeholder="Contoh: Grab, Tol, atau Tiket kapal" oninput="detectCustomCostKind(this)">
-      <div class="custom-kind" role="group" aria-label="Kelompok biaya">
-        <button type="button" class="custom-kind-btn active" data-kind="other" aria-pressed="true" onclick="setCustomCostKind(this)">Biaya lain</button>
-        <button type="button" class="custom-kind-btn" data-kind="tiket" aria-pressed="false" onclick="setCustomCostKind(this)">Tiket</button>
-        <button type="button" class="custom-kind-btn" data-kind="transport" aria-pressed="false" onclick="setCustomCostKind(this)">Transport PP</button>
+    <div class="custom-cost-top">
+      <div class="custom-cost-field custom-cost-name-field">
+        <label class="custom-cost-label">Nama Biaya</label>
+        <input type="text" class="custom-cost-name" placeholder="Contoh: Grab, Tol, Tiket kapal, atau Bensin" oninput="detectCustomCostKind(this)">
       </div>
-      <div class="custom-route">
-        <span class="custom-route-title">Keterangan rute (opsional)</span>
-        <div class="custom-route-fields">
-          <label class="custom-route-field custom-route-pickup"><span class="custom-route-label-pickup">Titik jemput</span><input type="text" class="custom-cost-pickup" placeholder="Contoh: Stasiun Gambir"></label>
-          <label class="custom-route-field custom-route-dropoff"><span class="custom-route-label-dropoff">Titik antar</span><input type="text" class="custom-cost-dropoff" placeholder="Contoh: Rumah"></label>
+      <div class="custom-cost-field custom-cost-kind-field">
+        <label class="custom-cost-label">Kategori</label>
+        <div class="custom-kind" role="group" aria-label="Kelompok biaya">
+          <button type="button" class="custom-kind-btn active" data-kind="other" aria-pressed="true" onclick="setCustomCostKind(this)">Biaya lain</button>
+          <button type="button" class="custom-kind-btn" data-kind="tiket" aria-pressed="false" onclick="setCustomCostKind(this)">Tiket</button>
+          <button type="button" class="custom-kind-btn" data-kind="transport" aria-pressed="false" onclick="setCustomCostKind(this)">Transport PP</button>
         </div>
       </div>
+      <div class="custom-cost-field custom-cost-del-field">
+        <label class="custom-cost-label custom-cost-del-label" aria-hidden="true">&nbsp;</label>
+        <button class="btn btn-warn custom-cost-del-btn" type="button" onclick="removeCustomCostRow(this)">Hapus</button>
+      </div>
     </div>
-    <div class="custom-cost-assignees"></div>
-    <button class="btn btn-warn btn-sm" type="button" onclick="removeCustomCostRow(this)">Hapus</button>
+    <div class="custom-route">
+      <span class="custom-route-title">Keterangan Rute (Opsional)</span>
+      <div class="custom-route-fields">
+        <label class="custom-route-field custom-route-pickup"><span class="custom-route-label-pickup">Titik jemput</span><input type="text" class="custom-cost-pickup" placeholder="Contoh: Stasiun Gambir"></label>
+        <label class="custom-route-field custom-route-dropoff"><span class="custom-route-label-dropoff">Titik antar</span><input type="text" class="custom-cost-dropoff" placeholder="Contoh: Rumah"></label>
+      </div>
+    </div>
+    <div class="custom-cost-assignees-box">
+      <div class="custom-cost-assignees-header">
+        <span class="custom-cost-assignees-title">Nominal Biaya per Pegawai</span>
+        <span class="custom-cost-assignees-tip">Diisi sesuai pembagian biaya untuk masing-masing pegawai</span>
+      </div>
+      <div class="custom-cost-assignees"></div>
+    </div>
   `;
   document.getElementById('customCostList').appendChild(row);
   renderCustomCostAssignments(row);
+  updateCustomCostRouteFields(row);
 }
 
 function removeCustomCostRow(button) {
@@ -412,24 +935,40 @@ function updateCustomCostRouteFields(row) {
   const dropoffInput = row.querySelector('.custom-cost-dropoff');
   const dropoffField = row.querySelector('.custom-route-dropoff');
   const fields = row.querySelector('.custom-route-fields');
+  const routeBox = row.querySelector('.custom-route');
 
-  if (isTicket) {
-    pickupLabel.textContent = 'Keberangkatan';
-    dropoffLabel.textContent = 'Kedatangan';
-    pickupInput.placeholder = 'Contoh: Stasiun Gambir';
-    dropoffInput.placeholder = 'Contoh: Bandung';
-  } else if (isToll) {
-    pickupLabel.textContent = 'Keterangan tol';
-    pickupInput.placeholder = 'Contoh: Tol Cipularang';
-  } else {
-    pickupLabel.textContent = 'Titik jemput';
-    dropoffLabel.textContent = 'Titik antar';
-    pickupInput.placeholder = 'Contoh: Stasiun Gambir';
-    dropoffInput.placeholder = 'Contoh: Rumah';
+  if (pickupLabel && dropoffLabel && pickupInput && dropoffInput) {
+    if (isTicket) {
+      pickupLabel.textContent = 'Keberangkatan';
+      dropoffLabel.textContent = 'Kedatangan';
+      pickupInput.placeholder = 'Contoh: Stasiun Gambir';
+      dropoffInput.placeholder = 'Contoh: Bandung';
+    } else if (isToll) {
+      pickupLabel.textContent = 'Keterangan tol';
+      pickupInput.placeholder = 'Contoh: Tol Cipularang';
+    } else {
+      pickupLabel.textContent = 'Titik jemput';
+      dropoffLabel.textContent = 'Titik antar';
+      pickupInput.placeholder = 'Contoh: Stasiun Gambir';
+      dropoffInput.placeholder = 'Contoh: Rumah';
+    }
   }
 
-  dropoffField.style.display = isToll ? 'none' : '';
-  fields.classList.toggle('single', isToll);
+  if (dropoffField) dropoffField.style.display = isToll ? 'none' : '';
+  if (fields) fields.classList.toggle('single', isToll);
+  if (routeBox) {
+    const hasRouteVal = !!(pickupInput?.value?.trim() || dropoffInput?.value?.trim());
+    routeBox.style.display = (kind === 'other' && !hasRouteVal) ? 'none' : '';
+  }
+}
+
+function formatCustomCostAmountInput(input) {
+  const num = parseNumber(input.value);
+  if (num > 0) {
+    input.value = typeof rp === 'function' ? rp(num) : `Rp ${num}`;
+  } else if (input.value.trim() !== '') {
+    input.value = '';
+  }
 }
 
 function renderCustomCostAssignments(row) {
@@ -441,21 +980,27 @@ function renderCustomCostAssignments(row) {
     currentAmounts = {};
   }
   row.querySelectorAll('.custom-cost-amount').forEach(input => {
-    currentAmounts[input.dataset.employeeId] = input.value;
+    const val = parseNumber(input.value);
+    if (val > 0) {
+      currentAmounts[input.dataset.employeeId] = val;
+    }
   });
   row.dataset.amounts = JSON.stringify(currentAmounts);
 
   if (selectedEmpIds.size === 0) {
-    assignments.innerHTML = '<div class="custom-cost-empty">Pilih pegawai untuk mengatur nominal per orang.</div>';
+    assignments.innerHTML = '<div class="custom-cost-empty">Pilih pegawai di Langkah 1 untuk mengatur nominal per orang.</div>';
     return;
   }
 
   assignments.innerHTML = [...selectedEmpIds].map(id => {
     const emp = employees.find(employee => employee.id === id);
+    const rawVal = currentAmounts[id];
+    const numVal = parseNumber(rawVal);
+    const displayVal = numVal > 0 ? (typeof rp === 'function' ? rp(numVal) : 'Rp ' + numVal) : '';
     return `
       <label class="custom-cost-assignee">
-        <span>${emp.nama}</span>
-        <input type="number" class="custom-cost-amount" data-employee-id="${id}" min="0" step="1000" value="${currentAmounts[id] ?? 0}" oninput="updateCustomCostAmount(this)" aria-label="Biaya ${row.querySelector('.custom-cost-name').value || 'tambahan'} untuk ${emp.nama}">
+        <span title="${emp ? emp.nama : ''}">${emp ? emp.nama : ''}</span>
+        <input type="text" class="custom-cost-amount" data-employee-id="${id}" placeholder="Rp 0" value="${displayVal}" oninput="formatCustomCostAmountInput(this); updateCustomCostAmount(this)" aria-label="Biaya ${row.querySelector('.custom-cost-name')?.value || 'tambahan'} untuk ${emp ? emp.nama : ''}">
       </label>
     `;
   }).join('');
@@ -463,13 +1008,19 @@ function renderCustomCostAssignments(row) {
 
 function updateCustomCostAmount(input) {
   const row = input.closest('.custom-cost-row');
+  if (!row) return;
   let amounts = {};
   try {
     amounts = JSON.parse(row.dataset.amounts || '{}');
   } catch (error) {
     amounts = {};
   }
-  amounts[input.dataset.employeeId] = input.value;
+  const num = parseNumber(input.value);
+  if (num > 0) {
+    amounts[input.dataset.employeeId] = num;
+  } else {
+    delete amounts[input.dataset.employeeId];
+  }
   row.dataset.amounts = JSON.stringify(amounts);
 }
 
@@ -479,7 +1030,7 @@ function refreshCustomCostAssignments() {
 
 function getCustomCosts() {
   return [...document.querySelectorAll('.custom-cost-row')].map(row => {
-    const name = row.querySelector('.custom-cost-name').value.trim();
+    const name = row.querySelector('.custom-cost-name')?.value.trim() || '';
     const kind = row.querySelector('.custom-kind-btn.active')?.dataset.kind || 'other';
     const isToll = kind === 'transport' && TOLL_COST_RE.test(name);
     return {
@@ -489,7 +1040,7 @@ function getCustomCosts() {
       dropoff: isToll ? '' : row.querySelector('.custom-cost-dropoff')?.value.trim() || '',
       amounts: Object.fromEntries([...row.querySelectorAll('.custom-cost-amount')].map(input => [
         input.dataset.employeeId,
-        Math.max(0, Number(input.value) || 0)
+        Math.max(0, parseNumber(input.value) || 0)
       ]))
     };
   }).filter(item => item.name);
@@ -498,23 +1049,51 @@ function getCustomCosts() {
 function updateSBMPreview() {
   const sbm = getSBM();
   const pv = document.getElementById('sbmPreview');
+  if (!pv) return;
   if (!sbm) { pv.style.display = 'none'; return; }
   pv.style.display = 'block';
   const isDkiJakarta = sbm.provinsi === 'DKI JAKARTA';
   const multi = getMultiProvData();
-  if (multi) {
-    const p1 = getProvShortName(multi.sbm1.provinsi);
-    const p2 = getProvShortName(multi.sbm2.provinsi);
-    document.getElementById('sbm_uh').textContent = `${rp(multi.sbm1.uh)} (${p1}) & ${rp(multi.sbm2.uh)} (${p2})`;
-  } else {
-    document.getElementById('sbm_uh').textContent = isDkiJakarta ? `${rp(0)} (tidak dibayarkan)` : rp(sbm.uh);
+  const cbUH = document.getElementById('cbUH');
+  const isUHActive = !cbUH || cbUH.checked;
+
+  const elUH = document.getElementById('sbm_uh');
+  if (elUH) {
+    if (!isUHActive) {
+      elUH.textContent = `${rp(0)} (tidak dipilih)`;
+    } else if (multi) {
+      const p1 = getProvShortName(multi.sbm1.provinsi);
+      const p2 = getProvShortName(multi.sbm2.provinsi);
+      elUH.textContent = `${rp(multi.sbm1.uh)} (${p1}) & ${rp(multi.sbm2.uh)} (${p2})`;
+    } else {
+      elUH.textContent = isDkiJakarta ? `${rp(0)} (tidak dibayarkan)` : rp(sbm.uh);
+    }
   }
   const elDiklat = document.getElementById('sbm_diklat');
-  if (elDiklat) elDiklat.textContent = isDkiJakarta ? `${rp(0)} (tidak dibayarkan)` : rp(sbm.diklat || 110000);
+  if (elDiklat) elDiklat.textContent = !isUHActive ? `${rp(0)} (tidak dipilih)` : (isDkiJakarta ? `${rp(0)} (tidak dibayarkan)` : rp(sbm.diklat || 110000));
   const elFullboard = document.getElementById('sbm_fullboard');
-  if (elFullboard) elFullboard.textContent = isDkiJakarta ? `${rp(0)} (tidak dibayarkan)` : rp(sbm.fullboard || 130000);
+  if (elFullboard) elFullboard.textContent = !isUHActive ? `${rp(0)} (tidak dipilih)` : (isDkiJakarta ? `${rp(0)} (tidak dibayarkan)` : rp(sbm.fullboard || 130000));
+  const isManualMakan = !!document.getElementById('cbTarifMakanManual')?.checked;
+  const wrapDetail = document.getElementById('manualMealDetailWrap');
+  const isDetailOpen = wrapDetail && wrapDetail.style.display !== 'none';
+  const modeVal = document.getElementById('manualMakanMode')?.value || 'flat';
+  const isDetailMode = modeVal === 'detail' || isDetailOpen;
+  const manualMealEntries = isManualMakan ? getManualMealEntries() : [];
+  const useDetail = isManualMakan && isDetailMode && manualMealEntries.length > 0;
+  const manualMakanRate = parseNumber(document.getElementById('tarifMakan')?.value);
   const elMakan = document.getElementById('sbm_makan');
-  if (elMakan) elMakan.textContent = rp(sbm.makan || 0);
+  if (elMakan) {
+    if (isManualMakan) {
+      if (useDetail) {
+        const total = manualMealEntries.reduce((s, e) => s + e.price, 0);
+        elMakan.textContent = `${rp(total)} (${manualMealEntries.length}x makan riil)`;
+      } else {
+        elMakan.textContent = `${rp(manualMakanRate)} (Manual)`;
+      }
+    } else {
+      elMakan.textContent = rp(sbm.makan || 0);
+    }
+  }
   const elSnack = document.getElementById('sbm_snack');
   if (elSnack) elSnack.textContent = rp(sbm.snack || 0);
   document.getElementById('sbm_h4').textContent = rp(sbm.h4);
@@ -624,6 +1203,7 @@ function updateSbmWarnings() {
 function syncTglSPD() {
   const tglST = document.getElementById('tglST').value;
   if (tglST) document.getElementById('tglSPD').value = tglST;
+  if (typeof updateAllSpdSuffixLabels === 'function') updateAllSpdSuffixLabels();
 }
 
 function hitungLama() {
@@ -661,6 +1241,7 @@ function hitungLama() {
     }
   }
   if (typeof renderTripDates === 'function') renderTripDates();
+  if (typeof refreshManualMealDayOptions === 'function') refreshManualMealDayOptions();
 }
 
 function getDays() {
@@ -832,20 +1413,46 @@ function hitungBiaya(emp) {
 
   const isMeeting = jenisKeg === 'rapat';
   const isBiasaWithKonsumsi = jenisKeg === 'biasa' && !!document.getElementById('cbKonsumsiBiasa')?.checked;
-  const hasKonsumsi = isMeeting || isBiasaWithKonsumsi;
+  const isMealManual = !!document.getElementById('cbTarifMakanManual')?.checked;
+  const hasKonsumsi = cbUH && (isMeeting || isBiasaWithKonsumsi || isMealManual);
 
-  const mealRate = sbm?.makan || (isMultiProv ? sbm1?.makan : 0) || 0;
+  const wrapDetail = document.getElementById('manualMealDetailWrap');
+  const isDetailOpen = wrapDetail && wrapDetail.style.display !== 'none';
+  const modeVal = document.getElementById('manualMakanMode')?.value || 'flat';
+  const isDetailMode = modeVal === 'detail' || isDetailOpen;
+  const manualMealEntries = (cbUH && isMealManual) ? getManualMealEntries() : [];
+  const useDetail = cbUH && isMealManual && isDetailMode && manualMealEntries.length > 0;
+
+  let mealRate = 0;
+  let mealCount = 0;
+  let mealDays = 0;
+  let mealRequested = 0;
+
+  if (useDetail) {
+    mealRequested = manualMealEntries.reduce((sum, item) => sum + item.price, 0);
+    mealCount = manualMealEntries.length;
+    mealDays = new Set(manualMealEntries.map(e => e.day)).size;
+    mealRate = mealCount > 0 ? Math.round(mealRequested / mealCount) : 0;
+  } else {
+    const rawManualMeal = parseNumber(document.getElementById('tarifMakan')?.value);
+    mealRate = isMealManual ? Math.max(0, rawManualMeal) : (sbm?.makan || (isMultiProv ? sbm1?.makan : 0) || 0);
+    const rawMealCount = Number(document.getElementById('jumlahMakan')?.value);
+    mealCount = (!isNaN(rawMealCount) && rawMealCount > 0) ? rawMealCount : 0;
+    if (isMealManual && rawManualMeal > 0 && mealCount === 0) {
+      mealCount = 1;
+    }
+    const rawHariMakan = Number(document.getElementById('hariMakan')?.value);
+    mealDays = (!isNaN(rawHariMakan) && rawHariMakan > 0) ? rawHariMakan : days;
+    mealRequested = (hasKonsumsi && mealCount > 0) ? mealRate * mealCount * mealDays : 0;
+  }
+
   const snackRate = sbm?.snack || (isMultiProv ? sbm1?.snack : 0) || 0;
-  const mealCount = Number(document.getElementById('jumlahMakan')?.value) || 0;
-  const snackCount = Number(document.getElementById('jumlahSnack')?.value) || 0;
-
-  const rawHariMakan = Number(document.getElementById('hariMakan')?.value);
-  const mealDays = (!isNaN(rawHariMakan) && rawHariMakan > 0) ? rawHariMakan : days;
+  const rawSnackCount = Number(document.getElementById('jumlahSnack')?.value);
+  const snackCount = (!isNaN(rawSnackCount) && rawSnackCount > 0) ? rawSnackCount : 0;
 
   const rawHariSnack = Number(document.getElementById('hariSnack')?.value);
   const snackDays = (!isNaN(rawHariSnack) && rawHariSnack > 0) ? rawHariSnack : days;
 
-  const mealRequested = (hasKonsumsi && mealCount > 0) ? mealRate * mealCount * mealDays : 0;
   const snackRequested = (hasKonsumsi && snackCount > 0) ? snackRate * snackCount * snackDays : 0;
   const mealDeduction = Math.min(uhGross, mealRequested);
   const snackDeduction = Math.min(Math.max(0, uhGross - mealDeduction), snackRequested);
@@ -881,11 +1488,14 @@ function hitungBiaya(emp) {
     uhTitle,
     effectivePercent,
     jenisKeg,
+    isMealManual,
     mealDeduction,
     snackDeduction,
     mealRate,
     mealCount,
     mealDays,
+    manualMode: useDetail ? 'detail' : 'flat',
+    mealDetails: useDetail ? manualMealEntries : [],
     snackRate,
     snackCount,
     snackDays,

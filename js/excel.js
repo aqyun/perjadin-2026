@@ -37,11 +37,15 @@ const EXCEL_TRIP_FIELDS = [
   ['Provinsi Tujuan 2', 'provinsiTujuan2', 'select'],
   ['Hari di Provinsi 2', 'hariProvinsi2', 'number'],
   ['Konsumsi Perjalanan Biasa', 'cbKonsumsiBiasa', 'check'],
+  ['Tarif Makan Manual', 'cbTarifMakanManual', 'check'],
+  ['Mode Tarif Makan Manual', 'manualMakanMode', 'text'],
+  ['Metode Pembayaran', 'metodePembayaran', 'select'],
   ['Lembar Kendali - Tanggal Masuk Berkas', 'lk_tanggalMasuk', 'date'],
   ['Lembar Kendali - Pelaksana', 'lk_pelaksana', 'text'],
   ['Lembar Kendali - Nomor SPM', 'lk_nomorSPM', 'text'],
   ['Lembar Kendali - Nomor SPD', 'lk_nomorSPD', 'text'],
-  ['Lembar Kendali - Jenis Perjalanan', 'lk_jenisPerjalanan', 'select']
+  ['Lembar Kendali - Jenis Perjalanan', 'lk_jenisPerjalanan', 'select'],
+  ['Lembar Kendali - Metode Pembayaran', 'lk_metodePembayaran', 'select']
 ];
 
 const EXCEL_SETTING_FIELDS = [
@@ -61,7 +65,14 @@ const EXCEL_SETTING_FIELDS = [
   ['Nama PP-SPM', 'cfg_ppspmNama'],
   ['NIP PP-SPM', 'cfg_ppspmNip'],
   ['Nama Verifikator PPK', 'cfg_verifikatorNama'],
-  ['NIP Verifikator PPK', 'cfg_verifikatorNip']
+  ['NIP Verifikator PPK', 'cfg_verifikatorNip'],
+  ['Nama Pemegang KKP', 'cfg_kkpNama'],
+  ['NIP Pemegang KKP', 'cfg_kkpNip'],
+  ['Pangkat/Gol Pemegang KKP', 'cfg_kkpPangkat'],
+  ['Jabatan Pemegang KKP', 'cfg_kkpJabatan'],
+  ['Unit Kerja Pemegang KKP', 'cfg_kkpUnit'],
+  ['Nama di Kartu KKP', 'cfg_kkpKartuNama'],
+  ['Nomor Kartu KKP', 'cfg_kkpNomor']
 ];
 
 const EXCEL_SEGMENT_SLOTS = 5;
@@ -157,7 +168,7 @@ function excelGetCustomCostRows() {
       amounts = {};
     }
     row.querySelectorAll('.custom-cost-amount').forEach(input => {
-      amounts[input.dataset.employeeId] = Math.max(0, Number(input.value) || 0);
+      amounts[input.dataset.employeeId] = Math.max(0, typeof parseNumber === 'function' ? parseNumber(input.value) : Number(input.value) || 0);
     });
     const kind = row.querySelector('.custom-kind-btn.active')?.dataset.kind || 'other';
     return {
@@ -175,7 +186,7 @@ function excelGetHotelRows() {
   return [...document.querySelectorAll('#hotelList .hotel-row')].map(row => ({
     name: row.querySelector('.hotel-name').value.trim(),
     nights: Math.max(0, Number(row.querySelector('.hotel-nights').value) || 0),
-    price: Math.max(0, Number(row.querySelector('.hotel-price').value) || 0),
+    price: Math.max(0, typeof parseNumber === 'function' ? parseNumber(row.querySelector('.hotel-price').value) : Number(row.querySelector('.hotel-price').value) || 0),
     guestIds: [...row.querySelectorAll('.hotel-guest-check:checked')].map(cb => Number(cb.dataset.employeeId))
   })).filter(item => item.name || item.price > 0);
 }
@@ -250,6 +261,14 @@ function exportPerjadinExcel() {
     hotelRows.push([index + 1, hotel.name, hotel.nights, hotel.price, names]);
   });
   excelAddSheet(wb, 'Hotel', hotelRows, [5, 34, 8, 20, 60]);
+
+  if (typeof getManualMealEntries === 'function') {
+    const mealRows = [['No', 'Hari', 'Sesi Makan', 'Tarif (Rp)']];
+    getManualMealEntries().forEach((m, idx) => {
+      mealRows.push([idx + 1, m.day, m.session, m.price]);
+    });
+    excelAddSheet(wb, 'Rincian Makan', mealRows, [5, 14, 20, 18]);
+  }
 
   excelAddSheet(wb, 'Pengaturan', [
     ['Keterangan', 'Nilai'],
@@ -332,7 +351,30 @@ function applyPerjadinExcel(wb) {
   });
 
   if (typeof toggleMultiProvinsi === 'function') toggleMultiProvinsi();
+  if (typeof toggleUHFields === 'function') toggleUHFields();
   if (typeof toggleKonsumsiFields === 'function') toggleKonsumsiFields();
+  if (typeof toggleTarifMakanManual === 'function') toggleTarifMakanManual();
+
+  const mealRows = excelSheetRows(wb, 'Rincian Makan');
+  if (mealRows.length > 1 && typeof addManualMealRow === 'function') {
+    const list = document.getElementById('manualMealTableBody') || document.getElementById('manualMealList');
+    if (list) list.innerHTML = '';
+    mealRows.slice(1).forEach(row => {
+      const day = String(row[1] ?? '').trim();
+      const session = String(row[2] ?? '').trim();
+      const price = Number(row[3]) || 0;
+      if (day || price) {
+        addManualMealRow(day, session, price);
+      }
+    });
+    if (typeof setManualMealMode === 'function') setManualMealMode('detail');
+  } else {
+    const loadedMode = document.getElementById('manualMakanMode')?.value || 'flat';
+    if (typeof setManualMealMode === 'function') setManualMealMode(loadedMode);
+  }
+
+  const loadedMetode = document.getElementById('metodePembayaran')?.value || document.getElementById('lk_metodePembayaran')?.value || 'LS';
+  if (typeof onMetodePembayaranChange === 'function') onMetodePembayaranChange(loadedMetode);
 
   excelSheetRows(wb, 'Pengaturan').slice(1).forEach(row => {
     const label = String(row[0] ?? '').trim();
@@ -436,16 +478,14 @@ function applyPerjadinExcel(wb) {
     applyCustomCostKind(costRow, kind);
     costRow.querySelector('.custom-cost-pickup').value = cost.pickup;
     costRow.querySelector('.custom-cost-dropoff').value = cost.dropoff;
-    costRow.querySelectorAll('.custom-cost-amount').forEach(inp => {
-      const amount = cost.amounts[inp.dataset.employeeId] || 0;
-      inp.value = amount > 0 ? String(amount) : '0';
-    });
+    costRow.dataset.amounts = JSON.stringify(cost.amounts || {});
     renderCustomCostAssignments(costRow);
   });
 
   hitungLama();
   markDPRManual();
   updateDPRInput();
+  if (typeof toggleUHFields === 'function') toggleUHFields();
   toggleKonsumsiFields();
   updateSBMPreview();
   refreshCustomCostAssignments();
