@@ -380,6 +380,27 @@
   </div>
 </div>
 
+<!-- ============================================================ DKI TRANSPORT LOCKED MODAL -->
+<div class="welcome-overlay no-print" id="dkiTransportOverlay" role="dialog" aria-modal="true" aria-labelledby="dkiTransportTitle" onclick="handleDkiTransportBackdrop(event)">
+  <div class="welcome-modal" style="max-width: 460px; padding: 28px 24px; text-align: center;">
+    <button type="button" class="icon-btn welcome-close" onclick="closeDkiTransportModal()" aria-label="Tutup pesan">
+      <svg class="ico"><use href="#i-close"></use></svg>
+    </button>
+    <div style="width: 56px; height: 56px; border-radius: 50%; background: #eff6ff; color: #2563eb; display: inline-flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 700; margin: 0 auto 14px auto;">
+      🏛️
+    </div>
+    <h3 id="dkiTransportTitle" style="font-size: 17px; font-weight: 700; color: var(--text-1, #1e293b); margin: 0 0 10px 0;">
+      Transport DKI Jakarta Otomatis (Rp 170.000)
+    </h3>
+    <p id="dkiTransportMsg" style="font-size: 13.5px; color: var(--text-2, #64748b); line-height: 1.55; margin: 0 0 20px 0; text-align: justify;">
+      Untuk perjalanan dinas di <strong>DKI Jakarta</strong>, komponen biaya transport menggunakan tarif tetap <strong>Daftar Pengeluaran Riil (DPR) sebesar Rp 170.000 / orang</strong> secara default/otomatis sesuai ketentuan SBM, sehingga tidak dapat ditambah atau diedit dengan rincian transport manual.
+    </p>
+    <button type="button" class="btn btn-primary" style="min-width: 140px; font-weight: 600;" onclick="closeDkiTransportModal()">
+      Mengerti
+    </button>
+  </div>
+</div>
+
 <div class="app-main">
   <header class="topbar no-print">
     <button type="button" class="icon-btn burger" onclick="toggleSidebar()" aria-label="Buka menu" aria-expanded="false" aria-controls="sidebar">
@@ -415,8 +436,8 @@
         </div>
         <ol class="flow-steps">
           <li class="on"><span>1</span>Data</li>
-          <li class="on"><span>2</span>Biaya</li>
-          <li class="on"><span>3</span>Pegawai</li>
+          <li class="on"><span>2</span>Pegawai</li>
+          <li class="on"><span>3</span>Biaya</li>
         </ol>
       </section>
 
@@ -618,6 +639,43 @@
         </div>
       </section>
 
+      <!-- Pilih Pegawai -->
+      <section class="card">
+        <div class="card-head">
+          <span class="card-ico"><svg class="ico"><use href="#i-user"></use></svg></span>
+          <div class="card-heading">
+            <h2 class="card-title">Pegawai yang Ditugaskan</h2>
+            <p class="card-sub">Cari nama, lalu klik untuk memilih atau melepas</p>
+          </div>
+          <span class="card-badge">Langkah 2</span>
+        </div>
+        <div class="card-body">
+          <div class="search-wrap">
+            <svg class="ico"><use href="#i-search"></use></svg>
+            <input type="text" class="emp-search-input" id="empSearch" placeholder="Cari nama atau jabatan pegawai..." oninput="filterEmployees()">
+          </div>
+          <div class="emp-list-box" id="empListBox"></div>
+
+          <div class="selected-head">
+            <span class="selected-label">Pegawai Terpilih <span class="req-star" title="Wajib pilih minimal 1 pegawai">*</span></span>
+            <span class="count-chip"><span id="countSelected">0</span></span>
+          </div>
+          <div class="selected-box" id="selectedBox">
+            <span class="empty-note">Belum ada pegawai dipilih</span>
+          </div>
+          <span class="field-error-msg emp-error-msg" id="empErrorMsg">Minimal pilih 1 pegawai yang ditugaskan</span>
+
+          <div class="trip-dates-block" id="tripDatesBlock" style="display:none">
+            <div class="selected-head">
+              <span class="selected-label">Tanggal Perjalanan per Pegawai</span>
+              <span class="trip-dates-hint-inline">Kosong = ikut tanggal global di atas</span>
+            </div>
+            <div class="trip-dates-list" id="tripDatesList"></div>
+            <div class="trip-dates-hint">Tanggal bisa berbeda antar pegawai dan bisa terputus (mis. 10–11 dst. lalu 16). Klik + Tanggal untuk menambah rentang.</div>
+          </div>
+        </div>
+      </section>
+
       <!-- Pilih Komponen Biaya -->
       <section class="card">
         <div class="card-head">
@@ -626,7 +684,7 @@
             <h2 class="card-title">Komponen Biaya yang Dibayarkan</h2>
             <p class="card-sub">Aktifkan komponen yang masuk ke perhitungan</p>
           </div>
-          <span class="card-badge">Langkah 2</span>
+          <span class="card-badge">Langkah 3</span>
         </div>
         <div class="card-body">
           <div class="opt-grid">
@@ -658,7 +716,7 @@
                 <label for="uhPersentase">Persentase Uang Harian</label>
                 <select id="uhPersentase">
                   <option value="1">100%</option>
-                  <option value="0.6">60%</option>
+                  <option value="0.6">60% (Menggunakan Kendaraan Dinas Operasional)</option>
                 </select>
               </div>
               <div class="form-group">
@@ -770,52 +828,21 @@
 
           <div class="form-group full custom-cost-group">
             <div class="field-head">
-              <label>Rincian Transport &amp; Biaya Tambahan</label>
-              <span class="field-tip">Nominal per pegawai — Grab / Gojek / Taksi / Tol / Bensin (masuk Transport PP/kolom DPR); tiket kereta / whoosh / pesawat / kapal jadi kolom tersendiri di rekap</span>
+              <label>Tiket &amp; Biaya Tambahan Perjalanan</label>
+              <span class="field-tip">Tiket Kereta Api, Whoosh, Pesawat, Kapal, atau biaya bersama lainnya. Rute tiket otomatis mengikuti Kota Asal &mdash; Kota Tujuan PP.</span>
+            </div>
+            <div class="transport-rincian-notice">
+              <span class="notice-icon">💡</span>
+              <div class="notice-content">
+                <strong>Transport Lokal / DPR Perorangan</strong> (Grab, Gojek, Taksi, MRT, KRL, LRT, Tol, Bensin) dengan rute berbeda tiap pegawai dapat diisi langsung secara detail di menu <strong>Rincian per Orang</strong>.
+              </div>
             </div>
             <div id="customCostList" class="custom-cost-list"></div>
             <button class="add-cost-btn" type="button" onclick="addCustomCost()">
-              <svg class="ico"><use href="#i-plus"></use></svg>Tambah rincian biaya
+              <svg class="ico"><use href="#i-plus"></use></svg>Tambah Tiket / Biaya Tambahan
             </button>
           </div>
-        </div>
-      </section>
-
-      <!-- Pilih Pegawai -->
-      <section class="card">
-        <div class="card-head">
-          <span class="card-ico"><svg class="ico"><use href="#i-user"></use></svg></span>
-          <div class="card-heading">
-            <h2 class="card-title">Pegawai yang Ditugaskan</h2>
-            <p class="card-sub">Cari nama, lalu klik untuk memilih atau melepas</p>
-          </div>
-          <span class="card-badge">Langkah 3</span>
-        </div>
-        <div class="card-body">
-          <div class="search-wrap">
-            <svg class="ico"><use href="#i-search"></use></svg>
-            <input type="text" class="emp-search-input" id="empSearch" placeholder="Cari nama atau jabatan pegawai..." oninput="filterEmployees()">
-          </div>
-          <div class="emp-list-box" id="empListBox"></div>
-
-          <div class="selected-head">
-            <span class="selected-label">Pegawai Terpilih <span class="req-star" title="Wajib pilih minimal 1 pegawai">*</span></span>
-            <span class="count-chip"><span id="countSelected">0</span></span>
-          </div>
-          <div class="selected-box" id="selectedBox">
-            <span class="empty-note">Belum ada pegawai dipilih</span>
-          </div>
-          <span class="field-error-msg emp-error-msg" id="empErrorMsg">Minimal pilih 1 pegawai yang ditugaskan</span>
-
-          <div class="trip-dates-block" id="tripDatesBlock" style="display:none">
-            <div class="selected-head">
-              <span class="selected-label">Tanggal Perjalanan per Pegawai</span>
-              <span class="trip-dates-hint-inline">Kosong = ikut tanggal global di atas</span>
-            </div>
-            <div class="trip-dates-list" id="tripDatesList"></div>
-            <div class="trip-dates-hint">Tanggal bisa berbeda antar pegawai dan bisa terputus (mis. 10–11 dst. lalu 16). Klik + Tanggal untuk menambah rentang.</div>
-          </div>
-
+        
           <div class="action-panel">
             <div class="action-panel-head">
               <div>
@@ -1068,7 +1095,7 @@
             <div class="form-group">
               <label for="lk_jenisPerjalanan">Jenis Perjalanan Dinas</label>
               <select id="lk_jenisPerjalanan" onchange="this.dataset.userEdited='1'; renderLembarKendali()">
-                <option value="Luar Kota" selected>Luar Kota</option>
+                <option value="Luar Kota (luar jakarta)" selected>Luar Kota (luar jakarta)</option>
                 <option value="Dalam Kota">Dalam Kota</option>
               </select>
             </div>
@@ -1124,12 +1151,13 @@
           <button class="btn btn-success" onclick="printRincian()"><svg class="ico"><use href="#i-print"></use></svg>Cetak Rincian</button>
         </div>
       </div>
+
       <div class="card no-print">
         <div class="card-head">
-          <span class="card-ico"><svg class="ico"><use href="#i-list"></use></svg></span>
+          <span class="card-ico"><svg class="ico"><use href="#i-user"></use></svg></span>
           <div class="card-heading">
             <h2 class="card-title">Pilih Pegawai untuk Rincian</h2>
-            <p class="card-sub">Rincian biaya per orang</p>
+            <p class="card-sub">Satu rincian untuk satu pegawai</p>
           </div>
         </div>
         <div class="card-body">
@@ -1150,8 +1178,315 @@
           </div>
         </div>
       </div>
+
+      <!-- Cockpit Card Pengaturan Biaya Perorangan -->
+      <div class="card no-print rincian-cockpit-card">
+
+        <!-- 2. Live KPI Overview Card -->
+        <div class="rincian-kpi-banner">
+          <div class="rincian-kpi-main">
+            <span class="rincian-kpi-label">TOTAL BIAYA PERJALANAN DINAS</span>
+            <div class="rincian-kpi-value" id="rincianKpiTotal">Rp 0</div>
+            <div class="rincian-kpi-sub" id="rincianKpiSub">Pegawai &bull; Perjalanan Dinas</div>
+          </div>
+          <div class="rincian-kpi-grid">
+            <div class="rincian-kpi-chip">
+              <span class="kpi-chip-label">💰 Uang Harian</span>
+              <strong id="kpiUhVal">Rp 0</strong>
+            </div>
+            <div class="rincian-kpi-chip">
+              <span class="kpi-chip-label">🏨 Penginapan</span>
+              <strong id="kpiHotelVal">Rp 0</strong>
+            </div>
+            <div class="rincian-kpi-chip">
+              <span class="kpi-chip-label">✈️ Tiket (PP)</span>
+              <strong id="kpiTiketVal">Rp 0</strong>
+            </div>
+            <div class="rincian-kpi-chip">
+              <span class="kpi-chip-label">🚗 Transport / DPR</span>
+              <strong id="kpiTransportVal">Rp 0</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Navigation Tabs within Cockpit -->
+        <div class="rincian-cockpit-tabs" role="tablist">
+          <button type="button" class="rincian-cockpit-tab active" data-tab="uh" onclick="switchCockpitTab('uh')">
+            <span class="cockpit-tab-ico">💰</span>
+            <span>Uang Harian</span>
+          </button>
+          <button type="button" class="rincian-cockpit-tab" data-tab="hotel" onclick="switchCockpitTab('hotel')">
+            <span class="cockpit-tab-ico">🏨</span>
+            <span>Penginapan</span>
+          </button>
+          <button type="button" class="rincian-cockpit-tab" data-tab="tiket" onclick="switchCockpitTab('tiket')">
+            <span class="cockpit-tab-ico">✈️</span>
+            <span>Tiket Perjalanan</span>
+          </button>
+          <button type="button" class="rincian-cockpit-tab" data-tab="transport" onclick="switchCockpitTab('transport')">
+            <span class="cockpit-tab-ico">🚗</span>
+            <span>Transport Lokal / DPR</span>
+          </button>
+        </div>
+
+        <!-- 4. Tab Content Panes -->
+        <div class="rincian-cockpit-panes">
+
+          <!-- Pane 1: Uang Harian -->
+          <div id="pane_uh" class="rincian-cockpit-pane active">
+            <div class="rincian-toggle-bar">
+              <label class="rincian-switch-label">
+                <input type="checkbox" id="rc_uhActive" class="rincian-switch-input" checked onchange="onCockpitUHChange()">
+                <span class="rincian-slider"></span>
+                <span class="rincian-switch-text">
+                  <strong>Berikan Uang Harian untuk Pegawai Ini</strong>
+                  <small>Uang harian penuh atau sesuai persentase/kegiatan</small>
+                </span>
+              </label>
+              <div class="rincian-badge-highlight" id="rc_uhRateHighlight">
+                Tarif SBM: <strong id="rc_uhSbmRate">Rp 0</strong> / hari
+              </div>
+            </div>
+
+            <div id="rc_uhBody" class="rincian-pane-inner">
+              <div class="form-grid rincian-form-grid">
+                <div class="form-group">
+                  <label for="rc_uhPercent">Persentase Uang Harian</label>
+                  <select id="rc_uhPercent" onchange="onCockpitUHChange()">
+                    <option value="1">100% (Standar Penuh)</option>
+                    <option value="0.6">60% (Menggunakan Kendaraan Dinas Operasional)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="rc_jenisKeg">Jenis Kegiatan</label>
+                  <select id="rc_jenisKeg" onchange="onCockpitUHChange()">
+                    <option value="biasa">Biasa / Non-Rapat (SBM Penuh)</option>
+                    <option value="fullboard">Rapat Fullboard di Luar Kantor</option>
+                    <option value="fullday">Rapat Fullday di Luar Kantor</option>
+                    <option value="residence">Rapat Di Dalam Kantor (Residence)</option>
+                    <option value="diklat">Pendidikan &amp; Pelatihan (Diklat)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Konsumsi Pengurang Uang Harian -->
+              <div class="rincian-subbox">
+                <div class="rincian-subbox-head">
+                  <label class="rincian-subbox-label">
+                    <input type="checkbox" id="rc_hasKonsumsi" onchange="onCockpitKonsumsiToggle()">
+                    <span>Ada Pengurangan Konsumsi / Jamuan Panitia</span>
+                  </label>
+                </div>
+
+                <div id="rc_konsumsiBody" style="display:none;" class="rincian-subbox-body">
+                  <div class="rincian-meal-mode-toggle">
+                    <button type="button" class="btn-submode active" id="rc_btnMealSbm" onclick="setCockpitMealMode('sbm')">
+                      Tarif SBM Standar
+                    </button>
+                    <button type="button" class="btn-submode" id="rc_btnMealManual" onclick="setCockpitMealMode('manual')">
+                      Input Manual Sesi Makan (At-Cost / Riil)
+                    </button>
+                  </div>
+
+                  <div id="rc_mealSbmWrap" class="form-grid rincian-meal-grid">
+                    <div class="form-group">
+                      <label for="rc_mealDays">Jumlah Hari Konsumsi</label>
+                      <input type="number" id="rc_mealDays" min="1" placeholder="Ikut hari perjadin" oninput="onCockpitUHChange()">
+                    </div>
+                    <div class="form-group">
+                      <label for="rc_mealCount">Frekuensi Makan Siang/Malam</label>
+                      <input type="number" id="rc_mealCount" min="0" max="3" value="1" oninput="onCockpitUHChange()">
+                    </div>
+                    <div class="form-group">
+                      <label for="rc_snackCount">Frekuensi Snack</label>
+                      <input type="number" id="rc_snackCount" min="0" max="2" value="0" oninput="onCockpitUHChange()">
+                    </div>
+                  </div>
+
+                  <div id="rc_mealManualWrap" style="display:none;">
+                    <div class="manual-meal-table-container">
+                      <table class="manual-meal-table" id="rc_manualMealTable">
+                        <thead>
+                          <tr>
+                            <th style="width: 14%;">Hari Ke-</th>
+                            <th style="width: 22%;">Waktu Makan</th>
+                            <th style="width: 32%;">Tarif Riil per Orang (Rp)</th>
+                            <th style="width: 20%;">Batas SBM</th>
+                            <th style="width: 12%;">Aksi</th>
+                          </tr>
+                        </thead>
+                        <tbody id="rc_manualMealList"></tbody>
+                      </table>
+                    </div>
+                    <div class="manual-meal-actions">
+                      <button type="button" class="btn btn-secondary btn-sm" onclick="addCockpitManualMealRow()">
+                        <svg class="ico"><use href="#i-plus"></use></svg> Tambah Sesi Makan
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="rincian-deduction-badge" id="rc_deductionSummary">
+                    Potongan Konsumsi: <strong>Rp 0</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pane 2: Penginapan -->
+          <div id="pane_hotel" class="rincian-cockpit-pane">
+            <div class="rincian-toggle-bar">
+              <label class="rincian-switch-label">
+                <input type="checkbox" id="rc_hotelActive" class="rincian-switch-input" onchange="onCockpitHotelChange()">
+                <span class="rincian-slider"></span>
+                <span class="rincian-switch-text">
+                  <strong>Berikan Biaya Penginapan (Hotel)</strong>
+                  <small>Aktifkan jika pegawai berhak atas biaya penginapan dinas</small>
+                </span>
+              </label>
+              <div class="rincian-badge-highlight" id="rc_hotelRateHighlight">
+                Plafon SBM: <strong id="rc_hotelSbmRate">Rp 0</strong> / malam
+              </div>
+            </div>
+
+            <div id="rc_hotelBody" class="rincian-pane-inner">
+              <div class="rincian-segmented-opts">
+                <button type="button" class="rincian-seg-btn active" id="rc_btnHotelSbm" onclick="setCockpitHotelMode('sbm')">
+                  Ikut Standar Plafon SBM
+                </button>
+                <button type="button" class="rincian-seg-btn" id="rc_btnHotelManual" onclick="setCockpitHotelMode('manual')">
+                  Tarif Riil / Multi-Hotel Manual
+                </button>
+              </div>
+
+              <div id="rc_hotelSbmCard" class="rincian-info-card">
+                <div class="info-card-row">
+                  <span>Jumlah Malam:</span>
+                  <strong id="rc_hotelNightsLabel">0 malam</strong>
+                </div>
+                <div class="info-card-row">
+                  <span>Tarif Plafon SBM (<span id="rc_hotelGolLabel">Gol. -</span>):</span>
+                  <strong id="rc_hotelRatePerNight">Rp 0</strong>
+                </div>
+                <div class="info-card-row">
+                  <span>Nama Hotel (Opsional):</span>
+                  <input type="text" id="rc_hotelName" placeholder="Contoh: Hotel Santika" style="width: 240px;" oninput="onCockpitHotelChange()">
+                </div>
+                <div class="info-card-divider"></div>
+                <div class="info-card-total">
+                  <span>Total Penginapan SBM:</span>
+                  <strong id="rc_hotelSbmTotal">Rp 0</strong>
+                </div>
+              </div>
+
+              <div id="rc_hotelManualCard" style="display:none;" class="form-grid rincian-hotel-grid">
+                <div class="form-group full">
+                  <label for="rc_hotelNameManual">Nama Penginapan / Hotel</label>
+                  <input type="text" id="rc_hotelNameManual" placeholder="Contoh: Hotel Aston Bandung" oninput="onCockpitHotelChange()">
+                </div>
+                <div class="form-group">
+                  <label for="rc_hotelPrice">Tarif Riil per Malam (Rp)</label>
+                  <input type="text" id="rc_hotelPrice" placeholder="Rp 0" oninput="formatCustomCostAmountInput(this); onCockpitHotelChange()">
+                </div>
+                <div class="form-group">
+                  <label for="rc_hotelNights">Jumlah Malam</label>
+                  <input type="number" id="rc_hotelNights" min="1" value="1" oninput="onCockpitHotelChange()">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pane 3: Tiket Perjalanan -->
+          <div id="pane_tiket" class="rincian-cockpit-pane">
+            <div class="rincian-pane-head-flex">
+              <div>
+                <h4 class="pane-title">Tiket Perjalanan Utama (PP)</h4>
+                <p class="pane-sub">Tiket Kereta Api, Whoosh, Pesawat, atau Kapal Laut untuk rute perjalanan dinas</p>
+              </div>
+              <div class="rincian-quick-buttons">
+                <span class="quick-btn-label">Tambah cepat:</span>
+                <button type="button" class="btn-quick-transport" onclick="addCockpitTicketPreset('Tiket Kereta Api')">+ Kereta Api</button>
+                <button type="button" class="btn-quick-transport" onclick="addCockpitTicketPreset('Tiket Whoosh')">+ Whoosh</button>
+                <button type="button" class="btn-quick-transport" onclick="addCockpitTicketPreset('Tiket Pesawat Udara')">+ Pesawat</button>
+                <button type="button" class="btn-quick-transport" onclick="addCockpitTicketPreset('Tiket Kapal Laut')">+ Kapal</button>
+              </div>
+            </div>
+
+            <div id="rc_ticketList" class="rincian-tickets-list"></div>
+
+            <div class="rincian-pane-foot">
+              <button type="button" class="btn btn-secondary btn-sm" onclick="addCockpitTicketPreset('Tiket')">
+                <svg class="ico"><use href="#i-plus"></use></svg> Tambah Tiket
+              </button>
+              <div id="rc_ticketTotalBadge" class="rincian-foot-badge">
+                Total Tiket: <strong>Rp 0</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pane 4: Transport Lokal & DPR -->
+          <div id="pane_transport" class="rincian-cockpit-pane">
+            <div id="rincianTransportCard">
+              <span id="rincianTransportEmpName" style="display:none;"></span>
+              <div class="rincian-pane-head-flex">
+                <div>
+                  <h4 class="pane-title">Transport (PP)</h4>
+                  <p class="pane-sub">Rute dan tarif riil taksi, ojol, tol, bensin, MRT, KRL, LRT untuk pegawai ini</p>
+                </div>
+                <div class="rincian-quick-buttons">
+                  <span class="quick-btn-label">Tambah cepat:</span>
+                  <button type="button" class="btn-quick-transport" onclick="addEmployeeTransportPreset('Grab')">+ Grab</button>
+                  <button type="button" class="btn-quick-transport" onclick="addEmployeeTransportPreset('Gojek')">+ Gojek</button>
+                  <button type="button" class="btn-quick-transport" onclick="addEmployeeTransportPreset('Taksi')">+ Taksi</button>
+                  <button type="button" class="btn-quick-transport" onclick="addEmployeeTransportPreset('MRT')">+ MRT</button>
+                  <button type="button" class="btn-quick-transport" onclick="addEmployeeTransportPreset('KRL')">+ KRL</button>
+                  <button type="button" class="btn-quick-transport" onclick="addEmployeeTransportPreset('LRT')">+ LRT</button>
+                  <button type="button" class="btn-quick-transport" onclick="addEmployeeTransportPreset('Tol')">+ Tol</button>
+                  <button type="button" class="btn-quick-transport" onclick="addEmployeeTransportPreset('Bensin')">+ Bensin</button>
+                </div>
+              </div>
+
+              <div id="rincianTransportRows" class="rincian-transport-rows"></div>
+
+              <div class="rincian-pane-foot">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="addEmployeeTransportRow('')">
+                  <svg class="ico"><use href="#i-plus"></use></svg> Tambah Baris Transport
+                </button>
+                <div id="rincianTransportSummary" class="rincian-foot-badge">
+                  Total Transport: <strong>Rp 0</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div> <!-- closes .rincian-cockpit-panes -->
+
+        <!-- Action Bar: Terapkan Biaya ke Semua -->
+        <div class="cockpit-footer-bar">
+          <div class="cockpit-footer-hint">
+            <span>💡 Ingin menyamakan komponen biaya untuk semua pegawai?</span>
+          </div>
+          <button type="button" class="btn btn-outline btn-sm btn-copy-all" onclick="copyCurrentRincianConfigToAll()" title="Salin pengaturan komponen biaya pegawai ini ke seluruh pegawai lainnya">
+            ✨ Terapkan Biaya ke Semua Pegawai
+          </button>
+        </div>
+        <datalist id="listTransportPresets">
+          <option value="Grab"></option>
+          <option value="Gojek"></option>
+          <option value="Taksi"></option>
+          <option value="MRT"></option>
+          <option value="KRL"></option>
+          <option value="LRT"></option>
+          <option value="Tol"></option>
+          <option value="Bensin"></option>
+          <option value="TransJakarta"></option>
+          <option value="Parkir"></option>
+          <option value="Angkot"></option>
+        </datalist>
+      </div> <!-- closes .rincian-cockpit-card -->
+
+      <!-- 5. Dokumen Cetak Rincian Perorangan -->
       <div id="rincianOut"></div>
-    </div>
+    </div> <!-- closes #tab-rincian -->
 
     <!-- ============================================================ TAB DPR PERORANGAN -->
     <div id="tab-dpr" class="tab-content">
@@ -1161,7 +1496,6 @@
         </div>
         <div class="btn-row-right">
           <button class="btn btn-primary" onclick="renderDPR()"><svg class="ico"><use href="#i-refresh"></use></svg>Refresh</button>
-          <button class="btn btn-secondary" onclick="printAllDPR()" title="Cetak seluruh lembar DPR untuk semua pegawai terpilih"><svg class="ico"><use href="#i-print"></use></svg><span id="labelPrintAllDPR">Cetak Semua DPR</span></button>
           <button class="btn btn-success" onclick="printDPR()"><svg class="ico"><use href="#i-print"></use></svg><span id="labelPrintDPR">Cetak DPR</span></button>
         </div>
       </div>

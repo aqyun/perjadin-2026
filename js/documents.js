@@ -178,7 +178,7 @@ function onKuitansiPeroranganEmployeeChange() {
 }
 
 function syncEmpSpdInputs(empId, val) {
-  if (!empId) return;
+  if (empId === null || empId === undefined || isNaN(empId)) return;
   spdPerEmployee[empId] = val;
   const prefix = getSpdNumberPrefix(val);
 
@@ -1173,6 +1173,9 @@ function populateRincianSelect() {
   const previousId = Number(previousValue);
   sel.value = previousValue !== '' && selectedEmpIds.has(previousId) ? previousValue : String([...selectedEmpIds][0]);
   loadRincianSPD();
+  if (typeof renderRincianEmpPills === 'function') renderRincianEmpPills();
+  if (typeof renderRincianCockpit === 'function') renderRincianCockpit();
+  if (typeof renderRincianTransportEditor === 'function') renderRincianTransportEditor();
   renderRincian();
 }
 
@@ -1187,6 +1190,9 @@ function loadRincianSPD() {
 
 function onRincianEmployeeChange() {
   loadRincianSPD();
+  if (typeof renderRincianEmpPills === 'function') renderRincianEmpPills();
+  if (typeof renderRincianCockpit === 'function') renderRincianCockpit();
+  if (typeof renderRincianTransportEditor === 'function') renderRincianTransportEditor();
   renderRincian();
 }
 
@@ -1198,6 +1204,9 @@ function saveRincianSPD() {
   const numVal = input ? input.value.trim() : '';
   const fullVal = buildFullSpdFromInput(numVal);
   syncEmpSpdInputs(empId, fullVal);
+  if (typeof renderRincianEmpPills === 'function') renderRincianEmpPills();
+  const tip = document.getElementById('activeSpdTip');
+  if (tip) tip.textContent = fullVal ? `Format lengkap: ${fullVal}` : 'Format: [Nomor] + /SPD/Birkom/...';
   renderRincian();
 }
 
@@ -1249,11 +1258,12 @@ function renderRincian() {
   const bendNama = document.getElementById('cfg_bendNama').value;
   const bendNip = document.getElementById('cfg_bendNip').value;
   const agenda = document.getElementById('agenda').value || '-';
-  const cbUH = document.getElementById('cbUH').checked;
-  const cbHotel = document.getElementById('cbHotel').checked;
-  const cbDPR = document.getElementById('cbDPR').checked;
-  const cbTiket = document.getElementById('cbTiket').checked;
-  const uhPercent = Number(document.getElementById('uhPersentase').value) || 1;
+  const cfg = typeof getEmployeeCostConfig === 'function' ? getEmployeeCostConfig(emp.id) : null;
+  const cbUH = cfg ? cfg.uhActive : (document.getElementById('cbUH')?.checked ?? true);
+  const cbHotel = cfg ? cfg.hotelActive : (document.getElementById('cbHotel')?.checked ?? false);
+  const cbDPR = document.getElementById('cbDPR')?.checked ?? true;
+  const cbTiket = document.getElementById('cbTiket')?.checked ?? false;
+  const uhPercent = cfg ? (cfg.uhPercent ?? 1) : (Number(document.getElementById('uhPersentase')?.value) || 1);
 
   let rincianRows = '';
   let no = 1;
@@ -1528,6 +1538,10 @@ function renderRincian() {
 
 function printRincian() {
   const select = document.getElementById('rincianPegawai');
+  if (!select || select.value === '') {
+    alert('Pilih pegawai terlebih dahulu sebelum mencetak.');
+    return;
+  }
   const empId = Number(select.value);
   const emp = employees.find(e => e.id === empId);
   const noSPD = (spdPerEmployee[empId] || '').trim();
@@ -1546,6 +1560,7 @@ function printRincian() {
     }
     return;
   }
+  if (typeof renderRincian === 'function') renderRincian();
   const clearPrintMode = () => document.body.classList.remove('print-rincian');
   document.body.classList.add('print-rincian');
   window.addEventListener('afterprint', clearPrintMode, { once: true });
@@ -1829,18 +1844,62 @@ ${tableRowsHtml}
 }
 
 function buildDPRLSHtml(emp, extraClass = '') {
-  const alamat = document.getElementById('cfg_alamatKuitansi').value;
-  const kotaAsal = document.getElementById('cfg_kotaAsal').value;
-  const kotaTeks = document.getElementById('kotaTujuan').value.trim();
+  const alamat = document.getElementById('cfg_alamatKuitansi')?.value || document.getElementById('cfg_alamatSatker')?.value || '';
+  const kotaAsal = document.getElementById('cfg_kotaAsal')?.value || 'Jakarta';
+  const kotaTeks = (document.getElementById('kotaTujuan')?.value || '').trim();
   const tujuan = getTujuanDisplay(kotaTeks);
   const rawSPD = (spdPerEmployee[emp.id] || '').trim();
   const noSPD = rawSPD || '<span class="spd-missing-badge">[No. SPD Wajib Diisi]</span>';
-  const tanggalSPD = formatTgl(document.getElementById('tglSPD').value);
-  const ppkNama = document.getElementById('cfg_ppkNama').value;
-  const ppkNip = document.getElementById('cfg_ppkNip').value;
-  const ppkJabatan = document.getElementById('cfg_ppkJabatan').value;
+  const tanggalSPD = formatTgl(document.getElementById('tglSPD')?.value || document.getElementById('tglST')?.value);
+  const ppkNama = document.getElementById('cfg_ppkNama')?.value || '';
+  const ppkNip = document.getElementById('cfg_ppkNip')?.value || '';
+  const ppkJabatan = document.getElementById('cfg_ppkJabatan')?.value || '';
   const biaya = hitungBiaya(emp);
-  const dprAmount = Number(biaya.dpr);
+  const dprAmount = Number(biaya.dpr) || 0;
+  const transportCosts = biaya.customCosts.filter(item => item.isTransport && item.amount > 0);
+  const transportExtra = transportCosts.reduce((total, item) => total + item.amount, 0);
+  const grandDprTotal = dprAmount + transportExtra;
+
+  let dprRowsHtml = '';
+  let rowNo = 1;
+
+  if (dprAmount > 0) {
+    dprRowsHtml += `
+      <tr>
+        <td class="tc">${rowNo++}</td>
+        <td>
+          <div class="dpr-uraian-title">Daftar Pengeluaran Riil</div>
+          <div>${kotaAsal} - ${tujuan} (PP)</div>
+          <div>1 orang x 1 hari x @${dprAmount.toLocaleString('id-ID')}</div>
+        </td>
+        <td class="dpr-jumlah">${rp(dprAmount)}</td>
+      </tr>`;
+  }
+
+  transportCosts.forEach(item => {
+    const route = [item.pickup, item.dropoff].filter(Boolean).join(' - ');
+    dprRowsHtml += `
+      <tr>
+        <td class="tc">${rowNo++}</td>
+        <td>
+          <div class="dpr-uraian-title">${escHtml(item.name)}</div>
+          <div>${escHtml(route || (kotaAsal + ' - ' + tujuan + ' (PP)'))}</div>
+        </td>
+        <td class="dpr-jumlah">${rp(item.amount)}</td>
+      </tr>`;
+  });
+
+  if (!dprRowsHtml) {
+    dprRowsHtml = `
+      <tr>
+        <td class="tc">1</td>
+        <td>
+          <div class="dpr-uraian-title">Daftar Pengeluaran Riil</div>
+          <div>${kotaAsal} - ${tujuan} (PP)</div>
+        </td>
+        <td class="dpr-jumlah">${rp(0)}</td>
+      </tr>`;
+  }
 
   return `
     <section class="dpr-area${extraClass}">
@@ -1870,16 +1929,8 @@ function buildDPRLSHtml(emp, extraClass = '') {
             <colgroup><col style="width:7%"><col style="width:63%"><col style="width:30%"></colgroup>
             <thead><tr><th>No.</th><th>Uraian</th><th>Jumlah</th></tr></thead>
             <tbody>
-              <tr>
-                <td class="tc">1</td>
-                <td>
-                  <div class="dpr-uraian-title">Daftar Pengeluaran Riil</div>
-                  <div>${kotaAsal} - ${tujuan} (PP)</div>
-                  <div>1 orang x 1 hari x @${dprAmount.toLocaleString('id-ID')}</div>
-                </td>
-                <td class="dpr-jumlah">${rp(dprAmount)}</td>
-              </tr>
-              <tr><td colspan="2" class="dpr-total-label">Jumlah</td><td class="dpr-jumlah">${rp(dprAmount)}</td></tr>
+              ${dprRowsHtml}
+              <tr><td colspan="2" class="dpr-total-label">Jumlah</td><td class="dpr-jumlah">${rp(grandDprTotal)}</td></tr>
             </tbody>
           </table>
         </li>
@@ -1910,36 +1961,70 @@ function buildDPRLSHtml(emp, extraClass = '') {
 
 function renderDPR() {
   const out = document.getElementById('dprOut');
+  if (!out) return;
   const select = document.getElementById('dprPegawai');
-  if (select.value === '') {
-    out.innerHTML = '';
+  if (!select || select.value === '') {
+    out.innerHTML = '<div class="alert-warn no-print">⚠️ Pilih pegawai untuk menampilkan lembar DPR.</div>';
     return;
   }
   const emp = employees.find(employee => employee.id === Number(select.value));
   if (!emp) {
-    out.innerHTML = '';
+    out.innerHTML = '<div class="alert-warn no-print">⚠️ Pegawai tidak ditemukan.</div>';
     return;
   }
 
   const isKKP = (document.getElementById('metodePembayaran')?.value || document.getElementById('lk_metodePembayaran')?.value || 'LS') === 'KKP';
-
-  if (!isKKP) {
-    const sbm = getSBM();
-    if (!sbm || sbm.provinsi !== 'DKI JAKARTA') {
-      out.innerHTML = '<div class="alert-warn">⚠️ Lembar Daftar Pengeluaran Riil (DPR) hanya untuk Perjalanan Dinas dalam kota DKI Jakarta (DPR Rp 170.000). Untuk berkas LS di luar DKI Jakarta, DPR tidak diperlukan. (Jika kegiatan ini menggunakan Kartu Kredit Pemerintah, pilih metode <strong>KKP</strong> pada Informasi Perjalanan).</div>';
-      return;
-    }
-    out.innerHTML = buildDPRLSHtml(emp);
+  if (isKKP) {
+    // DPR KKP wajib untuk berkas KKP (isinya pertiketan & hotel saja)
+    out.innerHTML = buildDPRKKPHtml(emp);
     return;
   }
 
-  out.innerHTML = buildDPRKKPHtml(emp);
+  // Untuk metode LS: Lembar DPR Perorangan hanya untuk DKI Jakarta (DPR Rp 170.000)
+  const isDki = typeof isTripToDki === 'function' ? isTripToDki() : false;
+  if (!isDki) {
+    out.innerHTML = `
+      <div class="alert-warn no-print" style="margin: 28px auto; max-width: 680px; text-align: center; padding: 32px 24px; border-radius: 14px; background: linear-gradient(135deg, #fffbeb, #fef3c7); border: 1.5px solid #fcd34d; color: #92400e; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.08);">
+        <div style="font-size: 34px; margin-bottom: 12px;">📋</div>
+        <div style="font-weight: 700; font-size: 16px; margin-bottom: 8px; color: #78350f;">Lembar DPR Perorangan Hanya Berlaku untuk Kegiatan di DKI Jakarta</div>
+        <p style="margin: 0 0 14px 0; font-size: 13.5px; line-height: 1.6; color: #92400e;">
+          Berdasarkan ketentuan perjalanan dinas LS, lembar <strong>Daftar Pengeluaran Riil (DPR)</strong> hanya diterbitkan untuk perjalanan dinas dalam kota <strong>DKI Jakarta (Rp 170.000)</strong>.<br>
+          Untuk perjalanan dinas luar kota/luar Jakarta, pertanggungjawaban biaya transport menggunakan kuitansi riil/nominatif dan tidak memerlukan lembar DPR.
+        </p>
+        <div style="display: inline-block; background: rgba(255,255,255,0.85); border: 1px solid #fde68a; border-radius: 8px; padding: 7px 16px; font-size: 12px; color: #b45309; font-weight: 500;">
+          💳 <em>Jika kegiatan ini menggunakan Kartu Kredit Pemerintah, pilih metode <strong>KKP</strong> pada formulir untuk mencetak DPR KKP (Hotel &amp; Tiket).</em>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  out.innerHTML = buildDPRLSHtml(emp);
 }
 
 function printDPR() {
   const select = document.getElementById('dprPegawai');
+  if (!select || !select.value) {
+    if (typeof showValidationToast === 'function') {
+      showValidationToast([{ label: 'Pegawai' }], 'Pilih pegawai terlebih dahulu!');
+    }
+    return;
+  }
   const empId = Number(select.value);
   const emp = employees.find(e => e.id === empId);
+
+  const isKKP = (document.getElementById('metodePembayaran')?.value || document.getElementById('lk_metodePembayaran')?.value || 'LS') === 'KKP';
+  const isDki = typeof isTripToDki === 'function' ? isTripToDki() : false;
+  if (!isKKP && !isDki) {
+    const msg = 'Lembar DPR (LS) hanya diterbitkan untuk Perjalanan Dinas dalam kota DKI Jakarta (Rp 170.000) atau perjalanan dengan metode KKP.';
+    if (typeof showValidationToast === 'function') {
+      showValidationToast([{ label: 'DPR' }], msg);
+    } else {
+      alert(msg);
+    }
+    return;
+  }
+
   const noSPD = (spdPerEmployee[empId] || '').trim();
   if (!noSPD) {
     const msg = `Nomor SPD Perorangan untuk ${emp ? emp.nama.split(',')[0] : 'pegawai'} WAJIB diisi sebelum mencetak!`;
@@ -1956,6 +2041,7 @@ function printDPR() {
     }
     return;
   }
+  if (typeof renderDPR === 'function') renderDPR();
   const clearPrintMode = () => document.body.classList.remove('print-dpr');
   document.body.classList.add('print-dpr');
   window.addEventListener('afterprint', clearPrintMode, { once: true });
@@ -2001,3 +2087,5 @@ function printAllDPR() {
   window.addEventListener('afterprint', clearPrintMode, { once: true });
   window.print();
 }
+
+

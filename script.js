@@ -1,4 +1,6 @@
-﻿// =====================================================================
+
+/* === FILE: js/data.js === */
+// =====================================================================
 // DATA & STATE (PerdinKu)
 // Data pegawai, data master SBM, dan state aplikasi
 // =====================================================================
@@ -129,6 +131,9 @@ try {
   provinceFoodRates = {};
 }
 
+
+
+/* === FILE: js/utils.js === */
 // =====================================================================
 // FORMAT HELPERS & UTILITIES (PerdinKu)
 // Helper format mata uang, tanggal, terbilang, teks
@@ -196,6 +201,9 @@ function terbilang(angka) {
   return helper(angka).trim() + ' Rupiah';
 }
 
+
+
+/* === FILE: js/calc.js === */
 // =====================================================================
 // SBM & PERHITUNGAN BIAYA (PerdinKu)
 // Perhitungan uang harian, hotel, transportasi, DPR, dan tarif SBM
@@ -400,6 +408,9 @@ function changeProvince() {
   updateDPRInput();
   updateSBMPreview();
   updateSbmWarnings();
+  if (typeof renderRincianTransportEditor === 'function') {
+    renderRincianTransportEditor();
+  }
 }
 
 function markDPRManual() {
@@ -757,7 +768,7 @@ function addManualMealRow(day = null, session = null, price = '') {
       <input type="text" class="manual-meal-price" value="${effectivePrice > 0 ? (typeof rp === 'function' ? rp(effectivePrice) : effectivePrice) : ''}" placeholder="Rp 0" oninput="formatManualMealPriceInput(this); onManualMealRowChange();">
     </td>
     <td class="tc">
-      <button type="button" class="manual-meal-btn-del" onclick="removeManualMealRow(this)" title="Hapus sesi makan ini">âœ•</button>
+      <button type="button" class="manual-meal-btn-del" onclick="removeManualMealRow(this)" title="Hapus sesi makan ini">✕</button>
     </td>
   `;
   tbody.appendChild(row);
@@ -984,7 +995,7 @@ function renderHotelGuests(row) {
   const checkedIds = existing.filter(cb => cb.checked).map(cb => Number(cb.dataset.employeeId));
   const selected = [...selectedEmpIds].sort((a, b) => a - b);
   box.innerHTML = `
-    <span class="hotel-guests-title">Pegawai yang menanggung kamar â€” biaya kamar penuh per pegawai</span>
+    <span class="hotel-guests-title">Pegawai yang menanggung kamar — biaya kamar penuh per pegawai</span>
     <div class="hotel-guest-list">
       ${selected.map(id => {
         const emp = employees.find(e => e.id === id);
@@ -1009,8 +1020,8 @@ function updateHotelSummary(row) {
   }
   const count = row.querySelectorAll('.hotel-guest-check:checked').length;
   el.textContent = count
-    ? `Total kamar ${rp(roomTotal)} â€” ${rp(roomTotal)} per pegawai Ã— ${count} pegawai = ${rp(roomTotal * count)}`
-    : `Total kamar ${rp(roomTotal)} â€” belum ada pegawai dicentang, biaya belum masuk rincian.`;
+    ? `Total kamar ${rp(roomTotal)} — ${rp(roomTotal)} per pegawai × ${count} pegawai = ${rp(roomTotal * count)}`
+    : `Total kamar ${rp(roomTotal)} — belum ada pegawai dicentang, biaya belum masuk rincian.`;
 }
 
 function refreshHotelSummaries() {
@@ -1035,7 +1046,7 @@ function getHotelEntries() {
   })).filter(item => item.name || item.price > 0);
 }
 
-const TRANSPORT_COST_RE = /\b(grab|grabcar|gojek|goride|gocar|grabbike|ojek|ojol|maxim|toll|tol|bensin|bbm|pertamax|pertalite|solar|parkir|taxi|taksi|angkot|transport)\b/i;
+const TRANSPORT_COST_RE = /\b(grab|grabcar|gojek|goride|gocar|grabbike|ojek|ojol|maxim|toll|tol|bensin|bbm|pertamax|pertalite|solar|parkir|taxi|taksi|angkot|mrt|krl|lrt|commuterline|tj|transjakarta|busway|transport)\b/i;
 const TOLL_COST_RE = /\b(toll|tol)\b/i;
 const TICKET_COST_RE = /\b(tiket|kereta|whoosh|pesawat|kapal|ferry|feri|speedboat)\b/i;
 const TICKET_CATEGORY_RULES = [
@@ -1051,6 +1062,10 @@ function getTicketCostLabel(name) {
 }
 
 function addCustomCost() {
+  if (typeof isTripToDki === 'function' && isTripToDki()) {
+    openDkiTransportModal();
+    return;
+  }
   const row = document.createElement('div');
   row.className = 'custom-cost-row';
   row.dataset.kindAuto = '1';
@@ -1333,7 +1348,7 @@ function updateSbmWarnings() {
           const rate = getHotelRate(sbm, emp.gol);
           if (rate && item.price > rate) {
             items.push({
-              title: `Penginapan â€” ${item.name || 'Hotel'} (${emp.nama.split(',')[0]})`,
+              title: `Penginapan — ${item.name || 'Hotel'} (${emp.nama.split(',')[0]})`,
               text: `${rp(item.price)}/malam melebihi SBM Gol ${emp.gol} sebesar ${rp(item.price - rate)}. SBM ${rp(rate)}/malam.`
             });
           }
@@ -1348,7 +1363,7 @@ function updateSbmWarnings() {
         const total = dprBase + transportExtra;
         if (total > sbm.dpr) {
           items.push({
-            title: `Transport â€” ${emp.nama.split(',')[0]}`,
+            title: `Transport — ${emp.nama.split(',')[0]}`,
             text: `${rp(total)} melebihi SBM DPR ${rp(sbm.dpr)} sebesar ${rp(total - sbm.dpr)}.`
           });
         }
@@ -1372,7 +1387,7 @@ function updateSbmWarnings() {
           if (total > sbm.tiket) {
             items.push({
               sptjm: true,
-              title: `${label} â€” ${emp.nama.split(',')[0]}`,
+              title: `${label} — ${emp.nama.split(',')[0]}`,
               text: `${rp(total)} melebihi SBM sebesar ${rp(total - sbm.tiket)}.`
             });
           }
@@ -1508,25 +1523,993 @@ function formatTanggalList(isoDates) {
   return groups.map(g => `${g.days.join(', ')} ${g.month} ${g.year}`).join(', ');
 }
 
+// =====================================================================
+// PENGATURAN KOMPONEN BIAYA PERORANGAN (Rincian per Orang Cockpit)
+// =====================================================================
+let employeeCostConfig = {};
+let employeeTransports = {};
+let currentCockpitTab = 'uh';
+
+function getDefaultCostConfig(empId) {
+  const isMealManual = !!document.getElementById('cbTarifMakanManual')?.checked;
+  const isMeeting = document.getElementById('jenisKegiatan')?.value === 'rapat';
+  const isBiasaWithKonsumsi = document.getElementById('jenisKegiatan')?.value === 'biasa' && !!document.getElementById('cbKonsumsiBiasa')?.checked;
+  const hasKonsumsi = isMeeting || isBiasaWithKonsumsi || isMealManual;
+  const rawMealDays = Number(document.getElementById('hariMakan')?.value);
+  const rawMealCount = Number(document.getElementById('jumlahMakan')?.value);
+  const rawSnackCount = Number(document.getElementById('jumlahSnack')?.value);
+  const rawHotelNights = Number(document.getElementById('rc_hotelNights')?.value);
+  const rawHotelPrice = (typeof parseNumber === 'function' ? parseNumber(document.getElementById('rc_hotelPrice')?.value) : Number(document.getElementById('rc_hotelPrice')?.value)) || 0;
+
+  return {
+    isCustomized: false,
+    uhActive: document.getElementById('cbUH') ? document.getElementById('cbUH').checked : true,
+    uhPercent: Number(document.getElementById('uhPersentase')?.value) || 1,
+    jenisKeg: document.getElementById('jenisKegiatan')?.value || 'biasa',
+    hasKonsumsi: hasKonsumsi,
+    mealMode: isMealManual ? 'manual' : 'sbm',
+    mealDays: (!isNaN(rawMealDays) && rawMealDays > 0) ? rawMealDays : null,
+    mealCount: (!isNaN(rawMealCount) && rawMealCount > 0) ? rawMealCount : (isMealManual ? 1 : 0),
+    snackCount: (!isNaN(rawSnackCount) && rawSnackCount > 0) ? rawSnackCount : 0,
+    manualMeals: (typeof getManualMealEntries === 'function') ? getManualMealEntries() : [],
+    hotelActive: document.getElementById('cbHotel') ? document.getElementById('cbHotel').checked : false,
+    hotelMode: 'sbm',
+    hotelName: '',
+    hotelNights: rawHotelNights || 1,
+    hotelPrice: rawHotelPrice,
+    tickets: []
+  };
+}
+
+function getEmployeeCostConfig(empId) {
+  const key = String(empId);
+  if (!employeeCostConfig[key] || !employeeCostConfig[key].isCustomized) {
+    employeeCostConfig[key] = getDefaultCostConfig(empId);
+  }
+  return employeeCostConfig[key];
+}
+
+function setEmployeeCostConfig(empId, cfg) {
+  const key = String(empId);
+  employeeCostConfig[key] = cfg;
+}
+
+function clearEmployeeCostConfig() {
+  employeeCostConfig = {};
+}
+
+function copyCurrentRincianConfigToAll() {
+  const select = document.getElementById('rincianPegawai');
+  if (!select || select.value === '') {
+    alert('Pilih pegawai terlebih dahulu.');
+    return;
+  }
+  const currentEmpId = Number(select.value);
+  if (isNaN(currentEmpId)) {
+    alert('Pilih pegawai terlebih dahulu.');
+    return;
+  }
+  const currentEmp = employees.find(e => e.id === currentEmpId);
+  const currentName = currentEmp ? currentEmp.nama.split(',')[0] : 'pegawai ini';
+
+  const cfg = getEmployeeCostConfig(currentEmpId);
+  const trans = getEmployeeTransports(currentEmpId);
+
+  let count = 0;
+  [...selectedEmpIds].forEach(id => {
+    if (id === currentEmpId) return;
+    const cloned = JSON.parse(JSON.stringify(cfg));
+    cloned.isCustomized = true;
+    employeeCostConfig[String(id)] = cloned;
+    employeeTransports[String(id)] = JSON.parse(JSON.stringify(trans));
+    count++;
+  });
+
+  renderRincianEmpPills();
+  renderRincianCockpit(currentEmpId);
+  if (typeof renderRincian === 'function') renderRincian();
+
+  alert(`✓ Pengaturan komponen biaya ${currentName} berhasil diterapkan ke seluruh (${count}) pegawai lainnya.`);
+}
+
+function switchRincianCockpitTab(tabKey) {
+  currentCockpitTab = tabKey;
+  document.querySelectorAll('.rincian-cockpit-tab').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tabKey);
+  });
+  document.querySelectorAll('.rincian-cockpit-pane').forEach(pane => {
+    pane.classList.toggle('active', pane.id === `pane_${tabKey}`);
+  });
+}
+
+function renderRincianEmpPills() {
+  const container = document.getElementById('rincianEmpPills');
+  if (!container) return;
+  const select = document.getElementById('rincianPegawai');
+  const currentEmpId = (select && select.value !== '') ? Number(select.value) : null;
+
+  if (selectedEmpIds.size === 0) {
+    container.innerHTML = '<span class="empty-hint" style="padding:10px;color:var(--text-sub);">Belum ada pegawai dipilih</span>';
+    return;
+  }
+
+  container.innerHTML = [...selectedEmpIds].map(id => {
+    const emp = employees.find(e => e.id === id);
+    if (!emp) return '';
+    const isActive = emp.id === currentEmpId;
+    const b = hitungBiaya(emp);
+    const shortName = emp.nama.split(',')[0];
+    const initials = shortName.split(' ').map(w => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
+    const fullSpd = (spdPerEmployee[emp.id] || '').trim();
+    const spdPrefix = typeof getSpdNumberPrefix === 'function' ? getSpdNumberPrefix(fullSpd) : fullSpd.split('/')[0];
+    const spdLabel = spdPrefix ? `SPD: ${spdPrefix}` : 'SPD: Kosong';
+    const spdClass = spdPrefix ? 'is-set' : 'is-empty';
+
+    return `
+      <button type="button" class="rincian-emp-chip ${isActive ? 'active' : ''}" onclick="switchRincianEmployee(${emp.id})">
+        <span class="emp-chip-avatar">${initials}</span>
+        <div class="emp-chip-info">
+          <div class="emp-chip-row-top">
+            <span class="emp-chip-name">${typeof escHtml === 'function' ? escHtml(shortName) : shortName}</span>
+            <span class="chip-spd-tag ${spdClass}">${spdLabel}</span>
+          </div>
+          <div class="emp-chip-row-bottom">
+            <span class="emp-chip-sub">Gol. ${typeof escHtml === 'function' ? escHtml(emp.gol || '-') : (emp.gol || '-')}</span>
+            <span class="emp-chip-total">${typeof rp === 'function' ? rp(b.total) : 'Rp ' + b.total}</span>
+          </div>
+        </div>
+      </button>
+    `;
+  }).join('');
+}
+
+function switchRincianEmployee(empId) {
+  const select = document.getElementById('rincianPegawai');
+  if (select) {
+    select.value = String(empId);
+  }
+  if (typeof loadRincianSPD === 'function') loadRincianSPD();
+  renderRincianEmpPills();
+  renderRincianCockpit(empId);
+  if (typeof renderRincian === 'function') renderRincian();
+}
+
+function renderRincianCockpit(targetEmpId) {
+  const select = document.getElementById('rincianPegawai');
+  const empId = targetEmpId !== undefined ? Number(targetEmpId) : ((select && select.value !== '') ? Number(select.value) : null);
+  if (empId === null || isNaN(empId)) return;
+
+  const emp = employees.find(e => e.id === empId);
+  if (!emp) return;
+
+  const cfg = getEmployeeCostConfig(empId);
+  const sbm = getSBM();
+  const { days, nights } = getEmpDays(empId);
+  const b = hitungBiaya(emp);
+
+  // Update Spotlight Card
+  const activeAvatarEl = document.getElementById('activeEmpAvatar');
+  const activeNameEl = document.getElementById('activeEmpName');
+  const activeMetaEl = document.getElementById('activeEmpMeta');
+  const activeTipEl = document.getElementById('activeSpdTip');
+  const shortName = emp.nama.split(',')[0];
+  const initials = shortName.split(' ').map(w => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
+  const fullSpd = (spdPerEmployee[emp.id] || '').trim();
+  const spdPrefix = typeof getSpdNumberPrefix === 'function' ? getSpdNumberPrefix(fullSpd) : fullSpd.split('/')[0];
+
+  if (activeAvatarEl) activeAvatarEl.textContent = initials;
+  if (activeNameEl) activeNameEl.textContent = emp.nama;
+  if (activeMetaEl) activeMetaEl.innerHTML = `Gol. <strong>${typeof escHtml === 'function' ? escHtml(emp.gol || '-') : (emp.gol || '-')}</strong> &bull; ${emp.nip ? 'NIP ' + (typeof escHtml === 'function' ? escHtml(emp.nip) : emp.nip) : (emp.jabatan ? (typeof escHtml === 'function' ? escHtml(emp.jabatan) : emp.jabatan) : 'Pegawai')}`;
+  if (activeTipEl) {
+    activeTipEl.textContent = fullSpd ? `Format lengkap: ${fullSpd}` : `Format: [Nomor] + ${typeof getSpdSuffix === 'function' ? getSpdSuffix() : '/SPD/Birkom/...'}`;
+  }
+
+  // Update input SPD value for active employee
+  const spdInputEl = document.getElementById('rincianNoSPD');
+  if (spdInputEl) spdInputEl.value = spdPrefix || '';
+  if (typeof updateAllSpdSuffixLabels === 'function') updateAllSpdSuffixLabels();
+
+  // Update KPI Overview
+  const kpiTotalEl = document.getElementById('rincianKpiTotal');
+  const kpiSubEl = document.getElementById('rincianKpiSub');
+  const kpiUhVal = document.getElementById('kpiUhVal');
+  const kpiHotelVal = document.getElementById('kpiHotelVal');
+  const kpiTiketVal = document.getElementById('kpiTiketVal');
+  const kpiTransportVal = document.getElementById('kpiTransportVal');
+
+  if (kpiTotalEl) kpiTotalEl.textContent = typeof rp === 'function' ? rp(b.total) : 'Rp ' + b.total;
+  if (kpiSubEl) kpiSubEl.innerHTML = `<strong>${typeof escHtml === 'function' ? escHtml(emp.nama) : emp.nama}</strong> &bull; ${emp.nip ? 'NIP ' + (typeof escHtml === 'function' ? escHtml(emp.nip) : emp.nip) : 'Gol. ' + (typeof escHtml === 'function' ? escHtml(emp.gol) : emp.gol)}`;
+  if (kpiUhVal) kpiUhVal.textContent = typeof rp === 'function' ? rp(b.uh) : 'Rp ' + b.uh;
+  if (kpiHotelVal) kpiHotelVal.textContent = typeof rp === 'function' ? rp(b.hotel) : 'Rp ' + b.hotel;
+  const ticketTotal = b.tiket + (b.customCosts.filter(c => c.isTicket).reduce((s, c) => s + c.amount, 0));
+  if (kpiTiketVal) kpiTiketVal.textContent = typeof rp === 'function' ? rp(ticketTotal) : 'Rp ' + ticketTotal;
+  const transTotal = b.dpr + (b.customCosts.filter(c => c.isTransport).reduce((s, c) => s + c.amount, 0));
+  if (kpiTransportVal) kpiTransportVal.textContent = typeof rp === 'function' ? rp(transTotal) : 'Rp ' + transTotal;
+
+  // Pane 1: Uang Harian
+  const uhActiveEl = document.getElementById('rc_uhActive');
+  const uhBodyEl = document.getElementById('rc_uhBody');
+  const uhRateEl = document.getElementById('rc_uhRateHighlight');
+  const uhPercentEl = document.getElementById('rc_uhPercent');
+  const jenisKegEl = document.getElementById('rc_jenisKeg');
+  const hasKonsumsiEl = document.getElementById('rc_hasKonsumsi');
+  const konsumsiBodyEl = document.getElementById('rc_konsumsiBody');
+
+  if (uhActiveEl) uhActiveEl.checked = !!cfg.uhActive;
+  if (uhBodyEl) uhBodyEl.style.display = cfg.uhActive ? 'block' : 'none';
+  if (uhRateEl) uhRateEl.textContent = `Tarif SBM: ${typeof rp === 'function' ? rp(sbm ? sbm.uh : 0) : 'Rp ' + (sbm ? sbm.uh : 0)} / hari (${days} hari)`;
+  if (uhPercentEl) uhPercentEl.value = String(cfg.uhPercent ?? 1);
+  if (jenisKegEl) jenisKegEl.value = cfg.jenisKeg || 'biasa';
+  if (hasKonsumsiEl) hasKonsumsiEl.checked = !!cfg.hasKonsumsi;
+  if (konsumsiBodyEl) konsumsiBodyEl.style.display = cfg.hasKonsumsi ? 'block' : 'none';
+
+  // Meal submode
+  const btnMealSbm = document.getElementById('rc_btnMealSbm');
+  const btnMealManual = document.getElementById('rc_btnMealManual');
+  const mealSbmWrap = document.getElementById('rc_mealSbmWrap');
+  const mealManualWrap = document.getElementById('rc_mealManualWrap');
+  const isManualMeal = cfg.mealMode === 'manual';
+
+  if (btnMealSbm) btnMealSbm.classList.toggle('active', !isManualMeal);
+  if (btnMealManual) btnMealManual.classList.toggle('active', isManualMeal);
+  const radMealSbm = typeof document.querySelector === 'function' ? document.querySelector('input[name="rc_mealMode"][value="sbm"]') : null;
+  const radMealManual = typeof document.querySelector === 'function' ? document.querySelector('input[name="rc_mealMode"][value="manual"]') : null;
+  if (radMealSbm) radMealSbm.checked = !isManualMeal;
+  if (radMealManual) radMealManual.checked = isManualMeal;
+
+  if (mealSbmWrap) mealSbmWrap.style.display = isManualMeal ? 'none' : 'grid';
+  if (mealManualWrap) mealManualWrap.style.display = isManualMeal ? 'block' : 'none';
+
+  const mealDaysEl = document.getElementById('rc_mealDays') || document.getElementById('rc_hariMakan');
+  const mealCountEl = document.getElementById('rc_mealCount') || document.getElementById('rc_makanCount');
+  const snackCountEl = document.getElementById('rc_snackCount');
+  if (mealDaysEl) mealDaysEl.value = cfg.mealDays ?? days;
+  if (mealCountEl) mealCountEl.value = cfg.mealCount ?? (isManualMeal ? 1 : 0);
+  if (snackCountEl) snackCountEl.value = cfg.snackCount ?? 0;
+
+  renderCockpitManualMeals(empId);
+
+  const deductSummaryEl = document.getElementById('rc_deductionSummary');
+  if (deductSummaryEl) {
+    const totalDeduct = (b.mealDeduction || 0) + (b.snackDeduction || 0);
+    deductSummaryEl.innerHTML = `Total Potongan Konsumsi: <strong>${typeof rp === 'function' ? rp(totalDeduct) : 'Rp ' + totalDeduct}</strong>`;
+  }
+
+  // Pane 2: Hotel
+  const hotelActiveEl = document.getElementById('rc_hotelActive');
+  const hotelBodyEl = document.getElementById('rc_hotelBody');
+  const btnHotelSbm = document.getElementById('rc_btnHotelSbm');
+  const btnHotelManual = document.getElementById('rc_btnHotelManual');
+  const hotelSbmCard = document.getElementById('rc_hotelSbmCard');
+  const hotelManualCard = document.getElementById('rc_hotelManualCard');
+  const isManualHotel = cfg.hotelMode === 'manual';
+
+  if (hotelActiveEl) hotelActiveEl.checked = !!cfg.hotelActive;
+  if (hotelBodyEl) hotelBodyEl.style.display = cfg.hotelActive ? 'block' : 'none';
+  if (btnHotelSbm) btnHotelSbm.classList.toggle('active', !isManualHotel);
+  if (btnHotelManual) btnHotelManual.classList.toggle('active', isManualHotel);
+  const radHotelSbm = typeof document.querySelector === 'function' ? document.querySelector('input[name="rc_hotelMode"][value="sbm"]') : null;
+  const radHotelManual = typeof document.querySelector === 'function' ? document.querySelector('input[name="rc_hotelMode"][value="manual"]') : null;
+  if (radHotelSbm) radHotelSbm.checked = !isManualHotel;
+  if (radHotelManual) radHotelManual.checked = isManualHotel;
+
+  if (hotelSbmCard) hotelSbmCard.style.display = isManualHotel ? 'none' : 'block';
+  if (hotelManualCard) hotelManualCard.style.display = isManualHotel ? 'grid' : 'none';
+
+  const sbmRate = sbm ? getHotelRate(sbm, emp.gol) : 0;
+  const hotelGolLabel = document.getElementById('rc_hotelGolLabel');
+  const hotelSbmRate = document.getElementById('rc_hotelSbmRate');
+  const hotelNightsLabel = document.getElementById('rc_hotelNightsLabel');
+  const hotelSbmTotal = document.getElementById('rc_hotelSbmTotal');
+
+  if (hotelGolLabel) hotelGolLabel.textContent = `Gol. ${emp.gol || '-'}`;
+  if (hotelSbmRate) hotelSbmRate.textContent = `${typeof rp === 'function' ? rp(sbmRate) : 'Rp ' + sbmRate} / malam`;
+  if (hotelNightsLabel) hotelNightsLabel.textContent = `${nights} malam`;
+  if (hotelSbmTotal) hotelSbmTotal.textContent = typeof rp === 'function' ? rp(sbmRate * nights) : 'Rp ' + (sbmRate * nights);
+
+  const hotelNameEl = document.getElementById('rc_hotelName') || document.getElementById('rc_hotelNameSbm');
+  const hotelNameManualEl = document.getElementById('rc_hotelNameManual');
+  if (hotelNameEl) hotelNameEl.value = cfg.hotelName || '';
+  if (hotelNameManualEl) hotelNameManualEl.value = cfg.hotelName || '';
+
+  const hotelNightsEl = document.getElementById('rc_hotelNights') || document.getElementById('rc_hotelNightsManual');
+  if (hotelNightsEl && hotelNightsEl.tagName === 'INPUT') hotelNightsEl.value = cfg.hotelNights || nights || 1;
+
+  const hotelPriceEl = document.getElementById('rc_hotelPrice') || document.getElementById('rc_hotelRateManual');
+  if (hotelPriceEl) hotelPriceEl.value = cfg.hotelPrice ? (typeof rp === 'function' ? rp(cfg.hotelPrice) : 'Rp ' + cfg.hotelPrice) : '';
+
+  // Pane 3: Tiket
+  renderCockpitTickets(empId);
+
+  // Pane 4: Transport
+  renderRincianTransportEditor(empId);
+
+  // Keep active cockpit tab visible
+  if (typeof switchCockpitTab === 'function') {
+    switchCockpitTab(currentCockpitTab || 'uh');
+  }
+}
+
+function onCockpitUHChange() {
+  const select = document.getElementById('rincianPegawai');
+  if (!select || select.value === '') return;
+  const empId = Number(select.value);
+  if (isNaN(empId)) return;
+
+  const cfg = getEmployeeCostConfig(empId);
+  cfg.isCustomized = true;
+  cfg.uhActive = !!document.getElementById('rc_uhActive')?.checked;
+  cfg.uhPercent = Number(document.getElementById('rc_uhPercent')?.value) || 1;
+  cfg.jenisKeg = document.getElementById('rc_jenisKeg')?.value || 'biasa';
+  const mealDaysEl = document.getElementById('rc_mealDays') || document.getElementById('rc_hariMakan');
+  const mealCountEl = document.getElementById('rc_mealCount') || document.getElementById('rc_makanCount');
+  const snackCountEl = document.getElementById('rc_snackCount');
+
+  cfg.mealDays = Number(mealDaysEl?.value) || null;
+  cfg.mealCount = Number(mealCountEl?.value) || 0;
+  cfg.snackCount = Number(snackCountEl?.value) || 0;
+
+  renderRincianCockpit(empId);
+  renderRincianEmpPills();
+  if (typeof renderRincian === 'function') renderRincian();
+}
+
+function onCockpitKonsumsiToggle() {
+  const select = document.getElementById('rincianPegawai');
+  if (!select || select.value === '') return;
+  const empId = Number(select.value);
+  if (isNaN(empId)) return;
+
+  const cfg = getEmployeeCostConfig(empId);
+  cfg.isCustomized = true;
+  cfg.hasKonsumsi = !!document.getElementById('rc_hasKonsumsi')?.checked;
+
+  renderRincianCockpit(empId);
+  renderRincianEmpPills();
+  if (typeof renderRincian === 'function') renderRincian();
+}
+
+function setCockpitMealMode(mode) {
+  const select = document.getElementById('rincianPegawai');
+  if (!select || select.value === '') return;
+  const empId = Number(select.value);
+  if (isNaN(empId)) return;
+
+  const cfg = getEmployeeCostConfig(empId);
+  cfg.isCustomized = true;
+  cfg.mealMode = mode;
+
+  renderRincianCockpit(empId);
+  renderRincianEmpPills();
+  if (typeof renderRincian === 'function') renderRincian();
+}
+
+function renderCockpitManualMeals(empId) {
+  const tbody = document.getElementById('rc_manualMealList') || document.getElementById('rc_manualMealRows');
+  if (!tbody) return;
+
+  const cfg = getEmployeeCostConfig(empId);
+  const meals = cfg.manualMeals || [];
+  const { days } = getEmpDays(empId);
+
+  if (meals.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" style="text-align:center; padding:12px; color:var(--text-sub);">
+          Belum ada sesi makan riil. Klik <strong>+ Tambah Sesi Makan</strong> di bawah.
+        </td>
+      </tr>`;
+    return;
+  }
+
+  tbody.innerHTML = meals.map((m, idx) => {
+    let dayOptions = '';
+    const maxDays = Math.max(days || 1, 1);
+    for (let d = 1; d <= maxDays; d++) {
+      const selected = m.day == d ? 'selected' : '';
+      dayOptions += `<option value="${d}" ${selected}>Hari ${d}</option>`;
+    }
+
+    const dispAmount = m.price > 0 ? (typeof rp === 'function' ? rp(m.price) : 'Rp ' + m.price) : '';
+
+    return `
+      <tr data-idx="${idx}">
+        <td style="text-align:center;">${idx + 1}</td>
+        <td>
+          <select class="cockpit-meal-day form-input-sm" onchange="onCockpitManualMealChange(this, ${idx})">
+            ${dayOptions}
+          </select>
+        </td>
+        <td>
+          <select class="cockpit-meal-session form-input-sm" onchange="onCockpitManualMealChange(this, ${idx})">
+            <option value="Makan Pagi" ${m.session === 'Makan Pagi' ? 'selected' : ''}>Makan Pagi</option>
+            <option value="Makan Siang" ${m.session === 'Makan Siang' ? 'selected' : ''}>Makan Siang</option>
+            <option value="Makan Malam" ${m.session === 'Makan Malam' ? 'selected' : ''}>Makan Malam</option>
+          </select>
+        </td>
+        <td>
+          <input type="text" class="cockpit-meal-price form-input-sm" placeholder="Rp 0" value="${dispAmount}" oninput="formatCustomCostAmountInput(this); onCockpitManualMealChange(this, ${idx})">
+        </td>
+        <td style="text-align:center;">
+          <button type="button" class="btn-del-sm" onclick="removeCockpitManualMealRow(${idx})" title="Hapus sesi makan">&times;</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function addCockpitManualMealRow() {
+  const select = document.getElementById('rincianPegawai');
+  if (!select || select.value === '') return;
+  const empId = Number(select.value);
+  if (isNaN(empId)) return;
+
+  const cfg = getEmployeeCostConfig(empId);
+  cfg.isCustomized = true;
+  if (!cfg.manualMeals) cfg.manualMeals = [];
+
+  const { days } = getEmpDays(empId);
+  const maxDays = Math.max(days || 1, 1);
+
+  let targetDay = 1;
+  let targetSession = 'Makan Siang';
+  const sessions = ['Makan Pagi', 'Makan Siang', 'Makan Malam'];
+
+  let found = false;
+  for (let d = 1; d <= maxDays; d++) {
+    for (const s of sessions) {
+      const exists = cfg.manualMeals.some(m => m.day == d && m.session === s);
+      if (!exists) {
+        targetDay = d;
+        targetSession = s;
+        found = true;
+        break;
+      }
+    }
+    if (found) break;
+  }
+
+  if (!found) {
+    alert(`Seluruh sesi makan untuk durasi perjalanan (${maxDays} hari) sudah terinput.`);
+    return;
+  }
+
+  cfg.manualMeals.push({
+    day: targetDay,
+    session: targetSession,
+    price: 0
+  });
+
+  renderCockpitManualMeals(empId);
+  renderRincianCockpit(empId);
+  renderRincianEmpPills();
+  if (typeof renderRincian === 'function') renderRincian();
+}
+
+function removeCockpitManualMealRow(idx) {
+  const select = document.getElementById('rincianPegawai');
+  if (!select || select.value === '') return;
+  const empId = Number(select.value);
+  if (isNaN(empId)) return;
+
+  const cfg = getEmployeeCostConfig(empId);
+  cfg.isCustomized = true;
+  if (cfg.manualMeals && cfg.manualMeals[idx]) {
+    cfg.manualMeals.splice(idx, 1);
+  }
+
+  renderCockpitManualMeals(empId);
+  renderRincianCockpit(empId);
+  renderRincianEmpPills();
+  if (typeof renderRincian === 'function') renderRincian();
+}
+
+function onCockpitManualMealChange(el, idx) {
+  const select = document.getElementById('rincianPegawai');
+  if (!select || select.value === '') return;
+  const empId = Number(select.value);
+  if (isNaN(empId)) return;
+
+  const cfg = getEmployeeCostConfig(empId);
+  if (!cfg.manualMeals || !cfg.manualMeals[idx]) return;
+
+  const row = el.closest('tr');
+  if (!row) return;
+
+  const dayVal = Number(row.querySelector('.cockpit-meal-day')?.value) || 1;
+  const sessionVal = row.querySelector('.cockpit-meal-session')?.value || 'Makan Siang';
+  const priceVal = (typeof parseNumber === 'function' ? parseNumber(row.querySelector('.cockpit-meal-price')?.value) : Number(row.querySelector('.cockpit-meal-price')?.value)) || 0;
+
+  const isDuplicate = cfg.manualMeals.some((m, i) => i !== idx && m.day == dayVal && m.session === sessionVal);
+  if (isDuplicate) {
+    alert(`Perhatian: Hari ${dayVal} untuk sesi ${sessionVal} sudah pernah diinput.`);
+  }
+
+  cfg.isCustomized = true;
+  cfg.manualMeals[idx].day = dayVal;
+  cfg.manualMeals[idx].session = sessionVal;
+  cfg.manualMeals[idx].price = priceVal;
+
+  renderRincianCockpit(empId);
+  renderRincianEmpPills();
+  if (typeof renderRincian === 'function') renderRincian();
+}
+
+function switchCockpitTab(tabKey) {
+  if (!tabKey) tabKey = 'uh';
+  currentCockpitTab = tabKey;
+
+  // Update tabs
+  const tabs = (typeof document.querySelectorAll === 'function') ? (document.querySelectorAll('.rincian-cockpit-tab') || []) : [];
+  tabs.forEach(btn => {
+    const isTarget = typeof btn.getAttribute === 'function' ? (btn.getAttribute('data-tab') === tabKey) : (btn.dataset && btn.dataset.tab === tabKey);
+    btn.classList.toggle('active', isTarget);
+    if (typeof btn.setAttribute === 'function') {
+      btn.setAttribute('aria-selected', isTarget ? 'true' : 'false');
+    }
+  });
+
+  // Update panes
+  const panes = (typeof document.querySelectorAll === 'function') ? (document.querySelectorAll('.rincian-cockpit-pane') || []) : [];
+  panes.forEach(pane => {
+    pane.classList.remove('active');
+  });
+  const targetPane = document.getElementById('pane_' + tabKey);
+  if (targetPane) {
+    targetPane.classList.add('active');
+  }
+
+  // Ensure content in active pane is rendered
+  const select = document.getElementById('rincianPegawai');
+  const empId = select && select.value !== '' ? Number(select.value) : null;
+  if (empId !== null && !isNaN(empId)) {
+    if (tabKey === 'tiket') {
+      if (typeof renderCockpitTickets === 'function') renderCockpitTickets(empId);
+    } else if (tabKey === 'transport') {
+      if (typeof renderRincianTransportEditor === 'function') renderRincianTransportEditor(empId);
+    }
+  }
+}
+
+function onCockpitHotelModeChange(mode) {
+  setCockpitHotelMode(mode);
+}
+
+function onCockpitMealModeChange(mode) {
+  setCockpitMealMode(mode);
+}
+
+function onCockpitHotelChange() {
+  const select = document.getElementById('rincianPegawai');
+  if (!select || select.value === '') return;
+  const empId = Number(select.value);
+  if (isNaN(empId)) return;
+
+  const cfg = getEmployeeCostConfig(empId);
+  cfg.isCustomized = true;
+  cfg.hotelActive = !!document.getElementById('rc_hotelActive')?.checked;
+
+  const nameEl = document.getElementById('rc_hotelName') || document.getElementById('rc_hotelNameManual') || document.getElementById('rc_hotelNameSbm');
+  const nightsEl = document.getElementById('rc_hotelNights') || document.getElementById('rc_hotelNightsManual');
+  const priceEl = document.getElementById('rc_hotelPrice') || document.getElementById('rc_hotelRateManual');
+
+  if (nameEl) cfg.hotelName = nameEl.value || '';
+  if (nightsEl && nightsEl.tagName === 'INPUT') cfg.hotelNights = Number(nightsEl.value) || 1;
+  if (priceEl) {
+    cfg.hotelPrice = (typeof parseNumber === 'function' ? parseNumber(priceEl.value) : Number(priceEl.value)) || 0;
+  }
+
+  renderRincianCockpit(empId);
+  renderRincianEmpPills();
+  if (typeof renderRincian === 'function') renderRincian();
+}
+
+function setCockpitHotelMode(mode) {
+  const select = document.getElementById('rincianPegawai');
+  if (!select || select.value === '') return;
+  const empId = Number(select.value);
+  if (isNaN(empId)) return;
+
+  const cfg = getEmployeeCostConfig(empId);
+  cfg.isCustomized = true;
+  cfg.hotelMode = mode;
+
+  renderRincianCockpit(empId);
+  renderRincianEmpPills();
+  if (typeof renderRincian === 'function') renderRincian();
+}
+
+function renderCockpitTickets(empId) {
+  const container = document.getElementById('rc_ticketList');
+  const totalBadge = document.getElementById('rc_ticketTotalBadge');
+  if (!container) return;
+
+  const cfg = getEmployeeCostConfig(empId);
+  const tickets = cfg.tickets || [];
+  let total = 0;
+
+  if (tickets.length === 0) {
+    container.innerHTML = `
+      <div class="emp-trans-empty">
+        Belum ada tiket perjalanan untuk pegawai ini.
+        Gunakan tombol <strong>+ Kereta Api</strong>, <strong>+ Whoosh</strong>, <strong>+ Pesawat</strong> di atas atau klik <strong>Tambah Tiket</strong>.
+      </div>`;
+  } else {
+    container.innerHTML = tickets.map((t, idx) => {
+      total += (t.amount || 0);
+      const dispAmount = t.amount > 0 ? (typeof rp === 'function' ? rp(t.amount) : 'Rp ' + t.amount) : '';
+      return `
+        <div class="emp-trans-row" data-idx="${idx}">
+          <div class="emp-trans-col emp-trans-name-col">
+            <label class="emp-trans-label">Jenis Tiket</label>
+            <input type="text" class="cockpit-ticket-name" placeholder="Tiket Kereta Api / Pesawat..." value="${typeof escHtml === 'function' ? escHtml(t.name || '') : (t.name || '')}" oninput="onCockpitTicketChange(this, ${idx})">
+          </div>
+          <div class="emp-trans-col emp-trans-route-col" style="grid-column: span 2;">
+            <label class="emp-trans-label">Rute Perjalanan (PP)</label>
+            <input type="text" class="cockpit-ticket-route" placeholder="Contoh: Jakarta - Yogyakarta (PP)" value="${typeof escHtml === 'function' ? escHtml(t.route || '') : (t.route || '')}" oninput="onCockpitTicketChange(this, ${idx})">
+          </div>
+          <div class="emp-trans-col emp-trans-amount-col">
+            <label class="emp-trans-label">Harga Tiket (Rp)</label>
+            <input type="text" class="cockpit-ticket-amount" placeholder="Rp 0" value="${dispAmount}" oninput="formatCustomCostAmountInput(this); onCockpitTicketChange(this, ${idx})">
+          </div>
+          <div class="emp-trans-col emp-trans-del-col">
+            <label class="emp-trans-label">&nbsp;</label>
+            <button type="button" class="btn btn-warn emp-trans-del-btn" onclick="removeCockpitTicket(${idx})">Hapus</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  if (totalBadge) {
+    totalBadge.innerHTML = `Total Tiket: <strong>${typeof rp === 'function' ? rp(total) : 'Rp ' + total}</strong>`;
+  }
+}
+
+function addCockpitTicketPreset(name) {
+  const select = document.getElementById('rincianPegawai');
+  if (!select || select.value === '') return;
+  const empId = Number(select.value);
+  if (isNaN(empId)) return;
+
+  const cfg = getEmployeeCostConfig(empId);
+  cfg.isCustomized = true;
+  if (!cfg.tickets) cfg.tickets = [];
+
+  const kotaAsal = document.getElementById('cfg_kotaAsal')?.value || 'Jakarta';
+  const kotaTujuan = document.getElementById('kotaTujuan')?.value || '';
+  const defaultRoute = (kotaAsal && kotaTujuan) ? `${kotaAsal} - ${kotaTujuan} (PP)` : '';
+
+  cfg.tickets.push({
+    id: 'tkt_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+    name: name,
+    route: defaultRoute,
+    amount: 0
+  });
+
+  renderCockpitTickets(empId);
+  renderRincianCockpit(empId);
+  renderRincianEmpPills();
+  if (typeof renderRincian === 'function') renderRincian();
+}
+
+function removeCockpitTicket(idx) {
+  const select = document.getElementById('rincianPegawai');
+  if (!select || select.value === '') return;
+  const empId = Number(select.value);
+  if (isNaN(empId)) return;
+
+  const cfg = getEmployeeCostConfig(empId);
+  cfg.isCustomized = true;
+  if (cfg.tickets && cfg.tickets[idx]) {
+    cfg.tickets.splice(idx, 1);
+  }
+
+  renderCockpitTickets(empId);
+  renderRincianCockpit(empId);
+  renderRincianEmpPills();
+  if (typeof renderRincian === 'function') renderRincian();
+}
+
+function onCockpitTicketChange(inputEl, idx) {
+  const select = document.getElementById('rincianPegawai');
+  if (!select || select.value === '') return;
+  const empId = Number(select.value);
+  if (isNaN(empId)) return;
+
+  const cfg = getEmployeeCostConfig(empId);
+  if (!cfg.tickets || !cfg.tickets[idx]) return;
+
+  const row = inputEl.closest('.emp-trans-row');
+  if (!row) return;
+
+  cfg.isCustomized = true;
+  cfg.tickets[idx].name = row.querySelector('.cockpit-ticket-name')?.value || '';
+  cfg.tickets[idx].route = row.querySelector('.cockpit-ticket-route')?.value || '';
+  cfg.tickets[idx].amount = (typeof parseNumber === 'function' ? parseNumber(row.querySelector('.cockpit-ticket-amount')?.value) : Number(row.querySelector('.cockpit-ticket-amount')?.value)) || 0;
+
+  renderRincianCockpit(empId);
+  renderRincianEmpPills();
+  if (typeof renderRincian === 'function') renderRincian();
+}
+
+// =====================================================================
+// TRANSPORT LOKAL / DPR PERORANGAN (Rincian per Orang)
+// =====================================================================
+function isTripToDki() {
+  if (typeof isMultiProvActive === 'function' && isMultiProvActive()) {
+    const multi = typeof getMultiProvData === 'function' ? getMultiProvData() : null;
+    if (multi && ((multi.sbm1 && multi.sbm1.provinsi === 'DKI JAKARTA') || (multi.sbm2 && multi.sbm2.provinsi === 'DKI JAKARTA'))) {
+      return true;
+    }
+  }
+  const sbm = typeof getSBM === 'function' ? getSBM() : null;
+  return !!(sbm && sbm.provinsi === 'DKI JAKARTA');
+}
+
+function openDkiTransportModal() {
+  const overlay = document.getElementById('dkiTransportOverlay');
+  if (overlay) {
+    overlay.classList.add('is-open');
+  } else {
+    alert('⚠️ PERJALANAN DINAS DKI JAKARTA\n\nUntuk kegiatan perjalanan dinas di DKI Jakarta, komponen transport menggunakan tarif tetap Daftar Pengeluaran Riil (DPR) sebesar Rp 170.000 / orang secara default/otomatis sesuai ketentuan SBM, sehingga tidak dapat ditambah atau diedit dengan rincian transport manual.');
+  }
+}
+
+function closeDkiTransportModal() {
+  const overlay = document.getElementById('dkiTransportOverlay');
+  if (overlay) overlay.classList.remove('is-open');
+}
+
+function handleDkiTransportBackdrop(e) {
+  if (e.target && e.target.id === 'dkiTransportOverlay') {
+    closeDkiTransportModal();
+  }
+}
+
+function getEmployeeTransports(empId) {
+  const key = String(empId);
+  if (!employeeTransports[key]) {
+    employeeTransports[key] = [];
+  }
+  return employeeTransports[key];
+}
+
+function setEmployeeTransports(empId, list) {
+  const key = String(empId);
+  employeeTransports[key] = Array.isArray(list) ? list : [];
+}
+
+function clearEmployeeTransports() {
+  employeeTransports = {};
+}
+
+function renderRincianTransportEditor(targetEmpId) {
+  const select = document.getElementById('rincianPegawai');
+  const rowsContainer = document.getElementById('rincianTransportRows');
+  const summaryEl = document.getElementById('rincianTransportSummary');
+  if (!rowsContainer) return;
+
+  const empId = targetEmpId !== undefined ? Number(targetEmpId) : ((select && select.value !== '') ? Number(select.value) : null);
+  if (empId === null || isNaN(empId)) {
+    rowsContainer.innerHTML = '';
+    return;
+  }
+
+  // Jika tujuan DKI JAKARTA: Transport otomatis tarif tetap DPR Rp 170.000
+  if (isTripToDki()) {
+    rowsContainer.innerHTML = `
+      <div class="emp-trans-dki-notice" style="background: linear-gradient(135deg, rgba(37,99,235,0.06), rgba(59,130,246,0.12)); border: 1.5px solid rgba(59,130,246,0.35); border-radius: 12px; padding: 18px 20px; margin: 10px 0;">
+        <div style="display: flex; align-items: flex-start; gap: 14px;">
+          <span style="font-size: 28px; line-height: 1;">🏛️</span>
+          <div>
+            <div style="font-weight: 700; font-size: 14px; color: #1e40af; margin-bottom: 5px;">Perjalanan Dinas Dalam Kota DKI Jakarta (Tarif Tetap DPR)</div>
+            <p style="margin: 0 0 8px 0; font-size: 12.5px; color: #1e3a8a; line-height: 1.5;">
+              Sesuai ketentuan SBM TA 2026, biaya transport kegiatan di DKI Jakarta telah ditetapkan berupa <strong>Daftar Pengeluaran Riil (DPR) sebesar Rp 170.000 / orang</strong> secara default/otomatis.
+            </p>
+            <div style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; background: #dbeafe; color: #1e40af; padding: 4px 10px; border-radius: 6px;">
+              🔒 Transport Terkunci: Default Rp 170.000 (Otomatis)
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    if (summaryEl) {
+      summaryEl.innerHTML = `Transport DKI: <strong>Rp 170.000 (DPR Otomatis)</strong>`;
+    }
+    return;
+  }
+
+  const emp = employees.find(e => e.id === empId);
+  const list = getEmployeeTransports(empId);
+  let total = 0;
+
+  if (list.length === 0) {
+    rowsContainer.innerHTML = `
+      <div class="emp-trans-empty">
+        Belum ada rincian transport untuk ${emp ? emp.nama.split(',')[0] : 'pegawai ini'}.
+        Gunakan tombol <strong>+ Grab</strong>, <strong>+ Gojek</strong>, <strong>+ MRT</strong>, <strong>+ KRL</strong>, dll. di atas atau klik <strong>Tambah Baris Transport</strong>.
+      </div>`;
+  } else {
+    rowsContainer.innerHTML = list.map((item, idx) => {
+      total += (item.amount || 0);
+      const dispAmount = item.amount > 0 ? (typeof rp === 'function' ? rp(item.amount) : 'Rp ' + item.amount) : '';
+      return `
+        <div class="emp-trans-row" data-idx="${idx}">
+          <div class="emp-trans-col emp-trans-name-col">
+            <label class="emp-trans-label">Jenis / Moda</label>
+            <input type="text" class="emp-trans-name" placeholder="Grab, MRT, Tol..." value="${typeof escHtml === 'function' ? escHtml(item.name || '') : (item.name || '')}" list="listTransportPresets" oninput="onEmployeeTransportRowChange(this, ${idx})">
+          </div>
+          <div class="emp-trans-col emp-trans-pickup-col">
+            <label class="emp-trans-label">Titik Jemput</label>
+            <input type="text" class="emp-trans-pickup" placeholder="Contoh: Rumah / Stasiun Gambir" value="${typeof escHtml === 'function' ? escHtml(item.pickup || '') : (item.pickup || '')}" oninput="onEmployeeTransportRowChange(this, ${idx})">
+          </div>
+          <div class="emp-trans-col emp-trans-dropoff-col">
+            <label class="emp-trans-label">Titik Antar</label>
+            <input type="text" class="emp-trans-dropoff" placeholder="Contoh: Stasiun Halim / Kantor" value="${typeof escHtml === 'function' ? escHtml(item.dropoff || '') : (item.dropoff || '')}" oninput="onEmployeeTransportRowChange(this, ${idx})">
+          </div>
+          <div class="emp-trans-col emp-trans-amount-col">
+            <label class="emp-trans-label">Biaya / Tarif (Rp)</label>
+            <input type="text" class="emp-trans-amount" placeholder="Rp 0" value="${dispAmount}" oninput="formatCustomCostAmountInput(this); onEmployeeTransportRowChange(this, ${idx})">
+          </div>
+          <div class="emp-trans-col emp-trans-del-col">
+            <label class="emp-trans-label">&nbsp;</label>
+            <button type="button" class="btn btn-warn emp-trans-del-btn" onclick="removeEmployeeTransportRow(${idx})">Hapus</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  if (summaryEl) {
+    summaryEl.innerHTML = `Total Transport: <strong>${typeof rp === 'function' ? rp(total) : 'Rp ' + total}</strong>`;
+  }
+}
+
+function addEmployeeTransportPreset(presetName) {
+  if (isTripToDki()) {
+    openDkiTransportModal();
+    return;
+  }
+  const select = document.getElementById('rincianPegawai');
+  if (!select || select.value === '') {
+    alert('Silakan pilih pegawai terlebih dahulu pada daftar pegawai di atas.');
+    return;
+  }
+  const empId = Number(select.value);
+  if (isNaN(empId)) {
+    alert('Silakan pilih pegawai terlebih dahulu pada daftar pegawai di atas.');
+    return;
+  }
+  addEmployeeTransportRow(presetName);
+}
+
+function addEmployeeTransportRow(presetName = '') {
+  if (isTripToDki()) {
+    openDkiTransportModal();
+    return;
+  }
+  const select = document.getElementById('rincianPegawai');
+  if (!select || select.value === '') {
+    alert('Silakan pilih pegawai terlebih dahulu pada daftar pegawai di atas.');
+    return;
+  }
+  const empId = Number(select.value);
+  if (isNaN(empId)) {
+    alert('Silakan pilih pegawai terlebih dahulu pada daftar pegawai di atas.');
+    return;
+  }
+  const list = getEmployeeTransports(empId);
+  list.push({
+    id: 't_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+    name: presetName,
+    pickup: '',
+    dropoff: '',
+    amount: 0
+  });
+  setEmployeeTransports(empId, list);
+  renderRincianTransportEditor(empId);
+  renderRincianCockpit(empId);
+  renderRincianEmpPills();
+  if (typeof renderRincian === 'function') renderRincian();
+  if (typeof updateSbmWarnings === 'function') updateSbmWarnings();
+}
+
+function removeEmployeeTransportRow(idx) {
+  const select = document.getElementById('rincianPegawai');
+  if (!select || select.value === '') return;
+  const empId = Number(select.value);
+  if (isNaN(empId)) return;
+  const list = getEmployeeTransports(empId);
+  if (list[idx]) {
+    list.splice(idx, 1);
+    setEmployeeTransports(empId, list);
+    renderRincianTransportEditor(empId);
+    renderRincianCockpit(empId);
+    renderRincianEmpPills();
+    if (typeof renderRincian === 'function') renderRincian();
+    if (typeof updateSbmWarnings === 'function') updateSbmWarnings();
+  }
+}
+
+function onEmployeeTransportRowChange(el, idx) {
+  const select = document.getElementById('rincianPegawai');
+  if (!select || select.value === '') return;
+  const empId = Number(select.value);
+  if (isNaN(empId)) return;
+  const list = getEmployeeTransports(empId);
+  const row = el.closest('.emp-trans-row');
+  if (!row || !list[idx]) return;
+
+  const nameVal = row.querySelector('.emp-trans-name')?.value || '';
+  const pickupVal = row.querySelector('.emp-trans-pickup')?.value || '';
+  const dropoffVal = row.querySelector('.emp-trans-dropoff')?.value || '';
+  const amountVal = (typeof parseNumber === 'function' ? parseNumber(row.querySelector('.emp-trans-amount')?.value) : Number(row.querySelector('.emp-trans-amount')?.value)) || 0;
+
+  list[idx].name = nameVal;
+  list[idx].pickup = pickupVal;
+  list[idx].dropoff = dropoffVal;
+  list[idx].amount = amountVal;
+
+  setEmployeeTransports(empId, list);
+  renderRincianCockpit(empId);
+  renderRincianEmpPills();
+  if (typeof renderRincian === 'function') renderRincian();
+  if (typeof updateSbmWarnings === 'function') updateSbmWarnings();
+}
+
 function getHotelRate(sbm, gol) {
   if (!sbm) return 0;
   if (gol.startsWith('IV')) return sbm.h4;
   if (gol === 'I' || gol === 'II') return sbm.h2;
-  return sbm.h3; // Gol III, IX, VIII, VII, dll â†’ rate Eselon IV/Gol III
+  return sbm.h3; // Gol III, IX, VIII, VII, dll → rate Eselon IV/Gol III
 }
 
 function hitungBiaya(emp) {
   const sbm = getSBM();
-  const customCosts = getCustomCosts().map(item => ({
+  const cfg = getEmployeeCostConfig(emp.id);
+
+  // Tickets for this employee
+  const employeeTickets = (cfg.tickets || []).filter(t => t && t.amount > 0).map(t => ({
+    name: t.name || 'Tiket Perjalanan',
+    amount: t.amount,
+    isTransport: false,
+    isTicket: true,
+    pickup: '',
+    dropoff: t.route || ''
+  }));
+
+  // Individual Transports for this employee
+  const indTransports = (getEmployeeTransports(emp.id) || [])
+    .filter(t => t && t.name && t.amount > 0)
+    .map(t => ({
+      name: t.name,
+      amount: t.amount,
+      isTransport: true,
+      isTicket: false,
+      pickup: t.pickup || '',
+      dropoff: t.dropoff || ''
+    }));
+
+  // Global custom costs (if any configured from customCostList)
+  const globalCustomCosts = (typeof getCustomCosts === 'function' ? getCustomCosts() : []).map(item => ({
     name: item.name,
-    amount: item.amounts[emp.id] || 0,
+    amount: (item.amounts && item.amounts[emp.id]) ? item.amounts[emp.id] : 0,
     isTransport: item.kind === 'transport',
     isTicket: item.kind === 'tiket',
     pickup: item.pickup,
     dropoff: item.dropoff
-  }));
+  })).filter(c => c.amount > 0);
+
+  const isDkiTarget = typeof isTripToDki === 'function' ? isTripToDki() : (sbm && sbm.provinsi === 'DKI JAKARTA');
+  const allowedTransports = isDkiTarget ? [] : indTransports;
+  const allowedGlobals = isDkiTarget ? globalCustomCosts.filter(c => !c.isTransport) : globalCustomCosts;
+
+  const customCosts = [...allowedGlobals, ...employeeTickets, ...allowedTransports];
   const customTotal = customCosts.reduce((total, item) => total + item.amount, 0);
-  const jenisKeg = document.getElementById('jenisKegiatan')?.value || 'biasa';
+
+  const jenisKeg = cfg.jenisKeg || document.getElementById('jenisKegiatan')?.value || 'biasa';
+
   if (!sbm) {
     return {
       uh: 0,
@@ -1535,6 +2518,7 @@ function hitungBiaya(emp) {
       uhTitle: 'Uang Harian',
       effectivePercent: 1,
       jenisKeg,
+      isMealManual: cfg.mealMode === 'manual',
       mealDeduction: 0,
       snackDeduction: 0,
       mealRate: 0,
@@ -1551,12 +2535,11 @@ function hitungBiaya(emp) {
       total: customTotal
     };
   }
+
   const { days, nights } = getEmpDays(emp.id);
-  const cbUH = document.getElementById('cbUH').checked;
-  const cbHotel = document.getElementById('cbHotel').checked;
-  const cbDPR = document.getElementById('cbDPR').checked;
-  const cbTiket = document.getElementById('cbTiket').checked;
-  const uhPercent = Number(document.getElementById('uhPersentase').value) || 1;
+  const cbUH = cfg.uhActive;
+  const cbHotel = cfg.hotelActive;
+  const uhPercent = cfg.uhPercent ?? (Number(document.getElementById('uhPersentase')?.value) || 1);
   const isDkiJakarta = sbm.provinsi === 'DKI JAKARTA';
 
   let uhBaseRate = 0;
@@ -1572,13 +2555,12 @@ function hitungBiaya(emp) {
     uhTitle = 'Uang Harian Fullboard';
     effectivePercent = 1;
   } else {
-    // 'biasa', 'rapat', or 'lainnya'
     uhBaseRate = sbm.uh;
     effectivePercent = uhPercent;
     uhTitle = `Uang Harian ${Math.round(uhPercent * 100)}%`;
   }
 
-  const multiProv = getMultiProvData();
+  const multiProv = typeof getMultiProvData === 'function' ? getMultiProvData() : null;
   const isMultiProv = !!multiProv;
   let uhGross1 = 0, uhGross2 = 0;
   let uhRate1 = 0, uhRate2 = 0;
@@ -1609,17 +2591,10 @@ function hitungBiaya(emp) {
     ? (uhGross1 + uhGross2)
     : (cbUH && !isDkiJakarta ? Math.round(uhBaseRate * days * effectivePercent) : 0);
 
-  const isMeeting = jenisKeg === 'rapat';
-  const isBiasaWithKonsumsi = jenisKeg === 'biasa' && !!document.getElementById('cbKonsumsiBiasa')?.checked;
-  const isMealManual = !!document.getElementById('cbTarifMakanManual')?.checked;
-  const hasKonsumsi = cbUH && (isMeeting || isBiasaWithKonsumsi || isMealManual);
-
-  const wrapDetail = document.getElementById('manualMealDetailWrap');
-  const isDetailOpen = wrapDetail && wrapDetail.style.display !== 'none';
-  const modeVal = document.getElementById('manualMakanMode')?.value || 'flat';
-  const isDetailMode = modeVal === 'detail' || isDetailOpen;
-  const manualMealEntries = (cbUH && isMealManual) ? getManualMealEntries() : [];
-  const useDetail = cbUH && isMealManual && isDetailMode && manualMealEntries.length > 0;
+  const hasKonsumsi = cbUH && cfg.hasKonsumsi;
+  const isMealManual = cfg.mealMode === 'manual';
+  const manualMealEntries = (cfg.manualMeals || []).filter(m => m && m.price > 0);
+  const useDetail = hasKonsumsi && isMealManual && manualMealEntries.length > 0;
 
   let mealRate = 0;
   let mealCount = 0;
@@ -1631,54 +2606,63 @@ function hitungBiaya(emp) {
     mealCount = manualMealEntries.length;
     mealDays = new Set(manualMealEntries.map(e => e.day)).size;
     mealRate = mealCount > 0 ? Math.round(mealRequested / mealCount) : 0;
-  } else {
-    const rawManualMeal = parseNumber(document.getElementById('tarifMakan')?.value);
+  } else if (hasKonsumsi) {
+    const rawManualMeal = (typeof parseNumber === 'function' ? parseNumber(document.getElementById('tarifMakan')?.value) : Number(document.getElementById('tarifMakan')?.value)) || 0;
     mealRate = isMealManual ? Math.max(0, rawManualMeal) : (sbm?.makan || (isMultiProv ? sbm1?.makan : 0) || 0);
-    const rawMealCount = Number(document.getElementById('jumlahMakan')?.value);
-    mealCount = (!isNaN(rawMealCount) && rawMealCount > 0) ? rawMealCount : 0;
-    if (isMealManual && rawManualMeal > 0 && mealCount === 0) {
-      mealCount = 1;
-    }
-    const rawHariMakan = Number(document.getElementById('hariMakan')?.value);
-    mealDays = (!isNaN(rawHariMakan) && rawHariMakan > 0) ? rawHariMakan : days;
-    mealRequested = (hasKonsumsi && mealCount > 0) ? mealRate * mealCount * mealDays : 0;
+    const rawCount = Number(document.getElementById('jumlahMakan')?.value);
+    mealCount = cfg.mealCount || ((!isNaN(rawCount) && rawCount > 0) ? rawCount : (isMealManual && rawManualMeal > 0 ? 1 : 0));
+    const rawDays = Number(document.getElementById('hariMakan')?.value);
+    mealDays = (cfg.mealDays && cfg.mealDays > 0) ? cfg.mealDays : ((!isNaN(rawDays) && rawDays > 0) ? rawDays : days);
+    mealRequested = mealRate * mealCount * mealDays;
   }
 
   const snackRate = sbm?.snack || (isMultiProv ? sbm1?.snack : 0) || 0;
-  const rawSnackCount = Number(document.getElementById('jumlahSnack')?.value);
-  const snackCount = (!isNaN(rawSnackCount) && rawSnackCount > 0) ? rawSnackCount : 0;
-
-  const rawHariSnack = Number(document.getElementById('hariSnack')?.value);
-  const snackDays = (!isNaN(rawHariSnack) && rawHariSnack > 0) ? rawHariSnack : days;
-
+  const snackCount = cfg.snackCount || 0;
+  const snackDays = days;
   const snackRequested = (hasKonsumsi && snackCount > 0) ? snackRate * snackCount * snackDays : 0;
+
   const mealDeduction = Math.min(uhGross, mealRequested);
   const snackDeduction = Math.min(Math.max(0, uhGross - mealDeduction), snackRequested);
   const uh = uhGross - mealDeduction - snackDeduction;
 
-  const hotelEntries = getHotelEntries();
+  // Hotel
   let hotel = 0;
   const hotelDetails = [];
   if (cbHotel) {
-    if (hotelEntries.length) {
-      hotelEntries.forEach(item => {
-        if (!item.employeeIds.includes(emp.id)) return;
-        const roomTotal = item.nights * item.price;
-        if (roomTotal <= 0) return;
-        hotel += roomTotal;
-        hotelDetails.push({ name: item.name, nights: item.nights, price: item.price, total: roomTotal });
-      });
+    if (cfg.hotelMode === 'manual') {
+      const hNights = (cfg.hotelNights > 0) ? cfg.hotelNights : nights;
+      const hPrice = cfg.hotelPrice || 0;
+      const hTotal = hNights * hPrice;
+      if (hTotal > 0) {
+        hotel = hTotal;
+        hotelDetails.push({ name: cfg.hotelName || 'Penginapan / Hotel', nights: hNights, price: hPrice, total: hTotal });
+      }
     } else {
-      hotel = getHotelRate(sbm, emp.gol) * nights;
+      const hotelEntries = typeof getHotelEntries === 'function' ? getHotelEntries() : [];
+      if (hotelEntries.length) {
+        hotelEntries.forEach(item => {
+          if (!item.employeeIds.includes(emp.id)) return;
+          const roomTotal = item.nights * item.price;
+          if (roomTotal <= 0) return;
+          hotel += roomTotal;
+          hotelDetails.push({ name: item.name, nights: item.nights, price: item.price, total: roomTotal });
+        });
+      } else {
+        const hRate = getHotelRate(sbm, emp.gol);
+        hotel = hRate * nights;
+        hotelDetails.push({ name: `Tarif SBM (Gol. ${emp.gol})`, nights, price: hRate, total: hotel });
+      }
     }
   }
+
   const isKepalaBiro = /kepala biro/i.test(emp.jabatan || '');
   const representatifRate = isKepalaBiro ? (isDkiJakarta ? 75000 : 150000) : 0;
   const representatif = representatifRate * days;
-  // DPR otomatis Rp 170.000 hanya jika tujuan DKI JAKARTA, selain Jakarta tidak ada (0)
-  const isDkiTarget = isDkiJakarta || (isMultiProv && ((sbm1 && sbm1.provinsi === 'DKI JAKARTA') || (sbm2 && sbm2.provinsi === 'DKI JAKARTA')));
+
+  // DPR otomatis Rp 170.000 hanya jika tujuan DKI JAKARTA
   const dprVal = isDkiTarget ? 170000 : 0;
-  const tiketVal = cbTiket ? sbm.tiket : 0;
+  const tiketVal = (document.getElementById('cbTiket')?.checked && sbm) ? sbm.tiket : 0;
+
   return {
     uh,
     uhGross,
@@ -1715,11 +2699,14 @@ function hitungBiaya(emp) {
       uhRate2,
       uhGross1,
       uhGross2,
-      title1: `Uang Harian ${getProvShortName(sbm1.provinsi)}`,
-      title2: `Uang Harian ${getProvShortName(sbm2.provinsi)}`
+      title1: `Uang Harian ${typeof getProvShortName === 'function' ? getProvShortName(sbm1.provinsi) : sbm1.provinsi}`,
+      title2: `Uang Harian ${typeof getProvShortName === 'function' ? getProvShortName(sbm2.provinsi) : sbm2.provinsi}`
     } : null
   };
 }
+
+
+/* === FILE: js/documents.js === */
 // =====================================================================
 // TEMPLATE DOKUMEN CETAK & REKAPITULASI (PerdinKu)
 // Kuitansi, SPPD, Rincian, DPR, Lembar Kendali, Rekap Kuitansi,
@@ -1900,7 +2887,7 @@ function onKuitansiPeroranganEmployeeChange() {
 }
 
 function syncEmpSpdInputs(empId, val) {
-  if (!empId) return;
+  if (empId === null || empId === undefined || isNaN(empId)) return;
   spdPerEmployee[empId] = val;
   const prefix = getSpdNumberPrefix(val);
 
@@ -2301,7 +3288,7 @@ function syncJenisPerjalananFromMak() {
 
   if (hintEl) {
     hintEl.textContent = rule
-      ? `Akun: ${rule.desc} â†’ Lembar Kendali: ${rule.jenis}`
+      ? `Akun: ${rule.desc} → Lembar Kendali: ${rule.jenis}`
       : 'Pilihan MAK: 524111 (Luar Kota), 524113 (Dalam Kota), 524114 (Rapat Dalam Kota), 524119 (Rapat Luar Kota)';
   }
 
@@ -2742,7 +3729,7 @@ function printRekapSPT() {
 function renderNominatif() {
   const out = document.getElementById('nominatifOut');
   if (selectedEmpIds.size === 0) {
-    out.innerHTML = '<div class="alert-warn">âš ï¸ Belum ada pegawai yang dipilih. Kembali ke tab <b>Input Perjalanan</b> dan pilih pegawai terlebih dahulu.</div>';
+    out.innerHTML = '<div class="alert-warn">⚠️ Belum ada pegawai yang dipilih. Kembali ke tab <b>Input Perjalanan</b> dan pilih pegawai terlebih dahulu.</div>';
     return;
   }
   const sbm = getSBM();
@@ -2862,7 +3849,7 @@ function renderNominatif() {
         </div>
       </div>
 
-      ${!sbm?'<div class="alert-warn" style="margin-top:16px">âš ï¸ Provinsi tujuan belum dipilih â€” biaya dihitung Rp 0. Kembali ke Input dan pilih provinsi.</div>':''}
+      ${!sbm?'<div class="alert-warn" style="margin-top:16px">⚠️ Provinsi tujuan belum dipilih — biaya dihitung Rp 0. Kembali ke Input dan pilih provinsi.</div>':''}
     </div>
   `;
 }
@@ -2889,12 +3876,15 @@ function populateRincianSelect() {
     sel.appendChild(opt);
   });
   if (selectedEmpIds.size === 0) {
-    document.getElementById('rincianOut').innerHTML = '<div class="alert-warn">âš ï¸ Belum ada pegawai dipilih. Kembali ke Input Perjalanan.</div>';
+    document.getElementById('rincianOut').innerHTML = '<div class="alert-warn">⚠️ Belum ada pegawai dipilih. Kembali ke Input Perjalanan.</div>';
     return;
   }
   const previousId = Number(previousValue);
   sel.value = previousValue !== '' && selectedEmpIds.has(previousId) ? previousValue : String([...selectedEmpIds][0]);
   loadRincianSPD();
+  if (typeof renderRincianEmpPills === 'function') renderRincianEmpPills();
+  if (typeof renderRincianCockpit === 'function') renderRincianCockpit();
+  if (typeof renderRincianTransportEditor === 'function') renderRincianTransportEditor();
   renderRincian();
 }
 
@@ -2909,6 +3899,9 @@ function loadRincianSPD() {
 
 function onRincianEmployeeChange() {
   loadRincianSPD();
+  if (typeof renderRincianEmpPills === 'function') renderRincianEmpPills();
+  if (typeof renderRincianCockpit === 'function') renderRincianCockpit();
+  if (typeof renderRincianTransportEditor === 'function') renderRincianTransportEditor();
   renderRincian();
 }
 
@@ -2920,6 +3913,9 @@ function saveRincianSPD() {
   const numVal = input ? input.value.trim() : '';
   const fullVal = buildFullSpdFromInput(numVal);
   syncEmpSpdInputs(empId, fullVal);
+  if (typeof renderRincianEmpPills === 'function') renderRincianEmpPills();
+  const tip = document.getElementById('activeSpdTip');
+  if (tip) tip.textContent = fullVal ? `Format lengkap: ${fullVal}` : 'Format: [Nomor] + /SPD/Birkom/...';
   renderRincian();
 }
 
@@ -2971,16 +3967,17 @@ function renderRincian() {
   const bendNama = document.getElementById('cfg_bendNama').value;
   const bendNip = document.getElementById('cfg_bendNip').value;
   const agenda = document.getElementById('agenda').value || '-';
-  const cbUH = document.getElementById('cbUH').checked;
-  const cbHotel = document.getElementById('cbHotel').checked;
-  const cbDPR = document.getElementById('cbDPR').checked;
-  const cbTiket = document.getElementById('cbTiket').checked;
-  const uhPercent = Number(document.getElementById('uhPersentase').value) || 1;
+  const cfg = typeof getEmployeeCostConfig === 'function' ? getEmployeeCostConfig(emp.id) : null;
+  const cbUH = cfg ? cfg.uhActive : (document.getElementById('cbUH')?.checked ?? true);
+  const cbHotel = cfg ? cfg.hotelActive : (document.getElementById('cbHotel')?.checked ?? false);
+  const cbDPR = document.getElementById('cbDPR')?.checked ?? true;
+  const cbTiket = document.getElementById('cbTiket')?.checked ?? false;
+  const uhPercent = cfg ? (cfg.uhPercent ?? 1) : (Number(document.getElementById('uhPersentase')?.value) || 1);
 
   let rincianRows = '';
   let no = 1;
   const isMealManual = !!b.isMealManual || !!document.getElementById('cbTarifMakanManual')?.checked;
-  const mealKet = isMealManual ? 'biaya makan at-cost' : '';
+  const mealKet = isMealManual ? 'Biaya makan at-cost' : '';
   const uhKeterangan = b.jenisKeg === 'fullboard'
     ? 'Paket Fullboard'
     : b.jenisKeg === 'diklat'
@@ -2995,7 +3992,7 @@ function renderRincian() {
         if (b.mealDeduction > 0) {
           if (b.mealDetails && b.mealDetails.length > 0) {
             const detailRowsHtml = b.mealDetails.map(m =>
-              `<span style="padding-left:12px; display:block;">â€¢ ${escHtml(m.day)} (${escHtml(m.session)}): 1 &times; ${rp(m.price)}</span>`
+              `<span style="padding-left:12px; display:block;">• ${escHtml(m.day)} (${escHtml(m.session)}): 1 &times; ${rp(m.price)}</span>`
             ).join('');
             deductionRows += `
               <tr>
@@ -3064,7 +4061,7 @@ function renderRincian() {
       if (b.mealDeduction > 0) {
         if (b.mealDetails && b.mealDetails.length > 0) {
           const detailRowsHtml = b.mealDetails.map(m =>
-            `<span style="padding-left:12px; display:block;">â€¢ ${escHtml(m.day)} (${escHtml(m.session)}): 1 &times; ${rp(m.price)}</span>`
+            `<span style="padding-left:12px; display:block;">• ${escHtml(m.day)} (${escHtml(m.session)}): 1 &times; ${rp(m.price)}</span>`
           ).join('');
           deductionRows += `
             <tr>
@@ -3243,13 +4240,17 @@ function renderRincian() {
       </div>
     </div>
     <div class="btn-row no-print" style="margin-top:16px;justify-content:center">
-      <button class="btn btn-success" onclick="printRincian()">ðŸ–¨ï¸ Print Rincian</button>
+      <button class="btn btn-success" onclick="printRincian()">🖨️ Print Rincian</button>
     </div>
   `;
 }
 
 function printRincian() {
   const select = document.getElementById('rincianPegawai');
+  if (!select || select.value === '') {
+    alert('Pilih pegawai terlebih dahulu sebelum mencetak.');
+    return;
+  }
   const empId = Number(select.value);
   const emp = employees.find(e => e.id === empId);
   const noSPD = (spdPerEmployee[empId] || '').trim();
@@ -3268,6 +4269,7 @@ function printRincian() {
     }
     return;
   }
+  if (typeof renderRincian === 'function') renderRincian();
   const clearPrintMode = () => document.body.classList.remove('print-rincian');
   document.body.classList.add('print-rincian');
   window.addEventListener('afterprint', clearPrintMode, { once: true });
@@ -3291,7 +4293,7 @@ function populateDPRSelect() {
   });
 
   if (selectedEmpIds.size === 0) {
-    document.getElementById('dprOut').innerHTML = '<div class="alert-warn">âš ï¸ Belum ada pegawai yang dipilih. Kembali ke tab Input Perjalanan.</div>';
+    document.getElementById('dprOut').innerHTML = '<div class="alert-warn">⚠️ Belum ada pegawai yang dipilih. Kembali ke tab Input Perjalanan.</div>';
     return;
   }
 
@@ -3439,7 +4441,7 @@ function buildDPRKKPHtml(emp, extraClass = '') {
             <td class="tc">${kodeOutputKKP}</td>
             <td class="tc">${kodeKomponenAkunKKP}</td>
             <td class="tc">${escHtml(uraianAkunKKP)}</td>
-            <td class="tc">${item.jumlah > 0 ? 'âˆš' : ''}</td>
+            <td class="tc">${item.jumlah > 0 ? '√' : ''}</td>
             <td class="tc"></td>
             <td class="tr">${rp(item.jumlah)}</td>
           </tr>
@@ -3551,18 +4553,62 @@ ${tableRowsHtml}
 }
 
 function buildDPRLSHtml(emp, extraClass = '') {
-  const alamat = document.getElementById('cfg_alamatKuitansi').value;
-  const kotaAsal = document.getElementById('cfg_kotaAsal').value;
-  const kotaTeks = document.getElementById('kotaTujuan').value.trim();
+  const alamat = document.getElementById('cfg_alamatKuitansi')?.value || document.getElementById('cfg_alamatSatker')?.value || '';
+  const kotaAsal = document.getElementById('cfg_kotaAsal')?.value || 'Jakarta';
+  const kotaTeks = (document.getElementById('kotaTujuan')?.value || '').trim();
   const tujuan = getTujuanDisplay(kotaTeks);
   const rawSPD = (spdPerEmployee[emp.id] || '').trim();
   const noSPD = rawSPD || '<span class="spd-missing-badge">[No. SPD Wajib Diisi]</span>';
-  const tanggalSPD = formatTgl(document.getElementById('tglSPD').value);
-  const ppkNama = document.getElementById('cfg_ppkNama').value;
-  const ppkNip = document.getElementById('cfg_ppkNip').value;
-  const ppkJabatan = document.getElementById('cfg_ppkJabatan').value;
+  const tanggalSPD = formatTgl(document.getElementById('tglSPD')?.value || document.getElementById('tglST')?.value);
+  const ppkNama = document.getElementById('cfg_ppkNama')?.value || '';
+  const ppkNip = document.getElementById('cfg_ppkNip')?.value || '';
+  const ppkJabatan = document.getElementById('cfg_ppkJabatan')?.value || '';
   const biaya = hitungBiaya(emp);
-  const dprAmount = Number(biaya.dpr);
+  const dprAmount = Number(biaya.dpr) || 0;
+  const transportCosts = biaya.customCosts.filter(item => item.isTransport && item.amount > 0);
+  const transportExtra = transportCosts.reduce((total, item) => total + item.amount, 0);
+  const grandDprTotal = dprAmount + transportExtra;
+
+  let dprRowsHtml = '';
+  let rowNo = 1;
+
+  if (dprAmount > 0) {
+    dprRowsHtml += `
+      <tr>
+        <td class="tc">${rowNo++}</td>
+        <td>
+          <div class="dpr-uraian-title">Daftar Pengeluaran Riil</div>
+          <div>${kotaAsal} - ${tujuan} (PP)</div>
+          <div>1 orang x 1 hari x @${dprAmount.toLocaleString('id-ID')}</div>
+        </td>
+        <td class="dpr-jumlah">${rp(dprAmount)}</td>
+      </tr>`;
+  }
+
+  transportCosts.forEach(item => {
+    const route = [item.pickup, item.dropoff].filter(Boolean).join(' - ');
+    dprRowsHtml += `
+      <tr>
+        <td class="tc">${rowNo++}</td>
+        <td>
+          <div class="dpr-uraian-title">${escHtml(item.name)}</div>
+          <div>${escHtml(route || (kotaAsal + ' - ' + tujuan + ' (PP)'))}</div>
+        </td>
+        <td class="dpr-jumlah">${rp(item.amount)}</td>
+      </tr>`;
+  });
+
+  if (!dprRowsHtml) {
+    dprRowsHtml = `
+      <tr>
+        <td class="tc">1</td>
+        <td>
+          <div class="dpr-uraian-title">Daftar Pengeluaran Riil</div>
+          <div>${kotaAsal} - ${tujuan} (PP)</div>
+        </td>
+        <td class="dpr-jumlah">${rp(0)}</td>
+      </tr>`;
+  }
 
   return `
     <section class="dpr-area${extraClass}">
@@ -3592,16 +4638,8 @@ function buildDPRLSHtml(emp, extraClass = '') {
             <colgroup><col style="width:7%"><col style="width:63%"><col style="width:30%"></colgroup>
             <thead><tr><th>No.</th><th>Uraian</th><th>Jumlah</th></tr></thead>
             <tbody>
-              <tr>
-                <td class="tc">1</td>
-                <td>
-                  <div class="dpr-uraian-title">Daftar Pengeluaran Riil</div>
-                  <div>${kotaAsal} - ${tujuan} (PP)</div>
-                  <div>1 orang x 1 hari x @${dprAmount.toLocaleString('id-ID')}</div>
-                </td>
-                <td class="dpr-jumlah">${rp(dprAmount)}</td>
-              </tr>
-              <tr><td colspan="2" class="dpr-total-label">Jumlah</td><td class="dpr-jumlah">${rp(dprAmount)}</td></tr>
+              ${dprRowsHtml}
+              <tr><td colspan="2" class="dpr-total-label">Jumlah</td><td class="dpr-jumlah">${rp(grandDprTotal)}</td></tr>
             </tbody>
           </table>
         </li>
@@ -3632,36 +4670,70 @@ function buildDPRLSHtml(emp, extraClass = '') {
 
 function renderDPR() {
   const out = document.getElementById('dprOut');
+  if (!out) return;
   const select = document.getElementById('dprPegawai');
-  if (select.value === '') {
-    out.innerHTML = '';
+  if (!select || select.value === '') {
+    out.innerHTML = '<div class="alert-warn no-print">⚠️ Pilih pegawai untuk menampilkan lembar DPR.</div>';
     return;
   }
   const emp = employees.find(employee => employee.id === Number(select.value));
   if (!emp) {
-    out.innerHTML = '';
+    out.innerHTML = '<div class="alert-warn no-print">⚠️ Pegawai tidak ditemukan.</div>';
     return;
   }
 
   const isKKP = (document.getElementById('metodePembayaran')?.value || document.getElementById('lk_metodePembayaran')?.value || 'LS') === 'KKP';
-
-  if (!isKKP) {
-    const sbm = getSBM();
-    if (!sbm || sbm.provinsi !== 'DKI JAKARTA') {
-      out.innerHTML = '<div class="alert-warn">âš ï¸ Lembar Daftar Pengeluaran Riil (DPR) hanya untuk Perjalanan Dinas dalam kota DKI Jakarta (DPR Rp 170.000). Untuk berkas LS di luar DKI Jakarta, DPR tidak diperlukan. (Jika kegiatan ini menggunakan Kartu Kredit Pemerintah, pilih metode <strong>KKP</strong> pada Informasi Perjalanan).</div>';
-      return;
-    }
-    out.innerHTML = buildDPRLSHtml(emp);
+  if (isKKP) {
+    // DPR KKP wajib untuk berkas KKP (isinya pertiketan & hotel saja)
+    out.innerHTML = buildDPRKKPHtml(emp);
     return;
   }
 
-  out.innerHTML = buildDPRKKPHtml(emp);
+  // Untuk metode LS: Lembar DPR Perorangan hanya untuk DKI Jakarta (DPR Rp 170.000)
+  const isDki = typeof isTripToDki === 'function' ? isTripToDki() : false;
+  if (!isDki) {
+    out.innerHTML = `
+      <div class="alert-warn no-print" style="margin: 28px auto; max-width: 680px; text-align: center; padding: 32px 24px; border-radius: 14px; background: linear-gradient(135deg, #fffbeb, #fef3c7); border: 1.5px solid #fcd34d; color: #92400e; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.08);">
+        <div style="font-size: 34px; margin-bottom: 12px;">📋</div>
+        <div style="font-weight: 700; font-size: 16px; margin-bottom: 8px; color: #78350f;">Lembar DPR Perorangan Hanya Berlaku untuk Kegiatan di DKI Jakarta</div>
+        <p style="margin: 0 0 14px 0; font-size: 13.5px; line-height: 1.6; color: #92400e;">
+          Berdasarkan ketentuan perjalanan dinas LS, lembar <strong>Daftar Pengeluaran Riil (DPR)</strong> hanya diterbitkan untuk perjalanan dinas dalam kota <strong>DKI Jakarta (Rp 170.000)</strong>.<br>
+          Untuk perjalanan dinas luar kota/luar Jakarta, pertanggungjawaban biaya transport menggunakan kuitansi riil/nominatif dan tidak memerlukan lembar DPR.
+        </p>
+        <div style="display: inline-block; background: rgba(255,255,255,0.85); border: 1px solid #fde68a; border-radius: 8px; padding: 7px 16px; font-size: 12px; color: #b45309; font-weight: 500;">
+          💳 <em>Jika kegiatan ini menggunakan Kartu Kredit Pemerintah, pilih metode <strong>KKP</strong> pada formulir untuk mencetak DPR KKP (Hotel &amp; Tiket).</em>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  out.innerHTML = buildDPRLSHtml(emp);
 }
 
 function printDPR() {
   const select = document.getElementById('dprPegawai');
+  if (!select || !select.value) {
+    if (typeof showValidationToast === 'function') {
+      showValidationToast([{ label: 'Pegawai' }], 'Pilih pegawai terlebih dahulu!');
+    }
+    return;
+  }
   const empId = Number(select.value);
   const emp = employees.find(e => e.id === empId);
+
+  const isKKP = (document.getElementById('metodePembayaran')?.value || document.getElementById('lk_metodePembayaran')?.value || 'LS') === 'KKP';
+  const isDki = typeof isTripToDki === 'function' ? isTripToDki() : false;
+  if (!isKKP && !isDki) {
+    const msg = 'Lembar DPR (LS) hanya diterbitkan untuk Perjalanan Dinas dalam kota DKI Jakarta (Rp 170.000) atau perjalanan dengan metode KKP.';
+    if (typeof showValidationToast === 'function') {
+      showValidationToast([{ label: 'DPR' }], msg);
+    } else {
+      alert(msg);
+    }
+    return;
+  }
+
   const noSPD = (spdPerEmployee[empId] || '').trim();
   if (!noSPD) {
     const msg = `Nomor SPD Perorangan untuk ${emp ? emp.nama.split(',')[0] : 'pegawai'} WAJIB diisi sebelum mencetak!`;
@@ -3678,6 +4750,7 @@ function printDPR() {
     }
     return;
   }
+  if (typeof renderDPR === 'function') renderDPR();
   const clearPrintMode = () => document.body.classList.remove('print-dpr');
   document.body.classList.add('print-dpr');
   window.addEventListener('afterprint', clearPrintMode, { once: true });
@@ -3723,6 +4796,11 @@ function printAllDPR() {
   window.addEventListener('afterprint', clearPrintMode, { once: true });
   window.print();
 }
+
+
+
+
+/* === FILE: js/excel.js === */
 // =====================================================================
 // EKSPOR & IMPOR EXCEL (PerdinKu)
 // Penyimpanan data dan pembacaan ulang berkas spreadsheet perjalanan
@@ -3837,7 +4915,7 @@ function excelNumber(value) {
 }
 
 function excelBool(value) {
-  return ['ya', 'yes', 'true', '1', 'v', 'y', 'âˆš', 'âœ“'].includes(String(value ?? '').trim().toLowerCase());
+  return ['ya', 'yes', 'true', '1', 'v', 'y', '√', '✓'].includes(String(value ?? '').trim().toLowerCase());
 }
 
 function excelOptionText(select) {
@@ -3885,7 +4963,7 @@ function excelAddSheet(wb, name, rows, widths) {
 
 function excelGetCustomCostRows() {
   const kindLabel = { other: 'Biaya lain', tiket: 'Tiket', transport: 'Transport PP' };
-  return [...document.querySelectorAll('.custom-cost-row')].map(row => {
+  const rows = [...document.querySelectorAll('.custom-cost-row')].map(row => {
     let amounts = {};
     try {
       amounts = JSON.parse(row.dataset.amounts || '{}');
@@ -3905,6 +4983,26 @@ function excelGetCustomCostRows() {
       amounts
     };
   }).filter(item => item.name);
+
+  // Sertakan rincian transport perorangan dari menu Rincian per Orang
+  if (typeof employeeTransports === 'object') {
+    Object.keys(employeeTransports).forEach(empIdStr => {
+      const list = employeeTransports[empIdStr] || [];
+      list.forEach(item => {
+        if (!item || !item.name || !(item.amount > 0)) return;
+        rows.push({
+          name: item.name,
+          kind: 'transport',
+          kindLabel: 'Transport PP',
+          pickup: item.pickup || '',
+          dropoff: item.dropoff || '',
+          amounts: { [empIdStr]: item.amount }
+        });
+      });
+    });
+  }
+
+  return rows;
 }
 
 function excelGetHotelRows() {
@@ -3927,7 +5025,7 @@ function exportPerjadinExcel() {
 
   excelAddSheet(wb, 'Info', [
     ['Informasi', 'Nilai'],
-    ['Aplikasi', 'Perjadin â€” Setjen Kementerian PKP'],
+    ['Aplikasi', 'Perjadin — Setjen Kementerian PKP'],
     ['Versi format', 1],
     ['Dibuat', stamp],
     ['Cara pakai', 'Ubah isian pada sheet Perjalanan, Pegawai, Biaya Lain, dan Hotel, lalu simpan file ini. Buka kembali aplikasi dan klik "Muat Excel".'],
@@ -4193,7 +5291,27 @@ function applyPerjadinExcel(wb) {
     }
   });
 
+  if (typeof clearEmployeeTransports === 'function') {
+    clearEmployeeTransports();
+  }
+
   costGroups.forEach(cost => {
+    const isTransport = cost.kindText.includes('transport');
+    const empIds = Object.keys(cost.amounts || {}).filter(k => (cost.amounts[k] || 0) > 0);
+    if (isTransport && empIds.length === 1 && typeof getEmployeeTransports === 'function' && typeof setEmployeeTransports === 'function') {
+      const empId = Number(empIds[0]);
+      const list = getEmployeeTransports(empId);
+      list.push({
+        id: 't_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+        name: cost.name,
+        pickup: cost.pickup || '',
+        dropoff: cost.dropoff || '',
+        amount: cost.amounts[empId]
+      });
+      setEmployeeTransports(empId, list);
+      return;
+    }
+
     addCustomCost();
     const costRow = document.getElementById('customCostList').lastElementChild;
     const kind = cost.kindText.includes('tiket') ? 'tiket'
@@ -4206,6 +5324,10 @@ function applyPerjadinExcel(wb) {
     costRow.dataset.amounts = JSON.stringify(cost.amounts || {});
     renderCustomCostAssignments(costRow);
   });
+
+  if (typeof renderRincianTransportEditor === 'function') {
+    renderRincianTransportEditor();
+  }
 
   hitungLama();
   markDPRManual();
@@ -4246,6 +5368,9 @@ function applyPerjadinExcel(wb) {
   }
   return { employees: selectedEmpIds.size, unknown: unknownNames };
 }
+
+
+/* === FILE: js/ui.js === */
 // =====================================================================
 // ANTARMUKA & INTERAKSI PENGGUNA (PerdinKu)
 // Tema (Dark/Light), Navigasi Tab, Sidebar, Popup Selamat Datang,
@@ -4926,7 +6051,7 @@ function renderEmployeeList() {
       <span class="emp-avatar">${getInitials(e.nama)}</span>
       <div class="emp-text">
         <div class="emp-name">${e.nama}</div>
-        <div class="emp-detail">Gol. ${e.gol}<span class="sep">Â·</span>${e.jabatan}<span class="sep">Â·</span>NIP: ${e.nip}</div>
+        <div class="emp-detail">Gol. ${e.gol}<span class="sep">·</span>${e.jabatan}<span class="sep">·</span>NIP: ${e.nip}</div>
       </div>
     </div>
   `).join('') || '<div style="padding:16px;text-align:center;color:#9aabc0;font-size:13px">Tidak ada hasil</div>';
@@ -4959,7 +6084,7 @@ function renderSelectedTags() {
   count.textContent = selectedEmpIds.size;
   box.innerHTML = [...selectedEmpIds].map(id => {
     const e = employees.find(x => x.id === id);
-    return `<span class="emp-tag">${e.nama.split(',')[0]} <span class="rm" onclick="toggleEmployee(${id})">Ã—</span></span>`;
+    return `<span class="emp-tag">${e.nama.split(',')[0]} <span class="rm" onclick="toggleEmployee(${id})">×</span></span>`;
   }).join('');
 }
 
@@ -4971,7 +6096,7 @@ function renderTripDates() {
   block.style.display = '';
   const g1 = document.getElementById('tglBerangkat').value;
   const g2 = document.getElementById('tglKembali').value;
-  const globalText = g1 && g2 ? `${formatTgl(g1)} â€“ ${formatTgl(g2)}` : 'belum diisi';
+  const globalText = g1 && g2 ? `${formatTgl(g1)} – ${formatTgl(g2)}` : 'belum diisi';
   list.innerHTML = [...selectedEmpIds].map(id => {
     const e = employees.find(x => x.id === id);
     if (!e) return '';
@@ -4989,7 +6114,7 @@ function renderTripDates() {
         <input type="date" value="${s.start}" onchange="updateEmpSegment(${id},${i},'start',this.value)">
         <span class="trip-sep">s.d.</span>
         <input type="date" value="${s.end}" onchange="updateEmpSegment(${id},${i},'end',this.value)">
-        <button type="button" class="trip-seg-rm" title="Hapus tanggal" onclick="removeEmpSegment(${id},${i})">Ã—</button>
+        <button type="button" class="trip-seg-rm" title="Hapus tanggal" onclick="removeEmpSegment(${id},${i})">×</button>
       </span>`).join('');
     return `<div class="trip-row">
       <div class="trip-name" title="${e.nama}">${name}</div>
@@ -5050,3 +6175,4 @@ function clearAll() {
   refreshHotelGuests();
   updateSbmWarnings();
 }
+

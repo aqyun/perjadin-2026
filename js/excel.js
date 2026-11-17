@@ -160,7 +160,7 @@ function excelAddSheet(wb, name, rows, widths) {
 
 function excelGetCustomCostRows() {
   const kindLabel = { other: 'Biaya lain', tiket: 'Tiket', transport: 'Transport PP' };
-  return [...document.querySelectorAll('.custom-cost-row')].map(row => {
+  const rows = [...document.querySelectorAll('.custom-cost-row')].map(row => {
     let amounts = {};
     try {
       amounts = JSON.parse(row.dataset.amounts || '{}');
@@ -180,6 +180,26 @@ function excelGetCustomCostRows() {
       amounts
     };
   }).filter(item => item.name);
+
+  // Sertakan rincian transport perorangan dari menu Rincian per Orang
+  if (typeof employeeTransports === 'object') {
+    Object.keys(employeeTransports).forEach(empIdStr => {
+      const list = employeeTransports[empIdStr] || [];
+      list.forEach(item => {
+        if (!item || !item.name || !(item.amount > 0)) return;
+        rows.push({
+          name: item.name,
+          kind: 'transport',
+          kindLabel: 'Transport PP',
+          pickup: item.pickup || '',
+          dropoff: item.dropoff || '',
+          amounts: { [empIdStr]: item.amount }
+        });
+      });
+    });
+  }
+
+  return rows;
 }
 
 function excelGetHotelRows() {
@@ -468,7 +488,27 @@ function applyPerjadinExcel(wb) {
     }
   });
 
+  if (typeof clearEmployeeTransports === 'function') {
+    clearEmployeeTransports();
+  }
+
   costGroups.forEach(cost => {
+    const isTransport = cost.kindText.includes('transport');
+    const empIds = Object.keys(cost.amounts || {}).filter(k => (cost.amounts[k] || 0) > 0);
+    if (isTransport && empIds.length === 1 && typeof getEmployeeTransports === 'function' && typeof setEmployeeTransports === 'function') {
+      const empId = Number(empIds[0]);
+      const list = getEmployeeTransports(empId);
+      list.push({
+        id: 't_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+        name: cost.name,
+        pickup: cost.pickup || '',
+        dropoff: cost.dropoff || '',
+        amount: cost.amounts[empId]
+      });
+      setEmployeeTransports(empId, list);
+      return;
+    }
+
     addCustomCost();
     const costRow = document.getElementById('customCostList').lastElementChild;
     const kind = cost.kindText.includes('tiket') ? 'tiket'
@@ -481,6 +521,10 @@ function applyPerjadinExcel(wb) {
     costRow.dataset.amounts = JSON.stringify(cost.amounts || {});
     renderCustomCostAssignments(costRow);
   });
+
+  if (typeof renderRincianTransportEditor === 'function') {
+    renderRincianTransportEditor();
+  }
 
   hitungLama();
   markDPRManual();

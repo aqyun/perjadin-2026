@@ -7558,3 +7558,1759 @@ html[data-theme="dark"] .manual-meal-summary {
   border-color: #3b82f6;
   color: #93c5fd;
 }
+
+
+/* =====================================================================
+   TRANSPORT LOKAL / DPR PERORANGAN & BIAYA NOTICE
+   ===================================================================== */
+.transport-rincian-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(37, 99, 235, 0.06);
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  border-radius: 10px;
+  margin: 10px 0 14px 0;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: #1e3a8a;
+}
+
+.transport-rincian-notice .notice-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.transport-rincian-notice .notice-content {
+  flex: 1;
+}
+
+.rincian-transport-card {
+  margin-top: 18px;
+  padding: 16px;
+  background: rgba(248, 250, 252, 0.95);
+  border: 1px solid rgba(226, 232, 240, 1);
+  border-radius: 12px;
+}
+
+.rincian-transport-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.rincian-transport-titles {
+  flex: 1 1 280px;
+}
+
+.rincian-transport-title {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--text-heading, #1e293b);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 4px 0;
+}
+
+.rincian-transport-title .ico {
+  width: 17px;
+  height: 17px;
+  color: var(--primary, #2563eb);
+}
+
+.rincian-transport-sub {
+  font-size: 0.82rem;
+  color: var(--text-muted, #64748b);
+  margin: 0;
+}
+
+.rincian-transport-quick-btns {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.quick-btn-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted, #64748b);
+  margin-right: 2px;
+}
+
+.btn-quick-transport {
+  height: 28px;
+  padding: 0 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+  border-radius: 999px;
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  background: rgba(37, 99, 235, 0.07);
+  color: #1d4ed8;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-quick-transport:hover {
+  background: var(--brand-600, #2563eb);
+  color: #ffffff !important;
+  border-color: var(--brand-600, #2563eb);
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+}
+
+.emp-trans-empty {
+  padding: 16px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-muted, #64748b);
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px dashed rgba(203, 213, 225, 0.9);
+  border-radius: 9px;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.emp-trans-row {
+  display: grid;
+  grid-template-columns: 1.2fr 1.5fr 1.5fr 1.2fr auto;
+  gap: 10px;
+  align-items: flex-end;
+  padding: 10px 12px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.emp-trans-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.emp-trans-label {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text-muted, #64748b);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.emp-trans-row input {
+  width: 100%;
+  height: 42px;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--line, #cbd5e1);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-main, #0f172a);
+  background: var(--surface-0, #ffffff);
+  box-sizing: border-box;
+}
+
+.emp-trans-row input:focus {
+  border-color: var(--primary, #2563eb);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.emp-trans-del-btn {
+  height: 42px !important;
+  min-height: 42px !important;
+  padding: 0 14px;
+  font-weight: 600;
+  font-size: 12.5px;
+  border-radius: 8px;
+}
+
+.rincian-transport-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.rincian-transport-summary {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--primary, #2563eb);
+}
+
+/* Dark mode adjustments */
+html[data-theme="dark"] .transport-rincian-notice {
+  background: rgba(30, 58, 138, 0.22);
+  border-color: rgba(96, 165, 250, 0.25);
+  color: #bfdbfe;
+}
+
+html[data-theme="dark"] .rincian-transport-card {
+  background: rgba(30, 41, 59, 0.65);
+  border-color: rgba(51, 65, 85, 0.8);
+}
+
+html[data-theme="dark"] .rincian-transport-title {
+  color: #f1f5f9;
+}
+
+html[data-theme="dark"] .rincian-transport-sub,
+html[data-theme="dark"] .quick-btn-label {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .btn-quick-transport {
+  background: rgba(59, 130, 246, 0.16);
+  border-color: rgba(96, 165, 250, 0.35);
+  color: #93c5fd;
+}
+
+html[data-theme="dark"] .btn-quick-transport:hover {
+  background: #3b82f6;
+  color: #ffffff !important;
+  border-color: #3b82f6;
+}
+
+html[data-theme="dark"] .emp-trans-empty {
+  background: rgba(15, 23, 42, 0.4);
+  border-color: rgba(51, 65, 85, 0.6);
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .emp-trans-row {
+  background: rgba(15, 23, 42, 0.65);
+  border-color: rgba(51, 65, 85, 0.8);
+  box-shadow: none;
+}
+
+html[data-theme="dark"] .emp-trans-label {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .emp-trans-row input {
+  background: rgba(15, 23, 42, 0.9);
+  border-color: rgba(51, 65, 85, 0.9);
+  color: #f8fafc;
+}
+
+html[data-theme="dark"] .emp-trans-row input:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+}
+
+html[data-theme="dark"] .rincian-transport-summary {
+  color: #60a5fa;
+}
+
+@media (max-width: 768px) {
+  .emp-trans-row {
+    grid-template-columns: 1fr 1fr;
+  }
+  .emp-trans-col:nth-child(5) {
+    grid-column: span 2;
+  }
+  .emp-trans-del-btn {
+    width: 100%;
+  }
+}
+
+/* ==========================================================================
+   RINCIAN PERORANGAN COCKPIT & CTA BANNER (LANGKAH 3)
+   ========================================================================== */
+
+/* CTA Banner in Langkah 3 */
+.rincian-cta-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  background: linear-gradient(135deg, rgba(37,99,235,0.05) 0%, rgba(59,130,246,0.1) 100%);
+  border: 1.5px solid rgba(59,130,246,0.25);
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 16px rgba(37,99,235,0.06);
+  transition: all 0.2s ease;
+}
+
+.rincian-cta-visual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.rincian-cta-badge {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: var(--brand-600);
+  color: #ffffff;
+  padding: 3px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.04em;
+}
+
+.rincian-cta-body {
+  flex: 1;
+}
+
+.rincian-cta-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0 0 8px 0;
+}
+
+.rincian-cta-desc {
+  font-size: 14px;
+  color: var(--text-sub);
+  line-height: 1.6;
+  margin: 0 0 16px 0;
+}
+
+.rincian-open-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(37,99,235,0.3);
+  transition: all 0.2s ease;
+}
+
+.rincian-open-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(37,99,235,0.4);
+}
+
+/* Rincian Cockpit Card */
+.rincian-cockpit-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* Employee Bar & Chips */
+.rincian-emp-bar {
+  margin-bottom: 20px;
+}
+
+.rincian-emp-bar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.rincian-emp-bar-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.emp-bar-heading {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text-main);
+}
+
+.emp-bar-sub {
+  font-size: 12px;
+  color: var(--text-sub);
+  margin: 2px 0 0 0;
+}
+
+.btn-copy-all {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(37,99,235,0.35);
+  background: rgba(37,99,235,0.06);
+  color: var(--brand-600);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-copy-all:hover {
+  background: var(--brand-600);
+  color: #ffffff;
+  border-color: var(--brand-600);
+  box-shadow: 0 4px 12px rgba(37,99,235,0.25);
+}
+
+.rincian-emp-pills {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin-bottom: 14px;
+  scrollbar-width: thin;
+}
+
+.rincian-emp-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  background: var(--bg-main);
+  border: 1.5px solid var(--border-color);
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.rincian-emp-chip:hover {
+  border-color: var(--brand-500);
+  transform: translateY(-1px);
+}
+
+.rincian-emp-chip.active {
+  background: linear-gradient(135deg, var(--brand-600) 0%, #1d4ed8 100%);
+  border-color: var(--brand-600);
+  box-shadow: 0 4px 14px rgba(37,99,235,0.3);
+}
+
+.emp-chip-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(37,99,235,0.12);
+  color: var(--brand-600);
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rincian-emp-chip.active .emp-chip-avatar {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+.emp-chip-info {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.emp-chip-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.rincian-emp-chip.active .emp-chip-name {
+  color: #ffffff;
+}
+
+.emp-chip-sub {
+  font-size: 11px;
+  color: var(--text-sub);
+}
+
+.rincian-emp-chip.active .emp-chip-sub {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.emp-chip-total {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 8px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 999px;
+  color: var(--text-main);
+}
+
+.rincian-emp-chip.active .emp-chip-total {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+/* Meta Row (SPD) */
+.rincian-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  background: var(--bg-main);
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+}
+
+.rincian-spd-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  width: 100%;
+}
+
+.rincian-spd-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+  margin: 0;
+  white-space: nowrap;
+}
+
+.spd-prefix-wrap {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg-card);
+  max-width: 420px;
+  width: 100%;
+}
+
+.spd-number-input {
+  border: none !important;
+  background: transparent !important;
+  padding: 8px 12px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: var(--text-main) !important;
+  width: 90px !important;
+  text-align: center;
+}
+
+.spd-number-input:focus {
+  outline: none;
+}
+
+.spd-suffix-label {
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--text-sub);
+  font-size: 13px;
+  border-left: 1px solid var(--border-color);
+  white-space: nowrap;
+}
+
+/* Live KPI Overview Banner */
+.rincian-kpi-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  color: #ffffff;
+  border-radius: 14px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.15);
+}
+
+.rincian-kpi-main {
+  flex: 1;
+  min-width: 220px;
+}
+
+.rincian-kpi-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.rincian-kpi-value {
+  font-size: 30px;
+  font-weight: 800;
+  color: #38bdf8;
+  line-height: 1.2;
+  margin: 4px 0;
+}
+
+.rincian-kpi-sub {
+  font-size: 13px;
+  color: #cbd5e1;
+}
+
+.rincian-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  min-width: 340px;
+}
+
+.rincian-kpi-chip {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.kpi-chip-label {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-bottom: 2px;
+}
+
+.rincian-kpi-chip strong {
+  font-size: 14px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+/* Cockpit Navigation Tabs */
+.rincian-cockpit-tabs {
+  display: flex;
+  gap: 8px;
+  background: var(--bg-main, #f1f5f9);
+  padding: 6px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  margin-bottom: 22px;
+  overflow-x: auto;
+}
+
+.rincian-cockpit-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-sub);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+}
+
+.rincian-cockpit-tab:hover {
+  color: var(--brand-600);
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.rincian-cockpit-tab.active {
+  color: var(--brand-600);
+  background: #ffffff;
+  border-color: rgba(37, 99, 235, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  font-weight: 700;
+}
+
+.tab-ico,
+.cockpit-tab-ico {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.cockpit-tab-text {
+  font-size: 13.5px;
+  letter-spacing: -0.01em;
+}
+
+/* Cockpit Panes */
+.rincian-cockpit-pane {
+  display: none;
+  animation: rincianFadeIn 0.2s ease-in-out;
+}
+
+.rincian-cockpit-pane.active {
+  display: block;
+}
+
+@keyframes rincianFadeIn {
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.rincian-toggle-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px 18px;
+  background: var(--bg-main);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  margin-bottom: 18px;
+}
+
+.rincian-switch-label {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.rincian-switch-label input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.rincian-slider,
+.rincian-switch-slider {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background-color: #cbd5e1;
+  border-radius: 999px;
+  transition: .3s;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.rincian-slider:before,
+.rincian-switch-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  border-radius: 50%;
+  transition: .3s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.rincian-switch-label input:checked + .rincian-slider,
+.rincian-switch-label input:checked + .rincian-switch-slider {
+  background-color: var(--brand-600);
+}
+
+.rincian-switch-label input:checked + .rincian-slider:before,
+.rincian-switch-label input:checked + .rincian-switch-slider:before {
+  transform: translateX(20px);
+}
+
+.rincian-switch-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.rincian-switch-text strong {
+  font-size: 14px;
+  color: var(--text-main);
+}
+
+.rincian-switch-text small {
+  font-size: 12px;
+  color: var(--text-sub);
+}
+
+.rincian-badge-highlight,
+.rincian-rate-highlight {
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(37,99,235,0.08);
+  color: var(--brand-600);
+  border: 1px solid rgba(37,99,235,0.25);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rincian-pane-inner {
+  padding: 4px 0;
+}
+
+.rincian-subbox {
+  background: var(--bg-main);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.rincian-subbox-head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rincian-check-pill,
+.rincian-subbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-main);
+  user-select: none;
+}
+
+.subbox-tip {
+  font-size: 12px;
+  color: var(--text-sub);
+  padding-left: 24px;
+}
+
+.rincian-subbox-body {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--border-color);
+}
+
+.rincian-meal-mode-toggle,
+.rincian-segmented-opts {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+  background: var(--bg-main, #f1f5f9);
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+}
+
+.btn-submode,
+.rincian-seg-btn {
+  flex: 1;
+  padding: 9px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 7px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-sub);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.btn-submode:hover,
+.rincian-seg-btn:hover {
+  color: var(--brand-600);
+}
+
+.btn-submode.active,
+.rincian-seg-btn.active {
+  background: #ffffff;
+  color: var(--brand-600);
+  border-color: rgba(37, 99, 235, 0.2);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  font-weight: 700;
+}
+  text-align: center;
+}
+
+.rincian-seg-btn.active {
+  background: rgba(37,99,235,0.08);
+  border-color: var(--brand-600);
+  color: var(--brand-600);
+  font-weight: 700;
+}
+
+.rincian-info-card {
+  background: var(--bg-main);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 18px;
+}
+
+.info-card-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--text-sub);
+  padding: 6px 0;
+}
+
+.info-card-row strong {
+  color: var(--text-main);
+}
+
+.info-card-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 8px 0;
+}
+
+.info-card-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-main);
+  padding-top: 4px;
+}
+
+.info-card-total strong {
+  font-size: 18px;
+  color: var(--brand-600);
+}
+
+/* Pane Head & Quick Buttons */
+.rincian-pane-head-flex {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.pane-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.pane-sub {
+  font-size: 12px;
+  color: var(--text-sub);
+  margin: 2px 0 0 0;
+}
+
+.rincian-pane-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.rincian-foot-badge {
+  font-size: 13px;
+  color: var(--text-sub);
+}
+
+.rincian-foot-badge strong {
+  color: var(--brand-600);
+  font-size: 15px;
+}
+
+/* Button Aligned Sizes */
+.btn-del-cost,
+.emp-trans-del-btn,
+.btn-del-sm {
+  height: 38px !important;
+  line-height: 38px !important;
+  padding: 0 16px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+}
+
+/* Dark Mode Overrides for Rincian Cockpit */
+html[data-theme="dark"] .rincian-cta-banner {
+  background: linear-gradient(135deg, rgba(30, 58, 138, 0.25) 0%, rgba(30, 41, 59, 0.7) 100%);
+  border-color: rgba(96, 165, 250, 0.3);
+  box-shadow: none;
+}
+
+html[data-theme="dark"] .rincian-cockpit-card {
+  background: #0f172a;
+  border-color: #334155;
+  box-shadow: none;
+}
+
+html[data-theme="dark"] .rincian-emp-chip {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .rincian-emp-chip.active {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  border-color: #3b82f6;
+  box-shadow: 0 4px 14px rgba(37,99,235,0.4);
+}
+
+html[data-theme="dark"] .emp-chip-name {
+  color: #f8fafc;
+}
+
+html[data-theme="dark"] .emp-chip-sub {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .emp-chip-total {
+  background: rgba(255, 255, 255, 0.08);
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .rincian-meta-row,
+html[data-theme="dark"] .rincian-toggle-bar,
+html[data-theme="dark"] .rincian-subbox,
+html[data-theme="dark"] .rincian-info-card {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .spd-prefix-wrap {
+  background: #0f172a;
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .spd-suffix-label {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: #334155;
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .rincian-cockpit-tabs {
+  background: #0f172a;
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .rincian-cockpit-tab {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .rincian-cockpit-tab:hover {
+  color: #60a5fa;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+html[data-theme="dark"] .rincian-cockpit-tab.active {
+  color: #60a5fa;
+  background: #1e293b;
+  border-color: #3b82f6;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+html[data-theme="dark"] .rincian-seg-btn,
+html[data-theme="dark"] .btn-submode {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .rincian-seg-btn:hover,
+html[data-theme="dark"] .btn-submode:hover {
+  color: #60a5fa;
+}
+
+html[data-theme="dark"] .rincian-seg-btn.active,
+html[data-theme="dark"] .btn-submode.active {
+  background: #1e293b;
+  border-color: #3b82f6;
+  color: #60a5fa;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+html[data-theme="dark"] .custom-kind-btn[aria-pressed="true"] {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="dark"] .custom-kind-btn[aria-pressed="false"] {
+  color: #cbd5e1 !important;
+}
+
+html[data-theme="dark"] .rincian-deduction-badge {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #fde68a;
+}
+
+/* ==========================================================================
+   ENHANCED EMPLOYEE BAR, SPOTLIGHT PROFILE & BATCH SPD TABLE
+   ========================================================================== */
+
+.rincian-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-auto-spd {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(37,99,235,0.3) !important;
+}
+
+.btn-auto-spd:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37,99,235,0.4) !important;
+}
+
+.btn-toggle-spd-table {
+  background: var(--bg-main) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-main) !important;
+  font-weight: 600 !important;
+}
+
+.btn-toggle-spd-table:hover {
+  border-color: var(--brand-500) !important;
+  color: var(--brand-600) !important;
+}
+
+/* Hide raw Windows scrollbar */
+.rincian-emp-scroll-wrap {
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  padding: 4px 0 12px 0;
+  margin-bottom: 8px;
+}
+
+.rincian-emp-scroll-wrap::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+.rincian-emp-pills {
+  display: flex;
+  gap: 12px;
+  flex-wrap: nowrap;
+  width: max-content;
+  min-width: 100%;
+}
+
+.rincian-emp-chip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--bg-main);
+  border: 1.5px solid var(--border-color);
+  border-radius: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.rincian-emp-chip:hover {
+  border-color: var(--brand-400);
+  background: var(--bg-card);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.rincian-emp-chip.active {
+  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%) !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35) !important;
+  transform: translateY(-2px);
+}
+
+.emp-chip-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(37,99,235,0.12);
+  color: var(--brand-600);
+  font-size: 12px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.rincian-emp-chip.active .emp-chip-avatar {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+.emp-chip-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: left;
+}
+
+.emp-chip-row-top,
+.emp-chip-row-bottom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.emp-chip-name {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.rincian-emp-chip.active .emp-chip-name {
+  color: #ffffff;
+}
+
+.chip-spd-tag {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+}
+
+.chip-spd-tag.is-set {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.chip-spd-tag.is-empty {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.rincian-emp-chip.active .chip-spd-tag.is-set {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.rincian-emp-chip.active .chip-spd-tag.is-empty {
+  background: rgba(254, 226, 226, 0.9);
+  color: #b91c1c;
+  border-color: transparent;
+}
+
+.emp-chip-sub {
+  font-size: 11.5px;
+  color: var(--text-sub);
+}
+
+.rincian-emp-chip.active .emp-chip-sub {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.emp-chip-total {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-main);
+  background: rgba(0, 0, 0, 0.04);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.rincian-emp-chip.active .emp-chip-total {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+/* Spotlight Profile & SPD Card */
+.rincian-active-emp-card {
+  display: grid;
+  grid-template-columns: 1.1fr 1.3fr;
+  align-items: center;
+  gap: 20px;
+  padding: 18px 22px;
+  background: linear-gradient(135deg, rgba(239, 246, 255, 0.8) 0%, rgba(248, 250, 252, 0.95) 100%);
+  border: 1.5px solid rgba(191, 219, 254, 0.8);
+  border-radius: 14px;
+  margin-top: 10px;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.06);
+}
+
+.active-emp-profile {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.active-emp-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(37,99,235,0.3);
+  flex-shrink: 0;
+}
+
+.active-emp-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.active-emp-badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--brand-600);
+  letter-spacing: 0.04em;
+  margin-bottom: 2px;
+}
+
+.active-emp-name {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.active-emp-meta {
+  font-size: 12.5px;
+  color: var(--text-sub);
+  margin-top: 2px;
+}
+
+.active-emp-spd-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.active-spd-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.active-spd-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.active-spd-icon {
+  font-size: 15px;
+}
+
+.active-spd-tip {
+  font-size: 11.5px;
+  color: var(--text-sub);
+}
+
+.spd-prefix-wrap-spotlight {
+  display: flex !important;
+  align-items: stretch !important;
+  height: 44px !important;
+  border: 1.5px solid var(--brand-500) !important;
+  border-radius: 10px !important;
+  overflow: hidden !important;
+  background: var(--bg-card) !important;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.12) !important;
+}
+
+.spd-input-box {
+  display: flex;
+  align-items: center;
+  background: var(--bg-card);
+  padding-left: 10px;
+  border-right: 1.5px solid rgba(0, 0, 0, 0.08);
+}
+
+.spd-input-hash {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--brand-600);
+  user-select: none;
+}
+
+.spd-prefix-wrap-spotlight .spd-number-input {
+  border: none !important;
+  background: transparent !important;
+  padding: 0 8px !important;
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  color: var(--brand-600) !important;
+  width: 75px !important;
+  text-align: center !important;
+  height: 100% !important;
+}
+
+.spd-prefix-wrap-spotlight .spd-number-input:focus {
+  outline: none !important;
+}
+
+.spd-prefix-wrap-spotlight .spd-suffix-label {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  padding: 0 12px;
+  background: rgba(241, 245, 249, 0.8);
+  color: var(--text-main);
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Batch SPD Table */
+.rincian-spd-table-wrap {
+  margin-top: 12px;
+  margin-bottom: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 16px;
+  animation: rincianFadeIn 0.2s ease-in-out;
+}
+
+.spd-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.spd-table-title strong {
+  font-size: 14px;
+  color: var(--text-main);
+  display: block;
+}
+
+.spd-table-sub {
+  font-size: 12px;
+  color: var(--text-sub);
+}
+
+.spd-table-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.spd-batch-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.spd-batch-table th {
+  background: var(--bg-main);
+  padding: 8px 12px;
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--text-sub);
+  border-bottom: 2px solid var(--border-color);
+  text-align: left;
+}
+
+.spd-batch-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+}
+
+.spd-table-prefix-input {
+  width: 80px;
+  text-align: center;
+  font-weight: 700;
+  color: var(--brand-600);
+}
+
+.spd-full-preview {
+  font-family: monospace;
+  font-size: 12.5px;
+  color: var(--text-main);
+  background: var(--bg-main);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.spd-status-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.spd-status-badge.is-ok {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+}
+
+.spd-status-badge.is-empty {
+  background: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
+}
+
+.badge-gol {
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 2px 6px;
+  background: var(--bg-main);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-sub);
+}
+
+/* Dark Mode Additions */
+html[data-theme="dark"] .rincian-active-emp-card {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+  border-color: rgba(59, 130, 246, 0.35);
+}
+
+html[data-theme="dark"] .active-emp-name {
+  color: #f8fafc;
+}
+
+html[data-theme="dark"] .spd-prefix-wrap-spotlight {
+  background: #0f172a !important;
+  border-color: #3b82f6 !important;
+}
+
+html[data-theme="dark"] .spd-input-box {
+  background: #0f172a;
+  border-right-color: rgba(255, 255, 255, 0.1);
+}
+
+html[data-theme="dark"] .spd-prefix-wrap-spotlight .spd-number-input {
+  color: #60a5fa !important;
+}
+
+html[data-theme="dark"] .spd-prefix-wrap-spotlight .spd-suffix-label {
+  background: rgba(255, 255, 255, 0.05);
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .rincian-emp-chip {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .rincian-emp-chip.active {
+  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%) !important;
+  border-color: #3b82f6 !important;
+}
+
+html[data-theme="dark"] .rincian-emp-chip:hover:not(.active) {
+  background: #273549;
+  border-color: #475569;
+}
+
+html[data-theme="dark"] .emp-chip-name {
+  color: #f8fafc;
+}
+
+html[data-theme="dark"] .emp-chip-total {
+  background: rgba(255, 255, 255, 0.08);
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .rincian-spd-table-wrap {
+  background: #0f172a;
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .spd-batch-table th {
+  background: #1e293b;
+  color: #94a3b8;
+  border-bottom-color: #334155;
+}
+
+html[data-theme="dark"] .spd-batch-table td {
+  border-bottom-color: #334155;
+}
+
+html[data-theme="dark"] .spd-full-preview {
+  background: #1e293b;
+  color: #cbd5e1;
+}
+
+@media (max-width: 860px) {
+  .rincian-active-emp-card {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* ============================================================ */
+/* POLISH: HOTEL & CUSTOM COST BUTTON PIXEL ALIGNMENT */
+/* ============================================================ */
+.hotel-row .btn,
+.hotel-row button.btn-warn,
+.hotel-row button {
+  height: 34px !important;
+  min-height: 34px !important;
+  max-height: 34px !important;
+  border-radius: 9px !important;
+  padding: 0 14px !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  align-self: end !important;
+  margin-bottom: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* ============================================================ */
+/* POLISH: HIGH-CONTRAST DARK MODE READABILITY */
+/* ============================================================ */
+html[data-theme="dark"] .spd-prefix-wrap-spotlight .spd-number-input {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 16px !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+}
+
+html[data-theme="dark"] .spd-prefix-wrap-spotlight .spd-suffix-label {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #e2e8f0 !important;
+  font-weight: 600 !important;
+  border-left-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+html[data-theme="dark"] .active-emp-name {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="dark"] .active-emp-meta {
+  color: #cbd5e1 !important;
+}
+
+html[data-theme="dark"] .active-spd-label {
+  color: #f1f5f9 !important;
+}
+
+html[data-theme="dark"] .active-spd-tip {
+  color: #94a3b8 !important;
+}
+
+html[data-theme="dark"] .custom-kind-btn.active,
+html[data-theme="dark"] .custom-kind-btn[aria-pressed="true"] {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4) !important;
+}
+
+html[data-theme="dark"] .custom-kind-btn:not(.active):not([aria-pressed="true"]) {
+  color: #cbd5e1 !important;
+}
+
+html[data-theme="dark"] .badge-gol {
+  background: #1e293b !important;
+  color: #e2e8f0 !important;
+  border-color: #334155 !important;
+}
+
+html[data-theme="dark"] .spd-status-badge.is-ok {
+  background: rgba(16, 185, 129, 0.25) !important;
+  color: #34d399 !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="dark"] .spd-status-badge.is-empty {
+  background: rgba(239, 68, 68, 0.25) !important;
+  color: #f87171 !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="dark"] .rincian-emp-chip .emp-chip-name {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .rincian-emp-chip.active .emp-chip-name {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="dark"] .rincian-emp-chip.active .emp-chip-total {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.22) !important;
+}
+
+html[data-theme="dark"] .spd-batch-table th {
+  background: #1e293b !important;
+  color: #f8fafc !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="dark"] .spd-batch-table td {
+  color: #f1f5f9 !important;
+}
+
+html[data-theme="dark"] .spd-row-input {
+  background: #0f172a !important;
+  color: #ffffff !important;
+  border-color: #3b82f6 !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="dark"] .spd-full-preview {
+  background: #1e293b !important;
+  color: #f8fafc !important;
+}
+
+/* ============================================================ */
+/* COCKPIT FOOTER BAR (TERAPKAN BIAYA KE SEMUA) */
+/* ============================================================ */
+.cockpit-footer-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 20px;
+  padding: 14px 18px;
+  background: var(--surface-2, #f8fafc);
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: 12px;
+  flex-wrap: wrap;
+}
+
+.cockpit-footer-hint {
+  font-size: 13px;
+  color: var(--text-sub, #64748b);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+html[data-theme="dark"] .cockpit-footer-bar {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .cockpit-footer-hint {
+  color: #94a3b8;
+}
+
