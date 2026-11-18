@@ -561,8 +561,8 @@ function printSPPDPerorangan() {
 }
 
 const MAK_RULES = {
-  '524111': { desc: 'Kegiatan di luar kota', jenis: 'Luar Kota (luar jakarta)' },
-  '524119': { desc: 'Rapat di luar kota', jenis: 'Luar Kota (luar jakarta)' },
+  '524111': { desc: 'Kegiatan di luar kota', jenis: 'Luar Kota' },
+  '524119': { desc: 'Rapat di luar kota', jenis: 'Luar Kota' },
   '524113': { desc: 'Kegiatan di dalam kota', jenis: 'Dalam Kota' },
   '524114': { desc: 'Rapat di dalam kota', jenis: 'Dalam Kota' }
 };
@@ -617,7 +617,7 @@ function renderLembarKendali() {
   if (elJenis && !elJenis.dataset.userEdited) {
     syncJenisPerjalananFromMak();
   }
-  const jenisPerjalanan = elJenis ? elJenis.value : 'Luar Kota (luar jakarta)';
+  const jenisPerjalanan = elJenis ? elJenis.value : 'Luar Kota';
   const kotaTeks = document.getElementById('kotaTujuan').value.trim();
   const tujuan = getTujuanDisplay(kotaTeks);
   const tujuanPerjalanan = document.getElementById('agenda').value.trim() || tujuan;
