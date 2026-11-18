@@ -879,15 +879,25 @@ const TRANSPORT_COST_RE = /\b(grab|grabcar|gojek|goride|gocar|grabbike|ojek|ojol
 const TOLL_COST_RE = /\b(toll|tol)\b/i;
 const TICKET_COST_RE = /\b(tiket|kereta|whoosh|pesawat|kapal|ferry|feri|speedboat)\b/i;
 const TICKET_CATEGORY_RULES = [
-  { re: /\b(pesawat|penerbangan|flight)\b/i, label: 'Tiket Pesawat Udara' },
+  { re: /\b(kereta|kai)\b/i, label: 'Tiket Kereta' },
+  { re: /\b(pesawat|penerbangan|flight)\b/i, label: 'Tiket Pesawat' },
   { re: /\bwhoosh\b/i, label: 'Tiket Whoosh' },
-  { re: /\bkereta\b/i, label: 'Tiket Kereta Api' },
-  { re: /\b(kapal|ferry|feri|speedboat)\b/i, label: 'Tiket Kapal' }
+  { re: /\b(kapal|ferry|feri|speedboat|pelni)\b/i, label: 'Tiket Kapal' },
+  { re: /\b(bus|travel|shuttle|damri)\b/i, label: 'Tiket Bus/Travel' }
 ];
 
 function getTicketCostLabel(name) {
+  if (!name) return 'Tiket Perjalanan';
   const rule = TICKET_CATEGORY_RULES.find(item => item.re.test(name));
-  return rule ? rule.label : name;
+  if (rule) return rule.label;
+  let cleaned = name
+    .replace(/\s*[\(\[]?\s*(pp|pulang\s*pergi|pergi|berangkat|pulang)\s*[\)\]]?\s*/gi, ' ')
+    .replace(/\s*-\s*(pp|pulang\s*pergi|pergi|berangkat|pulang)\s*$/gi, '')
+    .trim();
+  if (!cleaned.toLowerCase().startsWith('tiket')) {
+    cleaned = 'Tiket ' + cleaned;
+  }
+  return cleaned || 'Tiket Perjalanan';
 }
 
 function addCustomCost() {
@@ -1201,7 +1211,8 @@ function updateSbmWarnings() {
 
     if (sbm.tiket > 0) {
       const ticketGroups = new Map();
-      if (cbTiket) ticketGroups.set('Tiket Pesawat Udara', []);
+      const planeLabel = 'Tiket Pesawat';
+      if (cbTiket) ticketGroups.set(planeLabel, []);
       customCosts.forEach(item => {
         if (item.kind !== 'tiket') return;
         const label = getTicketCostLabel(item.name);
@@ -1212,7 +1223,7 @@ function updateSbmWarnings() {
         selected.forEach(id => {
           const emp = employees.find(e => e.id === id);
           const ticketExtra = list.reduce((total, item) => total + (item.amounts[String(id)] || 0), 0);
-          const total = ticketExtra + (label === 'Tiket Pesawat Udara' && cbTiket ? sbm.tiket : 0);
+          const total = ticketExtra + (label === planeLabel && cbTiket ? sbm.tiket : 0);
           if (total > sbm.tiket) {
             items.push({
               sptjm: true,

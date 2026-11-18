@@ -797,48 +797,89 @@ function renderRekapRincian() {
   const bendNama = document.getElementById('cfg_bendNama').value;
   const bendNip = document.getElementById('cfg_bendNip').value;
 
+  const showUH = cbUH || rows.some(row => row.biaya.uh > 0);
+
+  // Dynamic Biaya Columns: Representasi -> Penginapan/Hotel -> Tiket Kereta -> Tiket Pesawat -> Tiket Whoosh ... -> DPR -> Biaya Lainnya
   const biayaColumns = [];
   if (rows.some(row => row.biaya.representatif > 0)) {
-    biayaColumns.push({ label: 'Representatif', value: biaya => biaya.representatif });
+    biayaColumns.push({ label: 'Representasi', value: biaya => biaya.representatif || 0 });
   }
-  if (cbHotel) biayaColumns.push({ label: 'Penginapan', value: biaya => biaya.hotel });
-  const hasTransportCost = customCosts.some(item => item.kind === 'transport');
+
+  const hasHotel = cbHotel || rows.some(row => row.biaya.hotel > 0);
+  if (hasHotel) {
+    biayaColumns.push({ label: 'Penginapan/Hotel', value: biaya => biaya.hotel || 0 });
+  }
+
+  const preferredTicketOrder = ['Tiket Kereta', 'Tiket Pesawat', 'Tiket Whoosh', 'Tiket Kapal', 'Tiket Bus/Travel'];
+  const ticketGroups = new Set();
+  const planeTicketLabel = 'Tiket Pesawat';
+  const hasSbmTiket = cbTiket || rows.some(row => row.biaya.tiket > 0);
+  if (hasSbmTiket) {
+    ticketGroups.add(planeTicketLabel);
+  }
+  rows.forEach(row => {
+    (row.biaya.customCosts || []).forEach(item => {
+      if (item.isTicket && item.amount > 0) {
+        const label = typeof getTicketCostLabel === 'function' ? getTicketCostLabel(item.name) : item.name;
+        ticketGroups.add(label);
+      }
+    });
+  });
+
+  const sortedTicketLabels = Array.from(ticketGroups).sort((a, b) => {
+    const idxA = preferredTicketOrder.indexOf(a);
+    const idxB = preferredTicketOrder.indexOf(b);
+    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+    if (idxA !== -1) return -1;
+    if (idxB !== -1) return 1;
+    return a.localeCompare(b);
+  });
+
+  sortedTicketLabels.forEach(label => {
+    const isPlaneTicket = label === planeTicketLabel;
+    biayaColumns.push({
+      label,
+      value: biaya => {
+        const sbmVal = isPlaneTicket ? (biaya.tiket || 0) : 0;
+        const customVal = (biaya.customCosts || [])
+          .filter(c => c.isTicket && (typeof getTicketCostLabel === 'function' ? getTicketCostLabel(c.name) : c.name) === label)
+          .reduce((sum, c) => sum + (c.amount || 0), 0);
+        return sbmVal + customVal;
+      }
+    });
+  });
+
+  const hasTransportCost = rows.some(row => (row.biaya.customCosts || []).some(item => item.isTransport && item.amount > 0));
   const hasDprCost = rows.some(row => row.biaya.dpr > 0);
   if (hasDprCost || hasTransportCost) {
     biayaColumns.push({
       label: 'DPR',
-      value: biaya => biaya.dpr + biaya.customCosts.reduce((total, item) => total + (item.isTransport ? item.amount : 0), 0)
+      value: biaya => (biaya.dpr || 0) + (biaya.customCosts || []).reduce((total, item) => total + (item.isTransport ? item.amount : 0), 0)
     });
   }
-  const ticketGroups = new Map();
-  const otherColumns = [];
-  customCosts.forEach((item, index) => {
-    if (item.kind === 'transport') return;
-    if (item.kind === 'tiket') {
-      const label = getTicketCostLabel(item.name);
-      if (!ticketGroups.has(label)) ticketGroups.set(label, []);
-      ticketGroups.get(label).push(index);
-      return;
-    }
-    otherColumns.push({ label: item.name, value: biaya => biaya.customCosts[index]?.amount || 0 });
-  });
-  const planeTicketLabel = 'Tiket Pesawat Udara';
-  if (cbTiket && !ticketGroups.has(planeTicketLabel)) ticketGroups.set(planeTicketLabel, []);
-  ticketGroups.forEach((indices, label) => {
-    const includeSbmTiket = label === planeTicketLabel;
-    biayaColumns.push({
-      label,
-      value: biaya => (includeSbmTiket ? biaya.tiket : 0) +
-        indices.reduce((total, index) => total + (biaya.customCosts[index]?.amount || 0), 0)
+
+  const otherCostNames = new Set();
+  rows.forEach(row => {
+    (row.biaya.customCosts || []).forEach(item => {
+      if (!item.isTransport && !item.isTicket && item.amount > 0) {
+        otherCostNames.add(item.name);
+      }
     });
   });
-  biayaColumns.push(...otherColumns);
+  otherCostNames.forEach(name => {
+    biayaColumns.push({
+      label: name,
+      value: biaya => (biaya.customCosts || [])
+        .filter(item => !item.isTransport && !item.isTicket && item.name === name)
+        .reduce((sum, item) => sum + (item.amount || 0), 0)
+    });
+  });
 
   const grandTotal = rows.reduce((total, row) => total + row.biaya.total, 0);
   const totalUangHarian = rows.reduce((total, row) => total + row.biaya.uh, 0);
   const multiSegRows = rows.filter(row => row.segs.length > 1);
   const biayaColspan = Math.max(1, biayaColumns.length);
-  const financialColumnCount = (cbUH ? 1 : 0) + biayaColspan + 1;
+  const financialColumnCount = (showUH ? 1 : 0) + biayaColspan + 1;
   const financialColumnWidth = 18 / financialColumnCount;
 
   out.innerHTML = `
@@ -868,7 +909,7 @@ function renderRekapRincian() {
             <th rowspan="2">Tujuan</th>
             <th colspan="2">Tanggal</th>
             <th rowspan="2">Lama Tugas</th>
-            ${cbUH ? '<th rowspan="2">Uang Harian</th>' : ''}
+            ${showUH ? '<th rowspan="2">Uang Harian</th>' : ''}
             <th colspan="${biayaColspan}">Biaya</th>
             <th rowspan="2">JUMLAH<br>(Rp)</th>
           </tr>
@@ -889,14 +930,14 @@ function renderRekapRincian() {
               <td class="rekap-rincian-center">${formatTgl(row.segs.length ? row.segs[0].start : tanggalBerangkat)}</td>
               <td class="rekap-rincian-center">${formatTgl(row.segs.length ? row.segs[row.segs.length - 1].end : tanggalKembali)}</td>
               <td class="rekap-rincian-center">${row.days} hari</td>
-              ${cbUH ? `<td class="rekap-rincian-number">${rp(row.biaya.uh)}</td>` : ''}
+              ${showUH ? `<td class="rekap-rincian-number">${rp(row.biaya.uh)}</td>` : ''}
               ${biayaColumns.length ? biayaColumns.map(column => `<td class="rekap-rincian-number">${rp(column.value(row.biaya))}</td>`).join('') : '<td class="rekap-rincian-center">-</td>'}
               <td class="rekap-rincian-number">${rp(row.biaya.total)}</td>
             </tr>
           `).join('')}
           <tr class="rekap-rincian-total">
             <td colspan="8" class="rekap-rincian-center">Jumlah</td>
-            ${cbUH ? `<td class="rekap-rincian-number">${rp(totalUangHarian)}</td>` : ''}
+            ${showUH ? `<td class="rekap-rincian-number">${rp(totalUangHarian)}</td>` : ''}
             ${biayaColumns.length ? biayaColumns.map(column => `<td class="rekap-rincian-number">${rp(rows.reduce((total, row) => total + column.value(row.biaya), 0))}</td>`).join('') : '<td></td>'}
             <td class="rekap-rincian-number">${rp(grandTotal)}</td>
           </tr>
