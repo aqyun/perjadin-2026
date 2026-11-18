@@ -658,8 +658,26 @@ document.addEventListener('keydown', event => {
   }
 });
 
-document.addEventListener('input', () => { updateSbmWarnings(); refreshHotelSummaries(); });
-document.addEventListener('change', () => { updateSbmWarnings(); refreshHotelSummaries(); });
+document.addEventListener('input', (e) => { 
+  updateSbmWarnings(); 
+  refreshHotelSummaries(); 
+  const rincianTab = document.getElementById('tab-rincian');
+  if (rincianTab && rincianTab.classList.contains('active')) {
+    if (!e.target.closest('#rincianOut') && !e.target.closest('#rincianCockpit')) {
+      if (typeof renderRincian === 'function') renderRincian();
+    }
+  }
+});
+document.addEventListener('change', (e) => { 
+  updateSbmWarnings(); 
+  refreshHotelSummaries(); 
+  const rincianTab = document.getElementById('tab-rincian');
+  if (rincianTab && rincianTab.classList.contains('active')) {
+    if (!e.target.closest('#rincianOut') && !e.target.closest('#rincianCockpit')) {
+      if (typeof renderRincian === 'function') renderRincian();
+    }
+  }
+});
 
 // =====================================================================
 // EMPLOYEE LIST

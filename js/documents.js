@@ -1241,9 +1241,21 @@ function mergeRincianKeterangan(rowsHtml) {
 }
 
 function renderRincian() {
-  const id = parseInt(document.getElementById('rincianPegawai').value);
-  if (!id && id !== 0) { document.getElementById('rincianOut').innerHTML = ''; return; }
+  const sel = document.getElementById('rincianPegawai');
+  const out = document.getElementById('rincianOut');
+  if (!out) return;
+  if (!sel || !sel.value) {
+    if (typeof selectedEmpIds !== 'undefined' && selectedEmpIds.size > 0 && sel) {
+      sel.value = String([...selectedEmpIds][0]);
+    } else {
+      out.innerHTML = '<div class="alert-warn no-print">⚠️ Silakan pilih pegawai untuk melihat rincian biaya.</div>';
+      return;
+    }
+  }
+  const id = parseInt(sel.value);
+  if (isNaN(id)) { out.innerHTML = ''; return; }
   const emp = employees.find(e => e.id === id);
+  if (!emp) { out.innerHTML = ''; return; }
   const sbm = getSBM();
   const { days, nights } = getEmpDays(emp.id);
   const b = hitungBiaya(emp);
@@ -1333,14 +1345,14 @@ function renderRincian() {
             <colgroup><col><col style="width:130px"><col style="width:120px"></colgroup>
             <tbody>
               <tr>
-                <td>${b.multiProvData.title1}<br><span style="padding-left:12px">${b.multiProvData.days1} hari &nbsp; X &nbsp; ${rp(b.multiProvData.uhRate1)}</span></td>
-                <td class="tr" style="vertical-align:bottom;">${rp(b.multiProvData.uhGross1)}</td>
-                <td>${uhKeterangan}</td>
+                <td class="live-editable" contenteditable="true">${b.multiProvData.title1}<br><span style="padding-left:12px">${b.multiProvData.days1} hari &nbsp; X &nbsp; ${rp(b.multiProvData.uhRate1)}</span></td>
+                <td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()" style="vertical-align:bottom;">${rp(b.multiProvData.uhGross1)}</td>
+                <td class="live-editable" contenteditable="true">${uhKeterangan}</td>
               </tr>
               <tr>
-                <td>${b.multiProvData.title2}<br><span style="padding-left:12px">${b.multiProvData.days2} hari &nbsp; X &nbsp; ${rp(b.multiProvData.uhRate2)}</span></td>
-                <td class="tr" style="vertical-align:bottom;">${rp(b.multiProvData.uhGross2)}</td>
-                <td></td>
+                <td class="live-editable" contenteditable="true">${b.multiProvData.title2}<br><span style="padding-left:12px">${b.multiProvData.days2} hari &nbsp; X &nbsp; ${rp(b.multiProvData.uhRate2)}</span></td>
+                <td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()" style="vertical-align:bottom;">${rp(b.multiProvData.uhGross2)}</td>
+                <td class="live-editable" contenteditable="true"></td>
               </tr>
               ${deductionBlock}
             </tbody>
@@ -1356,34 +1368,34 @@ function renderRincian() {
           ).join('');
           deductionRows += `
             <tr>
-              <td style="padding-left:24px;">
+              <td class="live-editable" contenteditable="true" style="padding-left:24px;">
                 * Makan (${b.mealDetails.length} kali makan):<br>
                 ${detailRowsHtml}
               </td>
-              <td class="tr" style="vertical-align:bottom;">- ${rp(b.mealDeduction)}</td>
-              <td style="vertical-align:bottom;">${mealKet}</td>
+              <td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()" style="vertical-align:bottom;">- ${rp(b.mealDeduction)}</td>
+              <td class="live-editable" contenteditable="true" style="vertical-align:bottom;">${mealKet}</td>
             </tr>`;
         } else {
           deductionRows += `
             <tr>
-              <td style="padding-left:24px;">
+              <td class="live-editable" contenteditable="true" style="padding-left:24px;">
                 * Makan<br>
                 <span style="padding-left:12px;">${b.mealDays} hari &times; ${b.mealCount} kali &times; ${rp(b.mealRate)}</span>
               </td>
-              <td class="tr" style="vertical-align:bottom;">- ${rp(b.mealDeduction)}</td>
-              <td style="vertical-align:bottom;">${mealKet}</td>
+              <td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()" style="vertical-align:bottom;">- ${rp(b.mealDeduction)}</td>
+              <td class="live-editable" contenteditable="true" style="vertical-align:bottom;">${mealKet}</td>
             </tr>`;
         }
       }
       if (b.snackDeduction > 0) {
         deductionRows += `
           <tr>
-            <td style="padding-left:24px;">
+            <td class="live-editable" contenteditable="true" style="padding-left:24px;">
               * Snack<br>
               <span style="padding-left:12px;">${b.snackDays} hari &times; ${b.snackCount} kali &times; ${rp(b.snackRate)}</span>
             </td>
-            <td class="tr" style="vertical-align:bottom;">- ${rp(b.snackDeduction)}</td>
-            <td></td>
+            <td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()" style="vertical-align:bottom;">- ${rp(b.snackDeduction)}</td>
+            <td class="live-editable" contenteditable="true"></td>
           </tr>`;
       }
       rincianRows += `<tr>
@@ -1393,12 +1405,12 @@ function renderRincian() {
             <colgroup><col><col style="width:130px"><col style="width:120px"></colgroup>
             <tbody>
               <tr>
-                <td>${b.uhTitle || 'Uang Harian'}<br><span style="padding-left:12px">${days} hari &nbsp; X &nbsp; ${rp(b.uhBaseRate)}</span></td>
-                <td class="tr" style="vertical-align:bottom;">${rp(b.uhGross)}</td>
-                <td>${uhKeterangan}</td>
+                <td class="live-editable" contenteditable="true">${b.uhTitle || 'Uang Harian'}<br><span style="padding-left:12px">${days} hari &nbsp; X &nbsp; ${rp(b.uhBaseRate)}</span></td>
+                <td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()" style="vertical-align:bottom;">${rp(b.uhGross)}</td>
+                <td class="live-editable" contenteditable="true">${uhKeterangan}</td>
               </tr>
               <tr>
-                <td style="padding-left:12px;">Terpotong konsumsi:</td>
+                <td class="live-editable" contenteditable="true" style="padding-left:12px;">Terpotong konsumsi:</td>
                 <td></td>
                 <td></td>
               </tr>
@@ -1408,24 +1420,41 @@ function renderRincian() {
         </td>
       </tr>`;
     } else {
-      rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td>${b.uhTitle || 'Uang Harian'}<br><span style="padding-left:12px">${days} hari &nbsp; X &nbsp; ${rp(b.uhBaseRate)}</span></td><td class="tr">${rp(b.uh)}</td><td class="rincian-ket-cell">${uhKeterangan}</td></tr>`;
+      rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td class="live-editable" contenteditable="true">${b.uhTitle || 'Uang Harian'}<br><span style="padding-left:12px">${days} hari &nbsp; X &nbsp; ${rp(b.uhBaseRate)}</span></td><td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()">${rp(b.uh)}</td><td class="rincian-ket-cell live-editable" contenteditable="true">${uhKeterangan}</td></tr>`;
     }
   }
   if (b.representatif > 0) {
     const representatifKet = sbm && sbm.provinsi === 'DKI JAKARTA' ? 'Dalam kota' : 'Luar kota';
-    rincianRows += `<tr class="rincian-ket-row" data-merge-ket-up="true"><td class="tc">${no++}</td><td>Biaya Representatif<br><span style="padding-left:12px">${days} hari &nbsp; X &nbsp; ${rp(b.representatifRate)}</span></td><td class="tr">${rp(b.representatif)}</td><td class="rincian-ket-cell">${representatifKet}</td></tr>`;
+    rincianRows += `<tr class="rincian-ket-row" data-merge-ket-up="true"><td class="tc">${no++}</td><td class="live-editable" contenteditable="true">Biaya Representatif<br><span style="padding-left:12px">${days} hari &nbsp; X &nbsp; ${rp(b.representatifRate)}</span></td><td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()">${rp(b.representatif)}</td><td class="rincian-ket-cell live-editable" contenteditable="true">${representatifKet}</td></tr>`;
   }
   if (cbHotel && b.hotel > 0) {
     if (b.hotelDetails.length) {
       b.hotelDetails.forEach(item => {
-        rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td>Penginapan/Hotel<br><span style="padding-left:12px">${item.nights} malam &nbsp; X &nbsp; ${rp(item.price)}</span></td><td class="tr">${rp(item.total)}</td><td class="rincian-ket-cell">${escHtml(item.name)}</td></tr>`;
+        rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td class="live-editable" contenteditable="true">Penginapan/Hotel<br><span style="padding-left:12px">${item.nights} malam &nbsp; X &nbsp; ${rp(item.price)}</span></td><td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()">${rp(item.total)}</td><td class="rincian-ket-cell live-editable" contenteditable="true">${escHtml(item.name)}</td></tr>`;
       });
     } else {
-      rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td>Penginapan/Hotel<br><span style="padding-left:12px">${nights} malam &nbsp; X &nbsp; ${rp(getHotelRate(sbm,emp.gol))}</span></td><td class="tr">${rp(b.hotel)}</td><td class="rincian-ket-cell"></td></tr>`;
+      rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td class="live-editable" contenteditable="true">Penginapan/Hotel<br><span style="padding-left:12px">${nights} malam &nbsp; X &nbsp; ${rp(getHotelRate(sbm,emp.gol))}</span></td><td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()">${rp(b.hotel)}</td><td class="rincian-ket-cell live-editable" contenteditable="true"></td></tr>`;
     }
   }
+  // 4. Tiket Perjalanan
+  const ticketCosts = b.customCosts.filter(item => item.isTicket && item.amount > 0);
   const transportCosts = b.customCosts.filter(item => item.isTransport && item.amount > 0);
-  const otherCosts = b.customCosts.filter(item => !item.isTransport && item.amount > 0);
+  const otherCosts = b.customCosts.filter(item => !item.isTransport && !item.isTicket && item.amount > 0);
+
+  if (cbTiket && b.tiket > 0) {
+    const ticketRoute = [kotaAsal, kotaTujuan].filter(Boolean).join(' - ');
+    rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td class="live-editable" contenteditable="true">Tiket Pesawat PP</td><td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()">${rp(b.tiket)}</td><td class="rincian-ket-cell live-editable" contenteditable="true">${ticketRoute}</td></tr>`;
+  }
+  ticketCosts.forEach(item => {
+    const route = [item.pickup, item.dropoff].filter(Boolean).join(' - ');
+    rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td class="live-editable" contenteditable="true">${escHtml(item.name)}</td><td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()">${rp(item.amount)}</td><td class="rincian-ket-cell live-editable" contenteditable="true">${escHtml(route)}</td></tr>`;
+  });
+  otherCosts.forEach(item => {
+    const route = [item.pickup, item.dropoff].filter(Boolean).join(' - ');
+    rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td class="live-editable" contenteditable="true">${escHtml(item.name)}</td><td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()">${rp(item.amount)}</td><td class="rincian-ket-cell live-editable" contenteditable="true">${escHtml(route)}</td></tr>`;
+  });
+
+  // 5. Transport Lokal / DPR (Paling Bawah)
   const transportExtra = transportCosts.reduce((total, item) => total + item.amount, 0);
   if (b.dpr > 0 || transportExtra > 0) {
     const dprUraian = (sbm?.provinsi === 'DKI JAKARTA' && b.dpr > 0)
@@ -1435,7 +1464,7 @@ function renderRincian() {
     if (transportCosts.length) {
       const detailRows = transportCosts.map(item => {
         const route = [item.pickup, item.dropoff].filter(Boolean).join(' - ');
-        return `<tr><td style="padding-left:24px"><em>${item.name}</em></td><td class="tr"><em>${rp(item.amount)}</em></td><td>${route}</td></tr>`;
+        return `<tr><td class="live-editable" contenteditable="true" style="padding-left:24px"><em>${escHtml(item.name)}</em></td><td class="tr live-editable" contenteditable="true"><em>${rp(item.amount)}</em></td><td class="live-editable" contenteditable="true">${escHtml(route)}</td></tr>`;
       }).join('');
       rincianRows += `<tr>
         <td class="tc">${no++}</td>
@@ -1443,32 +1472,24 @@ function renderRincian() {
           <table class="rincian-subtbl">
             <colgroup><col><col style="width:130px"><col style="width:120px"></colgroup>
             <tbody>
-              <tr><td>${dprUraian}</td><td class="tr"><strong>${rp(transportTotal)}</strong></td><td></td></tr>
-              <tr><td style="padding-left:12px"><em>Rincian Transport:</em></td><td></td><td></td></tr>
+              <tr><td class="live-editable" contenteditable="true">${dprUraian}</td><td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()"><strong>${rp(transportTotal)}</strong></td><td class="live-editable" contenteditable="true"></td></tr>
+              <tr><td class="live-editable" contenteditable="true" style="padding-left:12px"><em>Rincian Transport:</em></td><td></td><td></td></tr>
               ${detailRows}
             </tbody>
           </table>
         </td>
       </tr>`;
     } else {
-      rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td>${dprUraian}</td><td class="tr">${rp(transportTotal)}</td><td class="rincian-ket-cell"></td></tr>`;
+      rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td class="live-editable" contenteditable="true">${dprUraian}</td><td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()">${rp(transportTotal)}</td><td class="rincian-ket-cell live-editable" contenteditable="true"></td></tr>`;
     }
   }
-  if (cbTiket && b.tiket > 0) {
-    const ticketRoute = [kotaAsal, kotaTujuan].filter(Boolean).join(' - ');
-    rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td>Tiket Pesawat PP</td><td class="tr">${rp(b.tiket)}</td><td class="rincian-ket-cell">${ticketRoute}</td></tr>`;
-  }
-  otherCosts.forEach(item => {
-    const route = [item.pickup, item.dropoff].filter(Boolean).join(' - ');
-    rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td>${item.name}</td><td class="tr">${rp(item.amount)}</td><td class="rincian-ket-cell">${route}</td></tr>`;
-  });
 
   document.getElementById('rincianOut').innerHTML = `
     <div class="rincian-doc">
       <h3>RINCIAN &nbsp; PERJALANAN &nbsp; DINAS</h3>
       <table class="rincian-meta-top">
-        <tr><td>Lampiran SPD No.</td><td>:</td><td>${noSPD}</td></tr>
-        <tr><td>Tanggal</td><td>:</td><td>${formatTgl(tglSPD)}</td></tr>
+        <tr><td>Lampiran SPD No.</td><td>:</td><td><span class="live-editable" id="rincianDocSpd" contenteditable="true" oninput="onRincianDocSpdInput(this)">${noSPD}</span></td></tr>
+        <tr><td>Tanggal</td><td>:</td><td><span class="live-editable" contenteditable="true">${formatTgl(tglSPD)}</span></td></tr>
       </table>
 
       <table class="rincian-tbl">
@@ -1485,30 +1506,30 @@ function renderRincian() {
           ${mergeRincianKeterangan(rincianRows) || '<tr><td colspan="4" style="text-align:center;color:#a0aec0;padding:16px">Tidak ada komponen biaya yang dipilih</td></tr>'}
           <tr class="rincian-total-row">
             <td colspan="2" style="text-align:center;font-weight:700">J u m l a h</td>
-            <td class="tr" style="font-weight:700">${rp(b.total)}</td>
+            <td class="tr" id="rincianDocGrandTotal" style="font-weight:700">${rp(b.total)}</td>
             <td></td>
           </tr>
         </tbody>
       </table>
-      <div class="rincian-terbilang">terbilang : <em>${terbilang(b.total)}</em></div>
+      <div class="rincian-terbilang">terbilang : <em id="rincianDocTerbilang">${terbilang(b.total)}</em></div>
 
       <div class="rincian-payment-row">
         <div class="rincian-payment-col">
           <div style="visibility:hidden">placeholder</div>
           <div>Telah dibayar sejumlah</div>
-          <div class="rincian-amount-box">${rp(b.total)}</div>
+          <div class="rincian-amount-box rincian-sync-total">${rp(b.total)}</div>
           <div class="rincian-signatory-label">Bendahara Pengeluaran</div>
           <div class="rincian-sig-space"></div>
-          <div class="rincian-name">${bendNama}</div>
+          <div class="rincian-name live-editable" contenteditable="true">${bendNama}</div>
           <div>NIP. ${bendNip.replace('NIP.','').trim()}</div>
         </div>
         <div class="rincian-payment-col">
-          <div>${kotaAsal}, ${formatTgl(tglSPD)}</div>
+          <div><span class="live-editable" contenteditable="true">${kotaAsal}</span>, <span class="live-editable" contenteditable="true">${formatTgl(tglSPD)}</span></div>
           <div>Telah menerima jumlah uang</div>
-          <div class="rincian-amount-box">${rp(b.total)}</div>
+          <div class="rincian-amount-box rincian-sync-total">${rp(b.total)}</div>
           <div class="rincian-signatory-label">Yang Menerima</div>
           <div class="rincian-sig-space"></div>
-          <div class="rincian-name">${emp.nama}</div>
+          <div class="rincian-name live-editable" contenteditable="true">${emp.nama}</div>
           <div>NIP.${emp.nip}</div>
         </div>
       </div>
@@ -1516,8 +1537,8 @@ function renderRincian() {
       <div class="rincian-spd-rampung">
         <div style="font-weight:700;text-align:center;margin-bottom:8px">PERHITUNGAN SPD RAMPUNG</div>
         <table class="rincian-spd-tbl">
-          <tr><td>Ditetapkan sejumlah</td><td style="text-align:right">${rp(b.total)}</td></tr>
-          <tr><td>Yang telah dibayar semula</td><td style="text-align:right">${rp(b.total)}</td></tr>
+          <tr><td>Ditetapkan sejumlah</td><td style="text-align:right" id="spdRampungDitetapkan">${rp(b.total)}</td></tr>
+          <tr><td>Yang telah dibayar semula</td><td style="text-align:right" id="spdRampungDibayar">${rp(b.total)}</td></tr>
           <tr><td>Sisa/Kurang</td><td style="text-align:right">-</td></tr>
         </table>
       </div>
@@ -1526,7 +1547,7 @@ function renderRincian() {
         <div>Pejabat Pembuat Komitmen</div>
         <div>Sekretariat Jenderal Kementerian PKP</div>
         <div class="rincian-sig-space"></div>
-        <div class="rincian-name">${ppkNama}</div>
+        <div class="rincian-name live-editable" contenteditable="true">${ppkNama}</div>
         <div>${ppkNip}</div>
       </div>
     </div>
@@ -1534,6 +1555,60 @@ function renderRincian() {
       <button class="btn btn-success" onclick="printRincian()">🖨️ Print Rincian</button>
     </div>
   `;
+}
+
+function onRincianDocSpdInput(el) {
+  const select = document.getElementById('rincianPegawai');
+  if (!select || !select.value) return;
+  const empId = Number(select.value);
+  const newSpd = (el.innerText || el.textContent || '').trim();
+  if (typeof spdPerEmployee !== 'undefined') {
+    spdPerEmployee[empId] = newSpd;
+  }
+  const input = document.getElementById('rincianNoSPD');
+  if (input) {
+    const match = newSpd.match(/^([^\/]+)/);
+    if (match) input.value = match[1].trim();
+  }
+  if (typeof renderRincianEmpPills === 'function') renderRincianEmpPills();
+}
+
+function onRincianDocAmountChange() {
+  const table = document.querySelector('.rincian-tbl tbody');
+  if (!table) return;
+  let total = 0;
+  const amountCells = table.querySelectorAll('.tr-amount');
+  amountCells.forEach(cell => {
+    const text = (cell.innerText || cell.textContent || '').trim();
+    if (!text) return;
+    const isNegative = text.includes('-');
+    const digits = text.replace(/[^0-9]/g, '');
+    if (!digits) return;
+    const val = parseInt(digits, 10) || 0;
+    if (isNegative) {
+      total -= val;
+    } else {
+      total += val;
+    }
+  });
+
+  if (total < 0) total = 0;
+
+  const grandTotalEl = document.getElementById('rincianDocGrandTotal');
+  if (grandTotalEl) grandTotalEl.textContent = (typeof rp === 'function') ? rp(total) : 'Rp ' + total;
+
+  const terbilangEl = document.getElementById('rincianDocTerbilang');
+  if (terbilangEl) terbilangEl.textContent = (typeof terbilang === 'function') ? terbilang(total) : '';
+
+  const syncBoxes = document.querySelectorAll('.rincian-sync-total');
+  syncBoxes.forEach(box => {
+    box.textContent = (typeof rp === 'function') ? rp(total) : 'Rp ' + total;
+  });
+
+  const ditetapkan = document.getElementById('spdRampungDitetapkan');
+  if (ditetapkan) ditetapkan.textContent = (typeof rp === 'function') ? rp(total) : 'Rp ' + total;
+  const dibayar = document.getElementById('spdRampungDibayar');
+  if (dibayar) dibayar.textContent = (typeof rp === 'function') ? rp(total) : 'Rp ' + total;
 }
 
 function printRincian() {

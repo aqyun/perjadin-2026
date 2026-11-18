@@ -1,5 +1,3 @@
-
-/* === FILE: js/data.js === */
 // =====================================================================
 // DATA & STATE (PerdinKu)
 // Data pegawai, data master SBM, dan state aplikasi
@@ -132,8 +130,6 @@ try {
 }
 
 
-
-/* === FILE: js/utils.js === */
 // =====================================================================
 // FORMAT HELPERS & UTILITIES (PerdinKu)
 // Helper format mata uang, tanggal, terbilang, teks
@@ -202,8 +198,6 @@ function terbilang(angka) {
 }
 
 
-
-/* === FILE: js/calc.js === */
 // =====================================================================
 // SBM & PERHITUNGAN BIAYA (PerdinKu)
 // Perhitungan uang harian, hotel, transportasi, DPR, dan tarif SBM
@@ -612,27 +606,62 @@ function getMaxMealRateForDay(dayStr) {
   return defaultRate;
 }
 
-function openMealLimitModal(dayName, maxRate) {
+function openSbmLimitModal(componentOrOptions, maxRate, provName) {
+  let title = 'Melebihi Batas SBM Daerah';
+  let component = 'Biaya';
+  let limitRate = maxRate;
+  let province = provName;
+  let customMsg = '';
+
+  if (typeof componentOrOptions === 'object' && componentOrOptions !== null) {
+    title = componentOrOptions.title || title;
+    component = componentOrOptions.component || component;
+    limitRate = componentOrOptions.maxRate !== undefined ? componentOrOptions.maxRate : maxRate;
+    province = componentOrOptions.provName || provName;
+    customMsg = componentOrOptions.msg || '';
+  } else if (typeof componentOrOptions === 'string') {
+    component = componentOrOptions;
+  }
+
+  const sbm = typeof getSBM === 'function' ? getSBM() : null;
+  if (!province && sbm) {
+    province = typeof formatProvinsi === 'function' ? formatProvinsi(sbm.provinsi) : sbm.provinsi;
+  }
+
   const overlay = document.getElementById('mealLimitOverlay');
   const titleEl = document.getElementById('mealLimitTitle');
   const msgEl = document.getElementById('mealLimitMsg');
-  const maxFormatted = typeof rp === 'function' ? rp(maxRate) : `Rp ${maxRate.toLocaleString('id-ID')}`;
+  const maxFormatted = typeof rp === 'function' ? rp(limitRate) : `Rp ${Number(limitRate || 0).toLocaleString('id-ID')}`;
 
-  if (titleEl) titleEl.textContent = 'Melebihi Batas SBM Daerah';
+  if (titleEl) titleEl.textContent = title;
   if (msgEl) {
-    const dayLabel = dayName ? ` untuk ${dayName}` : '';
-    msgEl.innerHTML = `Tarif makan riil per orang${dayLabel} tidak boleh melebihi Standar Biaya Masukan (SBM) daerah tujuan sebesar <strong>${maxFormatted}</strong>. Nilai otomatis disesuaikan ke batas maksimal SBM.`;
+    if (customMsg) {
+      msgEl.innerHTML = customMsg;
+    } else {
+      const provLabel = province ? ` untuk provinsi <strong>${province}</strong>` : '';
+      msgEl.innerHTML = `Komponen <strong>${component}</strong>${provLabel} tidak boleh melebihi ketentuan Standar Biaya Masukan (SBM) sebesar <strong>${maxFormatted}</strong>. Nilai otomatis disesuaikan ke batas maksimum SBM.`;
+    }
   }
 
   if (overlay) {
     overlay.classList.add('is-open');
   } else {
-    alert(`Tarif makan tidak boleh melebihi Standar Biaya Masukan (SBM) daerah tujuan sebesar ${maxFormatted}!`);
+    alert(`⚠️ MELEBIHI BATAS SBM\n\nKomponen ${component}${province ? ' untuk ' + province : ''} tidak boleh melebihi batas SBM sebesar ${maxFormatted}. Nilai otomatis disesuaikan ke batas maksimum.`);
   }
 
   if (typeof showValidationToast === 'function') {
-    showValidationToast(null, `Tarif makan melebihi batas SBM ${maxFormatted}! Otomatis disesuaikan.`);
+    showValidationToast(null, `${component} melebihi batas SBM ${maxFormatted}! Otomatis disesuaikan.`);
   }
+}
+
+function openMealLimitModal(dayName, maxRate) {
+  const dayLabel = dayName ? ` untuk ${dayName}` : '';
+  openSbmLimitModal({
+    title: 'Melebihi Batas SBM Daerah',
+    component: `Tarif Makan Riil${dayLabel}`,
+    maxRate: maxRate,
+    msg: `Tarif makan riil per orang${dayLabel} tidak boleh melebihi Standar Biaya Masukan (SBM) daerah tujuan sebesar <strong>${typeof rp === 'function' ? rp(maxRate) : 'Rp ' + maxRate}</strong>. Nilai otomatis disesuaikan ke batas maksimal SBM.`
+  });
 }
 
 function closeMealLimitModal() {
@@ -1674,6 +1703,34 @@ function switchRincianEmployee(empId) {
   if (typeof renderRincian === 'function') renderRincian();
 }
 
+function updateCockpitKpi(targetEmpId) {
+  const select = document.getElementById('rincianPegawai');
+  const empId = targetEmpId !== undefined ? Number(targetEmpId) : ((select && select.value !== '') ? Number(select.value) : null);
+  if (empId === null || isNaN(empId)) return;
+
+  const emp = employees.find(e => e.id === empId);
+  if (!emp) return;
+  const b = hitungBiaya(emp);
+
+  const kpiTotalEl = document.getElementById('rincianKpiTotal');
+  const kpiSubEl = document.getElementById('rincianKpiSub');
+  const kpiUhVal = document.getElementById('kpiUhVal');
+  const kpiHotelVal = document.getElementById('kpiHotelVal');
+  const kpiTiketVal = document.getElementById('kpiTiketVal');
+  const kpiTransportVal = document.getElementById('kpiTransportVal');
+
+  if (kpiTotalEl) kpiTotalEl.textContent = typeof rp === 'function' ? rp(b.total) : 'Rp ' + b.total;
+  if (kpiSubEl) kpiSubEl.innerHTML = `<strong>${typeof escHtml === 'function' ? escHtml(emp.nama) : emp.nama}</strong> &bull; ${emp.nip ? 'NIP ' + (typeof escHtml === 'function' ? escHtml(emp.nip) : emp.nip) : 'Gol. ' + (typeof escHtml === 'function' ? escHtml(emp.gol) : emp.gol)}`;
+  if (kpiUhVal) kpiUhVal.textContent = typeof rp === 'function' ? rp(b.uh) : 'Rp ' + b.uh;
+  if (kpiHotelVal) kpiHotelVal.textContent = typeof rp === 'function' ? rp(b.hotel) : 'Rp ' + b.hotel;
+  const ticketTotal = b.tiket + (b.customCosts.filter(c => c.isTicket).reduce((s, c) => s + c.amount, 0));
+  if (kpiTiketVal) kpiTiketVal.textContent = typeof rp === 'function' ? rp(ticketTotal) : 'Rp ' + ticketTotal;
+  const transTotal = b.dpr + (b.customCosts.filter(c => c.isTransport).reduce((s, c) => s + c.amount, 0));
+  if (kpiTransportVal) kpiTransportVal.textContent = typeof rp === 'function' ? rp(transTotal) : 'Rp ' + transTotal;
+
+  if (typeof renderRincianEmpPills === 'function') renderRincianEmpPills();
+}
+
 function renderRincianCockpit(targetEmpId) {
   const select = document.getElementById('rincianPegawai');
   const empId = targetEmpId !== undefined ? Number(targetEmpId) : ((select && select.value !== '') ? Number(select.value) : null);
@@ -1710,21 +1767,7 @@ function renderRincianCockpit(targetEmpId) {
   if (typeof updateAllSpdSuffixLabels === 'function') updateAllSpdSuffixLabels();
 
   // Update KPI Overview
-  const kpiTotalEl = document.getElementById('rincianKpiTotal');
-  const kpiSubEl = document.getElementById('rincianKpiSub');
-  const kpiUhVal = document.getElementById('kpiUhVal');
-  const kpiHotelVal = document.getElementById('kpiHotelVal');
-  const kpiTiketVal = document.getElementById('kpiTiketVal');
-  const kpiTransportVal = document.getElementById('kpiTransportVal');
-
-  if (kpiTotalEl) kpiTotalEl.textContent = typeof rp === 'function' ? rp(b.total) : 'Rp ' + b.total;
-  if (kpiSubEl) kpiSubEl.innerHTML = `<strong>${typeof escHtml === 'function' ? escHtml(emp.nama) : emp.nama}</strong> &bull; ${emp.nip ? 'NIP ' + (typeof escHtml === 'function' ? escHtml(emp.nip) : emp.nip) : 'Gol. ' + (typeof escHtml === 'function' ? escHtml(emp.gol) : emp.gol)}`;
-  if (kpiUhVal) kpiUhVal.textContent = typeof rp === 'function' ? rp(b.uh) : 'Rp ' + b.uh;
-  if (kpiHotelVal) kpiHotelVal.textContent = typeof rp === 'function' ? rp(b.hotel) : 'Rp ' + b.hotel;
-  const ticketTotal = b.tiket + (b.customCosts.filter(c => c.isTicket).reduce((s, c) => s + c.amount, 0));
-  if (kpiTiketVal) kpiTiketVal.textContent = typeof rp === 'function' ? rp(ticketTotal) : 'Rp ' + ticketTotal;
-  const transTotal = b.dpr + (b.customCosts.filter(c => c.isTransport).reduce((s, c) => s + c.amount, 0));
-  if (kpiTransportVal) kpiTransportVal.textContent = typeof rp === 'function' ? rp(transTotal) : 'Rp ' + transTotal;
+  updateCockpitKpi(empId);
 
   // Pane 1: Uang Harian
   const uhActiveEl = document.getElementById('rc_uhActive');
@@ -1770,10 +1813,33 @@ function renderRincianCockpit(targetEmpId) {
   renderCockpitManualMeals(empId);
 
   const deductSummaryEl = document.getElementById('rc_deductionSummary');
-  if (deductSummaryEl) {
-    const totalDeduct = (b.mealDeduction || 0) + (b.snackDeduction || 0);
+  const deductAmountEl = document.getElementById('rc_deductionAmount');
+  const netUhAmountEl = document.getElementById('rc_netUhAmount');
+  const totalDeduct = (b.mealDeduction || 0) + (b.snackDeduction || 0);
+
+  if (deductAmountEl) deductAmountEl.textContent = typeof rp === 'function' ? (totalDeduct > 0 ? '- ' + rp(totalDeduct) : 'Rp 0') : (totalDeduct > 0 ? '- Rp ' + totalDeduct : 'Rp 0');
+  if (netUhAmountEl) netUhAmountEl.textContent = typeof rp === 'function' ? rp(b.uh) : 'Rp ' + b.uh;
+  if (deductSummaryEl && !deductAmountEl) {
     deductSummaryEl.innerHTML = `Total Potongan Konsumsi: <strong>${typeof rp === 'function' ? rp(totalDeduct) : 'Rp ' + totalDeduct}</strong>`;
   }
+
+  // Update UH Effective Rate summary card
+  const uhEffectiveRateEl = document.getElementById('rc_uhEffectiveRate');
+  const uhEffectiveSubEl = document.getElementById('rc_uhEffectiveSub');
+  if (uhEffectiveRateEl) {
+    const effRate = Math.round((sbm ? sbm.uh : 0) * (cfg.uhPercent ?? 1));
+    uhEffectiveRateEl.textContent = typeof rp === 'function' ? rp(effRate) : 'Rp ' + effRate;
+  }
+  if (uhEffectiveSubEl) {
+    const persenText = (cfg.uhPercent === 0.6) ? '60% (Kendaraan Dinas)' : '100% (Standar Penuh)';
+    uhEffectiveSubEl.textContent = `${persenText} • ${days} hari dinas`;
+  }
+
+  // Meal & snack rate badges
+  const mealRateBadge = document.getElementById('rc_mealRateBadge');
+  const snackRateBadge = document.getElementById('rc_snackRateBadge');
+  if (mealRateBadge) mealRateBadge.textContent = `@ ${typeof rp === 'function' ? rp(sbm ? sbm.makan : 0) : 'Rp ' + (sbm ? sbm.makan : 0)}`;
+  if (snackRateBadge) snackRateBadge.textContent = `@ ${typeof rp === 'function' ? rp(sbm ? sbm.snack : 0) : 'Rp ' + (sbm ? sbm.snack : 0)}`;
 
   // Pane 2: Hotel
   const hotelActiveEl = document.getElementById('rc_hotelActive');
@@ -1799,13 +1865,21 @@ function renderRincianCockpit(targetEmpId) {
   const sbmRate = sbm ? getHotelRate(sbm, emp.gol) : 0;
   const hotelGolLabel = document.getElementById('rc_hotelGolLabel');
   const hotelSbmRate = document.getElementById('rc_hotelSbmRate');
+  const hotelRatePerNight = document.getElementById('rc_hotelRatePerNight');
   const hotelNightsLabel = document.getElementById('rc_hotelNightsLabel');
+  const hotelSbmNights = document.getElementById('rc_hotelSbmNights');
   const hotelSbmTotal = document.getElementById('rc_hotelSbmTotal');
+  const hotelProvNameEl = document.getElementById('rc_hotelProvName');
+
+  const activeNights = (cfg.hotelNights > 0) ? cfg.hotelNights : (nights > 0 ? nights : 1);
 
   if (hotelGolLabel) hotelGolLabel.textContent = `Gol. ${emp.gol || '-'}`;
-  if (hotelSbmRate) hotelSbmRate.textContent = `${typeof rp === 'function' ? rp(sbmRate) : 'Rp ' + sbmRate} / malam`;
-  if (hotelNightsLabel) hotelNightsLabel.textContent = `${nights} malam`;
-  if (hotelSbmTotal) hotelSbmTotal.textContent = typeof rp === 'function' ? rp(sbmRate * nights) : 'Rp ' + (sbmRate * nights);
+  if (hotelSbmRate) hotelSbmRate.textContent = typeof rp === 'function' ? rp(sbmRate) : 'Rp ' + sbmRate;
+  if (hotelRatePerNight) hotelRatePerNight.textContent = typeof rp === 'function' ? rp(sbmRate) : 'Rp ' + sbmRate;
+  if (hotelNightsLabel) hotelNightsLabel.textContent = `${activeNights} malam`;
+  if (hotelSbmNights) hotelSbmNights.value = activeNights;
+  if (hotelSbmTotal) hotelSbmTotal.textContent = typeof rp === 'function' ? rp(sbmRate * activeNights) : 'Rp ' + (sbmRate * activeNights);
+  if (hotelProvNameEl) hotelProvNameEl.textContent = `PMK SBM 2026 • ${sbm ? (typeof formatProvinsi === 'function' ? formatProvinsi(sbm.provinsi) : sbm.provinsi) : 'Provinsi Tujuan'}`;
 
   const hotelNameEl = document.getElementById('rc_hotelName') || document.getElementById('rc_hotelNameSbm');
   const hotelNameManualEl = document.getElementById('rc_hotelNameManual');
@@ -1830,7 +1904,7 @@ function renderRincianCockpit(targetEmpId) {
   }
 }
 
-function onCockpitUHChange() {
+function onCockpitUHChange(isBlur = false) {
   const select = document.getElementById('rincianPegawai');
   if (!select || select.value === '') return;
   const empId = Number(select.value);
@@ -1849,8 +1923,20 @@ function onCockpitUHChange() {
   cfg.mealCount = Number(mealCountEl?.value) || 0;
   cfg.snackCount = Number(snackCountEl?.value) || 0;
 
-  renderRincianCockpit(empId);
-  renderRincianEmpPills();
+  const uhBodyEl = document.getElementById('rc_uhBody');
+  if (uhBodyEl) uhBodyEl.style.display = cfg.uhActive ? 'block' : 'none';
+
+  const deductSummaryEl = document.getElementById('rc_deductionSummary');
+  if (deductSummaryEl) {
+    const emp = employees.find(e => e.id === empId);
+    if (emp) {
+      const b = hitungBiaya(emp);
+      const totalDeduct = (b.mealDeduction || 0) + (b.snackDeduction || 0);
+      deductSummaryEl.innerHTML = `Total Potongan Konsumsi: <strong>${typeof rp === 'function' ? rp(totalDeduct) : 'Rp ' + totalDeduct}</strong>`;
+    }
+  }
+
+  updateCockpitKpi(empId);
   if (typeof renderRincian === 'function') renderRincian();
 }
 
@@ -1916,22 +2002,22 @@ function renderCockpitManualMeals(empId) {
       <tr data-idx="${idx}">
         <td style="text-align:center;">${idx + 1}</td>
         <td>
-          <select class="cockpit-meal-day form-input-sm" onchange="onCockpitManualMealChange(this, ${idx})">
+          <select class="cockpit-meal-day form-input-sm" onchange="onCockpitManualMealChange(this, ${idx}, true)">
             ${dayOptions}
           </select>
         </td>
         <td>
-          <select class="cockpit-meal-session form-input-sm" onchange="onCockpitManualMealChange(this, ${idx})">
+          <select class="cockpit-meal-session form-input-sm" onchange="onCockpitManualMealChange(this, ${idx}, true)">
             <option value="Makan Pagi" ${m.session === 'Makan Pagi' ? 'selected' : ''}>Makan Pagi</option>
             <option value="Makan Siang" ${m.session === 'Makan Siang' ? 'selected' : ''}>Makan Siang</option>
             <option value="Makan Malam" ${m.session === 'Makan Malam' ? 'selected' : ''}>Makan Malam</option>
           </select>
         </td>
         <td>
-          <input type="text" class="cockpit-meal-price form-input-sm" placeholder="Rp 0" value="${dispAmount}" oninput="formatCustomCostAmountInput(this); onCockpitManualMealChange(this, ${idx})">
+          <input type="text" class="cockpit-meal-price form-input-sm" placeholder="Rp 0" value="${dispAmount}" onfocus="this.select()" oninput="onCockpitManualMealChange(this, ${idx}, false)" onblur="onCockpitManualMealChange(this, ${idx}, true)">
         </td>
         <td style="text-align:center;">
-          <button type="button" class="btn-del-sm" onclick="removeCockpitManualMealRow(${idx})" title="Hapus sesi makan">&times;</button>
+          <button type="button" class="manual-meal-btn-del btn-del-sm" onclick="removeCockpitManualMealRow(${idx})" title="Hapus sesi makan" aria-label="Hapus sesi makan">✕</button>
         </td>
       </tr>
     `;
@@ -2004,7 +2090,7 @@ function removeCockpitManualMealRow(idx) {
   if (typeof renderRincian === 'function') renderRincian();
 }
 
-function onCockpitManualMealChange(el, idx) {
+function onCockpitManualMealChange(el, idx, isBlur = false) {
   const select = document.getElementById('rincianPegawai');
   if (!select || select.value === '') return;
   const empId = Number(select.value);
@@ -2013,16 +2099,31 @@ function onCockpitManualMealChange(el, idx) {
   const cfg = getEmployeeCostConfig(empId);
   if (!cfg.manualMeals || !cfg.manualMeals[idx]) return;
 
-  const row = el.closest('tr');
+  const row = el.closest ? el.closest('tr') : el.parentElement?.closest('tr');
   if (!row) return;
 
   const dayVal = Number(row.querySelector('.cockpit-meal-day')?.value) || 1;
   const sessionVal = row.querySelector('.cockpit-meal-session')?.value || 'Makan Siang';
-  const priceVal = (typeof parseNumber === 'function' ? parseNumber(row.querySelector('.cockpit-meal-price')?.value) : Number(row.querySelector('.cockpit-meal-price')?.value)) || 0;
+  let priceVal = (typeof parseNumber === 'function' ? parseNumber(row.querySelector('.cockpit-meal-price')?.value) : Number(row.querySelector('.cockpit-meal-price')?.value)) || 0;
 
-  const isDuplicate = cfg.manualMeals.some((m, i) => i !== idx && m.day == dayVal && m.session === sessionVal);
-  if (isDuplicate) {
-    alert(`Perhatian: Hari ${dayVal} untuk sesi ${sessionVal} sudah pernah diinput.`);
+  if (isBlur) {
+    const isDuplicate = cfg.manualMeals.some((m, i) => i !== idx && m.day == dayVal && m.session === sessionVal);
+    if (isDuplicate) {
+      alert(`Perhatian: Hari ${dayVal} untuk sesi ${sessionVal} sudah pernah diinput.`);
+    }
+
+    const sbm = typeof getSBM === 'function' ? getSBM() : null;
+    if (sbm && sbm.makan > 0 && priceVal > sbm.makan) {
+      priceVal = sbm.makan;
+      const priceInput = row.querySelector('.cockpit-meal-price');
+      if (priceInput) priceInput.value = typeof rp === 'function' ? rp(sbm.makan) : `Rp ${sbm.makan}`;
+      openMealLimitModal(`Hari ${dayVal}`, sbm.makan);
+    } else {
+      const priceInput = row.querySelector('.cockpit-meal-price');
+      if (priceInput && priceVal > 0) {
+        priceInput.value = typeof rp === 'function' ? rp(priceVal) : `Rp ${priceVal}`;
+      }
+    }
   }
 
   cfg.isCustomized = true;
@@ -2030,8 +2131,17 @@ function onCockpitManualMealChange(el, idx) {
   cfg.manualMeals[idx].session = sessionVal;
   cfg.manualMeals[idx].price = priceVal;
 
-  renderRincianCockpit(empId);
-  renderRincianEmpPills();
+  const deductSummaryEl = document.getElementById('rc_deductionSummary');
+  if (deductSummaryEl) {
+    const emp = employees.find(e => e.id === empId);
+    if (emp) {
+      const b = hitungBiaya(emp);
+      const totalDeduct = (b.mealDeduction || 0) + (b.snackDeduction || 0);
+      deductSummaryEl.innerHTML = `Total Potongan Konsumsi: <strong>${typeof rp === 'function' ? rp(totalDeduct) : 'Rp ' + totalDeduct}</strong>`;
+    }
+  }
+
+  updateCockpitKpi(empId);
   if (typeof renderRincian === 'function') renderRincian();
 }
 
@@ -2079,28 +2189,66 @@ function onCockpitMealModeChange(mode) {
   setCockpitMealMode(mode);
 }
 
-function onCockpitHotelChange() {
+function onCockpitHotelChange(isBlur = false, inputEl = null) {
   const select = document.getElementById('rincianPegawai');
   if (!select || select.value === '') return;
   const empId = Number(select.value);
   if (isNaN(empId)) return;
 
+  const sbm = typeof getSBM === 'function' ? getSBM() : null;
+  const emp = employees.find(e => e.id === empId);
   const cfg = getEmployeeCostConfig(empId);
   cfg.isCustomized = true;
   cfg.hotelActive = !!document.getElementById('rc_hotelActive')?.checked;
 
-  const nameEl = document.getElementById('rc_hotelName') || document.getElementById('rc_hotelNameManual') || document.getElementById('rc_hotelNameSbm');
-  const nightsEl = document.getElementById('rc_hotelNights') || document.getElementById('rc_hotelNightsManual');
-  const priceEl = document.getElementById('rc_hotelPrice') || document.getElementById('rc_hotelRateManual');
+  const hotelBodyEl = document.getElementById('rc_hotelBody');
+  if (hotelBodyEl) hotelBodyEl.style.display = cfg.hotelActive ? 'block' : 'none';
 
-  if (nameEl) cfg.hotelName = nameEl.value || '';
-  if (nightsEl && nightsEl.tagName === 'INPUT') cfg.hotelNights = Number(nightsEl.value) || 1;
-  if (priceEl) {
-    cfg.hotelPrice = (typeof parseNumber === 'function' ? parseNumber(priceEl.value) : Number(priceEl.value)) || 0;
+  if (cfg.hotelMode === 'manual') {
+    const nameEl = document.getElementById('rc_hotelNameManual') || document.getElementById('rc_hotelName');
+    const nightsEl = document.getElementById('rc_hotelNights') || document.getElementById('rc_hotelNightsManual');
+    const priceEl = document.getElementById('rc_hotelPrice') || document.getElementById('rc_hotelRateManual');
+
+    if (nameEl) cfg.hotelName = nameEl.value || '';
+    if (nightsEl && nightsEl.tagName === 'INPUT') cfg.hotelNights = Number(nightsEl.value) || 1;
+    if (priceEl) {
+      cfg.hotelPrice = (typeof parseNumber === 'function' ? parseNumber(priceEl.value) : Number(priceEl.value)) || 0;
+    }
+  } else {
+    const nameEl = document.getElementById('rc_hotelName') || document.getElementById('rc_hotelNameManual') || document.getElementById('rc_hotelNameSbm');
+    const sbmNightsEl = document.getElementById('rc_hotelSbmNights');
+    if (nameEl) cfg.hotelName = nameEl.value || '';
+    if (sbmNightsEl && sbmNightsEl.tagName === 'INPUT') cfg.hotelNights = Number(sbmNightsEl.value) || 1;
+    const sbmRate = sbm ? getHotelRate(sbm, emp ? emp.gol : '') : 0;
+    const hotelSbmTotal = document.getElementById('rc_hotelSbmTotal');
+    if (hotelSbmTotal) {
+      const activeNights = cfg.hotelNights || 1;
+      hotelSbmTotal.textContent = typeof rp === 'function' ? rp(sbmRate * activeNights) : 'Rp ' + (sbmRate * activeNights);
+    }
   }
 
-  renderRincianCockpit(empId);
-  renderRincianEmpPills();
+  if (isBlur) {
+    const priceEl = document.getElementById('rc_hotelPrice') || document.getElementById('rc_hotelRateManual');
+    if (sbm && emp && cfg.hotelMode === 'manual') {
+      const sbmHotelRate = typeof getHotelRate === 'function' ? getHotelRate(sbm, emp.gol) : 0;
+      if (sbmHotelRate > 0 && cfg.hotelPrice > sbmHotelRate) {
+        cfg.hotelPrice = sbmHotelRate;
+        if (priceEl) priceEl.value = typeof rp === 'function' ? rp(sbmHotelRate) : `Rp ${sbmHotelRate}`;
+        openSbmLimitModal({
+          title: 'Melebihi Batas Plafon SBM Hotel',
+          component: `Tarif Hotel Golongan ${emp.gol}`,
+          maxRate: sbmHotelRate,
+          provName: sbm.provinsi,
+          msg: `Tarif hotel per malam untuk <strong>Golongan ${emp.gol}</strong> di <strong>${typeof formatProvinsi === 'function' ? formatProvinsi(sbm.provinsi) : sbm.provinsi}</strong> tidak boleh melebihi batas Standar Biaya Masukan (SBM) sebesar <strong>${typeof rp === 'function' ? rp(sbmHotelRate) : 'Rp ' + sbmHotelRate}</strong> / malam. Nilai otomatis disesuaikan ke pagu maksimal SBM.`
+        });
+      }
+    }
+    if (priceEl && cfg.hotelPrice > 0) {
+      priceEl.value = typeof rp === 'function' ? rp(cfg.hotelPrice) : `Rp ${cfg.hotelPrice}`;
+    }
+  }
+
+  updateCockpitKpi(empId);
   if (typeof renderRincian === 'function') renderRincian();
 }
 
@@ -2119,6 +2267,24 @@ function setCockpitHotelMode(mode) {
   if (typeof renderRincian === 'function') renderRincian();
 }
 
+function stepHotelSbmNights(delta) {
+  const el = document.getElementById('rc_hotelSbmNights');
+  if (!el) return;
+  const curr = parseInt(el.value, 10) || 1;
+  const next = Math.max(1, curr + delta);
+  el.value = next;
+  onCockpitHotelChange(false, el);
+}
+
+function stepHotelManualNights(delta) {
+  const el = document.getElementById('rc_hotelNights');
+  if (!el) return;
+  const curr = parseInt(el.value, 10) || 1;
+  const next = Math.max(1, curr + delta);
+  el.value = next;
+  onCockpitHotelChange(false, el);
+}
+
 function renderCockpitTickets(empId) {
   const container = document.getElementById('rc_ticketList');
   const totalBadge = document.getElementById('rc_ticketTotalBadge');
@@ -2132,25 +2298,34 @@ function renderCockpitTickets(empId) {
     container.innerHTML = `
       <div class="emp-trans-empty">
         Belum ada tiket perjalanan untuk pegawai ini.
-        Gunakan tombol <strong>+ Kereta Api</strong>, <strong>+ Whoosh</strong>, <strong>+ Pesawat</strong> di atas atau klik <strong>Tambah Tiket</strong>.
+        Gunakan tombol <strong>+ Kereta Api</strong>, <strong>+ Pesawat</strong>, atau <strong>+ Tiket Terpisah</strong> di atas.
       </div>`;
   } else {
     container.innerHTML = tickets.map((t, idx) => {
       total += (t.amount || 0);
       const dispAmount = t.amount > 0 ? (typeof rp === 'function' ? rp(t.amount) : 'Rp ' + t.amount) : '';
+      const dir = t.direction || 'pp';
       return `
         <div class="emp-trans-row" data-idx="${idx}">
           <div class="emp-trans-col emp-trans-name-col">
             <label class="emp-trans-label">Jenis Tiket</label>
-            <input type="text" class="cockpit-ticket-name" placeholder="Tiket Kereta Api / Pesawat..." value="${typeof escHtml === 'function' ? escHtml(t.name || '') : (t.name || '')}" oninput="onCockpitTicketChange(this, ${idx})">
+            <input type="text" class="cockpit-ticket-name" placeholder="Tiket Kereta Api / Pesawat..." value="${typeof escHtml === 'function' ? escHtml(t.name || '') : (t.name || '')}" oninput="onCockpitTicketChange(this, ${idx}, false)" onblur="onCockpitTicketChange(this, ${idx}, true)">
           </div>
-          <div class="emp-trans-col emp-trans-route-col" style="grid-column: span 2;">
-            <label class="emp-trans-label">Rute Perjalanan (PP)</label>
-            <input type="text" class="cockpit-ticket-route" placeholder="Contoh: Jakarta - Yogyakarta (PP)" value="${typeof escHtml === 'function' ? escHtml(t.route || '') : (t.route || '')}" oninput="onCockpitTicketChange(this, ${idx})">
+          <div class="emp-trans-col emp-trans-dir-col">
+            <label class="emp-trans-label">Perjalanan / Arah</label>
+            <select class="cockpit-ticket-direction" onchange="onCockpitTicketDirectionChange(this, ${idx})">
+              <option value="pp" ${dir === 'pp' ? 'selected' : ''}>Pulang-Pergi (PP)</option>
+              <option value="pergi" ${dir === 'pergi' ? 'selected' : ''}>Berangkat (Pergi)</option>
+              <option value="pulang" ${dir === 'pulang' ? 'selected' : ''}>Pulang Saja</option>
+            </select>
+          </div>
+          <div class="emp-trans-col emp-trans-route-col">
+            <label class="emp-trans-label">Rute Perjalanan</label>
+            <input type="text" class="cockpit-ticket-route" placeholder="Contoh: Jakarta - Yogyakarta (PP)" value="${typeof escHtml === 'function' ? escHtml(t.route || '') : (t.route || '')}" oninput="onCockpitTicketChange(this, ${idx}, false)" onblur="onCockpitTicketChange(this, ${idx}, true)">
           </div>
           <div class="emp-trans-col emp-trans-amount-col">
             <label class="emp-trans-label">Harga Tiket (Rp)</label>
-            <input type="text" class="cockpit-ticket-amount" placeholder="Rp 0" value="${dispAmount}" oninput="formatCustomCostAmountInput(this); onCockpitTicketChange(this, ${idx})">
+            <input type="text" class="cockpit-ticket-amount" placeholder="Rp 0" value="${dispAmount}" onfocus="this.select()" oninput="onCockpitTicketChange(this, ${idx}, false)" onblur="onCockpitTicketChange(this, ${idx}, true)">
           </div>
           <div class="emp-trans-col emp-trans-del-col">
             <label class="emp-trans-label">&nbsp;</label>
@@ -2166,7 +2341,58 @@ function renderCockpitTickets(empId) {
   }
 }
 
-function addCockpitTicketPreset(name) {
+function onCockpitTicketDirectionChange(selectEl, idx) {
+  const select = document.getElementById('rincianPegawai');
+  if (!select || select.value === '') return;
+  const empId = Number(select.value);
+  if (isNaN(empId)) return;
+
+  const cfg = getEmployeeCostConfig(empId);
+  if (!cfg.tickets || !cfg.tickets[idx]) return;
+
+  const dir = selectEl.value || 'pp';
+  cfg.isCustomized = true;
+  cfg.tickets[idx].direction = dir;
+
+  const kotaAsal = document.getElementById('cfg_kotaAsal')?.value || 'Jakarta';
+  const kotaTujuan = document.getElementById('kotaTujuan')?.value || '';
+
+  let newRoute = '';
+  if (dir === 'pp') {
+    newRoute = (kotaAsal && kotaTujuan) ? `${kotaAsal} - ${kotaTujuan} (PP)` : '';
+  } else if (dir === 'pergi') {
+    newRoute = (kotaAsal && kotaTujuan) ? `${kotaAsal} - ${kotaTujuan}` : '';
+  } else if (dir === 'pulang') {
+    newRoute = (kotaAsal && kotaTujuan) ? `${kotaTujuan} - ${kotaAsal}` : '';
+  }
+
+  if (newRoute) {
+    cfg.tickets[idx].route = newRoute;
+    const row = selectEl.closest ? selectEl.closest('.emp-trans-row') : selectEl.parentElement?.closest('.emp-trans-row');
+    const routeInput = row ? row.querySelector('.cockpit-ticket-route') : null;
+    if (routeInput) routeInput.value = newRoute;
+  }
+
+  // Update suggested name if generic
+  let currentName = cfg.tickets[idx].name || '';
+  const baseName = currentName.replace(/\s*\((Berangkat|Pulang|PP|Pergi)\)\s*/gi, '').trim();
+  if (baseName) {
+    let suggestedName = baseName;
+    if (dir === 'pergi') suggestedName = `${baseName} (Berangkat)`;
+    else if (dir === 'pulang') suggestedName = `${baseName} (Pulang)`;
+    else if (dir === 'pp') suggestedName = baseName;
+
+    cfg.tickets[idx].name = suggestedName;
+    const row = selectEl.closest ? selectEl.closest('.emp-trans-row') : selectEl.parentElement?.closest('.emp-trans-row');
+    const nameInput = row ? row.querySelector('.cockpit-ticket-name') : null;
+    if (nameInput) nameInput.value = suggestedName;
+  }
+
+  updateCockpitKpi(empId);
+  if (typeof renderRincian === 'function') renderRincian();
+}
+
+function addCockpitTicketPreset(name, direction = 'pp') {
   const select = document.getElementById('rincianPegawai');
   if (!select || select.value === '') return;
   const empId = Number(select.value);
@@ -2178,12 +2404,59 @@ function addCockpitTicketPreset(name) {
 
   const kotaAsal = document.getElementById('cfg_kotaAsal')?.value || 'Jakarta';
   const kotaTujuan = document.getElementById('kotaTujuan')?.value || '';
-  const defaultRoute = (kotaAsal && kotaTujuan) ? `${kotaAsal} - ${kotaTujuan} (PP)` : '';
+
+  let defaultRoute = '';
+  if (direction === 'pergi') {
+    defaultRoute = (kotaAsal && kotaTujuan) ? `${kotaAsal} - ${kotaTujuan}` : '';
+  } else if (direction === 'pulang') {
+    defaultRoute = (kotaAsal && kotaTujuan) ? `${kotaTujuan} - ${kotaAsal}` : '';
+  } else {
+    defaultRoute = (kotaAsal && kotaTujuan) ? `${kotaAsal} - ${kotaTujuan} (PP)` : '';
+  }
 
   cfg.tickets.push({
     id: 'tkt_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
     name: name,
+    direction: direction,
     route: defaultRoute,
+    amount: 0
+  });
+
+  renderCockpitTickets(empId);
+  renderRincianCockpit(empId);
+  renderRincianEmpPills();
+  if (typeof renderRincian === 'function') renderRincian();
+}
+
+function addCockpitSeparateTicketsPreset(name = 'Tiket Kereta Api') {
+  const select = document.getElementById('rincianPegawai');
+  if (!select || select.value === '') return;
+  const empId = Number(select.value);
+  if (isNaN(empId)) return;
+
+  const cfg = getEmployeeCostConfig(empId);
+  cfg.isCustomized = true;
+  if (!cfg.tickets) cfg.tickets = [];
+
+  const kotaAsal = document.getElementById('cfg_kotaAsal')?.value || 'Jakarta';
+  const kotaTujuan = document.getElementById('kotaTujuan')?.value || '';
+
+  const rutePergi = (kotaAsal && kotaTujuan) ? `${kotaAsal} - ${kotaTujuan}` : '';
+  const rutePulang = (kotaAsal && kotaTujuan) ? `${kotaTujuan} - ${kotaAsal}` : '';
+
+  cfg.tickets.push({
+    id: 'tkt_' + Date.now() + '_dep_' + Math.random().toString(36).substr(2, 4),
+    name: `${name} (Berangkat)`,
+    direction: 'pergi',
+    route: rutePergi,
+    amount: 0
+  });
+
+  cfg.tickets.push({
+    id: 'tkt_' + Date.now() + '_ret_' + Math.random().toString(36).substr(2, 4),
+    name: `${name} (Pulang)`,
+    direction: 'pulang',
+    route: rutePulang,
     amount: 0
   });
 
@@ -2211,7 +2484,7 @@ function removeCockpitTicket(idx) {
   if (typeof renderRincian === 'function') renderRincian();
 }
 
-function onCockpitTicketChange(inputEl, idx) {
+function onCockpitTicketChange(inputEl, idx, isBlur = false) {
   const select = document.getElementById('rincianPegawai');
   if (!select || select.value === '') return;
   const empId = Number(select.value);
@@ -2220,16 +2493,54 @@ function onCockpitTicketChange(inputEl, idx) {
   const cfg = getEmployeeCostConfig(empId);
   if (!cfg.tickets || !cfg.tickets[idx]) return;
 
-  const row = inputEl.closest('.emp-trans-row');
+  const row = inputEl.closest ? inputEl.closest('.emp-trans-row') : inputEl.parentElement?.closest('.emp-trans-row');
   if (!row) return;
 
-  cfg.isCustomized = true;
-  cfg.tickets[idx].name = row.querySelector('.cockpit-ticket-name')?.value || '';
-  cfg.tickets[idx].route = row.querySelector('.cockpit-ticket-route')?.value || '';
-  cfg.tickets[idx].amount = (typeof parseNumber === 'function' ? parseNumber(row.querySelector('.cockpit-ticket-amount')?.value) : Number(row.querySelector('.cockpit-ticket-amount')?.value)) || 0;
+  const nameVal = row.querySelector('.cockpit-ticket-name')?.value || '';
+  const dirVal = row.querySelector('.cockpit-ticket-direction')?.value || cfg.tickets[idx].direction || 'pp';
+  const routeVal = row.querySelector('.cockpit-ticket-route')?.value || '';
+  let amountVal = (typeof parseNumber === 'function' ? parseNumber(row.querySelector('.cockpit-ticket-amount')?.value) : Number(row.querySelector('.cockpit-ticket-amount')?.value)) || 0;
 
-  renderRincianCockpit(empId);
-  renderRincianEmpPills();
+  cfg.isCustomized = true;
+  cfg.tickets[idx].name = nameVal;
+  cfg.tickets[idx].direction = dirVal;
+  cfg.tickets[idx].route = routeVal;
+  cfg.tickets[idx].amount = amountVal;
+
+  const sbm = typeof getSBM === 'function' ? getSBM() : null;
+
+  if (isBlur) {
+    if (sbm) {
+      let maxTicket = (sbm.tiket && sbm.tiket > 0) ? sbm.tiket : (sbm.dpr > 0 ? Math.max(sbm.dpr, 1000000) : 2500000);
+      if (dirVal === 'pergi' || dirVal === 'pulang') {
+        maxTicket = Math.round(maxTicket / 2);
+      }
+      if (amountVal > maxTicket) {
+        // Sesuai PMK: Tiket diperkenankan melebihi SBM kebutuhan riil dengan melampirkan SPTJM
+        const dirLabel = dirVal === 'pp' ? 'Tiket Perjalanan (PP)' : (dirVal === 'pergi' ? 'Tiket Berangkat' : 'Tiket Pulang');
+        openSbmLimitModal({
+          title: 'Perhatian: Tiket Melebihi Pagu SBM (Wajib SPTJM)',
+          component: dirLabel,
+          maxRate: maxTicket,
+          provName: sbm.provinsi,
+          msg: `Harga ${dirLabel} sebesar <strong>${typeof rp === 'function' ? rp(amountVal) : 'Rp ' + amountVal}</strong> melebihi pagu Standar Biaya Masukan (SBM) untuk tujuan <strong>${typeof formatProvinsi === 'function' ? formatProvinsi(sbm.provinsi) : sbm.provinsi}</strong> (Pagu SBM: <strong>${typeof rp === 'function' ? rp(maxTicket) : 'Rp ' + maxTicket}</strong>).<br><br>⚠️ <em>Catatan Pertanggungjawaban (PMK):</em><br>Pengeluaran tiket yang melebihi standar biaya diperkenankan sesuai harga riil, <strong>namun jangan lupa untuk membuat dan melampirkan Surat Pernyataan Tanggung Jawab Mutlak (SPTJM)</strong> dari PPK / Pelaksana Perjalanan Dinas.<br><br><em>Nominal riil Rp ${Number(amountVal).toLocaleString('id-ID')} tetap dipertahankan dan dihitung penuh ke dalam kuitansi &amp; rincian biaya.</em>`
+        });
+      }
+    }
+    const amtInput = row.querySelector('.cockpit-ticket-amount');
+    if (amtInput && amountVal > 0) {
+      amtInput.value = typeof rp === 'function' ? rp(amountVal) : `Rp ${amountVal}`;
+    }
+    if (typeof renderRincian === 'function') renderRincian();
+  }
+
+  const totalBadge = document.getElementById('rc_ticketTotalBadge');
+  if (totalBadge) {
+    const total = (cfg.tickets || []).reduce((sum, t) => sum + (t.amount || 0), 0);
+    totalBadge.innerHTML = `Total Tiket: <strong>${typeof rp === 'function' ? rp(total) : 'Rp ' + total}</strong>`;
+  }
+
+  updateCockpitKpi(empId);
   if (typeof renderRincian === 'function') renderRincian();
 }
 
@@ -2338,19 +2649,19 @@ function renderRincianTransportEditor(targetEmpId) {
         <div class="emp-trans-row" data-idx="${idx}">
           <div class="emp-trans-col emp-trans-name-col">
             <label class="emp-trans-label">Jenis / Moda</label>
-            <input type="text" class="emp-trans-name" placeholder="Grab, MRT, Tol..." value="${typeof escHtml === 'function' ? escHtml(item.name || '') : (item.name || '')}" list="listTransportPresets" oninput="onEmployeeTransportRowChange(this, ${idx})">
+            <input type="text" class="emp-trans-name" placeholder="Grab, MRT, Tol..." value="${typeof escHtml === 'function' ? escHtml(item.name || '') : (item.name || '')}" list="listTransportPresets" oninput="onEmployeeTransportRowChange(this, ${idx}, false)" onblur="onEmployeeTransportRowChange(this, ${idx}, true)">
           </div>
           <div class="emp-trans-col emp-trans-pickup-col">
             <label class="emp-trans-label">Titik Jemput</label>
-            <input type="text" class="emp-trans-pickup" placeholder="Contoh: Rumah / Stasiun Gambir" value="${typeof escHtml === 'function' ? escHtml(item.pickup || '') : (item.pickup || '')}" oninput="onEmployeeTransportRowChange(this, ${idx})">
+            <input type="text" class="emp-trans-pickup" placeholder="Contoh: Rumah / Stasiun Gambir" value="${typeof escHtml === 'function' ? escHtml(item.pickup || '') : (item.pickup || '')}" oninput="onEmployeeTransportRowChange(this, ${idx}, false)" onblur="onEmployeeTransportRowChange(this, ${idx}, true)">
           </div>
           <div class="emp-trans-col emp-trans-dropoff-col">
             <label class="emp-trans-label">Titik Antar</label>
-            <input type="text" class="emp-trans-dropoff" placeholder="Contoh: Stasiun Halim / Kantor" value="${typeof escHtml === 'function' ? escHtml(item.dropoff || '') : (item.dropoff || '')}" oninput="onEmployeeTransportRowChange(this, ${idx})">
+            <input type="text" class="emp-trans-dropoff" placeholder="Contoh: Stasiun Halim / Kantor" value="${typeof escHtml === 'function' ? escHtml(item.dropoff || '') : (item.dropoff || '')}" oninput="onEmployeeTransportRowChange(this, ${idx}, false)" onblur="onEmployeeTransportRowChange(this, ${idx}, true)">
           </div>
           <div class="emp-trans-col emp-trans-amount-col">
             <label class="emp-trans-label">Biaya / Tarif (Rp)</label>
-            <input type="text" class="emp-trans-amount" placeholder="Rp 0" value="${dispAmount}" oninput="formatCustomCostAmountInput(this); onEmployeeTransportRowChange(this, ${idx})">
+            <input type="text" class="emp-trans-amount" placeholder="Rp 0" value="${dispAmount}" onfocus="this.select()" oninput="onEmployeeTransportRowChange(this, ${idx}, false)" onblur="onEmployeeTransportRowChange(this, ${idx}, true)">
           </div>
           <div class="emp-trans-col emp-trans-del-col">
             <label class="emp-trans-label">&nbsp;</label>
@@ -2432,30 +2743,66 @@ function removeEmployeeTransportRow(idx) {
   }
 }
 
-function onEmployeeTransportRowChange(el, idx) {
+function onEmployeeTransportRowChange(el, idx, isBlur = false) {
   const select = document.getElementById('rincianPegawai');
   if (!select || select.value === '') return;
   const empId = Number(select.value);
   if (isNaN(empId)) return;
   const list = getEmployeeTransports(empId);
-  const row = el.closest('.emp-trans-row');
+  const row = el.closest ? el.closest('.emp-trans-row') : el.parentElement?.closest('.emp-trans-row');
   if (!row || !list[idx]) return;
 
   const nameVal = row.querySelector('.emp-trans-name')?.value || '';
   const pickupVal = row.querySelector('.emp-trans-pickup')?.value || '';
   const dropoffVal = row.querySelector('.emp-trans-dropoff')?.value || '';
-  const amountVal = (typeof parseNumber === 'function' ? parseNumber(row.querySelector('.emp-trans-amount')?.value) : Number(row.querySelector('.emp-trans-amount')?.value)) || 0;
+  let amountVal = (typeof parseNumber === 'function' ? parseNumber(row.querySelector('.emp-trans-amount')?.value) : Number(row.querySelector('.emp-trans-amount')?.value)) || 0;
 
   list[idx].name = nameVal;
   list[idx].pickup = pickupVal;
   list[idx].dropoff = dropoffVal;
   list[idx].amount = amountVal;
-
   setEmployeeTransports(empId, list);
-  renderRincianCockpit(empId);
-  renderRincianEmpPills();
+
+  const sbm = typeof getSBM === 'function' ? getSBM() : null;
+
+  if (isBlur) {
+    if (sbm && sbm.dpr > 0) {
+      const maxDpr = sbm.dpr;
+      const otherRowsTotal = list.reduce((sum, item, i) => i === idx ? sum : sum + (item.amount || 0), 0);
+      const maxAllowedForRow = Math.max(0, maxDpr - otherRowsTotal);
+
+      if (amountVal > maxAllowedForRow) {
+        amountVal = maxAllowedForRow;
+        list[idx].amount = maxAllowedForRow;
+        setEmployeeTransports(empId, list);
+        const amtInput = row.querySelector('.emp-trans-amount');
+        if (amtInput) amtInput.value = maxAllowedForRow > 0 ? (typeof rp === 'function' ? rp(maxAllowedForRow) : `Rp ${maxAllowedForRow}`) : '';
+
+        openSbmLimitModal({
+          title: 'Melebihi Batas SBM Transport / DPR',
+          component: 'Biaya Transportasi',
+          maxRate: maxDpr,
+          provName: sbm.provinsi,
+          msg: `Total biaya transport/DPR untuk pegawai ini di <strong>${typeof formatProvinsi === 'function' ? formatProvinsi(sbm.provinsi) : sbm.provinsi}</strong> tidak boleh melebihi batas SBM DPR sebesar <strong>${typeof rp === 'function' ? rp(maxDpr) : 'Rp ' + maxDpr}</strong>. Nilai baris ini otomatis disesuaikan ke sisa pagu maksimal (<strong>${typeof rp === 'function' ? rp(maxAllowedForRow) : 'Rp ' + maxAllowedForRow}</strong>).`
+        });
+      }
+    }
+    const amtInput = row.querySelector('.emp-trans-amount');
+    if (amtInput && amountVal > 0) {
+      amtInput.value = typeof rp === 'function' ? rp(amountVal) : `Rp ${amountVal}`;
+    }
+    if (typeof renderRincian === 'function') renderRincian();
+    if (typeof updateSbmWarnings === 'function') updateSbmWarnings();
+  }
+
+  const summaryEl = document.getElementById('rincianTransportSummary');
+  if (summaryEl) {
+    const total = list.reduce((sum, it) => sum + (it.amount || 0), 0);
+    summaryEl.innerHTML = `Total Transport: <strong>${typeof rp === 'function' ? rp(total) : 'Rp ' + total}</strong>`;
+  }
+
+  updateCockpitKpi(empId);
   if (typeof renderRincian === 'function') renderRincian();
-  if (typeof updateSbmWarnings === 'function') updateSbmWarnings();
 }
 
 function getHotelRate(sbm, gol) {
@@ -2649,8 +2996,12 @@ function hitungBiaya(emp) {
         });
       } else {
         const hRate = getHotelRate(sbm, emp.gol);
-        hotel = hRate * nights;
-        hotelDetails.push({ name: `Tarif SBM (Gol. ${emp.gol})`, nights, price: hRate, total: hotel });
+        const hNights = (cfg.hotelNights > 0) ? cfg.hotelNights : (nights > 0 ? nights : 1);
+        hotel = hRate * hNights;
+        if (hotel > 0) {
+          const hName = cfg.hotelName ? `${cfg.hotelName} (Gol. ${emp.gol})` : `Tarif SBM (Gol. ${emp.gol})`;
+          hotelDetails.push({ name: hName, nights: hNights, price: hRate, total: hotel });
+        }
       }
     }
   }
@@ -2705,8 +3056,20 @@ function hitungBiaya(emp) {
   };
 }
 
+if (typeof window !== 'undefined') {
+  window.openSbmLimitModal = openSbmLimitModal;
+  window.openMealLimitModal = openMealLimitModal;
+  window.closeMealLimitModal = closeMealLimitModal;
+  window.handleMealLimitBackdrop = handleMealLimitBackdrop;
+  window.updateCockpitKpi = updateCockpitKpi;
+  window.onCockpitTicketChange = onCockpitTicketChange;
+  window.onEmployeeTransportRowChange = onEmployeeTransportRowChange;
+  window.onCockpitHotelChange = onCockpitHotelChange;
+  window.onCockpitManualMealChange = onCockpitManualMealChange;
+  window.onCockpitUHChange = onCockpitUHChange;
+  window.switchCockpitTab = switchCockpitTab;
+}
 
-/* === FILE: js/documents.js === */
 // =====================================================================
 // TEMPLATE DOKUMEN CETAK & REKAPITULASI (PerdinKu)
 // Kuitansi, SPPD, Rincian, DPR, Lembar Kendali, Rekap Kuitansi,
@@ -3950,9 +4313,21 @@ function mergeRincianKeterangan(rowsHtml) {
 }
 
 function renderRincian() {
-  const id = parseInt(document.getElementById('rincianPegawai').value);
-  if (!id && id !== 0) { document.getElementById('rincianOut').innerHTML = ''; return; }
+  const sel = document.getElementById('rincianPegawai');
+  const out = document.getElementById('rincianOut');
+  if (!out) return;
+  if (!sel || !sel.value) {
+    if (typeof selectedEmpIds !== 'undefined' && selectedEmpIds.size > 0 && sel) {
+      sel.value = String([...selectedEmpIds][0]);
+    } else {
+      out.innerHTML = '<div class="alert-warn no-print">⚠️ Silakan pilih pegawai untuk melihat rincian biaya.</div>';
+      return;
+    }
+  }
+  const id = parseInt(sel.value);
+  if (isNaN(id)) { out.innerHTML = ''; return; }
   const emp = employees.find(e => e.id === id);
+  if (!emp) { out.innerHTML = ''; return; }
   const sbm = getSBM();
   const { days, nights } = getEmpDays(emp.id);
   const b = hitungBiaya(emp);
@@ -4042,14 +4417,14 @@ function renderRincian() {
             <colgroup><col><col style="width:130px"><col style="width:120px"></colgroup>
             <tbody>
               <tr>
-                <td>${b.multiProvData.title1}<br><span style="padding-left:12px">${b.multiProvData.days1} hari &nbsp; X &nbsp; ${rp(b.multiProvData.uhRate1)}</span></td>
-                <td class="tr" style="vertical-align:bottom;">${rp(b.multiProvData.uhGross1)}</td>
-                <td>${uhKeterangan}</td>
+                <td class="live-editable" contenteditable="true">${b.multiProvData.title1}<br><span style="padding-left:12px">${b.multiProvData.days1} hari &nbsp; X &nbsp; ${rp(b.multiProvData.uhRate1)}</span></td>
+                <td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()" style="vertical-align:bottom;">${rp(b.multiProvData.uhGross1)}</td>
+                <td class="live-editable" contenteditable="true">${uhKeterangan}</td>
               </tr>
               <tr>
-                <td>${b.multiProvData.title2}<br><span style="padding-left:12px">${b.multiProvData.days2} hari &nbsp; X &nbsp; ${rp(b.multiProvData.uhRate2)}</span></td>
-                <td class="tr" style="vertical-align:bottom;">${rp(b.multiProvData.uhGross2)}</td>
-                <td></td>
+                <td class="live-editable" contenteditable="true">${b.multiProvData.title2}<br><span style="padding-left:12px">${b.multiProvData.days2} hari &nbsp; X &nbsp; ${rp(b.multiProvData.uhRate2)}</span></td>
+                <td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()" style="vertical-align:bottom;">${rp(b.multiProvData.uhGross2)}</td>
+                <td class="live-editable" contenteditable="true"></td>
               </tr>
               ${deductionBlock}
             </tbody>
@@ -4065,34 +4440,34 @@ function renderRincian() {
           ).join('');
           deductionRows += `
             <tr>
-              <td style="padding-left:24px;">
+              <td class="live-editable" contenteditable="true" style="padding-left:24px;">
                 * Makan (${b.mealDetails.length} kali makan):<br>
                 ${detailRowsHtml}
               </td>
-              <td class="tr" style="vertical-align:bottom;">- ${rp(b.mealDeduction)}</td>
-              <td style="vertical-align:bottom;">${mealKet}</td>
+              <td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()" style="vertical-align:bottom;">- ${rp(b.mealDeduction)}</td>
+              <td class="live-editable" contenteditable="true" style="vertical-align:bottom;">${mealKet}</td>
             </tr>`;
         } else {
           deductionRows += `
             <tr>
-              <td style="padding-left:24px;">
+              <td class="live-editable" contenteditable="true" style="padding-left:24px;">
                 * Makan<br>
                 <span style="padding-left:12px;">${b.mealDays} hari &times; ${b.mealCount} kali &times; ${rp(b.mealRate)}</span>
               </td>
-              <td class="tr" style="vertical-align:bottom;">- ${rp(b.mealDeduction)}</td>
-              <td style="vertical-align:bottom;">${mealKet}</td>
+              <td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()" style="vertical-align:bottom;">- ${rp(b.mealDeduction)}</td>
+              <td class="live-editable" contenteditable="true" style="vertical-align:bottom;">${mealKet}</td>
             </tr>`;
         }
       }
       if (b.snackDeduction > 0) {
         deductionRows += `
           <tr>
-            <td style="padding-left:24px;">
+            <td class="live-editable" contenteditable="true" style="padding-left:24px;">
               * Snack<br>
               <span style="padding-left:12px;">${b.snackDays} hari &times; ${b.snackCount} kali &times; ${rp(b.snackRate)}</span>
             </td>
-            <td class="tr" style="vertical-align:bottom;">- ${rp(b.snackDeduction)}</td>
-            <td></td>
+            <td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()" style="vertical-align:bottom;">- ${rp(b.snackDeduction)}</td>
+            <td class="live-editable" contenteditable="true"></td>
           </tr>`;
       }
       rincianRows += `<tr>
@@ -4102,12 +4477,12 @@ function renderRincian() {
             <colgroup><col><col style="width:130px"><col style="width:120px"></colgroup>
             <tbody>
               <tr>
-                <td>${b.uhTitle || 'Uang Harian'}<br><span style="padding-left:12px">${days} hari &nbsp; X &nbsp; ${rp(b.uhBaseRate)}</span></td>
-                <td class="tr" style="vertical-align:bottom;">${rp(b.uhGross)}</td>
-                <td>${uhKeterangan}</td>
+                <td class="live-editable" contenteditable="true">${b.uhTitle || 'Uang Harian'}<br><span style="padding-left:12px">${days} hari &nbsp; X &nbsp; ${rp(b.uhBaseRate)}</span></td>
+                <td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()" style="vertical-align:bottom;">${rp(b.uhGross)}</td>
+                <td class="live-editable" contenteditable="true">${uhKeterangan}</td>
               </tr>
               <tr>
-                <td style="padding-left:12px;">Terpotong konsumsi:</td>
+                <td class="live-editable" contenteditable="true" style="padding-left:12px;">Terpotong konsumsi:</td>
                 <td></td>
                 <td></td>
               </tr>
@@ -4117,24 +4492,41 @@ function renderRincian() {
         </td>
       </tr>`;
     } else {
-      rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td>${b.uhTitle || 'Uang Harian'}<br><span style="padding-left:12px">${days} hari &nbsp; X &nbsp; ${rp(b.uhBaseRate)}</span></td><td class="tr">${rp(b.uh)}</td><td class="rincian-ket-cell">${uhKeterangan}</td></tr>`;
+      rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td class="live-editable" contenteditable="true">${b.uhTitle || 'Uang Harian'}<br><span style="padding-left:12px">${days} hari &nbsp; X &nbsp; ${rp(b.uhBaseRate)}</span></td><td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()">${rp(b.uh)}</td><td class="rincian-ket-cell live-editable" contenteditable="true">${uhKeterangan}</td></tr>`;
     }
   }
   if (b.representatif > 0) {
     const representatifKet = sbm && sbm.provinsi === 'DKI JAKARTA' ? 'Dalam kota' : 'Luar kota';
-    rincianRows += `<tr class="rincian-ket-row" data-merge-ket-up="true"><td class="tc">${no++}</td><td>Biaya Representatif<br><span style="padding-left:12px">${days} hari &nbsp; X &nbsp; ${rp(b.representatifRate)}</span></td><td class="tr">${rp(b.representatif)}</td><td class="rincian-ket-cell">${representatifKet}</td></tr>`;
+    rincianRows += `<tr class="rincian-ket-row" data-merge-ket-up="true"><td class="tc">${no++}</td><td class="live-editable" contenteditable="true">Biaya Representatif<br><span style="padding-left:12px">${days} hari &nbsp; X &nbsp; ${rp(b.representatifRate)}</span></td><td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()">${rp(b.representatif)}</td><td class="rincian-ket-cell live-editable" contenteditable="true">${representatifKet}</td></tr>`;
   }
   if (cbHotel && b.hotel > 0) {
     if (b.hotelDetails.length) {
       b.hotelDetails.forEach(item => {
-        rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td>Penginapan/Hotel<br><span style="padding-left:12px">${item.nights} malam &nbsp; X &nbsp; ${rp(item.price)}</span></td><td class="tr">${rp(item.total)}</td><td class="rincian-ket-cell">${escHtml(item.name)}</td></tr>`;
+        rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td class="live-editable" contenteditable="true">Penginapan/Hotel<br><span style="padding-left:12px">${item.nights} malam &nbsp; X &nbsp; ${rp(item.price)}</span></td><td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()">${rp(item.total)}</td><td class="rincian-ket-cell live-editable" contenteditable="true">${escHtml(item.name)}</td></tr>`;
       });
     } else {
-      rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td>Penginapan/Hotel<br><span style="padding-left:12px">${nights} malam &nbsp; X &nbsp; ${rp(getHotelRate(sbm,emp.gol))}</span></td><td class="tr">${rp(b.hotel)}</td><td class="rincian-ket-cell"></td></tr>`;
+      rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td class="live-editable" contenteditable="true">Penginapan/Hotel<br><span style="padding-left:12px">${nights} malam &nbsp; X &nbsp; ${rp(getHotelRate(sbm,emp.gol))}</span></td><td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()">${rp(b.hotel)}</td><td class="rincian-ket-cell live-editable" contenteditable="true"></td></tr>`;
     }
   }
+  // 4. Tiket Perjalanan
+  const ticketCosts = b.customCosts.filter(item => item.isTicket && item.amount > 0);
   const transportCosts = b.customCosts.filter(item => item.isTransport && item.amount > 0);
-  const otherCosts = b.customCosts.filter(item => !item.isTransport && item.amount > 0);
+  const otherCosts = b.customCosts.filter(item => !item.isTransport && !item.isTicket && item.amount > 0);
+
+  if (cbTiket && b.tiket > 0) {
+    const ticketRoute = [kotaAsal, kotaTujuan].filter(Boolean).join(' - ');
+    rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td class="live-editable" contenteditable="true">Tiket Pesawat PP</td><td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()">${rp(b.tiket)}</td><td class="rincian-ket-cell live-editable" contenteditable="true">${ticketRoute}</td></tr>`;
+  }
+  ticketCosts.forEach(item => {
+    const route = [item.pickup, item.dropoff].filter(Boolean).join(' - ');
+    rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td class="live-editable" contenteditable="true">${escHtml(item.name)}</td><td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()">${rp(item.amount)}</td><td class="rincian-ket-cell live-editable" contenteditable="true">${escHtml(route)}</td></tr>`;
+  });
+  otherCosts.forEach(item => {
+    const route = [item.pickup, item.dropoff].filter(Boolean).join(' - ');
+    rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td class="live-editable" contenteditable="true">${escHtml(item.name)}</td><td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()">${rp(item.amount)}</td><td class="rincian-ket-cell live-editable" contenteditable="true">${escHtml(route)}</td></tr>`;
+  });
+
+  // 5. Transport Lokal / DPR (Paling Bawah)
   const transportExtra = transportCosts.reduce((total, item) => total + item.amount, 0);
   if (b.dpr > 0 || transportExtra > 0) {
     const dprUraian = (sbm?.provinsi === 'DKI JAKARTA' && b.dpr > 0)
@@ -4144,7 +4536,7 @@ function renderRincian() {
     if (transportCosts.length) {
       const detailRows = transportCosts.map(item => {
         const route = [item.pickup, item.dropoff].filter(Boolean).join(' - ');
-        return `<tr><td style="padding-left:24px"><em>${item.name}</em></td><td class="tr"><em>${rp(item.amount)}</em></td><td>${route}</td></tr>`;
+        return `<tr><td class="live-editable" contenteditable="true" style="padding-left:24px"><em>${escHtml(item.name)}</em></td><td class="tr live-editable" contenteditable="true"><em>${rp(item.amount)}</em></td><td class="live-editable" contenteditable="true">${escHtml(route)}</td></tr>`;
       }).join('');
       rincianRows += `<tr>
         <td class="tc">${no++}</td>
@@ -4152,32 +4544,24 @@ function renderRincian() {
           <table class="rincian-subtbl">
             <colgroup><col><col style="width:130px"><col style="width:120px"></colgroup>
             <tbody>
-              <tr><td>${dprUraian}</td><td class="tr"><strong>${rp(transportTotal)}</strong></td><td></td></tr>
-              <tr><td style="padding-left:12px"><em>Rincian Transport:</em></td><td></td><td></td></tr>
+              <tr><td class="live-editable" contenteditable="true">${dprUraian}</td><td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()"><strong>${rp(transportTotal)}</strong></td><td class="live-editable" contenteditable="true"></td></tr>
+              <tr><td class="live-editable" contenteditable="true" style="padding-left:12px"><em>Rincian Transport:</em></td><td></td><td></td></tr>
               ${detailRows}
             </tbody>
           </table>
         </td>
       </tr>`;
     } else {
-      rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td>${dprUraian}</td><td class="tr">${rp(transportTotal)}</td><td class="rincian-ket-cell"></td></tr>`;
+      rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td class="live-editable" contenteditable="true">${dprUraian}</td><td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()">${rp(transportTotal)}</td><td class="rincian-ket-cell live-editable" contenteditable="true"></td></tr>`;
     }
   }
-  if (cbTiket && b.tiket > 0) {
-    const ticketRoute = [kotaAsal, kotaTujuan].filter(Boolean).join(' - ');
-    rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td>Tiket Pesawat PP</td><td class="tr">${rp(b.tiket)}</td><td class="rincian-ket-cell">${ticketRoute}</td></tr>`;
-  }
-  otherCosts.forEach(item => {
-    const route = [item.pickup, item.dropoff].filter(Boolean).join(' - ');
-    rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td>${item.name}</td><td class="tr">${rp(item.amount)}</td><td class="rincian-ket-cell">${route}</td></tr>`;
-  });
 
   document.getElementById('rincianOut').innerHTML = `
     <div class="rincian-doc">
       <h3>RINCIAN &nbsp; PERJALANAN &nbsp; DINAS</h3>
       <table class="rincian-meta-top">
-        <tr><td>Lampiran SPD No.</td><td>:</td><td>${noSPD}</td></tr>
-        <tr><td>Tanggal</td><td>:</td><td>${formatTgl(tglSPD)}</td></tr>
+        <tr><td>Lampiran SPD No.</td><td>:</td><td><span class="live-editable" id="rincianDocSpd" contenteditable="true" oninput="onRincianDocSpdInput(this)">${noSPD}</span></td></tr>
+        <tr><td>Tanggal</td><td>:</td><td><span class="live-editable" contenteditable="true">${formatTgl(tglSPD)}</span></td></tr>
       </table>
 
       <table class="rincian-tbl">
@@ -4194,30 +4578,30 @@ function renderRincian() {
           ${mergeRincianKeterangan(rincianRows) || '<tr><td colspan="4" style="text-align:center;color:#a0aec0;padding:16px">Tidak ada komponen biaya yang dipilih</td></tr>'}
           <tr class="rincian-total-row">
             <td colspan="2" style="text-align:center;font-weight:700">J u m l a h</td>
-            <td class="tr" style="font-weight:700">${rp(b.total)}</td>
+            <td class="tr" id="rincianDocGrandTotal" style="font-weight:700">${rp(b.total)}</td>
             <td></td>
           </tr>
         </tbody>
       </table>
-      <div class="rincian-terbilang">terbilang : <em>${terbilang(b.total)}</em></div>
+      <div class="rincian-terbilang">terbilang : <em id="rincianDocTerbilang">${terbilang(b.total)}</em></div>
 
       <div class="rincian-payment-row">
         <div class="rincian-payment-col">
           <div style="visibility:hidden">placeholder</div>
           <div>Telah dibayar sejumlah</div>
-          <div class="rincian-amount-box">${rp(b.total)}</div>
+          <div class="rincian-amount-box rincian-sync-total">${rp(b.total)}</div>
           <div class="rincian-signatory-label">Bendahara Pengeluaran</div>
           <div class="rincian-sig-space"></div>
-          <div class="rincian-name">${bendNama}</div>
+          <div class="rincian-name live-editable" contenteditable="true">${bendNama}</div>
           <div>NIP. ${bendNip.replace('NIP.','').trim()}</div>
         </div>
         <div class="rincian-payment-col">
-          <div>${kotaAsal}, ${formatTgl(tglSPD)}</div>
+          <div><span class="live-editable" contenteditable="true">${kotaAsal}</span>, <span class="live-editable" contenteditable="true">${formatTgl(tglSPD)}</span></div>
           <div>Telah menerima jumlah uang</div>
-          <div class="rincian-amount-box">${rp(b.total)}</div>
+          <div class="rincian-amount-box rincian-sync-total">${rp(b.total)}</div>
           <div class="rincian-signatory-label">Yang Menerima</div>
           <div class="rincian-sig-space"></div>
-          <div class="rincian-name">${emp.nama}</div>
+          <div class="rincian-name live-editable" contenteditable="true">${emp.nama}</div>
           <div>NIP.${emp.nip}</div>
         </div>
       </div>
@@ -4225,8 +4609,8 @@ function renderRincian() {
       <div class="rincian-spd-rampung">
         <div style="font-weight:700;text-align:center;margin-bottom:8px">PERHITUNGAN SPD RAMPUNG</div>
         <table class="rincian-spd-tbl">
-          <tr><td>Ditetapkan sejumlah</td><td style="text-align:right">${rp(b.total)}</td></tr>
-          <tr><td>Yang telah dibayar semula</td><td style="text-align:right">${rp(b.total)}</td></tr>
+          <tr><td>Ditetapkan sejumlah</td><td style="text-align:right" id="spdRampungDitetapkan">${rp(b.total)}</td></tr>
+          <tr><td>Yang telah dibayar semula</td><td style="text-align:right" id="spdRampungDibayar">${rp(b.total)}</td></tr>
           <tr><td>Sisa/Kurang</td><td style="text-align:right">-</td></tr>
         </table>
       </div>
@@ -4235,7 +4619,7 @@ function renderRincian() {
         <div>Pejabat Pembuat Komitmen</div>
         <div>Sekretariat Jenderal Kementerian PKP</div>
         <div class="rincian-sig-space"></div>
-        <div class="rincian-name">${ppkNama}</div>
+        <div class="rincian-name live-editable" contenteditable="true">${ppkNama}</div>
         <div>${ppkNip}</div>
       </div>
     </div>
@@ -4243,6 +4627,60 @@ function renderRincian() {
       <button class="btn btn-success" onclick="printRincian()">🖨️ Print Rincian</button>
     </div>
   `;
+}
+
+function onRincianDocSpdInput(el) {
+  const select = document.getElementById('rincianPegawai');
+  if (!select || !select.value) return;
+  const empId = Number(select.value);
+  const newSpd = (el.innerText || el.textContent || '').trim();
+  if (typeof spdPerEmployee !== 'undefined') {
+    spdPerEmployee[empId] = newSpd;
+  }
+  const input = document.getElementById('rincianNoSPD');
+  if (input) {
+    const match = newSpd.match(/^([^\/]+)/);
+    if (match) input.value = match[1].trim();
+  }
+  if (typeof renderRincianEmpPills === 'function') renderRincianEmpPills();
+}
+
+function onRincianDocAmountChange() {
+  const table = document.querySelector('.rincian-tbl tbody');
+  if (!table) return;
+  let total = 0;
+  const amountCells = table.querySelectorAll('.tr-amount');
+  amountCells.forEach(cell => {
+    const text = (cell.innerText || cell.textContent || '').trim();
+    if (!text) return;
+    const isNegative = text.includes('-');
+    const digits = text.replace(/[^0-9]/g, '');
+    if (!digits) return;
+    const val = parseInt(digits, 10) || 0;
+    if (isNegative) {
+      total -= val;
+    } else {
+      total += val;
+    }
+  });
+
+  if (total < 0) total = 0;
+
+  const grandTotalEl = document.getElementById('rincianDocGrandTotal');
+  if (grandTotalEl) grandTotalEl.textContent = (typeof rp === 'function') ? rp(total) : 'Rp ' + total;
+
+  const terbilangEl = document.getElementById('rincianDocTerbilang');
+  if (terbilangEl) terbilangEl.textContent = (typeof terbilang === 'function') ? terbilang(total) : '';
+
+  const syncBoxes = document.querySelectorAll('.rincian-sync-total');
+  syncBoxes.forEach(box => {
+    box.textContent = (typeof rp === 'function') ? rp(total) : 'Rp ' + total;
+  });
+
+  const ditetapkan = document.getElementById('spdRampungDitetapkan');
+  if (ditetapkan) ditetapkan.textContent = (typeof rp === 'function') ? rp(total) : 'Rp ' + total;
+  const dibayar = document.getElementById('spdRampungDibayar');
+  if (dibayar) dibayar.textContent = (typeof rp === 'function') ? rp(total) : 'Rp ' + total;
 }
 
 function printRincian() {
@@ -4799,8 +5237,6 @@ function printAllDPR() {
 
 
 
-
-/* === FILE: js/excel.js === */
 // =====================================================================
 // EKSPOR & IMPOR EXCEL (PerdinKu)
 // Penyimpanan data dan pembacaan ulang berkas spreadsheet perjalanan
@@ -5369,8 +5805,6 @@ function applyPerjadinExcel(wb) {
   return { employees: selectedEmpIds.size, unknown: unknownNames };
 }
 
-
-/* === FILE: js/ui.js === */
 // =====================================================================
 // ANTARMUKA & INTERAKSI PENGGUNA (PerdinKu)
 // Tema (Dark/Light), Navigasi Tab, Sidebar, Popup Selamat Datang,
@@ -6031,8 +6465,26 @@ document.addEventListener('keydown', event => {
   }
 });
 
-document.addEventListener('input', () => { updateSbmWarnings(); refreshHotelSummaries(); });
-document.addEventListener('change', () => { updateSbmWarnings(); refreshHotelSummaries(); });
+document.addEventListener('input', (e) => { 
+  updateSbmWarnings(); 
+  refreshHotelSummaries(); 
+  const rincianTab = document.getElementById('tab-rincian');
+  if (rincianTab && rincianTab.classList.contains('active')) {
+    if (!e.target.closest('#rincianOut') && !e.target.closest('#rincianCockpit')) {
+      if (typeof renderRincian === 'function') renderRincian();
+    }
+  }
+});
+document.addEventListener('change', (e) => { 
+  updateSbmWarnings(); 
+  refreshHotelSummaries(); 
+  const rincianTab = document.getElementById('tab-rincian');
+  if (rincianTab && rincianTab.classList.contains('active')) {
+    if (!e.target.closest('#rincianOut') && !e.target.closest('#rincianCockpit')) {
+      if (typeof renderRincian === 'function') renderRincian();
+    }
+  }
+});
 
 // =====================================================================
 // EMPLOYEE LIST
