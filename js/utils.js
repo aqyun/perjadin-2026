@@ -77,3 +77,127 @@ function terbilang(angka) {
   return helper(angka).trim() + ' Rupiah';
 }
 
+function toDDMMYYYY(str) {
+  if (!str) return '';
+  const m = String(str).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) {
+    return `${m[3]}-${m[2]}-${m[1]}`;
+  }
+  const d = new Date(str);
+  if (!isNaN(d.getTime())) {
+    const day = String(d.getDate()).padStart(2, '0');
+    const mon = String(d.getMonth() + 1).padStart(2, '0');
+    const yr = d.getFullYear();
+    return `${day}-${mon}-${yr}`;
+  }
+  return String(str);
+}
+
+function formatTglKegiatan(str1, str2) {
+  if (!str1 && !str2) {
+    const now = new Date();
+    const d = String(now.getDate()).padStart(2, '0');
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const y = now.getFullYear();
+    return `${d}-${m}-${y}`;
+  }
+  if (str1 && !str2) return toDDMMYYYY(str1);
+  if (!str1 && str2) return toDDMMYYYY(str2);
+
+  const m1 = String(str1).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  const m2 = String(str2).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m1 || !m2) {
+    const f1 = toDDMMYYYY(str1);
+    const f2 = toDDMMYYYY(str2);
+    return f1 === f2 ? f1 : `${f1} - ${f2}`;
+  }
+
+  const y1 = m1[1], mon1 = m1[2], day1 = m1[3];
+  const y2 = m2[1], mon2 = m2[2], day2 = m2[3];
+
+  if (y1 === y2 && mon1 === mon2 && day1 === day2) {
+    return `${day1}-${mon1}-${y1}`;
+  } else if (y1 === y2 && mon1 === mon2) {
+    const dStart = parseInt(day1, 10) <= parseInt(day2, 10) ? day1 : day2;
+    const dEnd = parseInt(day1, 10) <= parseInt(day2, 10) ? day2 : day1;
+    return `${dStart}-${dEnd}-${mon1}-${y1}`;
+  } else if (y1 === y2) {
+    return `${day1}-${mon1}-${y1} - ${day2}-${mon2}-${y1}`;
+  } else {
+    return `${day1}-${mon1}-${y1} - ${day2}-${mon2}-${y2}`;
+  }
+}
+
+function getNamaDepan(nama) {
+  if (!nama) return 'Pegawai';
+  const clean = String(nama).split(',')[0].trim();
+  const words = clean.split(/\s+/).filter(w => !/^(dr\.|ir\.|drs\.|dra\.|prof\.|h\.|hj\.)/i.test(w));
+  return words[0] || clean.split(/\s+/)[0] || 'Pegawai';
+}
+
+function getNamaPelakuPerjadin(empIds) {
+  if (!empIds || !empIds.length) return 'Pegawai';
+  const empList = (typeof employees !== 'undefined' && Array.isArray(employees)) ? employees : [];
+  const names = empIds.map(id => {
+    const emp = empList.find(e => e.id === id);
+    return emp ? getNamaDepan(emp.nama) : '';
+  }).filter(Boolean);
+
+  if (names.length === 0) return 'Pegawai';
+  if (names.length === 1) return names[0];
+  if (names.length === 2) return `${names[0]}, ${names[1]}`;
+
+  const combined = names.join(', ');
+  if (names.length <= 3 && combined.length <= 40) {
+    return combined;
+  }
+  return `${names[0]} dkk dan ${names.length - 1} Orang Lainnya`;
+}
+
+function getPerjadinNamingInfo() {
+  const isKKP = ((document.getElementById('metodePembayaran')?.value || document.getElementById('lk_metodePembayaran')?.value || 'LS') === 'KKP');
+  const prefix = isKKP ? 'PERJADIN KKP' : 'PERJADIN';
+
+  const tgl1 = document.getElementById('tglBerangkat')?.value;
+  const tgl2 = document.getElementById('tglKembali')?.value;
+  const tglKegiatan = formatTglKegiatan(tgl1, tgl2);
+
+  const empIds = (typeof selectedEmpIds !== 'undefined' && selectedEmpIds) ? [...selectedEmpIds] : [];
+  let grandTotal = 0;
+  empIds.forEach(id => {
+    const emp = (typeof employees !== 'undefined' && Array.isArray(employees)) ? employees.find(e => e.id === id) : null;
+    if (emp && typeof hitungBiaya === 'function') {
+      grandTotal += (hitungBiaya(emp).total || 0);
+    }
+  });
+  const nominalStr = (typeof rp === 'function') ? rp(grandTotal) : `Rp ${grandTotal}`;
+  const pelakuStr = getNamaPelakuPerjadin(empIds);
+
+  const kotaTeks = (document.getElementById('kotaTujuan')?.value || '').trim();
+  const provTeks = (document.getElementById('provinsiTujuan')?.value || '').trim();
+  const lokasi = (kotaTeks || provTeks || 'DINAS').toUpperCase();
+
+  // Format Excel: PERJADIN/PERJADIN KKP_tanggal kegiatan_Nominal_nama pelaku perjadin
+  const rawExcelBase = `${prefix}_${tglKegiatan}_${nominalStr}_${pelakuStr}`;
+  const safeExcelBase = rawExcelBase.replace(/[\\/:*?"<>|]+/g, '-').replace(/\s+/g, ' ').trim();
+  const excelFileName = `${safeExcelBase}.xlsx`;
+
+  // Folder: PERJADIN "tgl kegiatan" LOKASI
+  const rawFolder = `PERJADIN ${tglKegiatan} ${lokasi}`;
+  const safeFolderName = rawFolder.replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim();
+
+  return {
+    isKKP,
+    prefix,
+    tglKegiatan,
+    nominalStr,
+    pelakuStr,
+    lokasi,
+    excelFileName,
+    folderName: safeFolderName,
+    grandTotal,
+    empIds
+  };
+}
+
+

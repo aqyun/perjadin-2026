@@ -9,37 +9,37 @@
 // =====================================================================
 function renderRekapKuitansi() {
   const out = document.getElementById('rekapKuitansiOut');
-  const dateValue = document.getElementById('tglSPD').value || document.getElementById('tglST').value;
+  const dateValue = document.getElementById('tglSPD')?.value || document.getElementById('tglST')?.value || '';
   const date = dateValue ? new Date(`${dateValue}T00:00:00`) : new Date();
   const year = date.getFullYear();
   const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
   const monthInput = document.getElementById('bulanKuitansi');
-  if (!monthInput.value) monthInput.value = months[date.getMonth()];
-  const month = monthInput.value.trim() || months[date.getMonth()];
+  if (monthInput && !monthInput.value) monthInput.value = months[date.getMonth()];
+  const month = (monthInput ? monthInput.value.trim() : '') || months[date.getMonth()];
 
   if (selectedEmpIds.size === 0) {
-    out.innerHTML = '<div class="alert-warn no-print">Belum ada pegawai yang dipilih. Kembali ke tab Input Perjalanan.</div>';
+    if (out) out.innerHTML = '<div class="alert-warn no-print">Belum ada pegawai yang dipilih. Kembali ke tab Input Perjalanan.</div>';
     return;
   }
 
-  const selectedEmps = [...selectedEmpIds].map(id => employees.find(emp => emp.id === id));
-  const grandTotal = selectedEmps.reduce((total, emp) => total + hitungBiaya(emp).total, 0);
-  const satker = document.getElementById('cfg_satker').value;
-  const nomorBukti = document.getElementById('cfg_noBuktiKuitansi').value || '-';
-  const kodeKegiatan = document.getElementById('kodeKegiatan').value;
-  const kodeSubKegiatan = document.getElementById('kodeSubKegiatan').value;
-  const mak = document.getElementById('mak').value;
-  const agenda = document.getElementById('agenda').value.trim();
-  const kegiatan = document.getElementById('cfg_kegiatan').value.trim();
-  const kotaAsal = document.getElementById('cfg_kotaAsal').value;
-  const ppkNama = document.getElementById('cfg_ppkNama').value;
-  const ppkNip = document.getElementById('cfg_ppkNip').value;
-  const bendNama = document.getElementById('cfg_bendNama').value;
-  const bendNip = document.getElementById('cfg_bendNip').value;
+  const selectedEmps = [...selectedEmpIds].map(id => employees.find(emp => emp.id === id)).filter(Boolean);
+  const grandTotal = selectedEmps.reduce((total, emp) => total + (hitungBiaya(emp)?.total || 0), 0);
+  const satker = document.getElementById('cfg_satker')?.value || '';
+  const nomorBukti = document.getElementById('cfg_noBuktiKuitansi')?.value || '-';
+  const kodeKegiatan = document.getElementById('kodeKegiatan')?.value || '';
+  const kodeSubKegiatan = document.getElementById('kodeSubKegiatan')?.value || '';
+  const mak = document.getElementById('mak')?.value || '';
+  const agenda = (document.getElementById('agenda')?.value || '').trim();
+  const kegiatan = (document.getElementById('cfg_kegiatan')?.value || '').trim();
+  const kotaAsal = document.getElementById('cfg_kotaAsal')?.value || '';
+  const ppkNama = document.getElementById('cfg_ppkNama')?.value || '';
+  const ppkNip = document.getElementById('cfg_ppkNip')?.value || '';
+  const bendNama = document.getElementById('cfg_bendNama')?.value || '';
+  const bendNip = document.getElementById('cfg_bendNip')?.value || '';
   const monthYear = `${month} ${year}`;
   const makLengkap = `${kodeKegiatan}.${kodeSubKegiatan}.${mak}`;
-  const kotaTeks = document.getElementById('kotaTujuan').value.trim();
-  const paymentText = [agenda || `Perjalanan dinas ke ${kotaTeks ? getTujuanDisplay(kotaTeks) : '-'}`, kegiatan ? `Output ${kegiatan}` : '']
+  const kotaTeks = (document.getElementById('kotaTujuan')?.value || '').trim();
+  const paymentText = [agenda || `Perjalanan dinas ke ${kotaTeks ? (typeof getTujuanDisplay === 'function' ? getTujuanDisplay(kotaTeks) : kotaTeks) : '-'}`, kegiatan ? `Output ${kegiatan}` : '']
     .filter(Boolean)
     .join(', ');
   const isKKP = (document.getElementById('metodePembayaran')?.value || document.getElementById('lk_metodePembayaran')?.value || 'LS') === 'KKP';
@@ -240,45 +240,35 @@ function saveKuitansiPeroranganSPD() {
   renderKuitansiPerorangan();
 }
 
-function renderKuitansiPerorangan() {
-  const out = document.getElementById('kuitansiPeroranganOut');
-  const select = document.getElementById('kuitansiPeroranganPegawai');
-  if (select.value === '') {
-    out.innerHTML = '';
-    return;
-  }
-  const id = Number(select.value);
-  const emp = employees.find(employee => employee.id === id);
-  if (!emp) {
-    out.innerHTML = '';
-    return;
-  }
-
-  const biaya = hitungBiaya(emp);
-  const tanggalSPDValue = document.getElementById('tglSPD').value || document.getElementById('tglST').value;
+function buildKuitansiHtml(emp) {
+  if (!emp) return '';
+  const biaya = typeof hitungBiaya === 'function' ? hitungBiaya(emp) : { total: 0 };
+  const tanggalSPDValue = document.getElementById('tglSPD')?.value || document.getElementById('tglST')?.value;
   const tanggalSPD = formatTgl(tanggalSPDValue);
   const date = tanggalSPDValue ? new Date(`${tanggalSPDValue}T00:00:00`) : new Date();
   const tahun = date.getFullYear();
-  const nomorBukti = document.getElementById('cfg_noBuktiKuitansi').value;
-  const satker = document.getElementById('cfg_satker').value;
-  const alamat = document.getElementById('cfg_alamatKuitansi').value;
-  const kotaAsal = document.getElementById('cfg_kotaAsal').value;
-  const kotaTeks = document.getElementById('kotaTujuan').value.trim();
-  const tujuan = getTujuanDisplay(kotaTeks);
+  const nomorBukti = document.getElementById('cfg_noBuktiKuitansi')?.value || '';
+  const satker = document.getElementById('cfg_satker')?.value || '';
+  const alamat = document.getElementById('cfg_alamatKuitansi')?.value || '';
+  const kotaAsal = document.getElementById('cfg_kotaAsal')?.value || '';
+  const kotaTeks = (document.getElementById('kotaTujuan')?.value || '').trim();
+  const tujuan = typeof getTujuanDisplay === 'function' ? getTujuanDisplay(kotaTeks) : kotaTeks;
   const paymentText = `Biaya Perjalanan Dinas atas nama ${emp.nama}`;
-  const mak = `${document.getElementById('kodeKegiatan').value} ${document.getElementById('kodeSubKegiatan').value} ${document.getElementById('mak').value}`;
-  const rawSPD = (spdPerEmployee[emp.id] || '').trim();
+  const mak = `${document.getElementById('kodeKegiatan')?.value || ''} ${document.getElementById('kodeSubKegiatan')?.value || ''} ${document.getElementById('mak')?.value || ''}`.trim();
+  const rawSPD = (typeof spdPerEmployee !== 'undefined' && spdPerEmployee[emp.id]) ? spdPerEmployee[emp.id].trim() : '';
   const noSPD = rawSPD || '<span class="spd-missing-badge">[No. SPD Wajib Diisi]</span>';
-  const ppkNama = document.getElementById('cfg_ppkNama').value;
-  const ppkNip = document.getElementById('cfg_ppkNip').value;
-  const bendNama = document.getElementById('cfg_bendNama').value;
-  const bendNip = document.getElementById('cfg_bendNip').value;
-  const isKKP = (document.getElementById('metodePembayaran')?.value || document.getElementById('lk_metodePembayaran')?.value || 'LS') === 'KKP';
+  const ppkNama = document.getElementById('cfg_ppkNama')?.value || '';
+  const ppkNip = document.getElementById('cfg_ppkNip')?.value || '';
+  const ppkJabatan = document.getElementById('cfg_ppkJabatan')?.value || '';
+  const bendNama = document.getElementById('cfg_bendNama')?.value || '';
+  const bendNip = document.getElementById('cfg_bendNip')?.value || '';
+  const isKKP = ((document.getElementById('metodePembayaran')?.value || document.getElementById('lk_metodePembayaran')?.value || 'LS') === 'KKP');
+  const logoSrc = (typeof LOGO_PKP_BASE64 !== 'undefined' && LOGO_PKP_BASE64) ? LOGO_PKP_BASE64 : 'logo-pkp.webp';
 
-  out.innerHTML = `
+  return `
     <section class="kuitansi-perorangan-area">
       <header class="kuitansi-perorangan-header lembar-kendali-header">
-        <img src="logo-pkp.webp" alt="" class="kuitansi-perorangan-logo lembar-kendali-logo">
+        <img src="${logoSrc}" alt="" class="kuitansi-perorangan-logo lembar-kendali-logo">
         <div>
           <div class="kuitansi-perorangan-ministry lembar-kendali-ministry">KEMENTERIAN PERUMAHAN DAN KAWASAN PERMUKIMAN <span>REPUBLIK INDONESIA</span></div>
           <strong class="lembar-kendali-secretariat">SEKRETARIAT JENDERAL</strong>
@@ -295,7 +285,7 @@ function renderKuitansiPerorangan() {
 
       <h2 class="kuitansi-perorangan-title">${isKKP ? 'KUITANSI KKP' : 'K W I T A N S I'}</h2>
       <table class="kuitansi-perorangan-details">
-        <tr><td>Sudah Terima dari</td><td>:</td><td>${jabatanDuaBaris(document.getElementById('cfg_ppkJabatan').value)}</td></tr>
+        <tr><td>Sudah Terima dari</td><td>:</td><td>${jabatanDuaBaris(ppkJabatan)}</td></tr>
         <tr><td>Uang Sebesar</td><td>:</td><td>Rp. &nbsp; ${Number(biaya.total).toLocaleString('id-ID')}</td></tr>
         <tr><td>Terbilang</td><td>:</td><td><em>${terbilang(biaya.total)}</em></td></tr>
         <tr><td>Untuk Pembayaran</td><td>:</td><td>${paymentText}</td></tr>
@@ -334,6 +324,26 @@ function renderKuitansiPerorangan() {
       </div>
     </section>
   `;
+}
+
+function renderKuitansiPerorangan(targetEmp) {
+  const out = document.getElementById('kuitansiPeroranganOut');
+  if (!out) return;
+  const select = document.getElementById('kuitansiPeroranganPegawai');
+  let emp = targetEmp;
+  if (!emp) {
+    if (!select || select.value === '') {
+      out.innerHTML = '';
+      return;
+    }
+    const id = Number(select.value);
+    emp = (typeof employees !== 'undefined' ? employees : []).find(employee => employee.id === id);
+  }
+  if (!emp) {
+    out.innerHTML = '';
+    return;
+  }
+  out.innerHTML = buildKuitansiHtml(emp);
 }
 
 function printKuitansiPerorangan() {
@@ -411,46 +421,35 @@ function saveSPPDNo() {
   renderSPPDPerorangan();
 }
 
-function renderSPPDPerorangan() {
-  const out = document.getElementById('sppdOut');
-  const select = document.getElementById('sppdPegawai');
-  if (select.value === '') {
-    out.innerHTML = '';
-    return;
-  }
-  const emp = employees.find(employee => employee.id === Number(select.value));
-  if (!emp) {
-    out.innerHTML = '';
-    return;
-  }
-
-  const sbm = getSBM();
-  const empSegments = getEmpSegments(emp.id);
-  const { days } = getEmpDays(emp.id);
-  const satker = document.getElementById('cfg_satker').value;
-  const alamat = document.getElementById('cfg_alamatKuitansi').value;
-  const kotaAsal = document.getElementById('cfg_kotaAsal').value;
-  const ppkNama = document.getElementById('cfg_ppkNama').value;
-  const ppkNip = document.getElementById('cfg_ppkNip').value;
-  const ppkJabatan = document.getElementById('cfg_ppkJabatan').value;
-  const kegiatan = document.getElementById('cfg_kegiatan').value;
-  const kodeKegiatan = document.getElementById('kodeKegiatan').value;
-  const kodeSubKegiatan = document.getElementById('kodeSubKegiatan').value;
-  const mak = document.getElementById('mak').value;
-  const agenda = document.getElementById('agenda').value.trim() || '-';
-  const kotaTeks = document.getElementById('kotaTujuan').value.trim();
-  const tujuan = getTujuanDisplay(kotaTeks);
-  const rawSPD = (spdPerEmployee[emp.id] || '').trim();
+function buildSPPDHtml(emp) {
+  if (!emp) return '';
+  const sbm = typeof getSBM === 'function' ? getSBM() : null;
+  const empSegments = typeof getEmpSegments === 'function' ? getEmpSegments(emp.id) : [];
+  const { days } = typeof getEmpDays === 'function' ? getEmpDays(emp.id) : { days: 1 };
+  const satker = document.getElementById('cfg_satker')?.value || '';
+  const alamat = document.getElementById('cfg_alamatKuitansi')?.value || '';
+  const kotaAsal = document.getElementById('cfg_kotaAsal')?.value || '';
+  const ppkNama = document.getElementById('cfg_ppkNama')?.value || '';
+  const ppkNip = document.getElementById('cfg_ppkNip')?.value || '';
+  const ppkJabatan = document.getElementById('cfg_ppkJabatan')?.value || '';
+  const kegiatan = document.getElementById('cfg_kegiatan')?.value || '';
+  const kodeKegiatan = document.getElementById('kodeKegiatan')?.value || '';
+  const kodeSubKegiatan = document.getElementById('kodeSubKegiatan')?.value || '';
+  const mak = document.getElementById('mak')?.value || '';
+  const agenda = (document.getElementById('agenda')?.value || '').trim() || '-';
+  const kotaTeks = (document.getElementById('kotaTujuan')?.value || '').trim();
+  const tujuan = typeof getTujuanDisplay === 'function' ? getTujuanDisplay(kotaTeks) : kotaTeks;
+  const rawSPD = (typeof spdPerEmployee !== 'undefined' && spdPerEmployee[emp.id]) ? spdPerEmployee[emp.id].trim() : '';
   const noSPD = rawSPD || '<span class="spd-missing-badge">[No. SPD Wajib Diisi]</span>';
-  const tanggalSPD = formatTgl(document.getElementById('tglSPD').value);
-  const tripDays = expandTripDays(empSegments);
-  const tripContiguous = tripDays.length > 0 && tripDays.length === daySpan(tripDays[0], tripDays[tripDays.length - 1]);
+  const tanggalSPD = formatTgl(document.getElementById('tglSPD')?.value);
+  const tripDays = typeof expandTripDays === 'function' ? expandTripDays(empSegments) : [];
+  const tripContiguous = tripDays.length > 0 && tripDays.length === (typeof daySpan === 'function' ? daySpan(tripDays[0], tripDays[tripDays.length - 1]) : tripDays.length);
   const tglBerangkat = !tripContiguous && tripDays.length > 1
-    ? `${formatTanggalList(tripDays.slice(0, -1))}, dan`
-    : formatTgl(empSegments.length ? empSegments[0].start : document.getElementById('tglBerangkat').value);
-  const tglKembali = formatTgl(tripDays.length ? tripDays[tripDays.length - 1] : (empSegments.length ? empSegments[empSegments.length - 1].end : document.getElementById('tglKembali').value));
-  const noST = document.getElementById('noST').value.trim() || '-';
-  const tglST = formatTgl(document.getElementById('tglST').value);
+    ? `${typeof formatTanggalList === 'function' ? formatTanggalList(tripDays.slice(0, -1)) : ''}, dan`
+    : formatTgl(empSegments.length ? empSegments[0].start : document.getElementById('tglBerangkat')?.value);
+  const tglKembali = formatTgl(tripDays.length ? tripDays[tripDays.length - 1] : (empSegments.length ? empSegments[empSegments.length - 1].end : document.getElementById('tglKembali')?.value));
+  const noST = (document.getElementById('noST')?.value || '').trim() || '-';
+  const tglST = formatTgl(document.getElementById('tglST')?.value);
   const pangkat = emp.pangkat && emp.pangkat !== '-' ? emp.pangkat : '-';
   const hasPesawatCost = typeof getCustomCosts === 'function' && getCustomCosts().some(c => /pesawat|udara/i.test(c.name) || (c.kind === 'tiket' && /pesawat/i.test(c.name)));
   const transport = (document.getElementById('cbTiket')?.checked || hasPesawatCost) ? 'Pesawat Udara' : 'Transportasi Darat';
@@ -458,11 +457,12 @@ function renderSPPDPerorangan() {
   const pengikutRows = [1, 2, 3, 4, 5].map(() => `
         <tr><td></td><td></td><td></td></tr>`).join('');
   const pengikutNums = [1, 2, 3, 4, 5].map(number => `<tr><td>${number}.</td></tr>`).join('');
+  const logoSrc = (typeof LOGO_PKP_BASE64 !== 'undefined' && LOGO_PKP_BASE64) ? LOGO_PKP_BASE64 : 'logo-pkp.webp';
 
-  out.innerHTML = `
+  return `
     <section class="sppd-area">
       <header class="kuitansi-perorangan-header lembar-kendali-header">
-        <img src="logo-pkp.webp" alt="" class="kuitansi-perorangan-logo lembar-kendali-logo">
+        <img src="${logoSrc}" alt="" class="kuitansi-perorangan-logo lembar-kendali-logo">
         <div>
           <div class="kuitansi-perorangan-ministry lembar-kendali-ministry">KEMENTERIAN PERUMAHAN DAN KAWASAN PERMUKIMAN <span>REPUBLIK INDONESIA</span></div>
           <strong class="lembar-kendali-secretariat">SEKRETARIAT JENDERAL</strong>
@@ -534,6 +534,25 @@ function renderSPPDPerorangan() {
   `;
 }
 
+function renderSPPDPerorangan(targetEmp) {
+  const out = document.getElementById('sppdOut');
+  if (!out) return;
+  const select = document.getElementById('sppdPegawai');
+  let emp = targetEmp;
+  if (!emp) {
+    if (!select || select.value === '') {
+      out.innerHTML = '';
+      return;
+    }
+    emp = (typeof employees !== 'undefined' ? employees : []).find(employee => employee.id === Number(select.value));
+  }
+  if (!emp) {
+    out.innerHTML = '';
+    return;
+  }
+  out.innerHTML = buildSPPDHtml(emp);
+}
+
 function printSPPDPerorangan() {
   const select = document.getElementById('sppdPegawai');
   const empId = Number(select.value);
@@ -595,33 +614,33 @@ function renderLembarKendali() {
     return;
   }
 
-  const sbm = getSBM();
-  const selectedEmps = [...selectedEmpIds].map(id => employees.find(emp => emp.id === id));
-  const total = selectedEmps.reduce((sum, emp) => sum + hitungBiaya(emp).total, 0);
-  const satker = document.getElementById('cfg_satker').value;
-  const alamat = document.getElementById('cfg_alamatSatker').value;
-  const pelaksana = document.getElementById('lk_pelaksana').value || '-';
-  const tanggalMasuk = document.getElementById('lk_tanggalMasuk').value;
-  const nomorSPM = document.getElementById('lk_nomorSPM').value;
-  const nomorSPD = document.getElementById('lk_nomorSPD').value;
-  const nomorST = document.getElementById('noST').value || '-';
-  const tanggalST = formatTgl(document.getElementById('tglST').value);
-  const allTripSegs = selectedEmps.flatMap(emp => getEmpSegments(emp.id));
-  const tripStart = allTripSegs.length ? allTripSegs.reduce((min, s) => (s.start < min ? s.start : min), allTripSegs[0].start) : document.getElementById('tglBerangkat').value;
-  const tripEnd = allTripSegs.length ? allTripSegs.reduce((max, s) => (s.end > max ? s.end : max), allTripSegs[0].end) : document.getElementById('tglKembali').value;
-  const tanggalBerangkat = formatTgl(tripStart);
-  const tanggalKembali = formatTgl(tripEnd);
-  const verifNama = document.getElementById('cfg_verifikatorNama').value.trim();
-  const verifNipRaw = document.getElementById('cfg_verifikatorNip').value.trim().replace(/^NIP\.?\s*/i, '');
+  const sbm = typeof getSBM === 'function' ? getSBM() : {};
+  const selectedEmps = [...selectedEmpIds].map(id => employees.find(emp => emp.id === id)).filter(Boolean);
+  const total = selectedEmps.reduce((sum, emp) => sum + (hitungBiaya(emp)?.total || 0), 0);
+  const satker = document.getElementById('cfg_satker')?.value || '';
+  const alamat = document.getElementById('cfg_alamatSatker')?.value || '';
+  const pelaksana = document.getElementById('lk_pelaksana')?.value || '-';
+  const tanggalMasuk = document.getElementById('lk_tanggalMasuk')?.value || '';
+  const nomorSPM = document.getElementById('lk_nomorSPM')?.value || '';
+  const nomorSPD = document.getElementById('lk_nomorSPD')?.value || '';
+  const nomorST = document.getElementById('noST')?.value || '-';
+  const tanggalST = typeof formatTgl === 'function' ? formatTgl(document.getElementById('tglST')?.value) : '';
+  const allTripSegs = selectedEmps.flatMap(emp => (typeof getEmpSegments === 'function' ? getEmpSegments(emp.id) : []));
+  const tripStart = allTripSegs.length ? allTripSegs.reduce((min, s) => (s.start < min ? s.start : min), allTripSegs[0].start) : (document.getElementById('tglBerangkat')?.value || '');
+  const tripEnd = allTripSegs.length ? allTripSegs.reduce((max, s) => (s.end > max ? s.end : max), allTripSegs[0].end) : (document.getElementById('tglKembali')?.value || '');
+  const tanggalBerangkat = typeof formatTgl === 'function' ? formatTgl(tripStart) : tripStart;
+  const tanggalKembali = typeof formatTgl === 'function' ? formatTgl(tripEnd) : tripEnd;
+  const verifNama = (document.getElementById('cfg_verifikatorNama')?.value || '').trim();
+  const verifNipRaw = (document.getElementById('cfg_verifikatorNip')?.value || '').trim().replace(/^NIP\.?\s*/i, '');
   const elJenis = document.getElementById('lk_jenisPerjalanan');
-  if (elJenis && !elJenis.dataset.userEdited) {
+  if (elJenis && !elJenis.dataset.userEdited && typeof syncJenisPerjalananFromMak === 'function') {
     syncJenisPerjalananFromMak();
   }
   const jenisPerjalanan = elJenis ? elJenis.value : 'Luar Kota';
-  const kotaTeks = document.getElementById('kotaTujuan').value.trim();
-  const tujuan = getTujuanDisplay(kotaTeks);
-  const tujuanPerjalanan = document.getElementById('agenda').value.trim() || tujuan;
-  const akunKegiatan = `${document.getElementById('kodeKegiatan').value}.${document.getElementById('kodeSubKegiatan').value}.${document.getElementById('mak').value}`;
+  const kotaTeks = (document.getElementById('kotaTujuan')?.value || '').trim();
+  const tujuan = typeof getTujuanDisplay === 'function' ? getTujuanDisplay(kotaTeks) : kotaTeks;
+  const tujuanPerjalanan = (document.getElementById('agenda')?.value || '').trim() || tujuan;
+  const akunKegiatan = `${document.getElementById('kodeKegiatan')?.value || ''}.${document.getElementById('kodeSubKegiatan')?.value || ''}.${document.getElementById('mak')?.value || ''}`;
   const isKKP = (document.getElementById('metodePembayaran')?.value || document.getElementById('lk_metodePembayaran')?.value || 'LS') === 'KKP';
   const checklistItems = [
     'Surat Undangan (Jika Ada)',
@@ -640,11 +659,12 @@ function renderLembarKendali() {
     'SP2D (Lembar Dua)',
     'Tanda Tangan pada Link Monitoring Perjadin'
   ];
+  const logoSrc = (typeof LOGO_PKP_BASE64 !== 'undefined' && LOGO_PKP_BASE64) ? LOGO_PKP_BASE64 : 'logo-pkp.webp';
 
   out.innerHTML = `
     <section class="lembar-kendali-area">
       <header class="lembar-kendali-header">
-        <img class="lembar-kendali-logo" src="logo-pkp.webp" alt="">
+        <img class="lembar-kendali-logo" src="${logoSrc}" alt="">
         <div>
           <div class="lembar-kendali-ministry">KEMENTERIAN PERUMAHAN DAN KAWASAN PERMUKIMAN <span>REPUBLIK INDONESIA</span></div>
           <strong class="lembar-kendali-secretariat">SEKRETARIAT JENDERAL</strong>
@@ -766,36 +786,36 @@ function renderRekapRincian() {
     return;
   }
 
-  const sbm = getSBM();
-  const selectedEmps = [...selectedEmpIds].map(id => employees.find(emp => emp.id === id));
+  const sbm = typeof getSBM === 'function' ? getSBM() : {};
+  const selectedEmps = [...selectedEmpIds].map(id => employees.find(emp => emp.id === id)).filter(Boolean);
   const rows = selectedEmps.map((emp, index) => ({
     emp,
     index: index + 1,
     biaya: hitungBiaya(emp),
-    segs: getEmpSegments(emp.id),
-    days: getEmpDays(emp.id).days
+    segs: typeof getEmpSegments === 'function' ? getEmpSegments(emp.id) : [],
+    days: typeof getEmpDays === 'function' ? getEmpDays(emp.id).days : 1
   }));
-  const satker = document.getElementById('cfg_satker').value;
-  const kodeSatker = document.getElementById('cfg_kodeSatker').value;
-  const kodeKegiatan = document.getElementById('kodeKegiatan').value;
-  const kodeSubKegiatan = document.getElementById('kodeSubKegiatan').value;
-  const mak = document.getElementById('mak').value;
-  const kegiatan = document.getElementById('cfg_kegiatan').value;
-  const bank = document.getElementById('cfg_bank').value;
-  const kotaTeks = document.getElementById('kotaTujuan').value.trim();
-  const tujuan = getTujuanDisplay(kotaTeks);
-  const tanggalBerangkat = document.getElementById('tglBerangkat').value;
-  const tanggalKembali = document.getElementById('tglKembali').value;
-  const cbUH = document.getElementById('cbUH').checked;
-  const cbHotel = document.getElementById('cbHotel').checked;
-  const cbDPR = document.getElementById('cbDPR').checked;
-  const cbTiket = document.getElementById('cbTiket').checked;
-  const customCosts = getCustomCosts();
-  const ppkNama = document.getElementById('cfg_ppkNama').value;
-  const ppkNip = document.getElementById('cfg_ppkNip').value;
-  const ppkJabatan = document.getElementById('cfg_ppkJabatan').value;
-  const bendNama = document.getElementById('cfg_bendNama').value;
-  const bendNip = document.getElementById('cfg_bendNip').value;
+  const satker = document.getElementById('cfg_satker')?.value || '';
+  const kodeSatker = document.getElementById('cfg_kodeSatker')?.value || '';
+  const kodeKegiatan = document.getElementById('kodeKegiatan')?.value || '';
+  const kodeSubKegiatan = document.getElementById('kodeSubKegiatan')?.value || '';
+  const mak = document.getElementById('mak')?.value || '';
+  const kegiatan = document.getElementById('cfg_kegiatan')?.value || '';
+  const bank = document.getElementById('cfg_bank')?.value || '';
+  const kotaTeks = (document.getElementById('kotaTujuan')?.value || '').trim();
+  const tujuan = typeof getTujuanDisplay === 'function' ? getTujuanDisplay(kotaTeks) : kotaTeks;
+  const tanggalBerangkat = document.getElementById('tglBerangkat')?.value || '';
+  const tanggalKembali = document.getElementById('tglKembali')?.value || '';
+  const cbUH = !!document.getElementById('cbUH')?.checked;
+  const cbHotel = !!document.getElementById('cbHotel')?.checked;
+  const cbDPR = !!document.getElementById('cbDPR')?.checked;
+  const cbTiket = !!document.getElementById('cbTiket')?.checked;
+  const customCosts = typeof getCustomCosts === 'function' ? getCustomCosts() : [];
+  const ppkNama = document.getElementById('cfg_ppkNama')?.value || '';
+  const ppkNip = document.getElementById('cfg_ppkNip')?.value || '';
+  const ppkJabatan = document.getElementById('cfg_ppkJabatan')?.value || '';
+  const bendNama = document.getElementById('cfg_bendNama')?.value || '';
+  const bendNip = document.getElementById('cfg_bendNip')?.value || '';
 
   const showUH = cbUH || rows.some(row => row.biaya.uh > 0);
 
@@ -980,21 +1000,21 @@ function renderRekapSPT() {
     return;
   }
 
-  const sbm = getSBM();
-  const selectedEmps = [...selectedEmpIds].map(id => employees.find(emp => emp.id === id));
-  const satker = document.getElementById('cfg_satker').value;
-  const kodeSatker = document.getElementById('cfg_kodeSatker').value;
-  const kodeKegiatan = document.getElementById('kodeKegiatan').value;
-  const kodeSubKegiatan = document.getElementById('kodeSubKegiatan').value;
-  const mak = document.getElementById('mak').value;
-  const kegiatan = document.getElementById('cfg_kegiatan').value;
-  const kotaTeks = document.getElementById('kotaTujuan').value.trim();
-  const kotaTujuan = getTujuanDisplay(kotaTeks);
-  const tanggalSPT = formatTgl(document.getElementById('tglST').value);
-  const nomorSPT = document.getElementById('noST').value || '-';
-  const ppkNama = document.getElementById('cfg_ppkNama').value;
-  const ppkNip = document.getElementById('cfg_ppkNip').value;
-  const ppkJabatan = document.getElementById('cfg_ppkJabatan').value;
+  const sbm = typeof getSBM === 'function' ? getSBM() : {};
+  const selectedEmps = [...selectedEmpIds].map(id => employees.find(emp => emp.id === id)).filter(Boolean);
+  const satker = document.getElementById('cfg_satker')?.value || '';
+  const kodeSatker = document.getElementById('cfg_kodeSatker')?.value || '';
+  const kodeKegiatan = document.getElementById('kodeKegiatan')?.value || '';
+  const kodeSubKegiatan = document.getElementById('kodeSubKegiatan')?.value || '';
+  const mak = document.getElementById('mak')?.value || '';
+  const kegiatan = document.getElementById('cfg_kegiatan')?.value || '';
+  const kotaTeks = (document.getElementById('kotaTujuan')?.value || '').trim();
+  const kotaTujuan = typeof getTujuanDisplay === 'function' ? getTujuanDisplay(kotaTeks) : kotaTeks;
+  const tanggalSPT = typeof formatTgl === 'function' ? formatTgl(document.getElementById('tglST')?.value) : '';
+  const nomorSPT = document.getElementById('noST')?.value || '-';
+  const ppkNama = document.getElementById('cfg_ppkNama')?.value || '';
+  const ppkNip = document.getElementById('cfg_ppkNip')?.value || '';
+  const ppkJabatan = document.getElementById('cfg_ppkJabatan')?.value || '';
 
   out.innerHTML = `
     <section class="rekap-spt-area">
@@ -1064,24 +1084,24 @@ function renderNominatif() {
     out.innerHTML = '<div class="alert-warn">⚠️ Belum ada pegawai yang dipilih. Kembali ke tab <b>Input Perjalanan</b> dan pilih pegawai terlebih dahulu.</div>';
     return;
   }
-  const sbm = getSBM();
-  const tglBrkt = document.getElementById('tglBerangkat').value;
-  const tglKmb = document.getElementById('tglKembali').value;
-  const kotaTeks = document.getElementById('kotaTujuan').value.trim();
-  const kotaTujuan = getTujuanDisplay(kotaTeks);
-  const satker = document.getElementById('cfg_satker').value;
-  const kodeSatker = document.getElementById('cfg_kodeSatker').value;
-  const kodeKeg = document.getElementById('kodeKegiatan').value;
-  const kodeSubKeg = document.getElementById('kodeSubKegiatan').value;
-  const mak = document.getElementById('mak').value;
-  const kegiatan = document.getElementById('cfg_kegiatan').value;
-  const bank = document.getElementById('cfg_bank').value;
-  const ppkNama = document.getElementById('cfg_ppkNama').value;
-  const ppkNip = document.getElementById('cfg_ppkNip').value;
-  const bendNama = document.getElementById('cfg_bendNama').value;
-  const bendNip = document.getElementById('cfg_bendNip').value;
+  const sbm = typeof getSBM === 'function' ? getSBM() : {};
+  const tglBrkt = document.getElementById('tglBerangkat')?.value || '';
+  const tglKmb = document.getElementById('tglKembali')?.value || '';
+  const kotaTeks = (document.getElementById('kotaTujuan')?.value || '').trim();
+  const kotaTujuan = typeof getTujuanDisplay === 'function' ? getTujuanDisplay(kotaTeks) : kotaTeks;
+  const satker = document.getElementById('cfg_satker')?.value || '';
+  const kodeSatker = document.getElementById('cfg_kodeSatker')?.value || '';
+  const kodeKeg = document.getElementById('kodeKegiatan')?.value || '';
+  const kodeSubKeg = document.getElementById('kodeSubKegiatan')?.value || '';
+  const mak = document.getElementById('mak')?.value || '';
+  const kegiatan = document.getElementById('cfg_kegiatan')?.value || '';
+  const bank = document.getElementById('cfg_bank')?.value || '';
+  const ppkNama = document.getElementById('cfg_ppkNama')?.value || '';
+  const ppkNip = document.getElementById('cfg_ppkNip')?.value || '';
+  const bendNama = document.getElementById('cfg_bendNama')?.value || '';
+  const bendNip = document.getElementById('cfg_bendNip')?.value || '';
 
-  const selectedEmps = [...selectedEmpIds].map(id => employees.find(e => e.id === id));
+  const selectedEmps = [...selectedEmpIds].map(id => employees.find(e => e.id === id)).filter(Boolean);
 
   // Calculate totals
   let grandTotal = 0;
@@ -1281,36 +1301,22 @@ function mergeRincianKeterangan(rowsHtml) {
   return tbody.innerHTML;
 }
 
-function renderRincian() {
-  const sel = document.getElementById('rincianPegawai');
-  const out = document.getElementById('rincianOut');
-  if (!out) return;
-  if (!sel || !sel.value) {
-    if (typeof selectedEmpIds !== 'undefined' && selectedEmpIds.size > 0 && sel) {
-      sel.value = String([...selectedEmpIds][0]);
-    } else {
-      out.innerHTML = '<div class="alert-warn no-print">⚠️ Silakan pilih pegawai untuk melihat rincian biaya.</div>';
-      return;
-    }
-  }
-  const id = parseInt(sel.value);
-  if (isNaN(id)) { out.innerHTML = ''; return; }
-  const emp = employees.find(e => e.id === id);
-  if (!emp) { out.innerHTML = ''; return; }
-  const sbm = getSBM();
-  const { days, nights } = getEmpDays(emp.id);
-  const b = hitungBiaya(emp);
-  const kotaTeks = document.getElementById('kotaTujuan').value.trim();
-  const kotaTujuan = getTujuanDisplay(kotaTeks);
-  const rawSPD = (spdPerEmployee[emp.id] || '').trim();
+function buildRincianHtml(emp) {
+  if (!emp) return '';
+  const sbm = typeof getSBM === 'function' ? getSBM() : null;
+  const { days, nights } = typeof getEmpDays === 'function' ? getEmpDays(emp.id) : { days: 1, nights: 0 };
+  const b = typeof hitungBiaya === 'function' ? hitungBiaya(emp) : { total: 0, customCosts: [] };
+  const kotaTeks = (document.getElementById('kotaTujuan')?.value || '').trim();
+  const kotaTujuan = typeof getTujuanDisplay === 'function' ? getTujuanDisplay(kotaTeks) : kotaTeks;
+  const rawSPD = (typeof spdPerEmployee !== 'undefined' && spdPerEmployee[emp.id] ? spdPerEmployee[emp.id].trim() : '');
   const noSPD = rawSPD || '<span class="spd-missing-badge">[No. SPD Wajib Diisi]</span>';
-  const tglSPD = document.getElementById('tglSPD').value;
-  const kotaAsal = document.getElementById('cfg_kotaAsal').value;
-  const ppkNama = document.getElementById('cfg_ppkNama').value;
-  const ppkNip = document.getElementById('cfg_ppkNip').value;
-  const bendNama = document.getElementById('cfg_bendNama').value;
-  const bendNip = document.getElementById('cfg_bendNip').value;
-  const agenda = document.getElementById('agenda').value || '-';
+  const tglSPD = document.getElementById('tglSPD')?.value || '';
+  const kotaAsal = document.getElementById('cfg_kotaAsal')?.value || 'Jakarta';
+  const ppkNama = document.getElementById('cfg_ppkNama')?.value || '';
+  const ppkNip = document.getElementById('cfg_ppkNip')?.value || '';
+  const bendNama = document.getElementById('cfg_bendNama')?.value || '';
+  const bendNip = document.getElementById('cfg_bendNip')?.value || '';
+  const agenda = document.getElementById('agenda')?.value || '-';
   const cfg = typeof getEmployeeCostConfig === 'function' ? getEmployeeCostConfig(emp.id) : null;
   const cbUH = cfg ? cfg.uhActive : (document.getElementById('cbUH')?.checked ?? true);
   const cbHotel = cfg ? cfg.hotelActive : (document.getElementById('cbHotel')?.checked ?? false);
@@ -1568,8 +1574,8 @@ function renderRincian() {
     }
   }
 
-  document.getElementById('rincianOut').innerHTML = `
-    <div class="rincian-doc">
+  return `
+    <div class="rincian-doc" style="background:#fff; color:#000;">
       <h3>RINCIAN &nbsp; PERJALANAN &nbsp; DINAS</h3>
       <table class="rincian-meta-top">
         <tr><td>Lampiran SPD No.</td><td>:</td><td><span class="live-editable" id="rincianDocSpd" contenteditable="true" oninput="onRincianDocSpdInput(this)">${noSPD}</span></td></tr>
@@ -1635,8 +1641,65 @@ function renderRincian() {
         <div>${ppkNip}</div>
       </div>
     </div>
+  `;
+}
+
+function renderRincian(targetEmp) {
+  const sel = document.getElementById('rincianPegawai');
+  const out = document.getElementById('rincianOut');
+  if (!out) return;
+  let emp = targetEmp;
+  if (!emp) {
+    if (!sel || !sel.value) {
+      if (typeof selectedEmpIds !== 'undefined' && selectedEmpIds.size > 0 && sel) {
+        sel.value = String([...selectedEmpIds][0]);
+      } else {
+        out.innerHTML = '<div class="alert-warn no-print">⚠️ Silakan pilih pegawai untuk melihat rincian biaya.</div>';
+        return;
+      }
+    }
+    const id = parseInt(sel.value);
+    if (isNaN(id)) { out.innerHTML = ''; return; }
+    emp = (typeof employees !== 'undefined' ? employees : []).find(e => e.id === id);
+  }
+  if (!emp) { out.innerHTML = ''; return; }
+  out.innerHTML = buildRincianHtml(emp) + `
     <div class="btn-row no-print" style="margin-top:16px;justify-content:center">
       <button class="btn btn-success" onclick="printRincian()">🖨️ Print Rincian</button>
+    </div>
+  `;
+}
+
+function buildDPRHtml(emp, extraClass = '') {
+  const isKKP = ((document.getElementById('metodePembayaran')?.value || document.getElementById('lk_metodePembayaran')?.value || 'LS') === 'KKP');
+  return isKKP ? buildDPRKKPHtml(emp, extraClass) : buildDPRLSHtml(emp, extraClass);
+}
+
+function isDPRAvailableForTrip() {
+  const isKKP = ((document.getElementById('metodePembayaran')?.value || document.getElementById('lk_metodePembayaran')?.value || 'LS') === 'KKP');
+  const isDki = typeof isTripToDki === 'function' ? isTripToDki() : false;
+  return isKKP || isDki;
+}
+
+function buildAllDocsHtmlForEmp(emp) {
+  if (!emp) return '';
+  const sections = [];
+  // 1. Kuitansi Perorangan
+  sections.push(buildKuitansiHtml(emp));
+  // 2. Rekap / Rincian Biaya Perorangan (dan DPR jika ada)
+  sections.push(buildRincianHtml(emp));
+  if (typeof isDPRAvailableForTrip === 'function' && isDPRAvailableForTrip()) {
+    sections.push(buildDPRHtml(emp));
+  }
+  // 3. SPPD Perorangan
+  sections.push(buildSPPDHtml(emp));
+  return `
+    <div class="emp-bundle-doc" style="background:#fff; color:#000;">
+      ${sections.map((sec, idx) => `
+        <div class="doc-page-section" style="${idx > 0 ? 'page-break-before: always; margin-top: 24px;' : ''}">
+          ${sec}
+        </div>
+      `).join('')}
     </div>
   `;
 }
@@ -1913,10 +1976,12 @@ function buildDPRKKPHtml(emp, extraClass = '') {
           </tr>
   `;
 
+  const logoSrc = (typeof LOGO_PKP_BASE64 !== 'undefined' && LOGO_PKP_BASE64) ? LOGO_PKP_BASE64 : 'logo-pkp.webp';
+
   return `
     <section class="dpr-kkp-area${extraClass}">
       <header class="kuitansi-perorangan-header lembar-kendali-header">
-        <img src="logo-pkp.webp" alt="" class="kuitansi-perorangan-logo lembar-kendali-logo">
+        <img src="${logoSrc}" alt="" class="kuitansi-perorangan-logo lembar-kendali-logo">
         <div>
           <div class="kuitansi-perorangan-ministry lembar-kendali-ministry">KEMENTERIAN PERUMAHAN DAN KAWASAN PERMUKIMAN <span>REPUBLIK INDONESIA</span></div>
           <strong class="lembar-kendali-secretariat">SEKRETARIAT JENDERAL</strong>
@@ -2113,10 +2178,12 @@ function buildDPRLSHtml(emp, extraClass = '') {
       </tr>`;
   }
 
+  const logoSrc = (typeof LOGO_PKP_BASE64 !== 'undefined' && LOGO_PKP_BASE64) ? LOGO_PKP_BASE64 : 'logo-pkp.webp';
+
   return `
     <section class="dpr-area${extraClass}">
       <header class="kuitansi-perorangan-header lembar-kendali-header">
-        <img src="logo-pkp.webp" alt="" class="kuitansi-perorangan-logo lembar-kendali-logo">
+        <img src="${logoSrc}" alt="" class="kuitansi-perorangan-logo lembar-kendali-logo">
         <div>
           <div class="kuitansi-perorangan-ministry lembar-kendali-ministry">KEMENTERIAN PERUMAHAN DAN KAWASAN PERMUKIMAN <span>REPUBLIK INDONESIA</span></div>
           <strong class="lembar-kendali-secretariat">SEKRETARIAT JENDERAL</strong>

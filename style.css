@@ -10220,3 +10220,273 @@ html[data-theme="dark"] .btn-pmk-hal-link:hover {
   border-color: #6ee7b7 !important;
 }
 
+/* ==========================================================================
+   EXPORT PROGRESS MODAL & PDF PACKAGING
+   ========================================================================== */
+.export-progress-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(6, 14, 26, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.export-progress-card {
+  position: relative;
+  width: 100%;
+  max-width: 580px;
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 26px 24px;
+  box-shadow: 0 30px 70px -20px rgba(6, 18, 36, 0.5), 0 0 0 1px rgba(140, 170, 220, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: exportCardPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes exportCardPop {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.export-progress-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.export-progress-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  flex-shrink: 0;
+}
+
+.export-progress-title-wrap h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.export-progress-title-wrap p {
+  margin: 3px 0 0;
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+  word-break: break-word;
+}
+
+.export-progress-bar-wrap {
+  width: 100%;
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.export-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #3b82f6);
+  border-radius: 99px;
+  transition: width 0.3s ease;
+}
+
+.export-progress-status {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.export-progress-file-list {
+  max-height: 220px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.export-progress-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px;
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #edf2f7;
+  font-size: 12.5px;
+}
+
+.export-progress-item .export-file-name {
+  flex: 1;
+  font-weight: 600;
+  color: #1e293b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.export-progress-item .export-file-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: #059669;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 6px;
+  padding: 2px 8px;
+}
+
+.export-progress-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 6px;
+  padding-top: 14px;
+  border-top: 1px solid #e2e8f0;
+  flex-wrap: wrap;
+}
+
+/* Dark Mode */
+html[data-theme="dark"] .export-progress-card {
+  background: #111c30;
+  box-shadow: 0 30px 70px -20px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+html[data-theme="dark"] .export-progress-title-wrap h3 {
+  color: #f1f5f9;
+}
+
+html[data-theme="dark"] .export-progress-title-wrap p {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .export-progress-bar-wrap {
+  background: #1e293b;
+}
+
+html[data-theme="dark"] .export-progress-status {
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .export-progress-file-list {
+  background: #0d1524;
+  border-color: #1e293b;
+}
+
+html[data-theme="dark"] .export-progress-item {
+  background: #152238;
+  border-color: #1e293b;
+}
+
+html[data-theme="dark"] .export-progress-item .export-file-name {
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .export-progress-actions {
+  border-color: #1e293b;
+}
+
+/* ==========================================================================
+   TOPBAR & FLOATING QUICK ACTIONS (SIMPAN & MUAT EXCEL TANPA SCROLL)
+   ========================================================================== */
+.topbar-excel-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.topbar-excel-group .btn {
+  height: 38px;
+  padding: 0 15px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+  box-shadow: var(--shadow-sm);
+  transition: all .18s ease;
+  cursor: pointer;
+}
+
+.topbar-excel-group .btn .ico {
+  width: 14px;
+  height: 14px;
+}
+
+.topbar-excel-group .btn-success {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff !important;
+  border: 1px solid #059669;
+}
+
+.topbar-excel-group .btn-success:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+}
+
+.topbar-excel-group .btn-secondary {
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line-strong);
+}
+
+.topbar-excel-group .btn-secondary:hover {
+  background: var(--surface-2);
+  transform: translateY(-1px);
+  border-color: #8fb8ff;
+  color: var(--brand);
+}
+
+html[data-theme="dark"] .topbar-excel-group .btn-secondary {
+  background: var(--surface-2);
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+
+html[data-theme="dark"] .topbar-excel-group .btn-secondary:hover {
+  background: #1a2c4a;
+  border-color: #3b82f6;
+  color: #bfdbfe;
+}
+
+@media screen and (max-width: 900px) {
+  .topbar-excel-group .btn span {
+    display: none;
+  }
+  .topbar-excel-group .btn {
+    padding: 0 10px;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .topbar-excel-group {
+    display: none;
+  }
+}
+
+
+

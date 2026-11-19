@@ -1,4 +1,4 @@
-// =====================================================================
+﻿// =====================================================================
 // DATA & STATE (PerdinKu)
 // Data pegawai, data master SBM, dan state aplikasi
 // =====================================================================
@@ -6,6 +6,8 @@
 // =====================================================================
 // DATA PEGAWAI (dari sheet KARYAWAN)
 // =====================================================================
+const LOGO_PKP_BASE64 = 'data:image/webp;base64,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';
+
 const employees = [
   { id: 0, nama: 'Yenita Sari, S.H., M.H.', nip: '197905172002122002', pangkat: 'Pembina Tingkat 1', gol: 'IV/b', jabatan: 'Kepala Biro Komunikasi Publik' },
   { id: 1, nama: 'Arif Fajar Alfalaqy, S.Sos., M.Sc.', nip: '198305152008011009', pangkat: 'Pembina', gol: 'IV/a', jabatan: 'Kabag. Pengelolaan Dokumentasi dan Hubungan Media' },
@@ -251,6 +253,129 @@ function terbilang(angka) {
   }
 
   return helper(angka).trim() + ' Rupiah';
+}
+
+function toDDMMYYYY(str) {
+  if (!str) return '';
+  const m = String(str).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) {
+    return `${m[3]}-${m[2]}-${m[1]}`;
+  }
+  const d = new Date(str);
+  if (!isNaN(d.getTime())) {
+    const day = String(d.getDate()).padStart(2, '0');
+    const mon = String(d.getMonth() + 1).padStart(2, '0');
+    const yr = d.getFullYear();
+    return `${day}-${mon}-${yr}`;
+  }
+  return String(str);
+}
+
+function formatTglKegiatan(str1, str2) {
+  if (!str1 && !str2) {
+    const now = new Date();
+    const d = String(now.getDate()).padStart(2, '0');
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const y = now.getFullYear();
+    return `${d}-${m}-${y}`;
+  }
+  if (str1 && !str2) return toDDMMYYYY(str1);
+  if (!str1 && str2) return toDDMMYYYY(str2);
+
+  const m1 = String(str1).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  const m2 = String(str2).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m1 || !m2) {
+    const f1 = toDDMMYYYY(str1);
+    const f2 = toDDMMYYYY(str2);
+    return f1 === f2 ? f1 : `${f1} - ${f2}`;
+  }
+
+  const y1 = m1[1], mon1 = m1[2], day1 = m1[3];
+  const y2 = m2[1], mon2 = m2[2], day2 = m2[3];
+
+  if (y1 === y2 && mon1 === mon2 && day1 === day2) {
+    return `${day1}-${mon1}-${y1}`;
+  } else if (y1 === y2 && mon1 === mon2) {
+    const dStart = parseInt(day1, 10) <= parseInt(day2, 10) ? day1 : day2;
+    const dEnd = parseInt(day1, 10) <= parseInt(day2, 10) ? day2 : day1;
+    return `${dStart}-${dEnd}-${mon1}-${y1}`;
+  } else if (y1 === y2) {
+    return `${day1}-${mon1}-${y1} - ${day2}-${mon2}-${y1}`;
+  } else {
+    return `${day1}-${mon1}-${y1} - ${day2}-${mon2}-${y2}`;
+  }
+}
+
+function getNamaDepan(nama) {
+  if (!nama) return 'Pegawai';
+  const clean = String(nama).split(',')[0].trim();
+  const words = clean.split(/\s+/).filter(w => !/^(dr\.|ir\.|drs\.|dra\.|prof\.|h\.|hj\.)/i.test(w));
+  return words[0] || clean.split(/\s+/)[0] || 'Pegawai';
+}
+
+function getNamaPelakuPerjadin(empIds) {
+  if (!empIds || !empIds.length) return 'Pegawai';
+  const empList = (typeof employees !== 'undefined' && Array.isArray(employees)) ? employees : [];
+  const names = empIds.map(id => {
+    const emp = empList.find(e => e.id === id);
+    return emp ? getNamaDepan(emp.nama) : '';
+  }).filter(Boolean);
+
+  if (names.length === 0) return 'Pegawai';
+  if (names.length === 1) return names[0];
+  if (names.length === 2) return `${names[0]}, ${names[1]}`;
+
+  const combined = names.join(', ');
+  if (names.length <= 3 && combined.length <= 40) {
+    return combined;
+  }
+  return `${names[0]} dkk dan ${names.length - 1} Orang Lainnya`;
+}
+
+function getPerjadinNamingInfo() {
+  const isKKP = ((document.getElementById('metodePembayaran')?.value || document.getElementById('lk_metodePembayaran')?.value || 'LS') === 'KKP');
+  const prefix = isKKP ? 'PERJADIN KKP' : 'PERJADIN';
+
+  const tgl1 = document.getElementById('tglBerangkat')?.value;
+  const tgl2 = document.getElementById('tglKembali')?.value;
+  const tglKegiatan = formatTglKegiatan(tgl1, tgl2);
+
+  const empIds = (typeof selectedEmpIds !== 'undefined' && selectedEmpIds) ? [...selectedEmpIds] : [];
+  let grandTotal = 0;
+  empIds.forEach(id => {
+    const emp = (typeof employees !== 'undefined' && Array.isArray(employees)) ? employees.find(e => e.id === id) : null;
+    if (emp && typeof hitungBiaya === 'function') {
+      grandTotal += (hitungBiaya(emp).total || 0);
+    }
+  });
+  const nominalStr = (typeof rp === 'function') ? rp(grandTotal) : `Rp ${grandTotal}`;
+  const pelakuStr = getNamaPelakuPerjadin(empIds);
+
+  const kotaTeks = (document.getElementById('kotaTujuan')?.value || '').trim();
+  const provTeks = (document.getElementById('provinsiTujuan')?.value || '').trim();
+  const lokasi = (kotaTeks || provTeks || 'DINAS').toUpperCase();
+
+  // Format Excel: PERJADIN/PERJADIN KKP_tanggal kegiatan_Nominal_nama pelaku perjadin
+  const rawExcelBase = `${prefix}_${tglKegiatan}_${nominalStr}_${pelakuStr}`;
+  const safeExcelBase = rawExcelBase.replace(/[\\/:*?"<>|]+/g, '-').replace(/\s+/g, ' ').trim();
+  const excelFileName = `${safeExcelBase}.xlsx`;
+
+  // Folder: PERJADIN "tgl kegiatan" LOKASI
+  const rawFolder = `PERJADIN ${tglKegiatan} ${lokasi}`;
+  const safeFolderName = rawFolder.replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim();
+
+  return {
+    isKKP,
+    prefix,
+    tglKegiatan,
+    nominalStr,
+    pelakuStr,
+    lokasi,
+    excelFileName,
+    folderName: safeFolderName,
+    grandTotal,
+    empIds
+  };
 }
 
 
@@ -3576,45 +3701,35 @@ function saveKuitansiPeroranganSPD() {
   renderKuitansiPerorangan();
 }
 
-function renderKuitansiPerorangan() {
-  const out = document.getElementById('kuitansiPeroranganOut');
-  const select = document.getElementById('kuitansiPeroranganPegawai');
-  if (select.value === '') {
-    out.innerHTML = '';
-    return;
-  }
-  const id = Number(select.value);
-  const emp = employees.find(employee => employee.id === id);
-  if (!emp) {
-    out.innerHTML = '';
-    return;
-  }
-
-  const biaya = hitungBiaya(emp);
-  const tanggalSPDValue = document.getElementById('tglSPD').value || document.getElementById('tglST').value;
+function buildKuitansiHtml(emp) {
+  if (!emp) return '';
+  const biaya = typeof hitungBiaya === 'function' ? hitungBiaya(emp) : { total: 0 };
+  const tanggalSPDValue = document.getElementById('tglSPD')?.value || document.getElementById('tglST')?.value;
   const tanggalSPD = formatTgl(tanggalSPDValue);
   const date = tanggalSPDValue ? new Date(`${tanggalSPDValue}T00:00:00`) : new Date();
   const tahun = date.getFullYear();
-  const nomorBukti = document.getElementById('cfg_noBuktiKuitansi').value;
-  const satker = document.getElementById('cfg_satker').value;
-  const alamat = document.getElementById('cfg_alamatKuitansi').value;
-  const kotaAsal = document.getElementById('cfg_kotaAsal').value;
-  const kotaTeks = document.getElementById('kotaTujuan').value.trim();
-  const tujuan = getTujuanDisplay(kotaTeks);
+  const nomorBukti = document.getElementById('cfg_noBuktiKuitansi')?.value || '';
+  const satker = document.getElementById('cfg_satker')?.value || '';
+  const alamat = document.getElementById('cfg_alamatKuitansi')?.value || '';
+  const kotaAsal = document.getElementById('cfg_kotaAsal')?.value || '';
+  const kotaTeks = (document.getElementById('kotaTujuan')?.value || '').trim();
+  const tujuan = typeof getTujuanDisplay === 'function' ? getTujuanDisplay(kotaTeks) : kotaTeks;
   const paymentText = `Biaya Perjalanan Dinas atas nama ${emp.nama}`;
-  const mak = `${document.getElementById('kodeKegiatan').value} ${document.getElementById('kodeSubKegiatan').value} ${document.getElementById('mak').value}`;
-  const rawSPD = (spdPerEmployee[emp.id] || '').trim();
+  const mak = `${document.getElementById('kodeKegiatan')?.value || ''} ${document.getElementById('kodeSubKegiatan')?.value || ''} ${document.getElementById('mak')?.value || ''}`.trim();
+  const rawSPD = (typeof spdPerEmployee !== 'undefined' && spdPerEmployee[emp.id]) ? spdPerEmployee[emp.id].trim() : '';
   const noSPD = rawSPD || '<span class="spd-missing-badge">[No. SPD Wajib Diisi]</span>';
-  const ppkNama = document.getElementById('cfg_ppkNama').value;
-  const ppkNip = document.getElementById('cfg_ppkNip').value;
-  const bendNama = document.getElementById('cfg_bendNama').value;
-  const bendNip = document.getElementById('cfg_bendNip').value;
-  const isKKP = (document.getElementById('metodePembayaran')?.value || document.getElementById('lk_metodePembayaran')?.value || 'LS') === 'KKP';
+  const ppkNama = document.getElementById('cfg_ppkNama')?.value || '';
+  const ppkNip = document.getElementById('cfg_ppkNip')?.value || '';
+  const ppkJabatan = document.getElementById('cfg_ppkJabatan')?.value || '';
+  const bendNama = document.getElementById('cfg_bendNama')?.value || '';
+  const bendNip = document.getElementById('cfg_bendNip')?.value || '';
+  const isKKP = ((document.getElementById('metodePembayaran')?.value || document.getElementById('lk_metodePembayaran')?.value || 'LS') === 'KKP');
+  const logoSrc = (typeof LOGO_PKP_BASE64 !== 'undefined' && LOGO_PKP_BASE64) ? LOGO_PKP_BASE64 : 'logo-pkp.webp';
 
-  out.innerHTML = `
+  return `
     <section class="kuitansi-perorangan-area">
       <header class="kuitansi-perorangan-header lembar-kendali-header">
-        <img src="logo-pkp.webp" alt="" class="kuitansi-perorangan-logo lembar-kendali-logo">
+        <img src="${logoSrc}" alt="" class="kuitansi-perorangan-logo lembar-kendali-logo">
         <div>
           <div class="kuitansi-perorangan-ministry lembar-kendali-ministry">KEMENTERIAN PERUMAHAN DAN KAWASAN PERMUKIMAN <span>REPUBLIK INDONESIA</span></div>
           <strong class="lembar-kendali-secretariat">SEKRETARIAT JENDERAL</strong>
@@ -3631,7 +3746,7 @@ function renderKuitansiPerorangan() {
 
       <h2 class="kuitansi-perorangan-title">${isKKP ? 'KUITANSI KKP' : 'K W I T A N S I'}</h2>
       <table class="kuitansi-perorangan-details">
-        <tr><td>Sudah Terima dari</td><td>:</td><td>${jabatanDuaBaris(document.getElementById('cfg_ppkJabatan').value)}</td></tr>
+        <tr><td>Sudah Terima dari</td><td>:</td><td>${jabatanDuaBaris(ppkJabatan)}</td></tr>
         <tr><td>Uang Sebesar</td><td>:</td><td>Rp. &nbsp; ${Number(biaya.total).toLocaleString('id-ID')}</td></tr>
         <tr><td>Terbilang</td><td>:</td><td><em>${terbilang(biaya.total)}</em></td></tr>
         <tr><td>Untuk Pembayaran</td><td>:</td><td>${paymentText}</td></tr>
@@ -3670,6 +3785,26 @@ function renderKuitansiPerorangan() {
       </div>
     </section>
   `;
+}
+
+function renderKuitansiPerorangan(targetEmp) {
+  const out = document.getElementById('kuitansiPeroranganOut');
+  if (!out) return;
+  const select = document.getElementById('kuitansiPeroranganPegawai');
+  let emp = targetEmp;
+  if (!emp) {
+    if (!select || select.value === '') {
+      out.innerHTML = '';
+      return;
+    }
+    const id = Number(select.value);
+    emp = (typeof employees !== 'undefined' ? employees : []).find(employee => employee.id === id);
+  }
+  if (!emp) {
+    out.innerHTML = '';
+    return;
+  }
+  out.innerHTML = buildKuitansiHtml(emp);
 }
 
 function printKuitansiPerorangan() {
@@ -3747,46 +3882,35 @@ function saveSPPDNo() {
   renderSPPDPerorangan();
 }
 
-function renderSPPDPerorangan() {
-  const out = document.getElementById('sppdOut');
-  const select = document.getElementById('sppdPegawai');
-  if (select.value === '') {
-    out.innerHTML = '';
-    return;
-  }
-  const emp = employees.find(employee => employee.id === Number(select.value));
-  if (!emp) {
-    out.innerHTML = '';
-    return;
-  }
-
-  const sbm = getSBM();
-  const empSegments = getEmpSegments(emp.id);
-  const { days } = getEmpDays(emp.id);
-  const satker = document.getElementById('cfg_satker').value;
-  const alamat = document.getElementById('cfg_alamatKuitansi').value;
-  const kotaAsal = document.getElementById('cfg_kotaAsal').value;
-  const ppkNama = document.getElementById('cfg_ppkNama').value;
-  const ppkNip = document.getElementById('cfg_ppkNip').value;
-  const ppkJabatan = document.getElementById('cfg_ppkJabatan').value;
-  const kegiatan = document.getElementById('cfg_kegiatan').value;
-  const kodeKegiatan = document.getElementById('kodeKegiatan').value;
-  const kodeSubKegiatan = document.getElementById('kodeSubKegiatan').value;
-  const mak = document.getElementById('mak').value;
-  const agenda = document.getElementById('agenda').value.trim() || '-';
-  const kotaTeks = document.getElementById('kotaTujuan').value.trim();
-  const tujuan = getTujuanDisplay(kotaTeks);
-  const rawSPD = (spdPerEmployee[emp.id] || '').trim();
+function buildSPPDHtml(emp) {
+  if (!emp) return '';
+  const sbm = typeof getSBM === 'function' ? getSBM() : null;
+  const empSegments = typeof getEmpSegments === 'function' ? getEmpSegments(emp.id) : [];
+  const { days } = typeof getEmpDays === 'function' ? getEmpDays(emp.id) : { days: 1 };
+  const satker = document.getElementById('cfg_satker')?.value || '';
+  const alamat = document.getElementById('cfg_alamatKuitansi')?.value || '';
+  const kotaAsal = document.getElementById('cfg_kotaAsal')?.value || '';
+  const ppkNama = document.getElementById('cfg_ppkNama')?.value || '';
+  const ppkNip = document.getElementById('cfg_ppkNip')?.value || '';
+  const ppkJabatan = document.getElementById('cfg_ppkJabatan')?.value || '';
+  const kegiatan = document.getElementById('cfg_kegiatan')?.value || '';
+  const kodeKegiatan = document.getElementById('kodeKegiatan')?.value || '';
+  const kodeSubKegiatan = document.getElementById('kodeSubKegiatan')?.value || '';
+  const mak = document.getElementById('mak')?.value || '';
+  const agenda = (document.getElementById('agenda')?.value || '').trim() || '-';
+  const kotaTeks = (document.getElementById('kotaTujuan')?.value || '').trim();
+  const tujuan = typeof getTujuanDisplay === 'function' ? getTujuanDisplay(kotaTeks) : kotaTeks;
+  const rawSPD = (typeof spdPerEmployee !== 'undefined' && spdPerEmployee[emp.id]) ? spdPerEmployee[emp.id].trim() : '';
   const noSPD = rawSPD || '<span class="spd-missing-badge">[No. SPD Wajib Diisi]</span>';
-  const tanggalSPD = formatTgl(document.getElementById('tglSPD').value);
-  const tripDays = expandTripDays(empSegments);
-  const tripContiguous = tripDays.length > 0 && tripDays.length === daySpan(tripDays[0], tripDays[tripDays.length - 1]);
+  const tanggalSPD = formatTgl(document.getElementById('tglSPD')?.value);
+  const tripDays = typeof expandTripDays === 'function' ? expandTripDays(empSegments) : [];
+  const tripContiguous = tripDays.length > 0 && tripDays.length === (typeof daySpan === 'function' ? daySpan(tripDays[0], tripDays[tripDays.length - 1]) : tripDays.length);
   const tglBerangkat = !tripContiguous && tripDays.length > 1
-    ? `${formatTanggalList(tripDays.slice(0, -1))}, dan`
-    : formatTgl(empSegments.length ? empSegments[0].start : document.getElementById('tglBerangkat').value);
-  const tglKembali = formatTgl(tripDays.length ? tripDays[tripDays.length - 1] : (empSegments.length ? empSegments[empSegments.length - 1].end : document.getElementById('tglKembali').value));
-  const noST = document.getElementById('noST').value.trim() || '-';
-  const tglST = formatTgl(document.getElementById('tglST').value);
+    ? `${typeof formatTanggalList === 'function' ? formatTanggalList(tripDays.slice(0, -1)) : ''}, dan`
+    : formatTgl(empSegments.length ? empSegments[0].start : document.getElementById('tglBerangkat')?.value);
+  const tglKembali = formatTgl(tripDays.length ? tripDays[tripDays.length - 1] : (empSegments.length ? empSegments[empSegments.length - 1].end : document.getElementById('tglKembali')?.value));
+  const noST = (document.getElementById('noST')?.value || '').trim() || '-';
+  const tglST = formatTgl(document.getElementById('tglST')?.value);
   const pangkat = emp.pangkat && emp.pangkat !== '-' ? emp.pangkat : '-';
   const hasPesawatCost = typeof getCustomCosts === 'function' && getCustomCosts().some(c => /pesawat|udara/i.test(c.name) || (c.kind === 'tiket' && /pesawat/i.test(c.name)));
   const transport = (document.getElementById('cbTiket')?.checked || hasPesawatCost) ? 'Pesawat Udara' : 'Transportasi Darat';
@@ -3794,11 +3918,12 @@ function renderSPPDPerorangan() {
   const pengikutRows = [1, 2, 3, 4, 5].map(() => `
         <tr><td></td><td></td><td></td></tr>`).join('');
   const pengikutNums = [1, 2, 3, 4, 5].map(number => `<tr><td>${number}.</td></tr>`).join('');
+  const logoSrc = (typeof LOGO_PKP_BASE64 !== 'undefined' && LOGO_PKP_BASE64) ? LOGO_PKP_BASE64 : 'logo-pkp.webp';
 
-  out.innerHTML = `
+  return `
     <section class="sppd-area">
       <header class="kuitansi-perorangan-header lembar-kendali-header">
-        <img src="logo-pkp.webp" alt="" class="kuitansi-perorangan-logo lembar-kendali-logo">
+        <img src="${logoSrc}" alt="" class="kuitansi-perorangan-logo lembar-kendali-logo">
         <div>
           <div class="kuitansi-perorangan-ministry lembar-kendali-ministry">KEMENTERIAN PERUMAHAN DAN KAWASAN PERMUKIMAN <span>REPUBLIK INDONESIA</span></div>
           <strong class="lembar-kendali-secretariat">SEKRETARIAT JENDERAL</strong>
@@ -3868,6 +3993,25 @@ function renderSPPDPerorangan() {
       </div>
     </section>
   `;
+}
+
+function renderSPPDPerorangan(targetEmp) {
+  const out = document.getElementById('sppdOut');
+  if (!out) return;
+  const select = document.getElementById('sppdPegawai');
+  let emp = targetEmp;
+  if (!emp) {
+    if (!select || select.value === '') {
+      out.innerHTML = '';
+      return;
+    }
+    emp = (typeof employees !== 'undefined' ? employees : []).find(employee => employee.id === Number(select.value));
+  }
+  if (!emp) {
+    out.innerHTML = '';
+    return;
+  }
+  out.innerHTML = buildSPPDHtml(emp);
 }
 
 function printSPPDPerorangan() {
@@ -3976,11 +4120,12 @@ function renderLembarKendali() {
     'SP2D (Lembar Dua)',
     'Tanda Tangan pada Link Monitoring Perjadin'
   ];
+  const logoSrc = (typeof LOGO_PKP_BASE64 !== 'undefined' && LOGO_PKP_BASE64) ? LOGO_PKP_BASE64 : 'logo-pkp.webp';
 
   out.innerHTML = `
     <section class="lembar-kendali-area">
       <header class="lembar-kendali-header">
-        <img class="lembar-kendali-logo" src="logo-pkp.webp" alt="">
+        <img class="lembar-kendali-logo" src="${logoSrc}" alt="">
         <div>
           <div class="lembar-kendali-ministry">KEMENTERIAN PERUMAHAN DAN KAWASAN PERMUKIMAN <span>REPUBLIK INDONESIA</span></div>
           <strong class="lembar-kendali-secretariat">SEKRETARIAT JENDERAL</strong>
@@ -4617,36 +4762,22 @@ function mergeRincianKeterangan(rowsHtml) {
   return tbody.innerHTML;
 }
 
-function renderRincian() {
-  const sel = document.getElementById('rincianPegawai');
-  const out = document.getElementById('rincianOut');
-  if (!out) return;
-  if (!sel || !sel.value) {
-    if (typeof selectedEmpIds !== 'undefined' && selectedEmpIds.size > 0 && sel) {
-      sel.value = String([...selectedEmpIds][0]);
-    } else {
-      out.innerHTML = '<div class="alert-warn no-print">⚠️ Silakan pilih pegawai untuk melihat rincian biaya.</div>';
-      return;
-    }
-  }
-  const id = parseInt(sel.value);
-  if (isNaN(id)) { out.innerHTML = ''; return; }
-  const emp = employees.find(e => e.id === id);
-  if (!emp) { out.innerHTML = ''; return; }
-  const sbm = getSBM();
-  const { days, nights } = getEmpDays(emp.id);
-  const b = hitungBiaya(emp);
-  const kotaTeks = document.getElementById('kotaTujuan').value.trim();
-  const kotaTujuan = getTujuanDisplay(kotaTeks);
-  const rawSPD = (spdPerEmployee[emp.id] || '').trim();
+function buildRincianHtml(emp) {
+  if (!emp) return '';
+  const sbm = typeof getSBM === 'function' ? getSBM() : null;
+  const { days, nights } = typeof getEmpDays === 'function' ? getEmpDays(emp.id) : { days: 1, nights: 0 };
+  const b = typeof hitungBiaya === 'function' ? hitungBiaya(emp) : { total: 0, customCosts: [] };
+  const kotaTeks = (document.getElementById('kotaTujuan')?.value || '').trim();
+  const kotaTujuan = typeof getTujuanDisplay === 'function' ? getTujuanDisplay(kotaTeks) : kotaTeks;
+  const rawSPD = (typeof spdPerEmployee !== 'undefined' && spdPerEmployee[emp.id] ? spdPerEmployee[emp.id].trim() : '');
   const noSPD = rawSPD || '<span class="spd-missing-badge">[No. SPD Wajib Diisi]</span>';
-  const tglSPD = document.getElementById('tglSPD').value;
-  const kotaAsal = document.getElementById('cfg_kotaAsal').value;
-  const ppkNama = document.getElementById('cfg_ppkNama').value;
-  const ppkNip = document.getElementById('cfg_ppkNip').value;
-  const bendNama = document.getElementById('cfg_bendNama').value;
-  const bendNip = document.getElementById('cfg_bendNip').value;
-  const agenda = document.getElementById('agenda').value || '-';
+  const tglSPD = document.getElementById('tglSPD')?.value || '';
+  const kotaAsal = document.getElementById('cfg_kotaAsal')?.value || 'Jakarta';
+  const ppkNama = document.getElementById('cfg_ppkNama')?.value || '';
+  const ppkNip = document.getElementById('cfg_ppkNip')?.value || '';
+  const bendNama = document.getElementById('cfg_bendNama')?.value || '';
+  const bendNip = document.getElementById('cfg_bendNip')?.value || '';
+  const agenda = document.getElementById('agenda')?.value || '-';
   const cfg = typeof getEmployeeCostConfig === 'function' ? getEmployeeCostConfig(emp.id) : null;
   const cbUH = cfg ? cfg.uhActive : (document.getElementById('cbUH')?.checked ?? true);
   const cbHotel = cfg ? cfg.hotelActive : (document.getElementById('cbHotel')?.checked ?? false);
@@ -4904,8 +5035,8 @@ function renderRincian() {
     }
   }
 
-  document.getElementById('rincianOut').innerHTML = `
-    <div class="rincian-doc">
+  return `
+    <div class="rincian-doc" style="background:#fff; color:#000;">
       <h3>RINCIAN &nbsp; PERJALANAN &nbsp; DINAS</h3>
       <table class="rincian-meta-top">
         <tr><td>Lampiran SPD No.</td><td>:</td><td><span class="live-editable" id="rincianDocSpd" contenteditable="true" oninput="onRincianDocSpdInput(this)">${noSPD}</span></td></tr>
@@ -4971,8 +5102,65 @@ function renderRincian() {
         <div>${ppkNip}</div>
       </div>
     </div>
+  `;
+}
+
+function renderRincian(targetEmp) {
+  const sel = document.getElementById('rincianPegawai');
+  const out = document.getElementById('rincianOut');
+  if (!out) return;
+  let emp = targetEmp;
+  if (!emp) {
+    if (!sel || !sel.value) {
+      if (typeof selectedEmpIds !== 'undefined' && selectedEmpIds.size > 0 && sel) {
+        sel.value = String([...selectedEmpIds][0]);
+      } else {
+        out.innerHTML = '<div class="alert-warn no-print">⚠️ Silakan pilih pegawai untuk melihat rincian biaya.</div>';
+        return;
+      }
+    }
+    const id = parseInt(sel.value);
+    if (isNaN(id)) { out.innerHTML = ''; return; }
+    emp = (typeof employees !== 'undefined' ? employees : []).find(e => e.id === id);
+  }
+  if (!emp) { out.innerHTML = ''; return; }
+  out.innerHTML = buildRincianHtml(emp) + `
     <div class="btn-row no-print" style="margin-top:16px;justify-content:center">
       <button class="btn btn-success" onclick="printRincian()">🖨️ Print Rincian</button>
+    </div>
+  `;
+}
+
+function buildDPRHtml(emp, extraClass = '') {
+  const isKKP = ((document.getElementById('metodePembayaran')?.value || document.getElementById('lk_metodePembayaran')?.value || 'LS') === 'KKP');
+  return isKKP ? buildDPRKKPHtml(emp, extraClass) : buildDPRLSHtml(emp, extraClass);
+}
+
+function isDPRAvailableForTrip() {
+  const isKKP = ((document.getElementById('metodePembayaran')?.value || document.getElementById('lk_metodePembayaran')?.value || 'LS') === 'KKP');
+  const isDki = typeof isTripToDki === 'function' ? isTripToDki() : false;
+  return isKKP || isDki;
+}
+
+function buildAllDocsHtmlForEmp(emp) {
+  if (!emp) return '';
+  const sections = [];
+  // 1. Kuitansi Perorangan
+  sections.push(buildKuitansiHtml(emp));
+  // 2. Rekap / Rincian Biaya Perorangan (dan DPR jika ada)
+  sections.push(buildRincianHtml(emp));
+  if (typeof isDPRAvailableForTrip === 'function' && isDPRAvailableForTrip()) {
+    sections.push(buildDPRHtml(emp));
+  }
+  // 3. SPPD Perorangan
+  sections.push(buildSPPDHtml(emp));
+  return `
+    <div class="emp-bundle-doc" style="background:#fff; color:#000;">
+      ${sections.map((sec, idx) => `
+        <div class="doc-page-section" style="${idx > 0 ? 'page-break-before: always; margin-top: 24px;' : ''}">
+          ${sec}
+        </div>
+      `).join('')}
     </div>
   `;
 }
@@ -5249,10 +5437,12 @@ function buildDPRKKPHtml(emp, extraClass = '') {
           </tr>
   `;
 
+  const logoSrc = (typeof LOGO_PKP_BASE64 !== 'undefined' && LOGO_PKP_BASE64) ? LOGO_PKP_BASE64 : 'logo-pkp.webp';
+
   return `
     <section class="dpr-kkp-area${extraClass}">
       <header class="kuitansi-perorangan-header lembar-kendali-header">
-        <img src="logo-pkp.webp" alt="" class="kuitansi-perorangan-logo lembar-kendali-logo">
+        <img src="${logoSrc}" alt="" class="kuitansi-perorangan-logo lembar-kendali-logo">
         <div>
           <div class="kuitansi-perorangan-ministry lembar-kendali-ministry">KEMENTERIAN PERUMAHAN DAN KAWASAN PERMUKIMAN <span>REPUBLIK INDONESIA</span></div>
           <strong class="lembar-kendali-secretariat">SEKRETARIAT JENDERAL</strong>
@@ -5449,10 +5639,12 @@ function buildDPRLSHtml(emp, extraClass = '') {
       </tr>`;
   }
 
+  const logoSrc = (typeof LOGO_PKP_BASE64 !== 'undefined' && LOGO_PKP_BASE64) ? LOGO_PKP_BASE64 : 'logo-pkp.webp';
+
   return `
     <section class="dpr-area${extraClass}">
       <header class="kuitansi-perorangan-header lembar-kendali-header">
-        <img src="logo-pkp.webp" alt="" class="kuitansi-perorangan-logo lembar-kendali-logo">
+        <img src="${logoSrc}" alt="" class="kuitansi-perorangan-logo lembar-kendali-logo">
         <div>
           <div class="kuitansi-perorangan-ministry lembar-kendali-ministry">KEMENTERIAN PERUMAHAN DAN KAWASAN PERMUKIMAN <span>REPUBLIK INDONESIA</span></div>
           <strong class="lembar-kendali-secretariat">SEKRETARIAT JENDERAL</strong>
@@ -5946,11 +6138,471 @@ function exportPerjadinExcel() {
     ...EXCEL_SETTING_FIELDS.map(([label, id]) => [label, document.getElementById(id)?.value || ''])
   ], [32, 80]);
 
-  const kota = document.getElementById('kotaTujuan').value.trim();
-  const tgl = document.getElementById('tglBerangkat').value || '';
-  const rawName = `Perjadin_${kota || 'Dinas'}_${tgl || stamp.slice(0, 10)}`;
-  const safeName = rawName.replace(/[\\/:*?"<>|]+/g, '-').replace(/\s+/g, '_');
-  XLSX.writeFile(wb, `${safeName}.xlsx`);
+  const naming = (typeof getPerjadinNamingInfo === 'function')
+    ? getPerjadinNamingInfo()
+    : {
+        excelFileName: `Perjadin_${document.getElementById('kotaTujuan')?.value || 'Dinas'}.xlsx`,
+        folderName: `PERJADIN ${document.getElementById('kotaTujuan')?.value || 'DINAS'}`,
+        empIds
+      };
+
+  // 1. Simpan berkas Excel (.xlsx) dengan penamaan baru: PERJADIN/PERJADIN KKP_tanggal kegiatan_Nominal_nama pelaku perjadin
+  XLSX.writeFile(wb, naming.excelFileName);
+
+  // 2. Buat folder kegiatan baru otomatis & simpan hasil print PDF semua dokumen di dalamnya perorangan
+  if (empIds.length > 0 && typeof html2pdf !== 'undefined') {
+    exportPerjadinActivityFolder(wb, naming);
+  }
+}
+
+function getEmployeeDocFilePrefix(emp, allEmps) {
+  if (!emp) return 'Pegawai';
+  const firstName = (typeof getNamaDepan === 'function') ? getNamaDepan(emp.nama) : emp.nama.split(',')[0].trim().split(/\s+/)[0];
+  const duplicates = (allEmps || []).filter(e => {
+    const fn = (typeof getNamaDepan === 'function') ? getNamaDepan(e.nama) : e.nama.split(',')[0].trim().split(/\s+/)[0];
+    return fn.toLowerCase() === firstName.toLowerCase();
+  });
+  if (duplicates.length > 1) {
+    const clean = emp.nama.split(',')[0].trim();
+    const words = clean.split(/\s+/);
+    return `${words[0]} ${words[1] || ''}`.trim();
+  }
+  return firstName;
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    if (a && a.parentNode) a.parentNode.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 1200);
+}
+
+async function generatePdfBlobFromHtml(htmlContent, optOverrides = {}) {
+  if (!htmlContent) {
+    throw new Error('Konten HTML dokumen kosong');
+  }
+
+  // Bersihkan elemen berkelas no-print
+  let cleanHtml = htmlContent;
+  if (typeof cleanHtml === 'string') {
+    cleanHtml = cleanHtml.replace(/<[^>]+class="[^"]*\bno-print\b[^"]*"[^>]*>[\s\S]*?<\/[^>]+>/gi, '');
+  }
+
+  // Bungkus dalam container putih bersih agar hasil PDF selalu berlatar putih dan teks terbaca jelas
+  cleanHtml = `<div style="background-color: #ffffff !important; color: #000000 !important; width: 100%; box-sizing: border-box;">${cleanHtml}</div>`;
+
+  const defaultOpt = {
+    margin: [8, 10, 8, 10],
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: {
+      scale: 1.6,
+      useCORS: true,
+      logging: false,
+      backgroundColor: '#ffffff'
+    },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak: { mode: ['css', 'legacy'] }
+  };
+
+  const finalOpt = Object.assign({}, defaultOpt, optOverrides);
+  return await html2pdf().set(finalOpt).from(cleanHtml).output('blob');
+}
+
+function ensureExportProgressModal() {
+  let overlay = document.getElementById('exportProgressOverlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'exportProgressOverlay';
+    overlay.className = 'export-progress-overlay no-print';
+    overlay.innerHTML = `
+      <div class="export-progress-card" role="dialog" aria-modal="true" aria-labelledby="exportProgressTitle">
+        <div class="export-progress-header">
+          <div class="export-progress-icon">📦</div>
+          <div class="export-progress-title-wrap">
+            <h3 id="exportProgressTitle">Menyimpan & Membuat Berkas Perjadin</h3>
+            <p id="exportProgressSubtitle">Folder: -</p>
+          </div>
+        </div>
+        <div class="export-progress-bar-wrap">
+          <div class="export-progress-bar" id="exportProgressBar" style="width: 5%"></div>
+        </div>
+        <div class="export-progress-status" id="exportProgressStatus">Mempersiapkan dokumen...</div>
+        <div class="export-progress-file-list" id="exportProgressFileList"></div>
+        <div class="export-progress-actions" id="exportProgressActions" style="display:none;"></div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+  }
+  return overlay;
+}
+
+function showExportProgressModal(naming) {
+  const overlay = ensureExportProgressModal();
+  document.getElementById('exportProgressTitle').textContent = 'Menyimpan Excel & Membuat Berkas Perjadin';
+  document.getElementById('exportProgressSubtitle').textContent = `Folder Kegiatan: ${naming.folderName}`;
+  document.getElementById('exportProgressBar').style.width = '5%';
+  document.getElementById('exportProgressStatus').textContent = 'Membuat file Excel dan mempersiapkan dokumen perorangan...';
+  const fileListEl = document.getElementById('exportProgressFileList');
+  fileListEl.innerHTML = `
+    <div class="export-progress-item done">
+      <span class="export-file-icon">📊</span>
+      <span class="export-file-name">${naming.excelFileName}</span>
+      <span class="export-file-badge">Tersimpan</span>
+    </div>
+  `;
+  document.getElementById('exportProgressActions').style.display = 'none';
+  overlay.style.display = 'flex';
+}
+
+function updateExportProgress(percent, statusText, addedFile) {
+  const bar = document.getElementById('exportProgressBar');
+  const status = document.getElementById('exportProgressStatus');
+  const fileListEl = document.getElementById('exportProgressFileList');
+  if (bar) bar.style.width = `${Math.min(100, Math.max(0, percent))}%`;
+  if (status && statusText) status.textContent = statusText;
+  if (fileListEl && addedFile) {
+    const item = document.createElement('div');
+    item.className = 'export-progress-item done';
+    item.innerHTML = `
+      <span class="export-file-icon">${addedFile.icon || '📄'}</span>
+      <span class="export-file-name">${addedFile.name}</span>
+      <span class="export-file-badge">Siap</span>
+    `;
+    fileListEl.appendChild(item);
+    fileListEl.scrollTop = fileListEl.scrollHeight;
+  }
+}
+
+function finishExportModal(folderName, fileList, zipBlob) {
+  const bar = document.getElementById('exportProgressBar');
+  const status = document.getElementById('exportProgressStatus');
+  const title = document.getElementById('exportProgressTitle');
+  const subtitle = document.getElementById('exportProgressSubtitle');
+  const actions = document.getElementById('exportProgressActions');
+
+  if (bar) bar.style.width = '100%';
+  if (title) title.textContent = '✅ Selesai! Berkas & Folder Berhasil Dibuat';
+  if (subtitle) subtitle.textContent = `Folder: ${folderName}`;
+  if (status) status.textContent = `Semua dokumen perorangan & rekapitulasi (${fileList.length} berkas) telah lengkap dikemas ke dalam folder "${folderName}".`;
+
+  if (actions) {
+    actions.style.display = 'flex';
+    actions.innerHTML = `
+      <button type="button" class="btn btn-secondary btn-sm" id="btnDownloadZipAgain" title="Unduh kembali paket ZIP folder kegiatan">
+        📦 Unduh Ulang ZIP
+      </button>
+      ${window.showDirectoryPicker ? `
+      <button type="button" class="btn btn-primary btn-sm" id="btnSaveToDiskFolder" title="Simpan sebagai folder fisik langsung di komputer Anda">
+        📁 Simpan ke Folder Disk
+      </button>` : ''}
+      <button type="button" class="btn btn-success btn-sm" onclick="closeExportProgressModal()">
+        ✓ Tutup
+      </button>
+    `;
+
+    const zipBtn = document.getElementById('btnDownloadZipAgain');
+    if (zipBtn && zipBlob) {
+      zipBtn.onclick = () => downloadBlob(zipBlob, `${folderName}.zip`);
+    }
+
+    const diskBtn = document.getElementById('btnSaveToDiskFolder');
+    if (diskBtn) {
+      diskBtn.onclick = async () => {
+        try {
+          diskBtn.disabled = true;
+          diskBtn.textContent = '⏳ Menyimpan...';
+          const rootDir = await window.showDirectoryPicker({ mode: 'readwrite' });
+          const targetDir = await rootDir.getDirectoryHandle(folderName, { create: true });
+          for (const item of fileList) {
+            const fileHandle = await targetDir.getFileHandle(item.name, { create: true });
+            const writable = await fileHandle.createWritable();
+            await writable.write(item.blob);
+            await writable.close();
+          }
+          diskBtn.textContent = '✅ Tersimpan di Disk!';
+          setTimeout(() => { if (diskBtn) { diskBtn.disabled = false; diskBtn.textContent = '📁 Simpan ke Folder Disk'; } }, 3000);
+        } catch (e) {
+          console.warn('Simpan ke disk dibatalkan:', e);
+          if (diskBtn) {
+            diskBtn.disabled = false;
+            diskBtn.textContent = '📁 Simpan ke Folder Disk';
+          }
+        }
+      };
+    }
+  }
+}
+
+function closeExportProgressModal() {
+  const overlay = document.getElementById('exportProgressOverlay');
+  if (overlay) overlay.style.display = 'none';
+}
+
+async function exportPerjadinActivityFolder(wb, naming) {
+  showExportProgressModal(naming);
+
+  const empIds = naming.empIds || [];
+  const emps = empIds.map(id => employees.find(e => e.id === id)).filter(Boolean);
+
+  const u8 = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  const excelBlob = new Blob([u8], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+  const fileList = [];
+  fileList.push({ name: naming.excelFileName, blob: excelBlob, icon: '📊' });
+
+  const hasDpr = typeof isDPRAvailableForTrip === 'function' ? isDPRAvailableForTrip() : false;
+  const docsPerEmp = hasDpr ? 5 : 4;
+  const rekapTasks = 5; // Rekap Kuitansi, Rekap Rincian, Nominatif, Lembar Kendali, Rekap SPT
+  const totalTasks = (emps.length * docsPerEmp) + rekapTasks;
+  let currentTask = 0;
+
+  for (let i = 0; i < emps.length; i++) {
+    const emp = emps[i];
+    const prefix = getEmployeeDocFilePrefix(emp, emps);
+
+    await new Promise(r => setTimeout(r, 60));
+
+    // A. Kuitansi
+    currentTask++;
+    updateExportProgress(
+      Math.round((currentTask / (totalTasks + 1)) * 90),
+      `Membuat Kuitansi ${prefix}... (${currentTask}/${totalTasks})`
+    );
+    try {
+      const kuitansiHtml = typeof buildKuitansiHtml === 'function' ? buildKuitansiHtml(emp) : '';
+      if (kuitansiHtml) {
+        const kuitansiBlob = await generatePdfBlobFromHtml(kuitansiHtml);
+        const docName = `${prefix} - Kuitansi.pdf`;
+        fileList.push({ name: docName, blob: kuitansiBlob, icon: '🧾' });
+        updateExportProgress(Math.round((currentTask / (totalTasks + 1)) * 90), null, { name: docName, icon: '🧾' });
+      }
+    } catch (err) {
+      console.warn('Gagal membuat Kuitansi untuk ' + emp.nama, err);
+    }
+
+    await new Promise(r => setTimeout(r, 40));
+
+    // B. Rincian Biaya
+    currentTask++;
+    updateExportProgress(
+      Math.round((currentTask / (totalTasks + 1)) * 90),
+      `Membuat Rincian Biaya ${prefix}... (${currentTask}/${totalTasks})`
+    );
+    try {
+      const rincianHtml = typeof buildRincianHtml === 'function' ? buildRincianHtml(emp) : '';
+      if (rincianHtml) {
+        const rincianBlob = await generatePdfBlobFromHtml(rincianHtml);
+        const docName = `${prefix} - Rincian Biaya.pdf`;
+        fileList.push({ name: docName, blob: rincianBlob, icon: '📋' });
+        updateExportProgress(Math.round((currentTask / (totalTasks + 1)) * 90), null, { name: docName, icon: '📋' });
+      }
+    } catch (err) {
+      console.warn('Gagal membuat Rincian Biaya untuk ' + emp.nama, err);
+    }
+
+    await new Promise(r => setTimeout(r, 40));
+
+    // C. DPR (jika ada)
+    if (hasDpr) {
+      currentTask++;
+      updateExportProgress(
+        Math.round((currentTask / (totalTasks + 1)) * 90),
+        `Membuat DPR ${prefix}... (${currentTask}/${totalTasks})`
+      );
+      try {
+        const dprHtml = typeof buildDPRHtml === 'function' ? buildDPRHtml(emp) : '';
+        if (dprHtml) {
+          const dprBlob = await generatePdfBlobFromHtml(dprHtml);
+          const docName = `${prefix} - DPR.pdf`;
+          fileList.push({ name: docName, blob: dprBlob, icon: '📝' });
+          updateExportProgress(Math.round((currentTask / (totalTasks + 1)) * 90), null, { name: docName, icon: '📝' });
+        }
+      } catch (err) {
+        console.warn('Gagal membuat DPR untuk ' + emp.nama, err);
+      }
+      await new Promise(r => setTimeout(r, 40));
+    }
+
+    // D. SPPD
+    currentTask++;
+    updateExportProgress(
+      Math.round((currentTask / (totalTasks + 1)) * 90),
+      `Membuat SPPD ${prefix}... (${currentTask}/${totalTasks})`
+    );
+    try {
+      const sppdHtml = typeof buildSPPDHtml === 'function' ? buildSPPDHtml(emp) : '';
+      if (sppdHtml) {
+        const sppdBlob = await generatePdfBlobFromHtml(sppdHtml);
+        const docName = `${prefix} - SPPD.pdf`;
+        fileList.push({ name: docName, blob: sppdBlob, icon: '📑' });
+        updateExportProgress(Math.round((currentTask / (totalTasks + 1)) * 90), null, { name: docName, icon: '📑' });
+      }
+    } catch (err) {
+      console.warn('Gagal membuat SPPD untuk ' + emp.nama, err);
+    }
+
+    await new Promise(r => setTimeout(r, 40));
+
+    // E. Dokumen Lengkap per orang
+    currentTask++;
+    updateExportProgress(
+      Math.round((currentTask / (totalTasks + 1)) * 90),
+      `Menggabungkan seluruh dokumen ${prefix}... (${currentTask}/${totalTasks})`
+    );
+    try {
+      const allDocsHtml = typeof buildAllDocsHtmlForEmp === 'function' ? buildAllDocsHtmlForEmp(emp) : '';
+      if (allDocsHtml) {
+        const allDocsBlob = await generatePdfBlobFromHtml(allDocsHtml);
+        const docName = `${prefix} - Lengkap (Semua Dokumen).pdf`;
+        fileList.push({ name: docName, blob: allDocsBlob, icon: '📁' });
+        updateExportProgress(Math.round((currentTask / (totalTasks + 1)) * 90), null, { name: docName, icon: '📁' });
+      }
+    } catch (err) {
+      console.warn('Gagal membuat dokumen lengkap untuk ' + emp.nama, err);
+    }
+  }
+
+  // =========================================================================
+  // DOKUMEN REKAPITULASI KEGIATAN KOLEKTIF
+  // =========================================================================
+
+  // 1. Rekap Kuitansi
+  currentTask++;
+  updateExportProgress(
+    Math.round((currentTask / (totalTasks + 1)) * 90),
+    `Membuat PDF Rekap Kuitansi... (${currentTask}/${totalTasks})`
+  );
+  try {
+    if (typeof renderRekapKuitansi === 'function') renderRekapKuitansi();
+    const el = document.getElementById('rekapKuitansiOut');
+    const html = el ? el.innerHTML : '';
+    if (html && !html.includes('alert-warn')) {
+      const blob = await generatePdfBlobFromHtml(html, {
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      });
+      const docName = 'Rekap Kuitansi.pdf';
+      fileList.push({ name: docName, blob: blob, icon: '🧾' });
+      updateExportProgress(Math.round((currentTask / (totalTasks + 1)) * 90), null, { name: docName, icon: '🧾' });
+    }
+  } catch (err) {
+    console.warn('Gagal membuat PDF Rekap Kuitansi', err);
+  }
+  await new Promise(r => setTimeout(r, 40));
+
+  // 2. Rekap Rincian Biaya (Landscape)
+  currentTask++;
+  updateExportProgress(
+    Math.round((currentTask / (totalTasks + 1)) * 90),
+    `Membuat PDF Rekap Rincian Biaya... (${currentTask}/${totalTasks})`
+  );
+  try {
+    if (typeof renderRekapRincian === 'function') renderRekapRincian();
+    const el = document.getElementById('rekapRincianOut');
+    const html = el ? el.innerHTML : '';
+    if (html && !html.includes('alert-warn')) {
+      const blob = await generatePdfBlobFromHtml(html, {
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+      });
+      const docName = 'Rekap Rincian Biaya.pdf';
+      fileList.push({ name: docName, blob: blob, icon: '📋' });
+      updateExportProgress(Math.round((currentTask / (totalTasks + 1)) * 90), null, { name: docName, icon: '📋' });
+    }
+  } catch (err) {
+    console.warn('Gagal membuat PDF Rekap Rincian Biaya', err);
+  }
+  await new Promise(r => setTimeout(r, 40));
+
+  // 3. Daftar Nominatif (Portrait)
+  currentTask++;
+  updateExportProgress(
+    Math.round((currentTask / (totalTasks + 1)) * 90),
+    `Membuat PDF Daftar Nominatif... (${currentTask}/${totalTasks})`
+  );
+  try {
+    if (typeof renderNominatif === 'function') renderNominatif();
+    const el = document.getElementById('nominatifOut');
+    const html = el ? el.innerHTML : '';
+    if (html && !html.includes('alert-warn')) {
+      const blob = await generatePdfBlobFromHtml(html, {
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      });
+      const docName = 'Daftar Nominatif.pdf';
+      fileList.push({ name: docName, blob: blob, icon: '👥' });
+      updateExportProgress(Math.round((currentTask / (totalTasks + 1)) * 90), null, { name: docName, icon: '👥' });
+    }
+  } catch (err) {
+    console.warn('Gagal membuat PDF Daftar Nominatif', err);
+  }
+  await new Promise(r => setTimeout(r, 40));
+
+  // 4. Lembar Kendali
+  currentTask++;
+  updateExportProgress(
+    Math.round((currentTask / (totalTasks + 1)) * 90),
+    `Membuat PDF Lembar Kendali... (${currentTask}/${totalTasks})`
+  );
+  try {
+    if (typeof renderLembarKendali === 'function') renderLembarKendali();
+    const el = document.getElementById('lembarKendaliOut');
+    const html = el ? el.innerHTML : '';
+    if (html && !html.includes('alert-warn')) {
+      const blob = await generatePdfBlobFromHtml(html, {
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      });
+      const docName = 'Lembar Kendali.pdf';
+      fileList.push({ name: docName, blob: blob, icon: '📑' });
+      updateExportProgress(Math.round((currentTask / (totalTasks + 1)) * 90), null, { name: docName, icon: '📑' });
+    }
+  } catch (err) {
+    console.warn('Gagal membuat PDF Lembar Kendali', err);
+  }
+  await new Promise(r => setTimeout(r, 40));
+
+  // 5. Rekap Surat Tugas
+  currentTask++;
+  updateExportProgress(
+    Math.round((currentTask / (totalTasks + 1)) * 90),
+    `Membuat PDF Rekap Surat Tugas... (${currentTask}/${totalTasks})`
+  );
+  try {
+    if (typeof renderRekapSPT === 'function') renderRekapSPT();
+    const el = document.getElementById('rekapSPTOut');
+    const html = el ? el.innerHTML : '';
+    if (html && !html.includes('alert-warn')) {
+      const blob = await generatePdfBlobFromHtml(html, {
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      });
+      const docName = 'Rekap Surat Tugas.pdf';
+      fileList.push({ name: docName, blob: blob, icon: '📜' });
+      updateExportProgress(Math.round((currentTask / (totalTasks + 1)) * 90), null, { name: docName, icon: '📜' });
+    }
+  } catch (err) {
+    console.warn('Gagal membuat PDF Rekap Surat Tugas', err);
+  }
+  await new Promise(r => setTimeout(r, 40));
+
+  updateExportProgress(95, `Mengemas folder kegiatan "${naming.folderName}"...`);
+  await new Promise(r => setTimeout(r, 60));
+
+  let zipBlob = null;
+  if (typeof JSZip !== 'undefined') {
+    const zip = new JSZip();
+    const folder = zip.folder(naming.folderName);
+    for (const item of fileList) {
+      folder.file(item.name, item.blob);
+    }
+    zipBlob = await zip.generateAsync({ type: 'blob' });
+    downloadBlob(zipBlob, `${naming.folderName}.zip`);
+  }
+
+  updateExportProgress(100, `Selesai! Berkas tersimpan di folder "${naming.folderName}".`);
+  finishExportModal(naming.folderName, fileList, zipBlob);
 }
 
 function importPerjadinExcel(input) {

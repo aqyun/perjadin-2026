@@ -411,15 +411,24 @@
       <h1 id="pageTitle">Input Perjalanan</h1>
     </div>
     <div class="topbar-tools">
+      <div class="topbar-excel-group">
+        <button type="button" class="btn btn-success btn-sm btn-topbar-save" onclick="exportPerjadinExcel()" title="Simpan data ke file Excel & buat folder berkas PDF perorangan">
+          <svg class="ico"><use href="#i-save"></use></svg>
+          <span>Simpan Excel</span>
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm btn-topbar-load" onclick="document.getElementById('excelFileInput').click()" title="Muat isian dari file Excel">
+          <svg class="ico"><use href="#i-load"></use></svg>
+          <span>Muat Excel</span>
+        </button>
+      </div>
       <button type="button" class="btn-topbar-pmk" onclick="openPmkModal()" title="Cek Dokumen Resmi PMK SBM TA 2026">
         <svg class="ico"><use href="#i-file-lines"></use></svg>
         <span>Cek File PMK</span>
       </button>
+      <span class="date-pill"><svg class="ico"><use href="#i-calendar"></use></svg><span id="datePill">—</span></span>
       <button type="button" class="icon-btn info-btn" onclick="openWelcome()" title="Panduan & Info PerdinKu" aria-label="Panduan & Info PerdinKu">
         <svg class="ico"><use href="#i-info"></use></svg>
       </button>
-      <span class="status-pill"><span class="status-dot"></span>Siap cetak</span>
-      <span class="date-pill"><svg class="ico"><use href="#i-calendar"></use></svg><span id="datePill">—</span></span>
     </div>
   </header>
 
@@ -860,15 +869,7 @@
                 <h3>Buat Dokumen</h3>
                 <p>Pilih format keluaran — semua sudah siap dicetak.</p>
               </div>
-              <div class="excel-actions">
-                <button type="button" class="btn btn-success btn-sm" onclick="exportPerjadinExcel()" title="Simpan semua isian ke file Excel untuk revisi">
-                  <svg class="ico"><use href="#i-save"></use></svg>Simpan Excel
-                </button>
-                <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('excelFileInput').click()" title="Muat kembali isian dari file Excel">
-                  <svg class="ico"><use href="#i-load"></use></svg>Muat Excel
-                </button>
-                <input type="file" id="excelFileInput" accept=".xlsx,.xls" style="display:none" onchange="importPerjadinExcel(this)">
-              </div>
+              <input type="file" id="excelFileInput" accept=".xlsx,.xls" style="display:none" onchange="importPerjadinExcel(this)">
             </div>
             <div class="action-grid">
               <button type="button" class="action-card" onclick="showTab('kuitansi-perorangan')">
@@ -1777,6 +1778,8 @@
 </div>
 
 <script src="xlsx.full.min.js"></script>
+<script src="jszip.min.js"></script>
+<script src="html2pdf.bundle.min.js"></script>
 <script src="js/data.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/calc.js"></script>

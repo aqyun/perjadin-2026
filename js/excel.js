@@ -296,11 +296,471 @@ function exportPerjadinExcel() {
     ...EXCEL_SETTING_FIELDS.map(([label, id]) => [label, document.getElementById(id)?.value || ''])
   ], [32, 80]);
 
-  const kota = document.getElementById('kotaTujuan').value.trim();
-  const tgl = document.getElementById('tglBerangkat').value || '';
-  const rawName = `Perjadin_${kota || 'Dinas'}_${tgl || stamp.slice(0, 10)}`;
-  const safeName = rawName.replace(/[\\/:*?"<>|]+/g, '-').replace(/\s+/g, '_');
-  XLSX.writeFile(wb, `${safeName}.xlsx`);
+  const naming = (typeof getPerjadinNamingInfo === 'function')
+    ? getPerjadinNamingInfo()
+    : {
+        excelFileName: `Perjadin_${document.getElementById('kotaTujuan')?.value || 'Dinas'}.xlsx`,
+        folderName: `PERJADIN ${document.getElementById('kotaTujuan')?.value || 'DINAS'}`,
+        empIds
+      };
+
+  // 1. Simpan berkas Excel (.xlsx) dengan penamaan baru: PERJADIN/PERJADIN KKP_tanggal kegiatan_Nominal_nama pelaku perjadin
+  XLSX.writeFile(wb, naming.excelFileName);
+
+  // 2. Buat folder kegiatan baru otomatis & simpan hasil print PDF semua dokumen di dalamnya perorangan
+  if (empIds.length > 0 && typeof html2pdf !== 'undefined') {
+    exportPerjadinActivityFolder(wb, naming);
+  }
+}
+
+function getEmployeeDocFilePrefix(emp, allEmps) {
+  if (!emp) return 'Pegawai';
+  const firstName = (typeof getNamaDepan === 'function') ? getNamaDepan(emp.nama) : emp.nama.split(',')[0].trim().split(/\s+/)[0];
+  const duplicates = (allEmps || []).filter(e => {
+    const fn = (typeof getNamaDepan === 'function') ? getNamaDepan(e.nama) : e.nama.split(',')[0].trim().split(/\s+/)[0];
+    return fn.toLowerCase() === firstName.toLowerCase();
+  });
+  if (duplicates.length > 1) {
+    const clean = emp.nama.split(',')[0].trim();
+    const words = clean.split(/\s+/);
+    return `${words[0]} ${words[1] || ''}`.trim();
+  }
+  return firstName;
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    if (a && a.parentNode) a.parentNode.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 1200);
+}
+
+async function generatePdfBlobFromHtml(htmlContent, optOverrides = {}) {
+  if (!htmlContent) {
+    throw new Error('Konten HTML dokumen kosong');
+  }
+
+  // Bersihkan elemen berkelas no-print
+  let cleanHtml = htmlContent;
+  if (typeof cleanHtml === 'string') {
+    cleanHtml = cleanHtml.replace(/<[^>]+class="[^"]*\bno-print\b[^"]*"[^>]*>[\s\S]*?<\/[^>]+>/gi, '');
+  }
+
+  // Bungkus dalam container putih bersih agar hasil PDF selalu berlatar putih dan teks terbaca jelas
+  cleanHtml = `<div style="background-color: #ffffff !important; color: #000000 !important; width: 100%; box-sizing: border-box;">${cleanHtml}</div>`;
+
+  const defaultOpt = {
+    margin: [8, 10, 8, 10],
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: {
+      scale: 1.6,
+      useCORS: true,
+      logging: false,
+      backgroundColor: '#ffffff'
+    },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak: { mode: ['css', 'legacy'] }
+  };
+
+  const finalOpt = Object.assign({}, defaultOpt, optOverrides);
+  return await html2pdf().set(finalOpt).from(cleanHtml).output('blob');
+}
+
+function ensureExportProgressModal() {
+  let overlay = document.getElementById('exportProgressOverlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'exportProgressOverlay';
+    overlay.className = 'export-progress-overlay no-print';
+    overlay.innerHTML = `
+      <div class="export-progress-card" role="dialog" aria-modal="true" aria-labelledby="exportProgressTitle">
+        <div class="export-progress-header">
+          <div class="export-progress-icon">📦</div>
+          <div class="export-progress-title-wrap">
+            <h3 id="exportProgressTitle">Menyimpan & Membuat Berkas Perjadin</h3>
+            <p id="exportProgressSubtitle">Folder: -</p>
+          </div>
+        </div>
+        <div class="export-progress-bar-wrap">
+          <div class="export-progress-bar" id="exportProgressBar" style="width: 5%"></div>
+        </div>
+        <div class="export-progress-status" id="exportProgressStatus">Mempersiapkan dokumen...</div>
+        <div class="export-progress-file-list" id="exportProgressFileList"></div>
+        <div class="export-progress-actions" id="exportProgressActions" style="display:none;"></div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+  }
+  return overlay;
+}
+
+function showExportProgressModal(naming) {
+  const overlay = ensureExportProgressModal();
+  document.getElementById('exportProgressTitle').textContent = 'Menyimpan Excel & Membuat Berkas Perjadin';
+  document.getElementById('exportProgressSubtitle').textContent = `Folder Kegiatan: ${naming.folderName}`;
+  document.getElementById('exportProgressBar').style.width = '5%';
+  document.getElementById('exportProgressStatus').textContent = 'Membuat file Excel dan mempersiapkan dokumen perorangan...';
+  const fileListEl = document.getElementById('exportProgressFileList');
+  fileListEl.innerHTML = `
+    <div class="export-progress-item done">
+      <span class="export-file-icon">📊</span>
+      <span class="export-file-name">${naming.excelFileName}</span>
+      <span class="export-file-badge">Tersimpan</span>
+    </div>
+  `;
+  document.getElementById('exportProgressActions').style.display = 'none';
+  overlay.style.display = 'flex';
+}
+
+function updateExportProgress(percent, statusText, addedFile) {
+  const bar = document.getElementById('exportProgressBar');
+  const status = document.getElementById('exportProgressStatus');
+  const fileListEl = document.getElementById('exportProgressFileList');
+  if (bar) bar.style.width = `${Math.min(100, Math.max(0, percent))}%`;
+  if (status && statusText) status.textContent = statusText;
+  if (fileListEl && addedFile) {
+    const item = document.createElement('div');
+    item.className = 'export-progress-item done';
+    item.innerHTML = `
+      <span class="export-file-icon">${addedFile.icon || '📄'}</span>
+      <span class="export-file-name">${addedFile.name}</span>
+      <span class="export-file-badge">Siap</span>
+    `;
+    fileListEl.appendChild(item);
+    fileListEl.scrollTop = fileListEl.scrollHeight;
+  }
+}
+
+function finishExportModal(folderName, fileList, zipBlob) {
+  const bar = document.getElementById('exportProgressBar');
+  const status = document.getElementById('exportProgressStatus');
+  const title = document.getElementById('exportProgressTitle');
+  const subtitle = document.getElementById('exportProgressSubtitle');
+  const actions = document.getElementById('exportProgressActions');
+
+  if (bar) bar.style.width = '100%';
+  if (title) title.textContent = '✅ Selesai! Berkas & Folder Berhasil Dibuat';
+  if (subtitle) subtitle.textContent = `Folder: ${folderName}`;
+  if (status) status.textContent = `Semua dokumen perorangan & rekapitulasi (${fileList.length} berkas) telah lengkap dikemas ke dalam folder "${folderName}".`;
+
+  if (actions) {
+    actions.style.display = 'flex';
+    actions.innerHTML = `
+      <button type="button" class="btn btn-secondary btn-sm" id="btnDownloadZipAgain" title="Unduh kembali paket ZIP folder kegiatan">
+        📦 Unduh Ulang ZIP
+      </button>
+      ${window.showDirectoryPicker ? `
+      <button type="button" class="btn btn-primary btn-sm" id="btnSaveToDiskFolder" title="Simpan sebagai folder fisik langsung di komputer Anda">
+        📁 Simpan ke Folder Disk
+      </button>` : ''}
+      <button type="button" class="btn btn-success btn-sm" onclick="closeExportProgressModal()">
+        ✓ Tutup
+      </button>
+    `;
+
+    const zipBtn = document.getElementById('btnDownloadZipAgain');
+    if (zipBtn && zipBlob) {
+      zipBtn.onclick = () => downloadBlob(zipBlob, `${folderName}.zip`);
+    }
+
+    const diskBtn = document.getElementById('btnSaveToDiskFolder');
+    if (diskBtn) {
+      diskBtn.onclick = async () => {
+        try {
+          diskBtn.disabled = true;
+          diskBtn.textContent = '⏳ Menyimpan...';
+          const rootDir = await window.showDirectoryPicker({ mode: 'readwrite' });
+          const targetDir = await rootDir.getDirectoryHandle(folderName, { create: true });
+          for (const item of fileList) {
+            const fileHandle = await targetDir.getFileHandle(item.name, { create: true });
+            const writable = await fileHandle.createWritable();
+            await writable.write(item.blob);
+            await writable.close();
+          }
+          diskBtn.textContent = '✅ Tersimpan di Disk!';
+          setTimeout(() => { if (diskBtn) { diskBtn.disabled = false; diskBtn.textContent = '📁 Simpan ke Folder Disk'; } }, 3000);
+        } catch (e) {
+          console.warn('Simpan ke disk dibatalkan:', e);
+          if (diskBtn) {
+            diskBtn.disabled = false;
+            diskBtn.textContent = '📁 Simpan ke Folder Disk';
+          }
+        }
+      };
+    }
+  }
+}
+
+function closeExportProgressModal() {
+  const overlay = document.getElementById('exportProgressOverlay');
+  if (overlay) overlay.style.display = 'none';
+}
+
+async function exportPerjadinActivityFolder(wb, naming) {
+  showExportProgressModal(naming);
+
+  const empIds = naming.empIds || [];
+  const emps = empIds.map(id => employees.find(e => e.id === id)).filter(Boolean);
+
+  const u8 = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  const excelBlob = new Blob([u8], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+  const fileList = [];
+  fileList.push({ name: naming.excelFileName, blob: excelBlob, icon: '📊' });
+
+  const hasDpr = typeof isDPRAvailableForTrip === 'function' ? isDPRAvailableForTrip() : false;
+  const docsPerEmp = hasDpr ? 5 : 4;
+  const rekapTasks = 5; // Rekap Kuitansi, Rekap Rincian, Nominatif, Lembar Kendali, Rekap SPT
+  const totalTasks = (emps.length * docsPerEmp) + rekapTasks;
+  let currentTask = 0;
+
+  for (let i = 0; i < emps.length; i++) {
+    const emp = emps[i];
+    const prefix = getEmployeeDocFilePrefix(emp, emps);
+
+    await new Promise(r => setTimeout(r, 60));
+
+    // A. Kuitansi
+    currentTask++;
+    updateExportProgress(
+      Math.round((currentTask / (totalTasks + 1)) * 90),
+      `Membuat Kuitansi ${prefix}... (${currentTask}/${totalTasks})`
+    );
+    try {
+      const kuitansiHtml = typeof buildKuitansiHtml === 'function' ? buildKuitansiHtml(emp) : '';
+      if (kuitansiHtml) {
+        const kuitansiBlob = await generatePdfBlobFromHtml(kuitansiHtml);
+        const docName = `${prefix} - Kuitansi.pdf`;
+        fileList.push({ name: docName, blob: kuitansiBlob, icon: '🧾' });
+        updateExportProgress(Math.round((currentTask / (totalTasks + 1)) * 90), null, { name: docName, icon: '🧾' });
+      }
+    } catch (err) {
+      console.warn('Gagal membuat Kuitansi untuk ' + emp.nama, err);
+    }
+
+    await new Promise(r => setTimeout(r, 40));
+
+    // B. Rincian Biaya
+    currentTask++;
+    updateExportProgress(
+      Math.round((currentTask / (totalTasks + 1)) * 90),
+      `Membuat Rincian Biaya ${prefix}... (${currentTask}/${totalTasks})`
+    );
+    try {
+      const rincianHtml = typeof buildRincianHtml === 'function' ? buildRincianHtml(emp) : '';
+      if (rincianHtml) {
+        const rincianBlob = await generatePdfBlobFromHtml(rincianHtml);
+        const docName = `${prefix} - Rincian Biaya.pdf`;
+        fileList.push({ name: docName, blob: rincianBlob, icon: '📋' });
+        updateExportProgress(Math.round((currentTask / (totalTasks + 1)) * 90), null, { name: docName, icon: '📋' });
+      }
+    } catch (err) {
+      console.warn('Gagal membuat Rincian Biaya untuk ' + emp.nama, err);
+    }
+
+    await new Promise(r => setTimeout(r, 40));
+
+    // C. DPR (jika ada)
+    if (hasDpr) {
+      currentTask++;
+      updateExportProgress(
+        Math.round((currentTask / (totalTasks + 1)) * 90),
+        `Membuat DPR ${prefix}... (${currentTask}/${totalTasks})`
+      );
+      try {
+        const dprHtml = typeof buildDPRHtml === 'function' ? buildDPRHtml(emp) : '';
+        if (dprHtml) {
+          const dprBlob = await generatePdfBlobFromHtml(dprHtml);
+          const docName = `${prefix} - DPR.pdf`;
+          fileList.push({ name: docName, blob: dprBlob, icon: '📝' });
+          updateExportProgress(Math.round((currentTask / (totalTasks + 1)) * 90), null, { name: docName, icon: '📝' });
+        }
+      } catch (err) {
+        console.warn('Gagal membuat DPR untuk ' + emp.nama, err);
+      }
+      await new Promise(r => setTimeout(r, 40));
+    }
+
+    // D. SPPD
+    currentTask++;
+    updateExportProgress(
+      Math.round((currentTask / (totalTasks + 1)) * 90),
+      `Membuat SPPD ${prefix}... (${currentTask}/${totalTasks})`
+    );
+    try {
+      const sppdHtml = typeof buildSPPDHtml === 'function' ? buildSPPDHtml(emp) : '';
+      if (sppdHtml) {
+        const sppdBlob = await generatePdfBlobFromHtml(sppdHtml);
+        const docName = `${prefix} - SPPD.pdf`;
+        fileList.push({ name: docName, blob: sppdBlob, icon: '📑' });
+        updateExportProgress(Math.round((currentTask / (totalTasks + 1)) * 90), null, { name: docName, icon: '📑' });
+      }
+    } catch (err) {
+      console.warn('Gagal membuat SPPD untuk ' + emp.nama, err);
+    }
+
+    await new Promise(r => setTimeout(r, 40));
+
+    // E. Dokumen Lengkap per orang
+    currentTask++;
+    updateExportProgress(
+      Math.round((currentTask / (totalTasks + 1)) * 90),
+      `Menggabungkan seluruh dokumen ${prefix}... (${currentTask}/${totalTasks})`
+    );
+    try {
+      const allDocsHtml = typeof buildAllDocsHtmlForEmp === 'function' ? buildAllDocsHtmlForEmp(emp) : '';
+      if (allDocsHtml) {
+        const allDocsBlob = await generatePdfBlobFromHtml(allDocsHtml);
+        const docName = `${prefix} - Lengkap (Semua Dokumen).pdf`;
+        fileList.push({ name: docName, blob: allDocsBlob, icon: '📁' });
+        updateExportProgress(Math.round((currentTask / (totalTasks + 1)) * 90), null, { name: docName, icon: '📁' });
+      }
+    } catch (err) {
+      console.warn('Gagal membuat dokumen lengkap untuk ' + emp.nama, err);
+    }
+  }
+
+  // =========================================================================
+  // DOKUMEN REKAPITULASI KEGIATAN KOLEKTIF
+  // =========================================================================
+
+  // 1. Rekap Kuitansi
+  currentTask++;
+  updateExportProgress(
+    Math.round((currentTask / (totalTasks + 1)) * 90),
+    `Membuat PDF Rekap Kuitansi... (${currentTask}/${totalTasks})`
+  );
+  try {
+    if (typeof renderRekapKuitansi === 'function') renderRekapKuitansi();
+    const el = document.getElementById('rekapKuitansiOut');
+    const html = el ? el.innerHTML : '';
+    if (html && !html.includes('alert-warn')) {
+      const blob = await generatePdfBlobFromHtml(html, {
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      });
+      const docName = 'Rekap Kuitansi.pdf';
+      fileList.push({ name: docName, blob: blob, icon: '🧾' });
+      updateExportProgress(Math.round((currentTask / (totalTasks + 1)) * 90), null, { name: docName, icon: '🧾' });
+    }
+  } catch (err) {
+    console.warn('Gagal membuat PDF Rekap Kuitansi', err);
+  }
+  await new Promise(r => setTimeout(r, 40));
+
+  // 2. Rekap Rincian Biaya (Landscape)
+  currentTask++;
+  updateExportProgress(
+    Math.round((currentTask / (totalTasks + 1)) * 90),
+    `Membuat PDF Rekap Rincian Biaya... (${currentTask}/${totalTasks})`
+  );
+  try {
+    if (typeof renderRekapRincian === 'function') renderRekapRincian();
+    const el = document.getElementById('rekapRincianOut');
+    const html = el ? el.innerHTML : '';
+    if (html && !html.includes('alert-warn')) {
+      const blob = await generatePdfBlobFromHtml(html, {
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+      });
+      const docName = 'Rekap Rincian Biaya.pdf';
+      fileList.push({ name: docName, blob: blob, icon: '📋' });
+      updateExportProgress(Math.round((currentTask / (totalTasks + 1)) * 90), null, { name: docName, icon: '📋' });
+    }
+  } catch (err) {
+    console.warn('Gagal membuat PDF Rekap Rincian Biaya', err);
+  }
+  await new Promise(r => setTimeout(r, 40));
+
+  // 3. Daftar Nominatif (Portrait)
+  currentTask++;
+  updateExportProgress(
+    Math.round((currentTask / (totalTasks + 1)) * 90),
+    `Membuat PDF Daftar Nominatif... (${currentTask}/${totalTasks})`
+  );
+  try {
+    if (typeof renderNominatif === 'function') renderNominatif();
+    const el = document.getElementById('nominatifOut');
+    const html = el ? el.innerHTML : '';
+    if (html && !html.includes('alert-warn')) {
+      const blob = await generatePdfBlobFromHtml(html, {
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      });
+      const docName = 'Daftar Nominatif.pdf';
+      fileList.push({ name: docName, blob: blob, icon: '👥' });
+      updateExportProgress(Math.round((currentTask / (totalTasks + 1)) * 90), null, { name: docName, icon: '👥' });
+    }
+  } catch (err) {
+    console.warn('Gagal membuat PDF Daftar Nominatif', err);
+  }
+  await new Promise(r => setTimeout(r, 40));
+
+  // 4. Lembar Kendali
+  currentTask++;
+  updateExportProgress(
+    Math.round((currentTask / (totalTasks + 1)) * 90),
+    `Membuat PDF Lembar Kendali... (${currentTask}/${totalTasks})`
+  );
+  try {
+    if (typeof renderLembarKendali === 'function') renderLembarKendali();
+    const el = document.getElementById('lembarKendaliOut');
+    const html = el ? el.innerHTML : '';
+    if (html && !html.includes('alert-warn')) {
+      const blob = await generatePdfBlobFromHtml(html, {
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      });
+      const docName = 'Lembar Kendali.pdf';
+      fileList.push({ name: docName, blob: blob, icon: '📑' });
+      updateExportProgress(Math.round((currentTask / (totalTasks + 1)) * 90), null, { name: docName, icon: '📑' });
+    }
+  } catch (err) {
+    console.warn('Gagal membuat PDF Lembar Kendali', err);
+  }
+  await new Promise(r => setTimeout(r, 40));
+
+  // 5. Rekap Surat Tugas
+  currentTask++;
+  updateExportProgress(
+    Math.round((currentTask / (totalTasks + 1)) * 90),
+    `Membuat PDF Rekap Surat Tugas... (${currentTask}/${totalTasks})`
+  );
+  try {
+    if (typeof renderRekapSPT === 'function') renderRekapSPT();
+    const el = document.getElementById('rekapSPTOut');
+    const html = el ? el.innerHTML : '';
+    if (html && !html.includes('alert-warn')) {
+      const blob = await generatePdfBlobFromHtml(html, {
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      });
+      const docName = 'Rekap Surat Tugas.pdf';
+      fileList.push({ name: docName, blob: blob, icon: '📜' });
+      updateExportProgress(Math.round((currentTask / (totalTasks + 1)) * 90), null, { name: docName, icon: '📜' });
+    }
+  } catch (err) {
+    console.warn('Gagal membuat PDF Rekap Surat Tugas', err);
+  }
+  await new Promise(r => setTimeout(r, 40));
+
+  updateExportProgress(95, `Mengemas folder kegiatan "${naming.folderName}"...`);
+  await new Promise(r => setTimeout(r, 60));
+
+  let zipBlob = null;
+  if (typeof JSZip !== 'undefined') {
+    const zip = new JSZip();
+    const folder = zip.folder(naming.folderName);
+    for (const item of fileList) {
+      folder.file(item.name, item.blob);
+    }
+    zipBlob = await zip.generateAsync({ type: 'blob' });
+    downloadBlob(zipBlob, `${naming.folderName}.zip`);
+  }
+
+  updateExportProgress(100, `Selesai! Berkas tersimpan di folder "${naming.folderName}".`);
+  finishExportModal(naming.folderName, fileList, zipBlob);
 }
 
 function importPerjadinExcel(input) {
