@@ -1381,9 +1381,9 @@ function renderRincian() {
 
       rincianRows += `<tr>
         <td class="tc">${no++}</td>
-        <td colspan="3" style="padding:0">
+        <td colspan="3" class="rincian-subtbl-cell" style="padding:0">
           <table class="rincian-subtbl">
-            <colgroup><col><col style="width:130px"><col style="width:120px"></colgroup>
+            <colgroup><col class="col-rincian-biaya"><col class="col-rincian-jumlah" style="width:125px"><col class="col-rincian-ket" style="width:250px"></colgroup>
             <tbody>
               <tr>
                 <td class="live-editable" contenteditable="true">${b.multiProvData.title1}<br><span style="padding-left:12px">${b.multiProvData.days1} hari &nbsp; X &nbsp; ${rp(b.multiProvData.uhRate1)}</span></td>
@@ -1441,9 +1441,9 @@ function renderRincian() {
       }
       rincianRows += `<tr>
         <td class="tc">${no++}</td>
-        <td colspan="3" style="padding:0">
+        <td colspan="3" class="rincian-subtbl-cell" style="padding:0">
           <table class="rincian-subtbl">
-            <colgroup><col><col style="width:130px"><col style="width:120px"></colgroup>
+            <colgroup><col class="col-rincian-biaya"><col class="col-rincian-jumlah" style="width:125px"><col class="col-rincian-ket" style="width:250px"></colgroup>
             <tbody>
               <tr>
                 <td class="live-editable" contenteditable="true">${b.uhTitle || 'Uang Harian'}<br><span style="padding-left:12px">${days} hari &nbsp; X &nbsp; ${rp(b.uhBaseRate)}</span></td>
@@ -1503,15 +1503,58 @@ function renderRincian() {
       : `Transport ${kotaAsal} - ${kotaTujuan} (PP)`;
     const transportTotal = b.dpr + transportExtra;
     if (transportCosts.length) {
-      const detailRows = transportCosts.map(item => {
-        const route = [item.pickup, item.dropoff].filter(Boolean).join(' - ');
-        return `<tr><td class="live-editable" contenteditable="true" style="padding-left:24px"><em>${escHtml(item.name)}</em></td><td class="tr live-editable" contenteditable="true"><em>${rp(item.amount)}</em></td><td class="live-editable" contenteditable="true">${escHtml(route)}</td></tr>`;
-      }).join('');
+      const hasDates = transportCosts.some(t => t.date);
+      let detailRows = '';
+      if (hasDates) {
+        const groups = {};
+        transportCosts.forEach(item => {
+          const dKey = item.date || 'tanpa_tanggal';
+          if (!groups[dKey]) groups[dKey] = [];
+          groups[dKey].push(item);
+        });
+        const sortedKeys = Object.keys(groups).sort((a, b) => {
+          if (a === 'tanpa_tanggal') return 1;
+          if (b === 'tanpa_tanggal') return -1;
+          return a.localeCompare(b);
+        });
+
+        detailRows = sortedKeys.map(dateKey => {
+          let headerHtml = '';
+          const items = groups[dateKey];
+          const groupColor = (typeof getTransportDateColor === 'function') ? getTransportDateColor(emp.id, dateKey) : '#fef3c7';
+
+          if (dateKey !== 'tanpa_tanggal') {
+            const dateDisplay = typeof formatTgl === 'function' ? formatTgl(dateKey) : dateKey;
+            headerHtml = `
+              <tr class="rincian-date-group-row" style="background-color: ${groupColor}; font-weight: 700;">
+                <td class="live-editable" contenteditable="true" style="padding-left: 18px; font-weight: 700; color: #000; background-color: ${groupColor};">
+                  ${dateDisplay}
+                  <input type="color" class="date-color-picker no-print" value="${groupColor}" onchange="setTransportDateColorForDate('${emp.id}', '${dateKey}', this.value)" title="Ganti warna baris ${dateDisplay}">
+                </td>
+                <td class="tr" style="background-color: ${groupColor};"></td>
+                <td class="live-editable" contenteditable="true" style="background-color: ${groupColor};"></td>
+              </tr>`;
+          }
+
+          const itemsHtml = items.map(item => {
+            const route = [item.pickup, item.dropoff].filter(Boolean).join(' - ');
+            const paddingLeft = dateKey !== 'tanpa_tanggal' ? '28px' : '24px';
+            return `<tr><td class="live-editable" contenteditable="true" style="padding-left: ${paddingLeft};"><em>${escHtml(item.name)}</em></td><td class="tr live-editable" contenteditable="true"><em>${rp(item.amount)}</em></td><td class="live-editable" contenteditable="true">${escHtml(route)}</td></tr>`;
+          }).join('');
+
+          return headerHtml + itemsHtml;
+        }).join('');
+      } else {
+        detailRows = transportCosts.map(item => {
+          const route = [item.pickup, item.dropoff].filter(Boolean).join(' - ');
+          return `<tr><td class="live-editable" contenteditable="true" style="padding-left: 24px;"><em>${escHtml(item.name)}</em></td><td class="tr live-editable" contenteditable="true"><em>${rp(item.amount)}</em></td><td class="live-editable" contenteditable="true">${escHtml(route)}</td></tr>`;
+        }).join('');
+      }
       rincianRows += `<tr>
         <td class="tc">${no++}</td>
-        <td colspan="3" style="padding:0">
+        <td colspan="3" class="rincian-subtbl-cell" style="padding:0">
           <table class="rincian-subtbl">
-            <colgroup><col><col style="width:130px"><col style="width:120px"></colgroup>
+            <colgroup><col class="col-rincian-biaya"><col class="col-rincian-jumlah" style="width:125px"><col class="col-rincian-ket" style="width:250px"></colgroup>
             <tbody>
               <tr><td class="live-editable" contenteditable="true">${dprUraian}</td><td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()"><strong>${rp(transportTotal)}</strong></td><td class="live-editable" contenteditable="true"></td></tr>
               <tr><td class="live-editable" contenteditable="true" style="padding-left:12px"><em>Rincian Transport:</em></td><td></td><td></td></tr>
@@ -1534,7 +1577,7 @@ function renderRincian() {
       </table>
 
       <table class="rincian-tbl">
-        <colgroup><col style="width:40px"><col><col style="width:130px"><col style="width:120px"></colgroup>
+        <colgroup><col class="col-rincian-no" style="width:36px"><col class="col-rincian-biaya"><col class="col-rincian-jumlah" style="width:125px"><col class="col-rincian-ket" style="width:250px"></colgroup>
         <thead>
           <tr>
             <th>NO</th>
@@ -1974,7 +2017,10 @@ function buildDPRLSHtml(emp, extraClass = '') {
   const dprAmount = Number(biaya.dpr) || 0;
   const transportCosts = biaya.customCosts.filter(item => item.isTransport && item.amount > 0);
   const transportExtra = transportCosts.reduce((total, item) => total + item.amount, 0);
-  const grandDprTotal = dprAmount + transportExtra;
+  const sbm = typeof getSBM === 'function' ? getSBM() : null;
+  const isSekitarNoDetails = (dprAmount === 0 && transportCosts.length === 0 && sbm && sbm.isSekitarJakarta);
+  const defaultSekitarTotal = isSekitarNoDetails ? sbm.dpr : 0;
+  const grandDprTotal = dprAmount + transportExtra + defaultSekitarTotal;
 
   let dprRowsHtml = '';
   let rowNo = 1;
@@ -1990,20 +2036,70 @@ function buildDPRLSHtml(emp, extraClass = '') {
         </td>
         <td class="dpr-jumlah">${rp(dprAmount)}</td>
       </tr>`;
-  }
-
-  transportCosts.forEach(item => {
-    const route = [item.pickup, item.dropoff].filter(Boolean).join(' - ');
+  } else if (isSekitarNoDetails) {
     dprRowsHtml += `
       <tr>
         <td class="tc">${rowNo++}</td>
         <td>
-          <div class="dpr-uraian-title">${escHtml(item.name)}</div>
-          <div>${escHtml(route || (kotaAsal + ' - ' + tujuan + ' (PP)'))}</div>
+          <div class="dpr-uraian-title">Transportasi Darat (DPR)</div>
+          <div>${kotaAsal} - ${tujuan} (PP)</div>
+          <div>1 orang x PP (SBM One Way @${rp(sbm.dprOneWay)} &times; 2)</div>
         </td>
-        <td class="dpr-jumlah">${rp(item.amount)}</td>
+        <td class="dpr-jumlah">${rp(defaultSekitarTotal)}</td>
       </tr>`;
-  });
+  }
+
+  const hasDates = transportCosts.some(t => t.date);
+  if (hasDates) {
+    const groups = {};
+    transportCosts.forEach(item => {
+      const dKey = item.date || 'tanpa_tanggal';
+      if (!groups[dKey]) groups[dKey] = [];
+      groups[dKey].push(item);
+    });
+    const sortedKeys = Object.keys(groups).sort((a, b) => {
+      if (a === 'tanpa_tanggal') return 1;
+      if (b === 'tanpa_tanggal') return -1;
+      return a.localeCompare(b);
+    });
+    sortedKeys.forEach(dateKey => {
+      const items = groups[dateKey];
+      const groupColor = (typeof getTransportDateColor === 'function') ? getTransportDateColor(emp.id, dateKey) : '#fef3c7';
+      if (dateKey !== 'tanpa_tanggal') {
+        const dateDisplay = typeof formatTgl === 'function' ? formatTgl(dateKey) : dateKey;
+        dprRowsHtml += `
+          <tr class="dpr-date-group-row" style="background-color: ${groupColor}; font-weight: 700;">
+            <td style="background-color: ${groupColor};"></td>
+            <td colspan="2" style="font-weight: 700; color: #000; background-color: ${groupColor}; padding-left: 10px;">${dateDisplay}</td>
+          </tr>`;
+      }
+      items.forEach(item => {
+        const route = [item.pickup, item.dropoff].filter(Boolean).join(' - ');
+        dprRowsHtml += `
+          <tr>
+            <td class="tc">${rowNo++}</td>
+            <td style="${dateKey !== 'tanpa_tanggal' ? 'padding-left: 20px;' : ''}">
+              <div class="dpr-uraian-title">${escHtml(item.name)}</div>
+              <div>${escHtml(route || (kotaAsal + ' - ' + tujuan + ' (PP)'))}</div>
+            </td>
+            <td class="dpr-jumlah">${rp(item.amount)}</td>
+          </tr>`;
+      });
+    });
+  } else {
+    transportCosts.forEach(item => {
+      const route = [item.pickup, item.dropoff].filter(Boolean).join(' - ');
+      dprRowsHtml += `
+        <tr>
+          <td class="tc">${rowNo++}</td>
+          <td>
+            <div class="dpr-uraian-title">${escHtml(item.name)}</div>
+            <div>${escHtml(route || (kotaAsal + ' - ' + tujuan + ' (PP)'))}</div>
+          </td>
+          <td class="dpr-jumlah">${rp(item.amount)}</td>
+        </tr>`;
+    });
+  }
 
   if (!dprRowsHtml) {
     dprRowsHtml = `
@@ -2186,6 +2282,16 @@ function printAllDPR() {
 
   const out = document.getElementById('dprOut');
   const isKKP = (document.getElementById('metodePembayaran')?.value || document.getElementById('lk_metodePembayaran')?.value || 'LS') === 'KKP';
+  const isDki = typeof isTripToDki === 'function' ? isTripToDki() : false;
+  if (!isKKP && !isDki) {
+    const msg = 'Lembar DPR (LS) hanya diterbitkan untuk Perjalanan Dinas dalam kota DKI Jakarta (Rp 170.000) atau perjalanan dengan metode KKP.';
+    if (typeof showValidationToast === 'function') {
+      showValidationToast([{ label: 'DPR' }], msg);
+    } else {
+      alert(msg);
+    }
+    return;
+  }
 
   let allHtml = '';
   const emps = [...selectedEmpIds].map(id => employees.find(e => e.id === id)).filter(Boolean);

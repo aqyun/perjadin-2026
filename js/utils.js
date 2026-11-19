@@ -20,12 +20,24 @@ function parseNumber(val) {
 
 function formatTgl(str) {
   if (!str) return '-';
-  const d = new Date(str);
+  const match = String(str).match(/^(\d{4})-(\d{2})-(\d{2})/);
   const months = [
     'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
     'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
   ];
+  if (match) {
+    const day = parseInt(match[3], 10);
+    const monthIdx = parseInt(match[2], 10) - 1;
+    const year = match[1];
+    return `${day} ${months[monthIdx] || ''} ${year}`;
+  }
+  const d = new Date(str);
+  if (isNaN(d.getTime())) return str;
   return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function formatTglPendek(str) {
+  return formatTgl(str);
 }
 
 function jabatanDuaBaris(text) {

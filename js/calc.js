@@ -6,14 +6,34 @@
 // =====================================================================
 // SBM & LAMA TUGAS
 // =====================================================================
+function adjustSbmForSekitarJakarta(sbm) {
+  const kotaTujuan = typeof document !== 'undefined' ? (document.getElementById('kotaTujuan')?.value || '') : '';
+  const sekitar = typeof getSbmSekitarJakarta === 'function' ? getSbmSekitarJakarta(kotaTujuan) : null;
+  if (sekitar) {
+    const baseSbm = sbm || (typeof sbmData !== 'undefined' ? sbmData.find(s => s.id === sekitar.provId) : null);
+    if (!baseSbm) return null;
+    return {
+      ...baseSbm,
+      isSekitarJakarta: true,
+      sekitarJakarta: sekitar,
+      jktPP: sekitar.pp,       // SBM Transport Jakarta - Daerah Sekitar PP (One Way x 2)
+      taxi: 0,                 // Termasuk dalam rute PP
+      dpr: sekitar.pp,         // Batas SBM Transport / DPR = One Way x 2
+      dprOneWay: sekitar.oneWay
+    };
+  }
+  return sbm;
+}
+
 function getSBM() {
   if (isMultiProvActive()) {
     const id1 = parseInt(document.getElementById('provinsiTujuan1')?.value || document.getElementById('provinsiTujuan')?.value);
-    const s1 = sbmData.find(s => s.id === id1);
-    if (s1) return s1;
+    const s1 = (typeof sbmData !== 'undefined' && Array.isArray(sbmData)) ? sbmData.find(s => s.id === id1) : null;
+    if (s1) return adjustSbmForSekitarJakarta(s1);
   }
   const id = parseInt(document.getElementById('provinsiTujuan')?.value);
-  return sbmData.find(s => s.id === id) || null;
+  const s = (typeof sbmData !== 'undefined' && Array.isArray(sbmData)) ? (sbmData.find(item => item.id === id) || null) : null;
+  return adjustSbmForSekitarJakarta(s);
 }
 
 const PROVINSI_AKRONIM = new Set(['DKI', 'D.I.']);
@@ -1150,14 +1170,35 @@ function updateSBMPreview() {
   if (elSnack) elSnack.textContent = rp(sbm.snack || 0);
   document.getElementById('sbm_h4').textContent = rp(sbm.h4);
   document.getElementById('sbm_h3').textContent = rp(sbm.h3);
-  document.getElementById('sbm_jkt').textContent = sbm.jktPP ? rp(sbm.jktPP) : '(tidak ada/dalam kota)';
-  document.getElementById('sbm_taxi').textContent = sbm.taxi ? rp(sbm.taxi) : '-';
-  const manualDpr = Number(document.getElementById('dprManual')?.value) || 0;
-  document.getElementById('sbm_dpr').textContent = isDkiJakarta ? `${rp(170000)} (otomatis)` : '- (hanya DKI Jakarta)';
+
+  if (sbm.isSekitarJakarta && sbm.sekitarJakarta) {
+    document.getElementById('sbm_jkt').textContent = `${rp(sbm.jktPP)} (PP)`;
+    document.getElementById('sbm_taxi').textContent = '- (termasuk rute PP)';
+    document.getElementById('sbm_dpr').textContent = `${rp(sbm.dpr)} (PP: ${rp(sbm.dprOneWay)} x 2)`;
+  } else {
+    document.getElementById('sbm_jkt').textContent = sbm.jktPP ? rp(sbm.jktPP) : '(tidak ada/dalam kota)';
+    document.getElementById('sbm_taxi').textContent = sbm.taxi ? rp(sbm.taxi) : '-';
+    document.getElementById('sbm_dpr').textContent = isDkiJakarta ? `${rp(170000)} (otomatis)` : '- (hanya DKI Jakarta)';
+  }
   document.getElementById('sbm_tiket').textContent = sbm.tiket ? rp(sbm.tiket) : '(tidak ada tiket pesawat)';
+
   const isDkiTarget = isDkiJakarta || (multi && ((multi.sbm1 && multi.sbm1.provinsi === 'DKI JAKARTA') || (multi.sbm2 && multi.sbm2.provinsi === 'DKI JAKARTA')));
   const noteJkt = document.getElementById('noteJakartaDPR');
-  if (noteJkt) noteJkt.style.display = isDkiTarget ? 'block' : 'none';
+  if (noteJkt) {
+    if (sbm.isSekitarJakarta && sbm.sekitarJakarta) {
+      noteJkt.style.display = 'block';
+      noteJkt.innerHTML = `*Transport Jakarta &harr; ${sbm.sekitarJakarta.nama}: ${rp(sbm.dprOneWay)} (One Way) &times; 2 = <strong>${rp(sbm.dpr)} PP</strong> <span class="note-link">(Cek PMK Hal 68 ↗)</span>`;
+      noteJkt.setAttribute('onclick', 'openPmkModal(68)');
+      noteJkt.setAttribute('title', 'Klik untuk membuka dokumen resmi PMK Hal 68 (Transport Jakarta ke Daerah Sekitar)');
+    } else if (isDkiTarget) {
+      noteJkt.style.display = 'block';
+      noteJkt.innerHTML = `*Khusus DKI Jakarta tidak mendapatkan uang harian. Tetapi, DPR yang dibayarkan sebesar Rp170.000 <span class="note-link">(Cek PMK Hal 69 ↗)</span>`;
+      noteJkt.setAttribute('onclick', 'openPmkModal(69)');
+      noteJkt.setAttribute('title', 'Klik untuk membuka dokumen resmi PMK Hal 69');
+    } else {
+      noteJkt.style.display = 'none';
+    }
+  }
 }
 
 function escHtml(value) {
@@ -1201,9 +1242,10 @@ function updateSbmWarnings() {
         const transportExtra = customCosts.reduce((total, item) => total + (item.kind === 'transport' ? item.amounts[String(id)] || 0 : 0), 0);
         const total = dprBase + transportExtra;
         if (total > sbm.dpr) {
+          const detailNote = sbm.isSekitarJakarta ? ` (One Way ${rp(sbm.dprOneWay)} x 2 PP)` : '';
           items.push({
             title: `Transport — ${emp.nama.split(',')[0]}`,
-            text: `${rp(total)} melebihi SBM DPR ${rp(sbm.dpr)} sebesar ${rp(total - sbm.dpr)}.`
+            text: `${rp(total)} melebihi SBM DPR ${rp(sbm.dpr)}${detailNote} sebesar ${rp(total - sbm.dpr)}.`
           });
         }
       });
@@ -2359,13 +2401,21 @@ function onCockpitTicketChange(inputEl, idx, isBlur = false) {
 // TRANSPORT LOKAL / DPR PERORANGAN (Rincian per Orang)
 // =====================================================================
 function isTripToDki() {
+  const kotaTujuan = typeof document !== 'undefined' ? (document.getElementById('kotaTujuan')?.value || '') : '';
+  const sekitar = typeof getSbmSekitarJakarta === 'function' ? getSbmSekitarJakarta(kotaTujuan) : null;
+  // Jika tujuan adalah salah satu daerah sekitar Jakarta (termasuk Kepulauan Seribu),
+  // maka bukan perjalanan dalam kota Jakarta flat Rp 170.000, melainkan tarif SBM Sekitar Jakarta (One Way x 2 = PP)
+  if (sekitar) {
+    return false;
+  }
   if (typeof isMultiProvActive === 'function' && isMultiProvActive()) {
     const multi = typeof getMultiProvData === 'function' ? getMultiProvData() : null;
     if (multi && ((multi.sbm1 && multi.sbm1.provinsi === 'DKI JAKARTA') || (multi.sbm2 && multi.sbm2.provinsi === 'DKI JAKARTA'))) {
       return true;
     }
   }
-  const sbm = typeof getSBM === 'function' ? getSBM() : null;
+  const id = parseInt(document.getElementById('provinsiTujuan')?.value);
+  const sbm = (typeof sbmData !== 'undefined' && Array.isArray(sbmData)) ? (sbmData.find(s => s.id === id) || null) : null;
   return !!(sbm && sbm.provinsi === 'DKI JAKARTA');
 }
 
@@ -2404,6 +2454,38 @@ function setEmployeeTransports(empId, list) {
 
 function clearEmployeeTransports() {
   employeeTransports = {};
+}
+
+function getTransportDateColor(empId, date = '') {
+  const cfg = typeof getEmployeeCostConfig === 'function' ? getEmployeeCostConfig(empId) : null;
+  if (!cfg) return '#fef3c7';
+  if (date && cfg.transportDateColors && cfg.transportDateColors[date]) {
+    return cfg.transportDateColors[date];
+  }
+  return cfg.transportDateColor || '#fef3c7';
+}
+
+function setTransportDateColor(empId, color) {
+  const cfg = typeof getEmployeeCostConfig === 'function' ? getEmployeeCostConfig(empId) : null;
+  if (!cfg) return;
+  cfg.transportDateColor = color;
+  cfg.isCustomized = true;
+  setEmployeeCostConfig(empId, cfg);
+  renderRincianTransportEditor(empId);
+  if (typeof renderRincian === 'function') renderRincian();
+  if (typeof renderDPR === 'function') renderDPR();
+}
+
+function setTransportDateColorForDate(empId, date, color) {
+  const cfg = typeof getEmployeeCostConfig === 'function' ? getEmployeeCostConfig(empId) : null;
+  if (!cfg) return;
+  if (!cfg.transportDateColors) cfg.transportDateColors = {};
+  cfg.transportDateColors[date] = color;
+  cfg.isCustomized = true;
+  setEmployeeCostConfig(empId, cfg);
+  renderRincianTransportEditor(empId);
+  if (typeof renderRincian === 'function') renderRincian();
+  if (typeof renderDPR === 'function') renderDPR();
 }
 
 function renderRincianTransportEditor(targetEmpId) {
@@ -2446,18 +2528,61 @@ function renderRincianTransportEditor(targetEmpId) {
   const list = getEmployeeTransports(empId);
   let total = 0;
 
+  const sbm = typeof getSBM === 'function' ? getSBM() : null;
+  const isSekitar = sbm && sbm.isSekitarJakarta && sbm.sekitarJakarta;
+  const sekitarBannerHtml = isSekitar ? `
+    <div class="emp-trans-sekitar-banner" style="background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(5,150,105,0.12)); border: 1.5px solid #a7f3d0; border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+      <div style="font-size: 12.5px; color: #065f46;">
+        <span style="font-weight: 700;">🚆 SBM Transport Jakarta &harr; ${sbm.sekitarJakarta.nama} (PP):</span>
+        <span style="margin-left: 4px;">Tarif SBM One Way <strong>${rp(sbm.dprOneWay)}</strong> &times; 2 = Maks DPR <strong>${rp(sbm.dpr)} PP</strong></span>
+      </div>
+      <div style="display: flex; gap: 6px; align-items: center;">
+        <button type="button" class="btn btn-xs" style="background:#10b981; color:#fff; border:none; padding:4px 9px; border-radius:6px; font-weight:600; cursor:pointer;" onclick="addSekitarJakartaTransportPreset()" title="Isi otomatis 1 baris transport tarif penuh SBM (${rp(sbm.dpr)})">+ Isi SBM PP (${rp(sbm.dpr)})</button>
+        <button type="button" class="btn btn-xs btn-outline" style="font-size:11px; padding:3px 7px;" onclick="openPmkModal(68)" title="Cek Dokumen Resmi PMK Hal 68">PMK Hal 68 ↗</button>
+      </div>
+    </div>
+  ` : '';
+
+  const currentColor = getTransportDateColor(empId);
+  const colorToolbarHtml = `
+    <div class="transport-toolbar-row">
+      <div class="transport-color-picker-wrap">
+        <span class="trans-toolbar-label">🎨 Warna Header Tanggal (DPR):</span>
+        <div class="trans-color-presets">
+          <button type="button" class="trans-color-swatch ${currentColor==='#fef3c7'?'active':''}" style="background:#fef3c7" onclick="setTransportDateColor('${empId}', '#fef3c7')" title="Kuning Lembut"></button>
+          <button type="button" class="trans-color-swatch ${currentColor==='#e0f2fe'?'active':''}" style="background:#e0f2fe" onclick="setTransportDateColor('${empId}', '#e0f2fe')" title="Biru Lembut"></button>
+          <button type="button" class="trans-color-swatch ${currentColor==='#f1f5f9'?'active':''}" style="background:#f1f5f9" onclick="setTransportDateColor('${empId}', '#f1f5f9')" title="Abu-abu Lembut"></button>
+          <button type="button" class="trans-color-swatch ${currentColor==='#dcfce7'?'active':''}" style="background:#dcfce7" onclick="setTransportDateColor('${empId}', '#dcfce7')" title="Hijau Lembut"></button>
+          <button type="button" class="trans-color-swatch ${currentColor==='#ede9fe'?'active':''}" style="background:#ede9fe" onclick="setTransportDateColor('${empId}', '#ede9fe')" title="Ungu Lembut"></button>
+          <button type="button" class="trans-color-swatch ${currentColor==='#ffffff'?'active':''}" style="background:#ffffff; border:1px solid #cbd5e1;" onclick="setTransportDateColor('${empId}', '#ffffff')" title="Putih/Tanpa Warna"></button>
+          <label class="trans-color-custom-btn" title="Pilih warna kustom bebas">
+            <input type="color" value="${currentColor}" onchange="setTransportDateColor('${empId}', this.value)">
+            <span>Kustom</span>
+          </label>
+        </div>
+      </div>
+      <div class="trans-hint-text">
+        <small style="color:var(--text-muted, #64748b);">💡 Baris dengan tanggal sama akan otomatis dikelompokkan</small>
+      </div>
+    </div>
+  `;
+
   if (list.length === 0) {
-    rowsContainer.innerHTML = `
+    rowsContainer.innerHTML = sekitarBannerHtml + colorToolbarHtml + `
       <div class="emp-trans-empty">
         Belum ada rincian transport untuk ${emp ? emp.nama.split(',')[0] : 'pegawai ini'}.
         Gunakan tombol <strong>+ Grab</strong>, <strong>+ Gojek</strong>, <strong>+ MRT</strong>, <strong>+ KRL</strong>, dll. di atas atau klik <strong>Tambah Baris Transport</strong>.
       </div>`;
   } else {
-    rowsContainer.innerHTML = list.map((item, idx) => {
+    rowsContainer.innerHTML = sekitarBannerHtml + colorToolbarHtml + list.map((item, idx) => {
       total += (item.amount || 0);
       const dispAmount = item.amount > 0 ? (typeof rp === 'function' ? rp(item.amount) : 'Rp ' + item.amount) : '';
       return `
         <div class="emp-trans-row" data-idx="${idx}">
+          <div class="emp-trans-col emp-trans-date-col">
+            <label class="emp-trans-label">Tanggal</label>
+            <input type="date" class="emp-trans-date" value="${item.date || ''}" onchange="onEmployeeTransportRowChange(this, ${idx}, true)" oninput="onEmployeeTransportRowChange(this, ${idx}, false)">
+          </div>
           <div class="emp-trans-col emp-trans-name-col">
             <label class="emp-trans-label">Jenis / Moda</label>
             <input type="text" class="emp-trans-name" placeholder="Grab, MRT, Tol..." value="${typeof escHtml === 'function' ? escHtml(item.name || '') : (item.name || '')}" list="listTransportPresets" oninput="onEmployeeTransportRowChange(this, ${idx}, false)" onblur="onEmployeeTransportRowChange(this, ${idx}, true)">
@@ -2484,8 +2609,69 @@ function renderRincianTransportEditor(targetEmpId) {
   }
 
   if (summaryEl) {
-    summaryEl.innerHTML = `Total Transport: <strong>${typeof rp === 'function' ? rp(total) : 'Rp ' + total}</strong>`;
+    const sbmDprLimit = (sbm && sbm.dpr > 0) ? sbm.dpr : 0;
+    const limitLabel = sbmDprLimit > 0 ? ` <span style="font-weight: normal; color: #64748b;">(Maks SBM: ${typeof rp === 'function' ? rp(sbmDprLimit) : 'Rp ' + sbmDprLimit} PP)</span>` : '';
+    summaryEl.innerHTML = `Total Transport: <strong>${typeof rp === 'function' ? rp(total) : 'Rp ' + total}</strong>${limitLabel}`;
   }
+}
+
+function addSekitarJakartaTransportPreset() {
+  const sbm = typeof getSBM === 'function' ? getSBM() : null;
+  if (!sbm || !sbm.isSekitarJakarta) return;
+  const select = document.getElementById('rincianPegawai');
+  if (!select || select.value === '') {
+    alert('Silakan pilih pegawai terlebih dahulu pada daftar pegawai di atas.');
+    return;
+  }
+  const empId = Number(select.value);
+  if (isNaN(empId)) return;
+  const list = getEmployeeTransports(empId);
+  const lastDate = (list.length > 0 && list[list.length - 1].date)
+    ? list[list.length - 1].date
+    : (document.getElementById('tglBerangkat')?.value || '');
+  const kotaAsal = document.getElementById('cfg_kotaAsal')?.value || 'Jakarta';
+
+  const currentTotal = list.reduce((sum, it) => sum + (it.amount || 0), 0);
+  const remainingPagu = Math.max(0, sbm.dpr - currentTotal);
+  const amountToFill = list.length === 0 ? sbm.dpr : remainingPagu;
+
+  list.push({
+    id: 't_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+    date: lastDate,
+    name: `Transport ${kotaAsal} - ${sbm.sekitarJakarta.nama} (PP)`,
+    pickup: 'Rumah / Kantor',
+    dropoff: `Lokasi Tugas (${sbm.sekitarJakarta.nama})`,
+    amount: amountToFill
+  });
+  setEmployeeTransports(empId, list);
+  renderRincianTransportEditor(empId);
+  renderRincianCockpit(empId);
+  renderRincianEmpPills();
+  if (typeof renderRincian === 'function') renderRincian();
+  if (typeof updateSbmWarnings === 'function') updateSbmWarnings();
+}
+
+function onKotaTujuanChange() {
+  const val = (document.getElementById('kotaTujuan')?.value || '').trim();
+  const sekitar = typeof getSbmSekitarJakarta === 'function' ? getSbmSekitarJakarta(val) : null;
+  if (sekitar) {
+    const provSel = document.getElementById('provinsiTujuan');
+    if (provSel && String(provSel.value) !== String(sekitar.provId)) {
+      provSel.value = sekitar.provId;
+      if (typeof changeProvince === 'function') {
+        changeProvince();
+        return;
+      }
+    }
+  }
+  if (typeof updateSBMPreview === 'function') updateSBMPreview();
+  if (typeof updateSbmWarnings === 'function') updateSbmWarnings();
+  if (typeof renderRincianTransportEditor === 'function') {
+    const sel = document.getElementById('rincianPegawai');
+    if (sel && sel.value) renderRincianTransportEditor(sel.value);
+  }
+  if (typeof renderRincian === 'function') renderRincian();
+  if (typeof renderDPR === 'function') renderDPR();
 }
 
 function addEmployeeTransportPreset(presetName) {
@@ -2522,8 +2708,12 @@ function addEmployeeTransportRow(presetName = '') {
     return;
   }
   const list = getEmployeeTransports(empId);
+  const lastDate = (list.length > 0 && list[list.length - 1].date)
+    ? list[list.length - 1].date
+    : (document.getElementById('tglBerangkat')?.value || '');
   list.push({
     id: 't_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+    date: lastDate,
     name: presetName,
     pickup: '',
     dropoff: '',
@@ -2563,11 +2753,13 @@ function onEmployeeTransportRowChange(el, idx, isBlur = false) {
   const row = el.closest ? el.closest('.emp-trans-row') : el.parentElement?.closest('.emp-trans-row');
   if (!row || !list[idx]) return;
 
+  const dateVal = row.querySelector('.emp-trans-date')?.value || '';
   const nameVal = row.querySelector('.emp-trans-name')?.value || '';
   const pickupVal = row.querySelector('.emp-trans-pickup')?.value || '';
   const dropoffVal = row.querySelector('.emp-trans-dropoff')?.value || '';
   let amountVal = (typeof parseNumber === 'function' ? parseNumber(row.querySelector('.emp-trans-amount')?.value) : Number(row.querySelector('.emp-trans-amount')?.value)) || 0;
 
+  list[idx].date = dateVal;
   list[idx].name = nameVal;
   list[idx].pickup = pickupVal;
   list[idx].dropoff = dropoffVal;
@@ -2589,12 +2781,15 @@ function onEmployeeTransportRowChange(el, idx, isBlur = false) {
         const amtInput = row.querySelector('.emp-trans-amount');
         if (amtInput) amtInput.value = maxAllowedForRow > 0 ? (typeof rp === 'function' ? rp(maxAllowedForRow) : `Rp ${maxAllowedForRow}`) : '';
 
+        const areaName = sbm.isSekitarJakarta ? `rute Jakarta &harr; ${sbm.sekitarJakarta.nama} (PP)` : (typeof formatProvinsi === 'function' ? formatProvinsi(sbm.provinsi) : sbm.provinsi);
+        const detailCalculation = sbm.isSekitarJakarta ? ` (One Way ${typeof rp === 'function' ? rp(sbm.dprOneWay) : sbm.dprOneWay} &times; 2 = ${typeof rp === 'function' ? rp(maxDpr) : maxDpr} PP sesuai PMK SBM Hal 68)` : '';
+
         openSbmLimitModal({
           title: 'Melebihi Batas SBM Transport / DPR',
           component: 'Biaya Transportasi',
           maxRate: maxDpr,
           provName: sbm.provinsi,
-          msg: `Total biaya transport/DPR untuk pegawai ini di <strong>${typeof formatProvinsi === 'function' ? formatProvinsi(sbm.provinsi) : sbm.provinsi}</strong> tidak boleh melebihi batas SBM DPR sebesar <strong>${typeof rp === 'function' ? rp(maxDpr) : 'Rp ' + maxDpr}</strong>. Nilai baris ini otomatis disesuaikan ke sisa pagu maksimal (<strong>${typeof rp === 'function' ? rp(maxAllowedForRow) : 'Rp ' + maxAllowedForRow}</strong>).`
+          msg: `Total biaya transport/DPR untuk pegawai ini pada <strong>${areaName}</strong> tidak boleh melebihi batas SBM DPR sebesar <strong>${typeof rp === 'function' ? rp(maxDpr) : 'Rp ' + maxDpr}</strong>${detailCalculation}. Nilai baris ini otomatis disesuaikan ke sisa pagu maksimal (<strong>${typeof rp === 'function' ? rp(maxAllowedForRow) : 'Rp ' + maxAllowedForRow}</strong>).`
         });
       }
     }
@@ -2609,7 +2804,8 @@ function onEmployeeTransportRowChange(el, idx, isBlur = false) {
   const summaryEl = document.getElementById('rincianTransportSummary');
   if (summaryEl) {
     const total = list.reduce((sum, it) => sum + (it.amount || 0), 0);
-    summaryEl.innerHTML = `Total Transport: <strong>${typeof rp === 'function' ? rp(total) : 'Rp ' + total}</strong>`;
+    const limitLabel = (sbm && sbm.dpr > 0) ? ` <span style="font-weight: normal; color: #64748b;">(Maks SBM: ${typeof rp === 'function' ? rp(sbm.dpr) : 'Rp ' + sbm.dpr} PP)</span>` : '';
+    summaryEl.innerHTML = `Total Transport: <strong>${typeof rp === 'function' ? rp(total) : 'Rp ' + total}</strong>${limitLabel}`;
   }
 
   updateCockpitKpi(empId);
@@ -2646,7 +2842,8 @@ function hitungBiaya(emp) {
       isTransport: true,
       isTicket: false,
       pickup: t.pickup || '',
-      dropoff: t.dropoff || ''
+      dropoff: t.dropoff || '',
+      date: t.date || ''
     }));
 
   // Global custom costs (if any configured from customCostList)

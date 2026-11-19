@@ -510,10 +510,21 @@
             <div class="form-group" data-field="kotaTujuan">
               <label for="kotaTujuan">Kota / Kabupaten Tujuan Spesifik <span class="req-star" title="Wajib diisi">*</span></label>
               <div class="field-control">
-                <input type="text" id="kotaTujuan" placeholder="Contoh: Kab. Subang, Jawa Barat">
+                <input type="text" id="kotaTujuan" placeholder="Contoh: Kab. Subang, Jawa Barat" oninput="onKotaTujuanChange()" onchange="onKotaTujuanChange()" list="listKotaTujuan">
                 <span class="field-inner-icon" title="Wajib diisi">!</span>
               </div>
               <span class="field-error-msg">Kota/Kabupaten tujuan wajib diisi</span>
+              <datalist id="listKotaTujuan">
+                <option value="Kota Bekasi, Jawa Barat">Kota Bekasi (Rp 256.000 x 2 = Rp 512.000 PP)</option>
+                <option value="Kab. Bekasi, Jawa Barat">Kab. Bekasi (Rp 256.000 x 2 = Rp 512.000 PP)</option>
+                <option value="Kota Bogor, Jawa Barat">Kota Bogor (Rp 270.000 x 2 = Rp 540.000 PP)</option>
+                <option value="Kab. Bogor, Jawa Barat">Kab. Bogor (Rp 270.000 x 2 = Rp 540.000 PP)</option>
+                <option value="Kota Depok, Jawa Barat">Kota Depok (Rp 248.000 x 2 = Rp 496.000 PP)</option>
+                <option value="Kota Tangerang, Banten">Kota Tangerang (Rp 258.000 x 2 = Rp 516.000 PP)</option>
+                <option value="Kota Tangerang Selatan, Banten">Kota Tangerang Selatan (Rp 258.000 x 2 = Rp 516.000 PP)</option>
+                <option value="Kab. Tangerang, Banten">Kab. Tangerang (Rp 279.000 x 2 = Rp 558.000 PP)</option>
+                <option value="Kepulauan Seribu, DKI Jakarta">Kepulauan Seribu (Rp 386.000 x 2 = Rp 772.000 PP)</option>
+              </datalist>
             </div>
             <div class="form-group full" style="margin-top:-4px; margin-bottom:4px;">
               <label class="opt-check-inline opt-check-multiprov">
@@ -1648,7 +1659,7 @@
             </div>
             <div class="form-group">
               <label for="cfg_kotaAsal">Kota Asal</label>
-              <input type="text" id="cfg_kotaAsal" value="Jakarta">
+              <input type="text" id="cfg_kotaAsal" value="Jakarta" oninput="onKotaTujuanChange()" onchange="onKotaTujuanChange()">
             </div>
             <div class="form-group full">
               <label for="cfg_alamatKuitansi">Alamat Kop Kuitansi</label>

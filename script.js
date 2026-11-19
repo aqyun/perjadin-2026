@@ -115,6 +115,50 @@ const sbmData = [
 ];
 
 // =====================================================================
+// SATUAN BIAYA TRANSPORTASI DARI DKI JAKARTA KE KABUPATEN/KOTA SEKITAR (ONE WAY)
+// Dasar: PMK SBM TA 2026 (Halaman 68)
+// Catatan: Nilai yang tercantum dalam tabel PMK adalah ONE WAY (sekali jalan).
+// Untuk perjalanan dinas PP (Pulang-Pergi), tarif SBM Transport / DPR dikali 2 (x 2).
+// =====================================================================
+const sbmTransportSekitarJakarta = [
+  { id: 'kota_bekasi', nama: 'Kota Bekasi', provId: 12, provName: 'JAWA BARAT', oneWay: 256000, pp: 512000, regex: /kota\s+bekasi|kodya\s+bekasi/i },
+  { id: 'kab_bekasi', nama: 'Kab. Bekasi', provId: 12, provName: 'JAWA BARAT', oneWay: 256000, pp: 512000, regex: /kab(\.|upaten)?\s+bekasi/i },
+  { id: 'bekasi', nama: 'Kota/Kab. Bekasi', provId: 12, provName: 'JAWA BARAT', oneWay: 256000, pp: 512000, regex: /\bbekasi\b/i },
+  { id: 'kab_bogor', nama: 'Kab. Bogor', provId: 12, provName: 'JAWA BARAT', oneWay: 270000, pp: 540000, regex: /kab(\.|upaten)?\s+bogor/i },
+  { id: 'kota_bogor', nama: 'Kota Bogor', provId: 12, provName: 'JAWA BARAT', oneWay: 270000, pp: 540000, regex: /kota\s+bogor|kodya\s+bogor/i },
+  { id: 'bogor', nama: 'Kota/Kab. Bogor', provId: 12, provName: 'JAWA BARAT', oneWay: 270000, pp: 540000, regex: /\bbogor\b/i },
+  { id: 'kota_depok', nama: 'Kota Depok', provId: 12, provName: 'JAWA BARAT', oneWay: 248000, pp: 496000, regex: /\bdepok\b/i },
+  { id: 'tangsel', nama: 'Kota Tangerang Selatan', provId: 11, provName: 'BANTEN', oneWay: 258000, pp: 516000, regex: /tangerang\s+selatan|tangsel/i },
+  { id: 'kab_tangerang', nama: 'Kab. Tangerang', provId: 11, provName: 'BANTEN', oneWay: 279000, pp: 558000, regex: /kab(\.|upaten)?\s+tangerang|tigaraksa/i },
+  { id: 'kota_tangerang', nama: 'Kota Tangerang', provId: 11, provName: 'BANTEN', oneWay: 258000, pp: 516000, regex: /\btangerang\b/i },
+  { id: 'kep_seribu', nama: 'Kepulauan Seribu', provId: 13, provName: 'DKI JAKARTA', oneWay: 386000, pp: 772000, regex: /seribu|pulau\s+seribu/i }
+];
+
+function getSbmSekitarJakarta(kotaTeks, kotaAsalTeks) {
+  const tujuan = String(kotaTeks !== undefined ? kotaTeks : (typeof document !== 'undefined' ? (document.getElementById('kotaTujuan')?.value || '') : '')).trim();
+  const asal = String(kotaAsalTeks !== undefined ? kotaAsalTeks : (typeof document !== 'undefined' ? (document.getElementById('cfg_kotaAsal')?.value || 'Jakarta') : 'Jakarta')).trim();
+
+  if (!tujuan) return null;
+
+  for (const item of sbmTransportSekitarJakarta) {
+    if (item.regex.test(tujuan)) {
+      return item;
+    }
+  }
+
+  // Jika tujuan Jakarta dan asal adalah kota sekitar
+  if (/jakarta/i.test(tujuan)) {
+    for (const item of sbmTransportSekitarJakarta) {
+      if (item.regex.test(asal)) {
+        return item;
+      }
+    }
+  }
+
+  return null;
+}
+
+// =====================================================================
 // STATE
 // =====================================================================
 let selectedEmpIds = new Set();
@@ -152,12 +196,24 @@ function parseNumber(val) {
 
 function formatTgl(str) {
   if (!str) return '-';
-  const d = new Date(str);
+  const match = String(str).match(/^(\d{4})-(\d{2})-(\d{2})/);
   const months = [
     'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
     'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
   ];
+  if (match) {
+    const day = parseInt(match[3], 10);
+    const monthIdx = parseInt(match[2], 10) - 1;
+    const year = match[1];
+    return `${day} ${months[monthIdx] || ''} ${year}`;
+  }
+  const d = new Date(str);
+  if (isNaN(d.getTime())) return str;
   return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function formatTglPendek(str) {
+  return formatTgl(str);
 }
 
 function jabatanDuaBaris(text) {
@@ -206,14 +262,34 @@ function terbilang(angka) {
 // =====================================================================
 // SBM & LAMA TUGAS
 // =====================================================================
+function adjustSbmForSekitarJakarta(sbm) {
+  const kotaTujuan = typeof document !== 'undefined' ? (document.getElementById('kotaTujuan')?.value || '') : '';
+  const sekitar = typeof getSbmSekitarJakarta === 'function' ? getSbmSekitarJakarta(kotaTujuan) : null;
+  if (sekitar) {
+    const baseSbm = sbm || (typeof sbmData !== 'undefined' ? sbmData.find(s => s.id === sekitar.provId) : null);
+    if (!baseSbm) return null;
+    return {
+      ...baseSbm,
+      isSekitarJakarta: true,
+      sekitarJakarta: sekitar,
+      jktPP: sekitar.pp,       // SBM Transport Jakarta - Daerah Sekitar PP (One Way x 2)
+      taxi: 0,                 // Termasuk dalam rute PP
+      dpr: sekitar.pp,         // Batas SBM Transport / DPR = One Way x 2
+      dprOneWay: sekitar.oneWay
+    };
+  }
+  return sbm;
+}
+
 function getSBM() {
   if (isMultiProvActive()) {
     const id1 = parseInt(document.getElementById('provinsiTujuan1')?.value || document.getElementById('provinsiTujuan')?.value);
-    const s1 = sbmData.find(s => s.id === id1);
-    if (s1) return s1;
+    const s1 = (typeof sbmData !== 'undefined' && Array.isArray(sbmData)) ? sbmData.find(s => s.id === id1) : null;
+    if (s1) return adjustSbmForSekitarJakarta(s1);
   }
   const id = parseInt(document.getElementById('provinsiTujuan')?.value);
-  return sbmData.find(s => s.id === id) || null;
+  const s = (typeof sbmData !== 'undefined' && Array.isArray(sbmData)) ? (sbmData.find(item => item.id === id) || null) : null;
+  return adjustSbmForSekitarJakarta(s);
 }
 
 const PROVINSI_AKRONIM = new Set(['DKI', 'D.I.']);
@@ -1350,14 +1426,35 @@ function updateSBMPreview() {
   if (elSnack) elSnack.textContent = rp(sbm.snack || 0);
   document.getElementById('sbm_h4').textContent = rp(sbm.h4);
   document.getElementById('sbm_h3').textContent = rp(sbm.h3);
-  document.getElementById('sbm_jkt').textContent = sbm.jktPP ? rp(sbm.jktPP) : '(tidak ada/dalam kota)';
-  document.getElementById('sbm_taxi').textContent = sbm.taxi ? rp(sbm.taxi) : '-';
-  const manualDpr = Number(document.getElementById('dprManual')?.value) || 0;
-  document.getElementById('sbm_dpr').textContent = isDkiJakarta ? `${rp(170000)} (otomatis)` : '- (hanya DKI Jakarta)';
+
+  if (sbm.isSekitarJakarta && sbm.sekitarJakarta) {
+    document.getElementById('sbm_jkt').textContent = `${rp(sbm.jktPP)} (PP)`;
+    document.getElementById('sbm_taxi').textContent = '- (termasuk rute PP)';
+    document.getElementById('sbm_dpr').textContent = `${rp(sbm.dpr)} (PP: ${rp(sbm.dprOneWay)} x 2)`;
+  } else {
+    document.getElementById('sbm_jkt').textContent = sbm.jktPP ? rp(sbm.jktPP) : '(tidak ada/dalam kota)';
+    document.getElementById('sbm_taxi').textContent = sbm.taxi ? rp(sbm.taxi) : '-';
+    document.getElementById('sbm_dpr').textContent = isDkiJakarta ? `${rp(170000)} (otomatis)` : '- (hanya DKI Jakarta)';
+  }
   document.getElementById('sbm_tiket').textContent = sbm.tiket ? rp(sbm.tiket) : '(tidak ada tiket pesawat)';
+
   const isDkiTarget = isDkiJakarta || (multi && ((multi.sbm1 && multi.sbm1.provinsi === 'DKI JAKARTA') || (multi.sbm2 && multi.sbm2.provinsi === 'DKI JAKARTA')));
   const noteJkt = document.getElementById('noteJakartaDPR');
-  if (noteJkt) noteJkt.style.display = isDkiTarget ? 'block' : 'none';
+  if (noteJkt) {
+    if (sbm.isSekitarJakarta && sbm.sekitarJakarta) {
+      noteJkt.style.display = 'block';
+      noteJkt.innerHTML = `*Transport Jakarta &harr; ${sbm.sekitarJakarta.nama}: ${rp(sbm.dprOneWay)} (One Way) &times; 2 = <strong>${rp(sbm.dpr)} PP</strong> <span class="note-link">(Cek PMK Hal 68 ↗)</span>`;
+      noteJkt.setAttribute('onclick', 'openPmkModal(68)');
+      noteJkt.setAttribute('title', 'Klik untuk membuka dokumen resmi PMK Hal 68 (Transport Jakarta ke Daerah Sekitar)');
+    } else if (isDkiTarget) {
+      noteJkt.style.display = 'block';
+      noteJkt.innerHTML = `*Khusus DKI Jakarta tidak mendapatkan uang harian. Tetapi, DPR yang dibayarkan sebesar Rp170.000 <span class="note-link">(Cek PMK Hal 69 ↗)</span>`;
+      noteJkt.setAttribute('onclick', 'openPmkModal(69)');
+      noteJkt.setAttribute('title', 'Klik untuk membuka dokumen resmi PMK Hal 69');
+    } else {
+      noteJkt.style.display = 'none';
+    }
+  }
 }
 
 function escHtml(value) {
@@ -1401,9 +1498,10 @@ function updateSbmWarnings() {
         const transportExtra = customCosts.reduce((total, item) => total + (item.kind === 'transport' ? item.amounts[String(id)] || 0 : 0), 0);
         const total = dprBase + transportExtra;
         if (total > sbm.dpr) {
+          const detailNote = sbm.isSekitarJakarta ? ` (One Way ${rp(sbm.dprOneWay)} x 2 PP)` : '';
           items.push({
             title: `Transport — ${emp.nama.split(',')[0]}`,
-            text: `${rp(total)} melebihi SBM DPR ${rp(sbm.dpr)} sebesar ${rp(total - sbm.dpr)}.`
+            text: `${rp(total)} melebihi SBM DPR ${rp(sbm.dpr)}${detailNote} sebesar ${rp(total - sbm.dpr)}.`
           });
         }
       });
@@ -2559,13 +2657,21 @@ function onCockpitTicketChange(inputEl, idx, isBlur = false) {
 // TRANSPORT LOKAL / DPR PERORANGAN (Rincian per Orang)
 // =====================================================================
 function isTripToDki() {
+  const kotaTujuan = typeof document !== 'undefined' ? (document.getElementById('kotaTujuan')?.value || '') : '';
+  const sekitar = typeof getSbmSekitarJakarta === 'function' ? getSbmSekitarJakarta(kotaTujuan) : null;
+  // Jika tujuan adalah salah satu daerah sekitar Jakarta (termasuk Kepulauan Seribu),
+  // maka bukan perjalanan dalam kota Jakarta flat Rp 170.000, melainkan tarif SBM Sekitar Jakarta (One Way x 2 = PP)
+  if (sekitar) {
+    return false;
+  }
   if (typeof isMultiProvActive === 'function' && isMultiProvActive()) {
     const multi = typeof getMultiProvData === 'function' ? getMultiProvData() : null;
     if (multi && ((multi.sbm1 && multi.sbm1.provinsi === 'DKI JAKARTA') || (multi.sbm2 && multi.sbm2.provinsi === 'DKI JAKARTA'))) {
       return true;
     }
   }
-  const sbm = typeof getSBM === 'function' ? getSBM() : null;
+  const id = parseInt(document.getElementById('provinsiTujuan')?.value);
+  const sbm = (typeof sbmData !== 'undefined' && Array.isArray(sbmData)) ? (sbmData.find(s => s.id === id) || null) : null;
   return !!(sbm && sbm.provinsi === 'DKI JAKARTA');
 }
 
@@ -2604,6 +2710,38 @@ function setEmployeeTransports(empId, list) {
 
 function clearEmployeeTransports() {
   employeeTransports = {};
+}
+
+function getTransportDateColor(empId, date = '') {
+  const cfg = typeof getEmployeeCostConfig === 'function' ? getEmployeeCostConfig(empId) : null;
+  if (!cfg) return '#fef3c7';
+  if (date && cfg.transportDateColors && cfg.transportDateColors[date]) {
+    return cfg.transportDateColors[date];
+  }
+  return cfg.transportDateColor || '#fef3c7';
+}
+
+function setTransportDateColor(empId, color) {
+  const cfg = typeof getEmployeeCostConfig === 'function' ? getEmployeeCostConfig(empId) : null;
+  if (!cfg) return;
+  cfg.transportDateColor = color;
+  cfg.isCustomized = true;
+  setEmployeeCostConfig(empId, cfg);
+  renderRincianTransportEditor(empId);
+  if (typeof renderRincian === 'function') renderRincian();
+  if (typeof renderDPR === 'function') renderDPR();
+}
+
+function setTransportDateColorForDate(empId, date, color) {
+  const cfg = typeof getEmployeeCostConfig === 'function' ? getEmployeeCostConfig(empId) : null;
+  if (!cfg) return;
+  if (!cfg.transportDateColors) cfg.transportDateColors = {};
+  cfg.transportDateColors[date] = color;
+  cfg.isCustomized = true;
+  setEmployeeCostConfig(empId, cfg);
+  renderRincianTransportEditor(empId);
+  if (typeof renderRincian === 'function') renderRincian();
+  if (typeof renderDPR === 'function') renderDPR();
 }
 
 function renderRincianTransportEditor(targetEmpId) {
@@ -2646,18 +2784,61 @@ function renderRincianTransportEditor(targetEmpId) {
   const list = getEmployeeTransports(empId);
   let total = 0;
 
+  const sbm = typeof getSBM === 'function' ? getSBM() : null;
+  const isSekitar = sbm && sbm.isSekitarJakarta && sbm.sekitarJakarta;
+  const sekitarBannerHtml = isSekitar ? `
+    <div class="emp-trans-sekitar-banner" style="background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(5,150,105,0.12)); border: 1.5px solid #a7f3d0; border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+      <div style="font-size: 12.5px; color: #065f46;">
+        <span style="font-weight: 700;">🚆 SBM Transport Jakarta &harr; ${sbm.sekitarJakarta.nama} (PP):</span>
+        <span style="margin-left: 4px;">Tarif SBM One Way <strong>${rp(sbm.dprOneWay)}</strong> &times; 2 = Maks DPR <strong>${rp(sbm.dpr)} PP</strong></span>
+      </div>
+      <div style="display: flex; gap: 6px; align-items: center;">
+        <button type="button" class="btn btn-xs" style="background:#10b981; color:#fff; border:none; padding:4px 9px; border-radius:6px; font-weight:600; cursor:pointer;" onclick="addSekitarJakartaTransportPreset()" title="Isi otomatis 1 baris transport tarif penuh SBM (${rp(sbm.dpr)})">+ Isi SBM PP (${rp(sbm.dpr)})</button>
+        <button type="button" class="btn btn-xs btn-outline" style="font-size:11px; padding:3px 7px;" onclick="openPmkModal(68)" title="Cek PMK Hal 68">PMK Hal 68 ↗</button>
+      </div>
+    </div>
+  ` : '';
+
+  const currentColor = getTransportDateColor(empId);
+  const colorToolbarHtml = `
+    <div class="transport-toolbar-row">
+      <div class="transport-color-picker-wrap">
+        <span class="trans-toolbar-label">🎨 Warna Header Tanggal (DPR):</span>
+        <div class="trans-color-presets">
+          <button type="button" class="trans-color-swatch ${currentColor==='#fef3c7'?'active':''}" style="background:#fef3c7" onclick="setTransportDateColor('${empId}', '#fef3c7')" title="Kuning Lembut"></button>
+          <button type="button" class="trans-color-swatch ${currentColor==='#e0f2fe'?'active':''}" style="background:#e0f2fe" onclick="setTransportDateColor('${empId}', '#e0f2fe')" title="Biru Lembut"></button>
+          <button type="button" class="trans-color-swatch ${currentColor==='#f1f5f9'?'active':''}" style="background:#f1f5f9" onclick="setTransportDateColor('${empId}', '#f1f5f9')" title="Abu-abu Lembut"></button>
+          <button type="button" class="trans-color-swatch ${currentColor==='#dcfce7'?'active':''}" style="background:#dcfce7" onclick="setTransportDateColor('${empId}', '#dcfce7')" title="Hijau Lembut"></button>
+          <button type="button" class="trans-color-swatch ${currentColor==='#ede9fe'?'active':''}" style="background:#ede9fe" onclick="setTransportDateColor('${empId}', '#ede9fe')" title="Ungu Lembut"></button>
+          <button type="button" class="trans-color-swatch ${currentColor==='#ffffff'?'active':''}" style="background:#ffffff; border:1px solid #cbd5e1;" onclick="setTransportDateColor('${empId}', '#ffffff')" title="Putih/Tanpa Warna"></button>
+          <label class="trans-color-custom-btn" title="Pilih warna kustom bebas">
+            <input type="color" value="${currentColor}" onchange="setTransportDateColor('${empId}', this.value)">
+            <span>Kustom</span>
+          </label>
+        </div>
+      </div>
+      <div class="trans-hint-text">
+        <small style="color:var(--text-muted, #64748b);">💡 Baris dengan tanggal sama akan otomatis dikelompokkan</small>
+      </div>
+    </div>
+  `;
+
   if (list.length === 0) {
-    rowsContainer.innerHTML = `
+    rowsContainer.innerHTML = sekitarBannerHtml + colorToolbarHtml + `
       <div class="emp-trans-empty">
         Belum ada rincian transport untuk ${emp ? emp.nama.split(',')[0] : 'pegawai ini'}.
         Gunakan tombol <strong>+ Grab</strong>, <strong>+ Gojek</strong>, <strong>+ MRT</strong>, <strong>+ KRL</strong>, dll. di atas atau klik <strong>Tambah Baris Transport</strong>.
       </div>`;
   } else {
-    rowsContainer.innerHTML = list.map((item, idx) => {
+    rowsContainer.innerHTML = sekitarBannerHtml + colorToolbarHtml + list.map((item, idx) => {
       total += (item.amount || 0);
       const dispAmount = item.amount > 0 ? (typeof rp === 'function' ? rp(item.amount) : 'Rp ' + item.amount) : '';
       return `
         <div class="emp-trans-row" data-idx="${idx}">
+          <div class="emp-trans-col emp-trans-date-col">
+            <label class="emp-trans-label">Tanggal</label>
+            <input type="date" class="emp-trans-date" value="${item.date || ''}" onchange="onEmployeeTransportRowChange(this, ${idx}, true)" oninput="onEmployeeTransportRowChange(this, ${idx}, false)">
+          </div>
           <div class="emp-trans-col emp-trans-name-col">
             <label class="emp-trans-label">Jenis / Moda</label>
             <input type="text" class="emp-trans-name" placeholder="Grab, MRT, Tol..." value="${typeof escHtml === 'function' ? escHtml(item.name || '') : (item.name || '')}" list="listTransportPresets" oninput="onEmployeeTransportRowChange(this, ${idx}, false)" onblur="onEmployeeTransportRowChange(this, ${idx}, true)">
@@ -2684,8 +2865,69 @@ function renderRincianTransportEditor(targetEmpId) {
   }
 
   if (summaryEl) {
-    summaryEl.innerHTML = `Total Transport: <strong>${typeof rp === 'function' ? rp(total) : 'Rp ' + total}</strong>`;
+    const sbmDprLimit = (sbm && sbm.dpr > 0) ? sbm.dpr : 0;
+    const limitLabel = sbmDprLimit > 0 ? ` <span style="font-weight: normal; color: #64748b;">(Maks SBM: ${typeof rp === 'function' ? rp(sbmDprLimit) : 'Rp ' + sbmDprLimit} PP)</span>` : '';
+    summaryEl.innerHTML = `Total Transport: <strong>${typeof rp === 'function' ? rp(total) : 'Rp ' + total}</strong>${limitLabel}`;
   }
+}
+
+function addSekitarJakartaTransportPreset() {
+  const sbm = typeof getSBM === 'function' ? getSBM() : null;
+  if (!sbm || !sbm.isSekitarJakarta) return;
+  const select = document.getElementById('rincianPegawai');
+  if (!select || select.value === '') {
+    alert('Silakan pilih pegawai terlebih dahulu pada daftar pegawai di atas.');
+    return;
+  }
+  const empId = Number(select.value);
+  if (isNaN(empId)) return;
+  const list = getEmployeeTransports(empId);
+  const lastDate = (list.length > 0 && list[list.length - 1].date)
+    ? list[list.length - 1].date
+    : (document.getElementById('tglBerangkat')?.value || '');
+  const kotaAsal = document.getElementById('cfg_kotaAsal')?.value || 'Jakarta';
+
+  const currentTotal = list.reduce((sum, it) => sum + (it.amount || 0), 0);
+  const remainingPagu = Math.max(0, sbm.dpr - currentTotal);
+  const amountToFill = list.length === 0 ? sbm.dpr : remainingPagu;
+
+  list.push({
+    id: 't_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+    date: lastDate,
+    name: `Transport ${kotaAsal} - ${sbm.sekitarJakarta.nama} (PP)`,
+    pickup: 'Rumah / Kantor',
+    dropoff: `Lokasi Tugas (${sbm.sekitarJakarta.nama})`,
+    amount: amountToFill
+  });
+  setEmployeeTransports(empId, list);
+  renderRincianTransportEditor(empId);
+  renderRincianCockpit(empId);
+  renderRincianEmpPills();
+  if (typeof renderRincian === 'function') renderRincian();
+  if (typeof updateSbmWarnings === 'function') updateSbmWarnings();
+}
+
+function onKotaTujuanChange() {
+  const val = (document.getElementById('kotaTujuan')?.value || '').trim();
+  const sekitar = typeof getSbmSekitarJakarta === 'function' ? getSbmSekitarJakarta(val) : null;
+  if (sekitar) {
+    const provSel = document.getElementById('provinsiTujuan');
+    if (provSel && String(provSel.value) !== String(sekitar.provId)) {
+      provSel.value = sekitar.provId;
+      if (typeof changeProvince === 'function') {
+        changeProvince();
+        return;
+      }
+    }
+  }
+  if (typeof updateSBMPreview === 'function') updateSBMPreview();
+  if (typeof updateSbmWarnings === 'function') updateSbmWarnings();
+  if (typeof renderRincianTransportEditor === 'function') {
+    const sel = document.getElementById('rincianPegawai');
+    if (sel && sel.value) renderRincianTransportEditor(sel.value);
+  }
+  if (typeof renderRincian === 'function') renderRincian();
+  if (typeof renderDPR === 'function') renderDPR();
 }
 
 function addEmployeeTransportPreset(presetName) {
@@ -2722,8 +2964,12 @@ function addEmployeeTransportRow(presetName = '') {
     return;
   }
   const list = getEmployeeTransports(empId);
+  const lastDate = (list.length > 0 && list[list.length - 1].date)
+    ? list[list.length - 1].date
+    : (document.getElementById('tglBerangkat')?.value || '');
   list.push({
     id: 't_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+    date: lastDate,
     name: presetName,
     pickup: '',
     dropoff: '',
@@ -2763,11 +3009,13 @@ function onEmployeeTransportRowChange(el, idx, isBlur = false) {
   const row = el.closest ? el.closest('.emp-trans-row') : el.parentElement?.closest('.emp-trans-row');
   if (!row || !list[idx]) return;
 
+  const dateVal = row.querySelector('.emp-trans-date')?.value || '';
   const nameVal = row.querySelector('.emp-trans-name')?.value || '';
   const pickupVal = row.querySelector('.emp-trans-pickup')?.value || '';
   const dropoffVal = row.querySelector('.emp-trans-dropoff')?.value || '';
   let amountVal = (typeof parseNumber === 'function' ? parseNumber(row.querySelector('.emp-trans-amount')?.value) : Number(row.querySelector('.emp-trans-amount')?.value)) || 0;
 
+  list[idx].date = dateVal;
   list[idx].name = nameVal;
   list[idx].pickup = pickupVal;
   list[idx].dropoff = dropoffVal;
@@ -2789,12 +3037,15 @@ function onEmployeeTransportRowChange(el, idx, isBlur = false) {
         const amtInput = row.querySelector('.emp-trans-amount');
         if (amtInput) amtInput.value = maxAllowedForRow > 0 ? (typeof rp === 'function' ? rp(maxAllowedForRow) : `Rp ${maxAllowedForRow}`) : '';
 
+        const areaName = sbm.isSekitarJakarta ? `rute Jakarta &harr; ${sbm.sekitarJakarta.nama} (PP)` : (typeof formatProvinsi === 'function' ? formatProvinsi(sbm.provinsi) : sbm.provinsi);
+        const detailCalculation = sbm.isSekitarJakarta ? ` (One Way ${typeof rp === 'function' ? rp(sbm.dprOneWay) : sbm.dprOneWay} &times; 2 = ${typeof rp === 'function' ? rp(maxDpr) : maxDpr} PP sesuai PMK SBM Hal 68)` : '';
+
         openSbmLimitModal({
           title: 'Melebihi Batas SBM Transport / DPR',
           component: 'Biaya Transportasi',
           maxRate: maxDpr,
           provName: sbm.provinsi,
-          msg: `Total biaya transport/DPR untuk pegawai ini di <strong>${typeof formatProvinsi === 'function' ? formatProvinsi(sbm.provinsi) : sbm.provinsi}</strong> tidak boleh melebihi batas SBM DPR sebesar <strong>${typeof rp === 'function' ? rp(maxDpr) : 'Rp ' + maxDpr}</strong>. Nilai baris ini otomatis disesuaikan ke sisa pagu maksimal (<strong>${typeof rp === 'function' ? rp(maxAllowedForRow) : 'Rp ' + maxAllowedForRow}</strong>).`
+          msg: `Total biaya transport/DPR untuk pegawai ini pada <strong>${areaName}</strong> tidak boleh melebihi batas SBM DPR sebesar <strong>${typeof rp === 'function' ? rp(maxDpr) : 'Rp ' + maxDpr}</strong>${detailCalculation}. Nilai baris ini otomatis disesuaikan ke sisa pagu maksimal (<strong>${typeof rp === 'function' ? rp(maxAllowedForRow) : 'Rp ' + maxAllowedForRow}</strong>).`
         });
       }
     }
@@ -2809,7 +3060,8 @@ function onEmployeeTransportRowChange(el, idx, isBlur = false) {
   const summaryEl = document.getElementById('rincianTransportSummary');
   if (summaryEl) {
     const total = list.reduce((sum, it) => sum + (it.amount || 0), 0);
-    summaryEl.innerHTML = `Total Transport: <strong>${typeof rp === 'function' ? rp(total) : 'Rp ' + total}</strong>`;
+    const limitLabel = (sbm && sbm.dpr > 0) ? ` <span style="font-weight: normal; color: #64748b;">(Maks SBM: ${typeof rp === 'function' ? rp(sbm.dpr) : 'Rp ' + sbm.dpr} PP)</span>` : '';
+    summaryEl.innerHTML = `Total Transport: <strong>${typeof rp === 'function' ? rp(total) : 'Rp ' + total}</strong>${limitLabel}`;
   }
 
   updateCockpitKpi(empId);
@@ -2846,7 +3098,8 @@ function hitungBiaya(emp) {
       isTransport: true,
       isTicket: false,
       pickup: t.pickup || '',
-      dropoff: t.dropoff || ''
+      dropoff: t.dropoff || '',
+      date: t.date || ''
     }));
 
   // Global custom costs (if any configured from customCostList)
@@ -4464,9 +4717,9 @@ function renderRincian() {
 
       rincianRows += `<tr>
         <td class="tc">${no++}</td>
-        <td colspan="3" style="padding:0">
+        <td colspan="3" class="rincian-subtbl-cell" style="padding:0">
           <table class="rincian-subtbl">
-            <colgroup><col><col style="width:130px"><col style="width:120px"></colgroup>
+            <colgroup><col class="col-rincian-biaya"><col class="col-rincian-jumlah" style="width:125px"><col class="col-rincian-ket" style="width:250px"></colgroup>
             <tbody>
               <tr>
                 <td class="live-editable" contenteditable="true">${b.multiProvData.title1}<br><span style="padding-left:12px">${b.multiProvData.days1} hari &nbsp; X &nbsp; ${rp(b.multiProvData.uhRate1)}</span></td>
@@ -4524,9 +4777,9 @@ function renderRincian() {
       }
       rincianRows += `<tr>
         <td class="tc">${no++}</td>
-        <td colspan="3" style="padding:0">
+        <td colspan="3" class="rincian-subtbl-cell" style="padding:0">
           <table class="rincian-subtbl">
-            <colgroup><col><col style="width:130px"><col style="width:120px"></colgroup>
+            <colgroup><col class="col-rincian-biaya"><col class="col-rincian-jumlah" style="width:125px"><col class="col-rincian-ket" style="width:250px"></colgroup>
             <tbody>
               <tr>
                 <td class="live-editable" contenteditable="true">${b.uhTitle || 'Uang Harian'}<br><span style="padding-left:12px">${days} hari &nbsp; X &nbsp; ${rp(b.uhBaseRate)}</span></td>
@@ -4586,15 +4839,58 @@ function renderRincian() {
       : `Transport ${kotaAsal} - ${kotaTujuan} (PP)`;
     const transportTotal = b.dpr + transportExtra;
     if (transportCosts.length) {
-      const detailRows = transportCosts.map(item => {
-        const route = [item.pickup, item.dropoff].filter(Boolean).join(' - ');
-        return `<tr><td class="live-editable" contenteditable="true" style="padding-left:24px"><em>${escHtml(item.name)}</em></td><td class="tr live-editable" contenteditable="true"><em>${rp(item.amount)}</em></td><td class="live-editable" contenteditable="true">${escHtml(route)}</td></tr>`;
-      }).join('');
+      const hasDates = transportCosts.some(t => t.date);
+      let detailRows = '';
+      if (hasDates) {
+        const groups = {};
+        transportCosts.forEach(item => {
+          const dKey = item.date || 'tanpa_tanggal';
+          if (!groups[dKey]) groups[dKey] = [];
+          groups[dKey].push(item);
+        });
+        const sortedKeys = Object.keys(groups).sort((a, b) => {
+          if (a === 'tanpa_tanggal') return 1;
+          if (b === 'tanpa_tanggal') return -1;
+          return a.localeCompare(b);
+        });
+
+        detailRows = sortedKeys.map(dateKey => {
+          let headerHtml = '';
+          const items = groups[dateKey];
+          const groupColor = (typeof getTransportDateColor === 'function') ? getTransportDateColor(emp.id, dateKey) : '#fef3c7';
+
+          if (dateKey !== 'tanpa_tanggal') {
+            const dateDisplay = typeof formatTgl === 'function' ? formatTgl(dateKey) : dateKey;
+            headerHtml = `
+              <tr class="rincian-date-group-row" style="background-color: ${groupColor}; font-weight: 700;">
+                <td class="live-editable" contenteditable="true" style="padding-left: 18px; font-weight: 700; color: #000; background-color: ${groupColor};">
+                  ${dateDisplay}
+                  <input type="color" class="date-color-picker no-print" value="${groupColor}" onchange="setTransportDateColorForDate('${emp.id}', '${dateKey}', this.value)" title="Ganti warna baris ${dateDisplay}">
+                </td>
+                <td class="tr" style="background-color: ${groupColor};"></td>
+                <td class="live-editable" contenteditable="true" style="background-color: ${groupColor};"></td>
+              </tr>`;
+          }
+
+          const itemsHtml = items.map(item => {
+            const route = [item.pickup, item.dropoff].filter(Boolean).join(' - ');
+            const paddingLeft = dateKey !== 'tanpa_tanggal' ? '28px' : '24px';
+            return `<tr><td class="live-editable" contenteditable="true" style="padding-left: ${paddingLeft};"><em>${escHtml(item.name)}</em></td><td class="tr live-editable" contenteditable="true"><em>${rp(item.amount)}</em></td><td class="live-editable" contenteditable="true">${escHtml(route)}</td></tr>`;
+          }).join('');
+
+          return headerHtml + itemsHtml;
+        }).join('');
+      } else {
+        detailRows = transportCosts.map(item => {
+          const route = [item.pickup, item.dropoff].filter(Boolean).join(' - ');
+          return `<tr><td class="live-editable" contenteditable="true" style="padding-left:24px"><em>${escHtml(item.name)}</em></td><td class="tr live-editable" contenteditable="true"><em>${rp(item.amount)}</em></td><td class="live-editable" contenteditable="true">${escHtml(route)}</td></tr>`;
+        }).join('');
+      }
       rincianRows += `<tr>
         <td class="tc">${no++}</td>
-        <td colspan="3" style="padding:0">
+        <td colspan="3" class="rincian-subtbl-cell" style="padding:0">
           <table class="rincian-subtbl">
-            <colgroup><col><col style="width:130px"><col style="width:120px"></colgroup>
+            <colgroup><col class="col-rincian-biaya"><col class="col-rincian-jumlah" style="width:125px"><col class="col-rincian-ket" style="width:250px"></colgroup>
             <tbody>
               <tr><td class="live-editable" contenteditable="true">${dprUraian}</td><td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()"><strong>${rp(transportTotal)}</strong></td><td class="live-editable" contenteditable="true"></td></tr>
               <tr><td class="live-editable" contenteditable="true" style="padding-left:12px"><em>Rincian Transport:</em></td><td></td><td></td></tr>
@@ -4617,7 +4913,7 @@ function renderRincian() {
       </table>
 
       <table class="rincian-tbl">
-        <colgroup><col style="width:40px"><col><col style="width:130px"><col style="width:120px"></colgroup>
+        <colgroup><col class="col-rincian-no" style="width:36px"><col class="col-rincian-biaya"><col class="col-rincian-jumlah" style="width:125px"><col class="col-rincian-ket" style="width:250px"></colgroup>
         <thead>
           <tr>
             <th>NO</th>
@@ -5057,7 +5353,10 @@ function buildDPRLSHtml(emp, extraClass = '') {
   const dprAmount = Number(biaya.dpr) || 0;
   const transportCosts = biaya.customCosts.filter(item => item.isTransport && item.amount > 0);
   const transportExtra = transportCosts.reduce((total, item) => total + item.amount, 0);
-  const grandDprTotal = dprAmount + transportExtra;
+  const sbm = typeof getSBM === 'function' ? getSBM() : null;
+  const isSekitarNoDetails = (dprAmount === 0 && transportCosts.length === 0 && sbm && sbm.isSekitarJakarta);
+  const defaultSekitarTotal = isSekitarNoDetails ? sbm.dpr : 0;
+  const grandDprTotal = dprAmount + transportExtra + defaultSekitarTotal;
 
   let dprRowsHtml = '';
   let rowNo = 1;
@@ -5073,20 +5372,70 @@ function buildDPRLSHtml(emp, extraClass = '') {
         </td>
         <td class="dpr-jumlah">${rp(dprAmount)}</td>
       </tr>`;
-  }
-
-  transportCosts.forEach(item => {
-    const route = [item.pickup, item.dropoff].filter(Boolean).join(' - ');
+  } else if (isSekitarNoDetails) {
     dprRowsHtml += `
       <tr>
         <td class="tc">${rowNo++}</td>
         <td>
-          <div class="dpr-uraian-title">${escHtml(item.name)}</div>
-          <div>${escHtml(route || (kotaAsal + ' - ' + tujuan + ' (PP)'))}</div>
+          <div class="dpr-uraian-title">Transportasi Darat (DPR)</div>
+          <div>${kotaAsal} - ${tujuan} (PP)</div>
+          <div>1 orang x PP (SBM One Way @${rp(sbm.dprOneWay)} &times; 2)</div>
         </td>
-        <td class="dpr-jumlah">${rp(item.amount)}</td>
+        <td class="dpr-jumlah">${rp(defaultSekitarTotal)}</td>
       </tr>`;
-  });
+  }
+
+  const hasDates = transportCosts.some(t => t.date);
+  if (hasDates) {
+    const groups = {};
+    transportCosts.forEach(item => {
+      const dKey = item.date || 'tanpa_tanggal';
+      if (!groups[dKey]) groups[dKey] = [];
+      groups[dKey].push(item);
+    });
+    const sortedKeys = Object.keys(groups).sort((a, b) => {
+      if (a === 'tanpa_tanggal') return 1;
+      if (b === 'tanpa_tanggal') return -1;
+      return a.localeCompare(b);
+    });
+    sortedKeys.forEach(dateKey => {
+      const items = groups[dateKey];
+      const groupColor = (typeof getTransportDateColor === 'function') ? getTransportDateColor(emp.id, dateKey) : '#fef3c7';
+      if (dateKey !== 'tanpa_tanggal') {
+        const dateDisplay = typeof formatTgl === 'function' ? formatTgl(dateKey) : dateKey;
+        dprRowsHtml += `
+          <tr class="dpr-date-group-row" style="background-color: ${groupColor}; font-weight: 700;">
+            <td style="background-color: ${groupColor};"></td>
+            <td colspan="2" style="font-weight: 700; color: #000; background-color: ${groupColor}; padding-left: 10px;">${dateDisplay}</td>
+          </tr>`;
+      }
+      items.forEach(item => {
+        const route = [item.pickup, item.dropoff].filter(Boolean).join(' - ');
+        dprRowsHtml += `
+          <tr>
+            <td class="tc">${rowNo++}</td>
+            <td style="${dateKey !== 'tanpa_tanggal' ? 'padding-left: 20px;' : ''}">
+              <div class="dpr-uraian-title">${escHtml(item.name)}</div>
+              <div>${escHtml(route || (kotaAsal + ' - ' + tujuan + ' (PP)'))}</div>
+            </td>
+            <td class="dpr-jumlah">${rp(item.amount)}</td>
+          </tr>`;
+      });
+    });
+  } else {
+    transportCosts.forEach(item => {
+      const route = [item.pickup, item.dropoff].filter(Boolean).join(' - ');
+      dprRowsHtml += `
+        <tr>
+          <td class="tc">${rowNo++}</td>
+          <td>
+            <div class="dpr-uraian-title">${escHtml(item.name)}</div>
+            <div>${escHtml(route || (kotaAsal + ' - ' + tujuan + ' (PP)'))}</div>
+          </td>
+          <td class="dpr-jumlah">${rp(item.amount)}</td>
+        </tr>`;
+    });
+  }
 
   if (!dprRowsHtml) {
     dprRowsHtml = `
@@ -5269,6 +5618,16 @@ function printAllDPR() {
 
   const out = document.getElementById('dprOut');
   const isKKP = (document.getElementById('metodePembayaran')?.value || document.getElementById('lk_metodePembayaran')?.value || 'LS') === 'KKP';
+  const isDki = typeof isTripToDki === 'function' ? isTripToDki() : false;
+  if (!isKKP && !isDki) {
+    const msg = 'Lembar DPR (LS) hanya diterbitkan untuk Perjalanan Dinas dalam kota DKI Jakarta (Rp 170.000) atau perjalanan dengan metode KKP.';
+    if (typeof showValidationToast === 'function') {
+      showValidationToast([{ label: 'DPR' }], msg);
+    } else {
+      alert(msg);
+    }
+    return;
+  }
 
   let allHtml = '';
   const emps = [...selectedEmpIds].map(id => employees.find(e => e.id === id)).filter(Boolean);

@@ -47,37 +47,48 @@ initTheme();
 // INIT
 // =====================================================================
 document.addEventListener('DOMContentLoaded', () => {
-  // Populate provinsi dropdowns
-  ['provinsiTujuan', 'provinsiTujuan1', 'provinsiTujuan2'].forEach(id => {
-    const sel = document.getElementById(id);
-    if (!sel) return;
-    sbmData.forEach(s => {
-      const opt = document.createElement('option');
-      opt.value = s.id;
-      opt.textContent = formatProvinsi(s.provinsi);
-      sel.appendChild(opt);
-    });
-  });
-  renderEmployeeList();
-  const datePill = document.getElementById('datePill');
-  if (datePill) {
-    datePill.textContent = new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date());
+  // Always trigger loader early so progress begins immediately
+  try {
+    initAppLoader();
+  } catch (e) {
+    console.warn('initAppLoader early launch error:', e);
   }
-  // Set default dates
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('tglST').value = today;
-  document.getElementById('tglSPD').value = today;
-  document.getElementById('tglBerangkat').value = today;
-  document.getElementById('tglKembali').value = today;
-  hitungLama();
-  if (typeof toggleUHFields === 'function') toggleUHFields();
-  if (typeof toggleHotelFields === 'function') toggleHotelFields();
-  updateSbmWarnings();
-  setupRealtimeValidation();
-  updateKKPBadgesAndNav();
-  if (typeof updateAllSpdSuffixLabels === 'function') updateAllSpdSuffixLabels();
-  if (typeof syncJenisPerjalananFromMak === 'function') syncJenisPerjalananFromMak();
-  initAppLoader();
+
+  try {
+    // Populate provinsi dropdowns
+    ['provinsiTujuan', 'provinsiTujuan1', 'provinsiTujuan2'].forEach(id => {
+      const sel = document.getElementById(id);
+      if (!sel || typeof sbmData === 'undefined' || !Array.isArray(sbmData)) return;
+      sbmData.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = typeof formatProvinsi === 'function' ? formatProvinsi(s.provinsi) : s.provinsi;
+        sel.appendChild(opt);
+      });
+    });
+    if (typeof renderEmployeeList === 'function') renderEmployeeList();
+    const datePill = document.getElementById('datePill');
+    if (datePill) {
+      datePill.textContent = new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date());
+    }
+    // Set default dates
+    const today = new Date().toISOString().split('T')[0];
+    const elTglST = document.getElementById('tglST'); if (elTglST && !elTglST.value) elTglST.value = today;
+    const elTglSPD = document.getElementById('tglSPD'); if (elTglSPD && !elTglSPD.value) elTglSPD.value = today;
+    const elTglBerangkat = document.getElementById('tglBerangkat'); if (elTglBerangkat && !elTglBerangkat.value) elTglBerangkat.value = today;
+    const elTglKembali = document.getElementById('tglKembali'); if (elTglKembali && !elTglKembali.value) elTglKembali.value = today;
+
+    if (typeof hitungLama === 'function') hitungLama();
+    if (typeof toggleUHFields === 'function') toggleUHFields();
+    if (typeof toggleHotelFields === 'function') toggleHotelFields();
+    if (typeof updateSbmWarnings === 'function') updateSbmWarnings();
+    if (typeof setupRealtimeValidation === 'function') setupRealtimeValidation();
+    if (typeof updateKKPBadgesAndNav === 'function') updateKKPBadgesAndNav();
+    if (typeof updateAllSpdSuffixLabels === 'function') updateAllSpdSuffixLabels();
+    if (typeof syncJenisPerjalananFromMak === 'function') syncJenisPerjalananFromMak();
+  } catch (err) {
+    console.error('PerdinKu initialization error:', err);
+  }
 });
 
 // =====================================================================
@@ -301,12 +312,18 @@ function setupRealtimeValidation() {
 function initAppLoader() {
   const loader = document.getElementById('appLoader');
   if (!loader) return;
+  // Guard against running multiple times
+  if (loader.dataset.loaderStarted === '1') return;
+  loader.dataset.loaderStarted = '1';
+
   const fill = document.getElementById('loaderFill');
   const pct = document.getElementById('loaderPct');
   const status = document.getElementById('loaderStatus');
 
-  const duration = 4800; // ~5 detik (4.8s progress + fade out = 5.2s total)
+  const duration = 2800; // ~3 detik total
   const startTime = performance.now();
+  let isDone = false;
+  let timer = null;
 
   const stages = [
     { threshold: 18, text: 'Memuat modul dan komponen sistem...' },
@@ -317,29 +334,51 @@ function initAppLoader() {
     { threshold: 100, text: 'Aplikasi siap digunakan!' }
   ];
 
-  function tick(now) {
-    const elapsed = now - startTime;
+  function dismissLoader() {
+    if (isDone) return;
+    isDone = true;
+    if (timer) clearInterval(timer);
+    if (fill) fill.style.width = '100%';
+    if (pct) pct.textContent = '100%';
+    loader.setAttribute('aria-valuenow', '100');
+    setTimeout(() => {
+      loader.classList.add('is-hidden');
+      initWelcomeModalAfterLoader();
+    }, 250);
+  }
+
+  // Click or keypress on splash screen skips immediately
+  loader.style.cursor = 'pointer';
+  loader.title = 'Klik untuk langsung masuk ke aplikasi';
+  loader.addEventListener('click', dismissLoader);
+
+  function step() {
+    if (isDone) return;
+    const elapsed = performance.now() - startTime;
     const progress = Math.min(1, elapsed / duration);
     const ease = progress < 0.5 ? 2 * progress * progress : 1 - Math.pow(-2 * progress + 2, 2) / 2;
-    const currentPct = Math.round(ease * 100);
+    const currentPct = Math.min(100, Math.round(ease * 100));
 
     if (fill) fill.style.width = currentPct + '%';
     if (pct) pct.textContent = currentPct + '%';
+    loader.setAttribute('aria-valuenow', String(currentPct));
 
     const stage = stages.find(s => currentPct <= s.threshold) || stages[stages.length - 1];
     if (status && stage) status.textContent = stage.text;
 
-    if (progress < 1) {
-      requestAnimationFrame(tick);
-    } else {
-      setTimeout(() => {
-        loader.classList.add('is-hidden');
-        initWelcomeModalAfterLoader();
-      }, 350);
+    if (progress >= 1) {
+      dismissLoader();
     }
   }
 
-  requestAnimationFrame(tick);
+  // Interval guarantees execution even if tab is in background or rAF is throttled
+  timer = setInterval(step, 25);
+  step();
+
+  // Safety hard timeout (3.5 detik) - guarantees splash screen NEVER gets stuck
+  setTimeout(() => {
+    if (!isDone) dismissLoader();
+  }, 3500);
 }
 
 let pageLoaderTimer = null;

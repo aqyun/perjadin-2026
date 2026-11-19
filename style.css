@@ -4484,7 +4484,7 @@ html[data-theme="dark"] .spd-suffix-label {
 }
 
 .rincian-doc {
-  max-width: 620px;
+  max-width: 680px;
   margin: 0 auto;
   padding: 24px;
   background: #fff;
@@ -4588,29 +4588,53 @@ html[data-theme="dark"] .spd-suffix-label {
   padding-right: 8px;
 }
 
+.rincian-tbl td[colspan="3"],
+.rincian-tbl td.rincian-subtbl-cell {
+  padding: 0 !important;
+  margin: 0 !important;
+  vertical-align: top;
+}
+
 .rincian-tbl .rincian-subtbl {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed;
+  width: 100% !important;
+  margin: 0 !important;
+  border-collapse: collapse !important;
+  table-layout: fixed !important;
+  border: none !important;
 }
 
 .rincian-tbl .rincian-subtbl td {
-  border: 0;
-  padding: 2px 6px;
-  font-size: 12px;
-  color: #000000;
+  border: 0 !important;
+  padding: 2px 6px !important;
+  font-size: 12px !important;
+  color: #000000 !important;
 }
 
 .rincian-tbl .rincian-subtbl td:first-child {
-  border-right: 1px solid #000000;
+  border-right: 1px solid #000000 !important;
 }
 
 .rincian-tbl .rincian-subtbl td:nth-child(2) {
-  border-right: 1px solid #000000;
+  border-right: 1px solid #000000 !important;
 }
 
 .rincian-tbl .rincian-subtbl td:last-child {
+  border-right: 0 !important;
   overflow-wrap: anywhere;
+}
+
+.rincian-tbl col.col-rincian-no {
+  width: 36px;
+}
+
+.rincian-tbl col.col-rincian-jumlah,
+.rincian-subtbl col.col-rincian-jumlah {
+  width: 125px;
+}
+
+.rincian-tbl col.col-rincian-ket,
+.rincian-subtbl col.col-rincian-ket {
+  width: 250px;
 }
 
 .rincian-total-row td {
@@ -7501,6 +7525,42 @@ MODE GELAP — layar saja; kertas dokumen & cetak tetap putih
     word-break: break-word !important;
     overflow-wrap: anywhere !important;
   }
+  /* Print optimizations for Rincian Perorangan */
+  body.print-rincian .rincian-tbl col.col-rincian-no {
+    width: 36px !important;
+  }
+  body.print-rincian .rincian-tbl col.col-rincian-jumlah,
+  body.print-rincian .rincian-subtbl col.col-rincian-jumlah {
+    width: 125px !important;
+  }
+  body.print-rincian .rincian-tbl col.col-rincian-ket,
+  body.print-rincian .rincian-subtbl col.col-rincian-ket {
+    width: 250px !important;
+  }
+  body.print-rincian .rincian-tbl td[colspan="3"],
+  body.print-rincian .rincian-tbl td.rincian-subtbl-cell {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  body.print-rincian .rincian-tbl th,
+  body.print-rincian .rincian-tbl td:not([colspan="3"]):not(.rincian-subtbl-cell) {
+    padding: 4px 6px !important;
+    font-size: 12px !important;
+  }
+  body.print-rincian .rincian-tbl .rincian-subtbl td {
+    padding: 2px 6px !important;
+    font-size: 12px !important;
+  }
+  .date-color-picker {
+    display: none !important;
+  }
+  .rincian-tbl tr.rincian-date-group-row,
+  .rincian-tbl tr.rincian-date-group-row td,
+  .dpr-tbl tr.dpr-date-group-row,
+  .dpr-tbl tr.dpr-date-group-row td {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
 }
 
 /* Dark mode for emp-spd-block */
@@ -7730,7 +7790,7 @@ html[data-theme="dark"] .manual-meal-summary {
 
 .emp-trans-row {
   display: grid;
-  grid-template-columns: 1.2fr 1.5fr 1.5fr 1.2fr auto;
+  grid-template-columns: 140px 1.2fr 1.4fr 1.4fr 1.1fr auto;
   gap: 10px;
   align-items: flex-end;
   padding: 10px 12px;
@@ -7873,12 +7933,131 @@ html[data-theme="dark"] .rincian-transport-summary {
   .emp-trans-row {
     grid-template-columns: 1fr 1fr;
   }
-  .emp-trans-col:nth-child(5) {
+  .emp-trans-col:nth-child(6) {
     grid-column: span 2;
   }
   .emp-trans-del-btn {
     width: 100%;
   }
+}
+
+.transport-toolbar-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+
+.transport-color-picker-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.trans-toolbar-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.trans-color-presets {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.trans-color-swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.trans-color-swatch:hover {
+  transform: scale(1.15);
+}
+
+.trans-color-swatch.active {
+  border-color: #2563eb;
+  transform: scale(1.1);
+}
+
+.trans-color-custom-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 7px;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #475569;
+  cursor: pointer;
+}
+
+.trans-color-custom-btn input[type="color"] {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+html[data-theme="dark"] .transport-toolbar-row {
+  background: #131f33;
+  border-color: #26395a;
+}
+
+html[data-theme="dark"] .trans-toolbar-label {
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .trans-color-custom-btn {
+  background: #1e293b;
+  border-color: #334155;
+  color: #cbd5e1;
+}
+
+.rincian-tbl tr.rincian-date-group-row td {
+  padding: 4px 6px;
+  font-weight: 700;
+  color: #000;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.dpr-tbl tr.dpr-date-group-row td {
+  padding: 4px 6px;
+  font-weight: 700;
+  color: #000;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.date-color-picker {
+  display: inline-block;
+  vertical-align: middle;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  margin-left: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  border-radius: 3px;
+  cursor: pointer;
+  background: transparent;
 }
 
 /* ==========================================================================
