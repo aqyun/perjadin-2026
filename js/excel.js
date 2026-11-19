@@ -347,16 +347,29 @@ async function generatePdfBlobFromHtml(htmlContent, optOverrides = {}) {
   }
 
   // Bersihkan elemen berkelas no-print
-  let cleanHtml = htmlContent;
-  if (typeof cleanHtml === 'string') {
-    cleanHtml = cleanHtml.replace(/<[^>]+class="[^"]*\bno-print\b[^"]*"[^>]*>[\s\S]*?<\/[^>]+>/gi, '');
+  // Gunakan DOMParser agar manipulasi dan pembersihan elemen no-print 100% valid tanpa merusak struktur HTML
+  let cleanHtml = '';
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlContent, 'text/html');
+    doc.querySelectorAll('.no-print, button, input').forEach(el => el.remove());
+    doc.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+    cleanHtml = doc.body.innerHTML;
+  } catch (e) {
+    cleanHtml = (htmlContent || '')
+      .replace(/<button[\s\S]*?<\/button>/gi, '')
+      .replace(/<input[^>]*>/gi, '')
+      .replace(/contenteditable="[^"]*"/gi, '');
   }
 
   // Bungkus dalam container putih bersih agar hasil PDF selalu berlatar putih dan teks terbaca jelas
   cleanHtml = `<div style="background-color: #ffffff !important; color: #000000 !important; width: 100%; box-sizing: border-box;">${cleanHtml}</div>`;
 
+  const orientation = (optOverrides && optOverrides.jsPDF && optOverrides.jsPDF.orientation) || 'portrait';
+  const isLandscape = orientation === 'landscape';
+
   const defaultOpt = {
-    margin: [8, 10, 8, 10],
+    margin: isLandscape ? [8, 8, 8, 8] : [6, 8, 6, 8],
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: {
       scale: 1.6,
@@ -364,11 +377,18 @@ async function generatePdfBlobFromHtml(htmlContent, optOverrides = {}) {
       logging: false,
       backgroundColor: '#ffffff'
     },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: orientation },
     pagebreak: { mode: ['css', 'legacy'] }
   };
 
   const finalOpt = Object.assign({}, defaultOpt, optOverrides);
+  if (optOverrides.html2canvas) {
+    finalOpt.html2canvas = Object.assign({}, defaultOpt.html2canvas, optOverrides.html2canvas);
+  }
+  if (optOverrides.pagebreak) {
+    finalOpt.pagebreak = Object.assign({}, defaultOpt.pagebreak, optOverrides.pagebreak);
+  }
+
   return await html2pdf().set(finalOpt).from(cleanHtml).output('blob');
 }
 

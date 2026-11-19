@@ -414,7 +414,7 @@
       <div class="topbar-excel-group">
         <button type="button" class="btn btn-success btn-sm btn-topbar-save" onclick="exportPerjadinExcel()" title="Simpan data ke file Excel & buat folder berkas PDF perorangan">
           <svg class="ico"><use href="#i-save"></use></svg>
-          <span>Simpan Excel</span>
+          <span>Simpan Data</span>
         </button>
         <button type="button" class="btn btn-secondary btn-sm btn-topbar-load" onclick="document.getElementById('excelFileInput').click()" title="Muat isian dari file Excel">
           <svg class="ico"><use href="#i-load"></use></svg>
@@ -935,7 +935,7 @@
           <button class="btn btn-secondary" onclick="showTab('input')"><svg class="ico"><use href="#i-arrow-left"></use></svg>Kembali</button>
         </div>
         <div class="btn-row-right">
-          <button class="btn btn-primary" onclick="renderNominatif()"><svg class="ico"><use href="#i-refresh"></use></svg>Refresh</button>
+          <button class="btn btn-primary" onclick="refreshDocument(this, 'renderNominatif')"><svg class="ico"><use href="#i-refresh"></use></svg>Refresh</button>
           <button class="btn btn-success" onclick="printNominatif()"><svg class="ico"><use href="#i-print"></use></svg>Cetak Nominatif</button>
         </div>
       </div>
@@ -949,7 +949,7 @@
           <button class="btn btn-secondary" onclick="showTab('input')"><svg class="ico"><use href="#i-arrow-left"></use></svg>Kembali</button>
         </div>
         <div class="btn-row-right">
-          <button class="btn btn-primary" onclick="renderRekapKuitansi()"><svg class="ico"><use href="#i-refresh"></use></svg>Refresh</button>
+          <button class="btn btn-primary" onclick="refreshDocument(this, 'renderRekapKuitansi')"><svg class="ico"><use href="#i-refresh"></use></svg>Refresh</button>
           <button class="btn btn-success" onclick="printRekapKuitansi()"><svg class="ico"><use href="#i-print"></use></svg>Cetak Kuitansi</button>
         </div>
       </div>
@@ -994,7 +994,7 @@
           <button class="btn btn-secondary" onclick="showTab('input')"><svg class="ico"><use href="#i-arrow-left"></use></svg>Kembali</button>
         </div>
         <div class="btn-row-right">
-          <button class="btn btn-primary" onclick="renderKuitansiPerorangan()"><svg class="ico"><use href="#i-refresh"></use></svg>Refresh</button>
+          <button class="btn btn-primary" onclick="refreshDocument(this, 'renderKuitansiPerorangan')"><svg class="ico"><use href="#i-refresh"></use></svg>Refresh</button>
           <button class="btn btn-success" onclick="printKuitansiPerorangan()"><svg class="ico"><use href="#i-print"></use></svg>Cetak Kuitansi</button>
         </div>
       </div>
@@ -1034,7 +1034,7 @@
           <button class="btn btn-secondary" onclick="showTab('input')"><svg class="ico"><use href="#i-arrow-left"></use></svg>Kembali</button>
         </div>
         <div class="btn-row-right">
-          <button class="btn btn-primary" onclick="renderSPPDPerorangan()"><svg class="ico"><use href="#i-refresh"></use></svg>Refresh</button>
+          <button class="btn btn-primary" onclick="refreshDocument(this, 'renderSPPDPerorangan')"><svg class="ico"><use href="#i-refresh"></use></svg>Refresh</button>
           <button class="btn btn-success" onclick="printSPPDPerorangan()"><svg class="ico"><use href="#i-print"></use></svg>Cetak SPPD</button>
         </div>
       </div>
@@ -1074,7 +1074,7 @@
           <button class="btn btn-secondary" onclick="showTab('input')"><svg class="ico"><use href="#i-arrow-left"></use></svg>Kembali</button>
         </div>
         <div class="btn-row-right">
-          <button class="btn btn-primary" onclick="renderLembarKendali()"><svg class="ico"><use href="#i-refresh"></use></svg>Refresh</button>
+          <button class="btn btn-primary" onclick="refreshDocument(this, 'renderLembarKendali')"><svg class="ico"><use href="#i-refresh"></use></svg>Refresh</button>
           <button class="btn btn-success" onclick="printLembarKendali()"><svg class="ico"><use href="#i-print"></use></svg>Cetak Lembar Kendali</button>
         </div>
       </div>
@@ -1131,7 +1131,7 @@
           <button class="btn btn-secondary" onclick="showTab('input')"><svg class="ico"><use href="#i-arrow-left"></use></svg>Kembali</button>
         </div>
         <div class="btn-row-right">
-          <button class="btn btn-primary" onclick="renderRekapRincian()"><svg class="ico"><use href="#i-refresh"></use></svg>Refresh</button>
+          <button class="btn btn-primary" onclick="refreshDocument(this, 'renderRekapRincian')"><svg class="ico"><use href="#i-refresh"></use></svg>Refresh</button>
           <button class="btn btn-success" onclick="printRekapRincian()"><svg class="ico"><use href="#i-print"></use></svg>Cetak Rekap Rincian</button>
         </div>
       </div>
@@ -1145,7 +1145,7 @@
           <button class="btn btn-secondary" onclick="showTab('input')"><svg class="ico"><use href="#i-arrow-left"></use></svg>Kembali</button>
         </div>
         <div class="btn-row-right">
-          <button class="btn btn-primary" onclick="renderRekapSPT()"><svg class="ico"><use href="#i-refresh"></use></svg>Refresh</button>
+          <button class="btn btn-primary" onclick="refreshDocument(this, 'renderRekapSPT')"><svg class="ico"><use href="#i-refresh"></use></svg>Refresh</button>
           <button class="btn btn-success" onclick="printRekapSPT()"><svg class="ico"><use href="#i-print"></use></svg>Cetak Rekap SPT</button>
         </div>
       </div>
@@ -1159,7 +1159,7 @@
           <button class="btn btn-secondary" onclick="showTab('input')"><svg class="ico"><use href="#i-arrow-left"></use></svg>Kembali</button>
         </div>
         <div class="btn-row-right">
-          <button class="btn btn-primary" onclick="renderRincian()"><svg class="ico"><use href="#i-refresh"></use></svg>Refresh</button>
+          <button class="btn btn-primary" onclick="refreshDocument(this, 'renderRincian')"><svg class="ico"><use href="#i-refresh"></use></svg>Refresh</button>
           <button class="btn btn-success" onclick="printRincian()"><svg class="ico"><use href="#i-print"></use></svg>Cetak Rincian</button>
         </div>
       </div>
@@ -1593,7 +1593,7 @@
           <button class="btn btn-secondary" onclick="showTab('input')"><svg class="ico"><use href="#i-arrow-left"></use></svg>Kembali</button>
         </div>
         <div class="btn-row-right">
-          <button class="btn btn-primary" onclick="renderDPR()"><svg class="ico"><use href="#i-refresh"></use></svg>Refresh</button>
+          <button class="btn btn-primary" onclick="refreshDocument(this, 'renderDPR')"><svg class="ico"><use href="#i-refresh"></use></svg>Refresh</button>
           <button class="btn btn-success" onclick="printDPR()"><svg class="ico"><use href="#i-print"></use></svg><span id="labelPrintDPR">Cetak DPR</span></button>
         </div>
       </div>
@@ -1773,6 +1773,18 @@
     <p id="valToastDesc">Mohon lengkapi semua isian bertanda (!) sebelum membuat dokumen.</p>
   </div>
   <button type="button" class="val-toast-close" onclick="hideValidationToast()" aria-label="Tutup peringatan">
+    <svg class="ico"><use href="#i-close"></use></svg>
+  </button>
+</div>
+
+<!-- Floating Refresh & Feedback Toast -->
+<div id="refreshToast" class="val-toast val-toast-success no-print" role="status" aria-live="polite">
+  <div class="val-toast-icon">✓</div>
+  <div class="val-toast-body">
+    <strong id="refreshToastTitle">Dokumen Berhasil Diperbarui</strong>
+    <p id="refreshToastDesc">Kalkulasi dan format dokumen telah diselaraskan.</p>
+  </div>
+  <button type="button" class="val-toast-close" onclick="hideRefreshToast()" aria-label="Tutup notifikasi">
     <svg class="ico"><use href="#i-close"></use></svg>
   </button>
 </div>

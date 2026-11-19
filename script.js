@@ -5155,9 +5155,10 @@ function buildAllDocsHtmlForEmp(emp) {
   // 3. SPPD Perorangan
   sections.push(buildSPPDHtml(emp));
   return `
-    <div class="emp-bundle-doc" style="background:#fff; color:#000;">
+    <div class="emp-bundle-doc" style="background:#ffffff; color:#000000;">
       ${sections.map((sec, idx) => `
-        <div class="doc-page-section" style="${idx > 0 ? 'page-break-before: always; margin-top: 24px;' : ''}">
+        ${idx > 0 ? '<div class="html2pdf__page-break"></div>' : ''}
+        <div class="doc-page-section">
           ${sec}
         </div>
       `).join('')}
@@ -6188,17 +6189,29 @@ async function generatePdfBlobFromHtml(htmlContent, optOverrides = {}) {
     throw new Error('Konten HTML dokumen kosong');
   }
 
-  // Bersihkan elemen berkelas no-print
-  let cleanHtml = htmlContent;
-  if (typeof cleanHtml === 'string') {
-    cleanHtml = cleanHtml.replace(/<[^>]+class="[^"]*\bno-print\b[^"]*"[^>]*>[\s\S]*?<\/[^>]+>/gi, '');
+  // Gunakan DOMParser agar manipulasi dan pembersihan elemen no-print 100% valid tanpa merusak struktur HTML
+  let cleanHtml = '';
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlContent, 'text/html');
+    doc.querySelectorAll('.no-print, button, input').forEach(el => el.remove());
+    doc.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+    cleanHtml = doc.body.innerHTML;
+  } catch (e) {
+    cleanHtml = (htmlContent || '')
+      .replace(/<button[\s\S]*?<\/button>/gi, '')
+      .replace(/<input[^>]*>/gi, '')
+      .replace(/contenteditable="[^"]*"/gi, '');
   }
 
   // Bungkus dalam container putih bersih agar hasil PDF selalu berlatar putih dan teks terbaca jelas
   cleanHtml = `<div style="background-color: #ffffff !important; color: #000000 !important; width: 100%; box-sizing: border-box;">${cleanHtml}</div>`;
 
+  const orientation = (optOverrides && optOverrides.jsPDF && optOverrides.jsPDF.orientation) || 'portrait';
+  const isLandscape = orientation === 'landscape';
+
   const defaultOpt = {
-    margin: [8, 10, 8, 10],
+    margin: isLandscape ? [8, 8, 8, 8] : [6, 8, 6, 8],
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: {
       scale: 1.6,
@@ -6206,11 +6219,18 @@ async function generatePdfBlobFromHtml(htmlContent, optOverrides = {}) {
       logging: false,
       backgroundColor: '#ffffff'
     },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: orientation },
     pagebreak: { mode: ['css', 'legacy'] }
   };
 
   const finalOpt = Object.assign({}, defaultOpt, optOverrides);
+  if (optOverrides.html2canvas) {
+    finalOpt.html2canvas = Object.assign({}, defaultOpt.html2canvas, optOverrides.html2canvas);
+  }
+  if (optOverrides.pagebreak) {
+    finalOpt.pagebreak = Object.assign({}, defaultOpt.pagebreak, optOverrides.pagebreak);
+  }
+
   return await html2pdf().set(finalOpt).from(cleanHtml).output('blob');
 }
 
@@ -7096,6 +7116,151 @@ function hideValidationToast() {
     valToastTimer = null;
   }
 }
+
+let refreshToastTimer = null;
+
+function showRefreshToast(title = 'Dokumen Berhasil Diperbarui', desc = 'Kalkulasi dan tampilan dokumen telah disegarkan.') {
+  const toast = document.getElementById('refreshToast');
+  if (!toast) return;
+  const titleEl = document.getElementById('refreshToastTitle');
+  const descEl = document.getElementById('refreshToastDesc');
+  if (titleEl) titleEl.textContent = title;
+  if (descEl) descEl.textContent = desc;
+
+  toast.classList.add('is-show');
+  if (refreshToastTimer) clearTimeout(refreshToastTimer);
+  refreshToastTimer = setTimeout(() => {
+    hideRefreshToast();
+  }, 3500);
+}
+
+function hideRefreshToast() {
+  const toast = document.getElementById('refreshToast');
+  if (toast) toast.classList.remove('is-show');
+  if (refreshToastTimer) {
+    clearTimeout(refreshToastTimer);
+    refreshToastTimer = null;
+  }
+}
+
+function refreshDocument(btn, renderFnName) {
+  if (!btn) {
+    const activeTab = document.querySelector('.tab-content.active');
+    btn = activeTab ? activeTab.querySelector('.btn-primary') : null;
+  }
+  if (!btn) return;
+  if (btn.dataset.isRefreshing === 'true') return; // Cegah double-click selama durasi 3 detik
+  btn.dataset.isRefreshing = 'true';
+  btn.disabled = true;
+  btn.classList.add('is-refreshing');
+
+  const origHTML = btn.innerHTML;
+
+  // Temukan elemen kontainer dokumen di tab yang sedang aktif
+  const tabPane = btn.closest('.tab-content') || document.querySelector('.tab-content.active');
+  const docContainer = tabPane ? (tabPane.querySelector('.doc-page, [id$="Out"], .doc-preview-wrap, .kuitansi-area, .sppd-sheet, .kendali-page, .rekap-page') || tabPane) : null;
+  if (docContainer) {
+    docContainer.classList.add('doc-refresh-loading');
+  }
+
+  // Pra-sinkronisasi data & kalkulasi sebelum render
+  try {
+    if (typeof syncJenisPerjalananFromMak === 'function') syncJenisPerjalananFromMak();
+    if (typeof updateDPRInput === 'function') updateDPRInput();
+    if (typeof hitungBiaya === 'function' && typeof selectedEmpIds !== 'undefined' && typeof employees !== 'undefined') {
+      [...selectedEmpIds].forEach(id => {
+        const emp = employees.find(e => e.id === id);
+        if (emp) hitungBiaya(emp);
+      });
+    }
+  } catch (err) {
+    console.warn('Sync on refresh error:', err);
+  }
+
+  // Tampilkan spinner dan status menyegarkan (durasi 1 detik)
+  btn.innerHTML = `<svg class="ico is-refresh-spin"><use href="#i-refresh"></use></svg><span>Menyegarkan...</span>`;
+
+  // Jalankan setelah tepat 1.000 ms (1 detik)
+  setTimeout(() => {
+    // Eksekusi fungsi render spesifik tab dokumen
+    try {
+      if (renderFnName === 'renderKuitansiPerorangan') {
+        const sel = document.getElementById('kuitansiPeroranganPegawai');
+        if (!sel || !sel.value) {
+          if (typeof populateKuitansiPeroranganSelect === 'function') populateKuitansiPeroranganSelect();
+          else if (typeof renderKuitansiPerorangan === 'function') renderKuitansiPerorangan();
+        } else {
+          if (typeof renderKuitansiPerorangan === 'function') renderKuitansiPerorangan();
+        }
+      } else if (renderFnName === 'renderSPPDPerorangan') {
+        const sel = document.getElementById('sppdPegawai');
+        if (!sel || !sel.value) {
+          if (typeof populateSPPDSelect === 'function') populateSPPDSelect();
+          else if (typeof renderSPPDPerorangan === 'function') renderSPPDPerorangan();
+        } else {
+          if (typeof renderSPPDPerorangan === 'function') renderSPPDPerorangan();
+        }
+      } else if (renderFnName === 'renderRincian') {
+        const sel = document.getElementById('rincianPegawai') || document.getElementById('rincianBiayaPegawai');
+        if (!sel || !sel.value) {
+          if (typeof populateRincianSelect === 'function') populateRincianSelect();
+          else if (typeof renderRincian === 'function') renderRincian();
+        } else {
+          if (typeof renderRincian === 'function') renderRincian();
+        }
+      } else if (renderFnName === 'renderDPR') {
+        const sel = document.getElementById('dprPegawai');
+        if (!sel || !sel.value) {
+          if (typeof populateDPRSelect === 'function') populateDPRSelect();
+          else if (typeof renderDPR === 'function') renderDPR();
+        } else {
+          if (typeof renderDPR === 'function') renderDPR();
+        }
+      } else if (typeof window[renderFnName] === 'function') {
+        window[renderFnName]();
+      } else if (typeof renderFnName === 'function') {
+        renderFnName();
+      }
+    } catch (err) {
+      console.error('Render on refresh error:', err);
+    }
+
+    // Hilangkan efek visual loading pada dokumen
+    if (docContainer) {
+      docContainer.classList.remove('doc-refresh-loading');
+    }
+
+    // Tampilkan state sukses pada tombol
+    btn.innerHTML = `<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;vertical-align:middle;display:inline-block;"><polyline points="20 6 9 17 4 12"/></svg><span>Diperbarui!</span>`;
+
+    // Tentukan label dokumen untuk toast
+    let docLabel = 'Dokumen';
+    const fnStr = String(renderFnName);
+    if (fnStr.includes('Nominatif')) docLabel = 'Daftar Nominatif';
+    else if (fnStr.includes('RekapKuitansi')) docLabel = 'Rekap Kuitansi';
+    else if (fnStr.includes('KuitansiPerorangan')) docLabel = 'Kuitansi Perorangan';
+    else if (fnStr.includes('SPPD')) docLabel = 'SPPD Perorangan';
+    else if (fnStr.includes('LembarKendali')) docLabel = 'Lembar Kendali';
+    else if (fnStr.includes('RekapRincian')) docLabel = 'Rekap Rincian';
+    else if (fnStr.includes('RekapSPT')) docLabel = 'Rekap SPT';
+    else if (fnStr.includes('Rincian')) docLabel = 'Rincian Biaya';
+    else if (fnStr.includes('DPR')) docLabel = 'Lembar DPR';
+
+    showRefreshToast(`${docLabel} Berhasil Diperbarui`, `Data kalkulasi dan tampilan dokumen telah disegarkan.`);
+
+    // Kembalikan tombol ke keadaan semula setelah 800ms
+    setTimeout(() => {
+      btn.innerHTML = origHTML;
+      btn.disabled = false;
+      btn.classList.remove('is-refreshing');
+      btn.dataset.isRefreshing = 'false';
+    }, 800);
+  }, 1000);
+}
+
+window.showRefreshToast = showRefreshToast;
+window.hideRefreshToast = hideRefreshToast;
+window.refreshDocument = refreshDocument;
 
 function updateFieldFilledStatus(el) {
   if (!el) return;

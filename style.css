@@ -3696,8 +3696,34 @@ html[data-theme="dark"] .spd-suffix-label {
   color: #111;
   background: #fff;
   font: 12px Arial,sans-serif;
-  display: flex;
-  flex-direction: column;
+  display: block;
+  page-break-inside: avoid;
+  break-inside: avoid;
+  box-sizing: border-box;
+}
+
+.kuitansi-perorangan-area,
+.sppd-area,
+.lembar-kendali-area,
+.rekap-kuitansi-area,
+.rekap-rincian-area,
+.nominatif-area,
+.rekap-spt-area,
+.dpr-area,
+.dpr-kkp-area,
+.rincian-doc {
+  page-break-inside: avoid !important;
+  break-inside: avoid !important;
+}
+
+.html2pdf__page-break {
+  page-break-before: always !important;
+  break-before: page !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
 }
 
 .kuitansi-perorangan-header {
@@ -4487,10 +4513,13 @@ html[data-theme="dark"] .spd-suffix-label {
   max-width: 680px;
   margin: 0 auto;
   padding: 24px;
-  background: #fff;
+  background: #ffffff !important;
   font-size: 12px;
   font-family: Arial, sans-serif;
-  color: #000000;
+  color: #000000 !important;
+  box-sizing: border-box;
+  page-break-inside: avoid !important;
+  break-inside: avoid !important;
 }
 
 .rincian-doc h3 {
@@ -4658,6 +4687,8 @@ html[data-theme="dark"] .spd-suffix-label {
   font-size: 12px;
   gap: 20px;
   color: #000000;
+  page-break-inside: avoid !important;
+  break-inside: avoid !important;
 }
 
 .rincian-payment-col {
@@ -4679,7 +4710,7 @@ html[data-theme="dark"] .spd-suffix-label {
 }
 
 .rincian-sig-space {
-  height: 80px;
+  height: 60px;
 }
 
 .rincian-name {
@@ -4694,10 +4725,13 @@ html[data-theme="dark"] .spd-suffix-label {
   border-top: 1px solid #000000;
   padding-top: 10px;
   color: #000000;
+  page-break-inside: avoid !important;
+  break-inside: avoid !important;
 }
 
 .rincian-spd-tbl {
-  width: 60%;
+  width: 340px;
+  margin: 0 auto;
   font-size: 12px;
   border-collapse: collapse;
 }
@@ -4722,10 +4756,12 @@ html[data-theme="dark"] .spd-suffix-label {
   text-align: center;
   font-size: 12px;
   color: #000000;
+  page-break-inside: avoid !important;
+  break-inside: avoid !important;
 }
 
 .rincian-ppk-sig .rincian-sig-space {
-  height: 80px;
+  height: 60px;
 }
 
 .rincian-ppk-sig .rincian-name {
@@ -10487,6 +10523,88 @@ html[data-theme="dark"] .topbar-excel-group .btn-secondary:hover {
     display: none;
   }
 }
+
+/* ==========================================================================
+   DOCUMENT REFRESH 3-SECOND ANIMATION & TOAST STYLING
+   ========================================================================== */
+@keyframes spinDocRefresh {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.btn.is-refreshing {
+  opacity: 0.9 !important;
+  cursor: wait !important;
+  pointer-events: none !important;
+  box-shadow: 0 0 0 2.5px rgba(59, 130, 246, 0.45) !important;
+  transition: all 0.2s ease !important;
+}
+
+.btn.is-refreshing .ico,
+.ico.is-refresh-spin {
+  animation: spinDocRefresh 0.75s linear infinite !important;
+  transform-origin: center center !important;
+  display: inline-block !important;
+}
+
+/* Document Container Shimmer / Loading during 3s refresh */
+.doc-refresh-loading {
+  opacity: 0.45 !important;
+  filter: blur(0.5px) !important;
+  pointer-events: none !important;
+  transition: opacity 0.3s ease, filter 0.3s ease !important;
+}
+
+/* Success / Refresh Toast Notification */
+.val-toast-success {
+  border: 1px solid #bbf7d0 !important;
+  border-left: 5px solid #10b981 !important;
+  background: #ffffff !important;
+  box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+}
+
+.val-toast-success .val-toast-icon {
+  background: #10b981 !important;
+  color: #ffffff !important;
+  font-size: 15px !important;
+  font-weight: 900 !important;
+}
+
+.val-toast-success .val-toast-body strong {
+  color: #065f46 !important;
+}
+
+.val-toast-success .val-toast-body p {
+  color: #374151 !important;
+}
+
+html[data-theme="dark"] .val-toast-success {
+  background: #0d1f19 !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
+  border-left: 5px solid #10b981 !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6) !important;
+}
+
+html[data-theme="dark"] .val-toast-success .val-toast-body strong {
+  color: #6ee7b7 !important;
+}
+
+html[data-theme="dark"] .val-toast-success .val-toast-body p {
+  color: #cbd5e1 !important;
+}
+
+html[data-theme="dark"] .val-toast-success .val-toast-close {
+  color: #6ee7b7 !important;
+}
+
+html[data-theme="dark"] .val-toast-success .val-toast-close:hover {
+  color: #ffffff !important;
+}
+
 
 
 
