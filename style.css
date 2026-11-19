@@ -10088,3 +10088,135 @@ html[data-theme="dark"] .cockpit-footer-hint {
   color: #94a3b8;
 }
 
+/* ============================================================ */
+/* BANNER TRANSPORT SEKITAR JAKARTA (LIGHT & DARK MODE) */
+/* ============================================================ */
+.emp-trans-sekitar-banner {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(5, 150, 105, 0.18));
+  border: 1.5px solid #6ee7b7;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.emp-trans-sekitar-text {
+  font-size: 12.5px;
+  color: #064e3b;
+  line-height: 1.5;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.emp-trans-sekitar-text .sekitar-label {
+  font-weight: 700;
+  color: #064e3b;
+}
+
+.emp-trans-sekitar-text .sekitar-detail strong {
+  color: #022c22;
+  font-weight: 700;
+}
+
+.emp-trans-sekitar-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.btn-isi-sbm-pp {
+  background: #10b981;
+  color: #ffffff !important;
+  border: 1px solid #059669;
+  padding: 5px 12px;
+  border-radius: 7px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.btn-isi-sbm-pp:hover {
+  background: #059669;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(16, 185, 129, 0.35);
+}
+
+.btn-pmk-hal-link {
+  background: #ffffff !important;
+  color: #065f46 !important;
+  border: 1.5px solid #059669 !important;
+  padding: 4.5px 12px;
+  border-radius: 7px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.10);
+  transition: all 0.15s ease;
+}
+
+.btn-pmk-hal-link:hover {
+  background: #ecfdf5 !important;
+  color: #047857 !important;
+  border-color: #047857 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(5, 150, 105, 0.25);
+}
+
+/* Dark Mode Overrides for Sekitar Banner */
+html[data-theme="dark"] .emp-trans-sekitar-banner {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.16), rgba(6, 78, 59, 0.38)) !important;
+  border: 1.5px solid rgba(52, 211, 153, 0.5) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35) !important;
+}
+
+html[data-theme="dark"] .emp-trans-sekitar-text {
+  color: #a7f3d0 !important;
+}
+
+html[data-theme="dark"] .emp-trans-sekitar-text .sekitar-label {
+  color: #34d399 !important;
+}
+
+html[data-theme="dark"] .emp-trans-sekitar-text .sekitar-detail strong {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .btn-isi-sbm-pp {
+  background: #059669;
+  border-color: #34d399;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+}
+
+html[data-theme="dark"] .btn-isi-sbm-pp:hover {
+  background: #10b981;
+}
+
+html[data-theme="dark"] .btn-pmk-hal-link {
+  background: #1e293b !important;
+  color: #34d399 !important;
+  border: 1.5px solid #34d399 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4) !important;
+}
+
+html[data-theme="dark"] .btn-pmk-hal-link:hover {
+  background: rgba(16, 185, 129, 0.25) !important;
+  color: #ffffff !important;
+  border-color: #6ee7b7 !important;
+}
+

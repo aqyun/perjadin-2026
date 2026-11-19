@@ -1098,7 +1098,7 @@ function renderHotelGuests(row) {
   const existing = [...row.querySelectorAll('.hotel-guest-check')];
   const knownIds = existing.map(cb => Number(cb.dataset.employeeId));
   const checkedIds = existing.filter(cb => cb.checked).map(cb => Number(cb.dataset.employeeId));
-  const selected = [...selectedEmpIds].sort((a, b) => a - b);
+  const selected = [...selectedEmpIds];
   box.innerHTML = `
     <span class="hotel-guests-title">Pegawai yang menanggung kamar — biaya kamar penuh per pegawai</span>
     <div class="hotel-guest-list">
@@ -1467,7 +1467,7 @@ function updateSbmWarnings() {
   const sbm = getSBM();
   const items = [];
   if (sbm) {
-    const selected = [...selectedEmpIds].sort((a, b) => a - b);
+    const selected = [...selectedEmpIds];
     const cbHotel = document.getElementById('cbHotel').checked;
     const cbTiket = document.getElementById('cbTiket').checked;
     const customCosts = getCustomCosts();
@@ -2787,14 +2787,14 @@ function renderRincianTransportEditor(targetEmpId) {
   const sbm = typeof getSBM === 'function' ? getSBM() : null;
   const isSekitar = sbm && sbm.isSekitarJakarta && sbm.sekitarJakarta;
   const sekitarBannerHtml = isSekitar ? `
-    <div class="emp-trans-sekitar-banner" style="background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(5,150,105,0.12)); border: 1.5px solid #a7f3d0; border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
-      <div style="font-size: 12.5px; color: #065f46;">
-        <span style="font-weight: 700;">🚆 SBM Transport Jakarta &harr; ${sbm.sekitarJakarta.nama} (PP):</span>
-        <span style="margin-left: 4px;">Tarif SBM One Way <strong>${rp(sbm.dprOneWay)}</strong> &times; 2 = Maks DPR <strong>${rp(sbm.dpr)} PP</strong></span>
+    <div class="emp-trans-sekitar-banner">
+      <div class="emp-trans-sekitar-text">
+        <span class="sekitar-label">🚆 SBM Transport Jakarta &harr; ${sbm.sekitarJakarta.nama} (PP):</span>
+        <span class="sekitar-detail">Tarif SBM One Way <strong>${rp(sbm.dprOneWay)}</strong> &times; 2 = Maks DPR <strong>${rp(sbm.dpr)} PP</strong></span>
       </div>
-      <div style="display: flex; gap: 6px; align-items: center;">
-        <button type="button" class="btn btn-xs" style="background:#10b981; color:#fff; border:none; padding:4px 9px; border-radius:6px; font-weight:600; cursor:pointer;" onclick="addSekitarJakartaTransportPreset()" title="Isi otomatis 1 baris transport tarif penuh SBM (${rp(sbm.dpr)})">+ Isi SBM PP (${rp(sbm.dpr)})</button>
-        <button type="button" class="btn btn-xs btn-outline" style="font-size:11px; padding:3px 7px;" onclick="openPmkModal(68)" title="Cek PMK Hal 68">PMK Hal 68 ↗</button>
+      <div class="emp-trans-sekitar-actions">
+        <button type="button" class="btn-isi-sbm-pp" onclick="addSekitarJakartaTransportPreset()" title="Isi otomatis 1 baris transport tarif penuh SBM (${rp(sbm.dpr)})">+ Isi SBM PP (${rp(sbm.dpr)})</button>
+        <button type="button" class="btn-pmk-hal-link" onclick="openPmkModal(68)" title="Cek Dokumen Resmi PMK Hal 68">PMK Hal 68 ↗</button>
       </div>
     </div>
   ` : '';
@@ -5892,7 +5892,8 @@ function exportPerjadinExcel() {
     })
   ], [42, 70]);
 
-  const empIds = [...selectedEmpIds].sort((a, b) => a - b);
+  // Pertahankan urutan pemilihan awal pegawai (jangan di-sort abjad/ID)
+  const empIds = [...selectedEmpIds];
   const empHeader = ['No', 'Nama', 'NIP', 'Gol', 'Jabatan', 'Nomor SPD Pegawai'];
   for (let i = 1; i <= EXCEL_SEGMENT_SLOTS; i++) empHeader.push(`Tgl Berangkat ${i}`, `Tgl Kembali ${i}`);
   const empRows = empIds.map((id, index) => {

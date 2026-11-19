@@ -242,7 +242,8 @@ function exportPerjadinExcel() {
     })
   ], [42, 70]);
 
-  const empIds = [...selectedEmpIds].sort((a, b) => a - b);
+  // Pertahankan urutan pemilihan awal pegawai (jangan di-sort abjad/ID)
+  const empIds = [...selectedEmpIds];
   const empHeader = ['No', 'Nama', 'NIP', 'Gol', 'Jabatan', 'Nomor SPD Pegawai'];
   for (let i = 1; i <= EXCEL_SEGMENT_SLOTS; i++) empHeader.push(`Tgl Berangkat ${i}`, `Tgl Kembali ${i}`);
   const empRows = empIds.map((id, index) => {
