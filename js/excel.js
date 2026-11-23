@@ -211,7 +211,10 @@ function excelGetHotelRows() {
   })).filter(item => item.name || item.price > 0);
 }
 
-function exportPerjadinExcel() {
+function exportPerjadinExcel(mode = 'excel') {
+  if (typeof saveCurrentTripToHistory === 'function') {
+    try { saveCurrentTripToHistory(false); } catch (e) {}
+  }
   if (typeof XLSX === 'undefined') {
     alert('Pustaka Excel (xlsx.full.min.js) tidak termuat. Periksa file di folder aplikasi.');
     return;
@@ -304,14 +307,37 @@ function exportPerjadinExcel() {
         empIds
       };
 
-  // 1. Simpan berkas Excel (.xlsx) dengan penamaan baru: PERJADIN/PERJADIN KKP_tanggal kegiatan_Nominal_nama pelaku perjadin
-  XLSX.writeFile(wb, naming.excelFileName);
-
-  // 2. Buat folder kegiatan baru otomatis & simpan hasil print PDF semua dokumen di dalamnya perorangan
-  if (empIds.length > 0 && typeof html2pdf !== 'undefined') {
-    exportPerjadinActivityFolder(wb, naming);
+  if (mode === 'zip' || mode === 'all') {
+    // Mode ZIP: buat folder kegiatan & kompilasi seluruh berkas PDF + Excel dalam 1 arsip ZIP
+    if (empIds.length > 0 && typeof html2pdf !== 'undefined') {
+      exportPerjadinActivityFolder(wb, naming);
+    } else {
+      XLSX.writeFile(wb, naming.excelFileName);
+    }
+  } else {
+    // Mode Excel murni: Simpan berkas Excel (.xlsx) langsung tanpa kompilasi ZIP/PDF (cepat & ringan)
+    XLSX.writeFile(wb, naming.excelFileName);
+    if (typeof showRefreshToast === 'function') {
+      showRefreshToast(
+        'Excel Berhasil Disimpan',
+        `File "${naming.excelFileName}" berhasil diunduh dan tersimpan di Riwayat Perjalanan.`
+      );
+    }
+    // Auto-reset formulir setelah berhasil disimpan (data telah aman di Riwayat)
+    setTimeout(() => {
+      if (typeof resetPerjadinForm === 'function') {
+        resetPerjadinForm(false);
+      }
+    }, 450);
   }
 }
+
+function exportPerjadinZip() {
+  exportPerjadinExcel('zip');
+}
+
+window.exportPerjadinExcel = exportPerjadinExcel;
+window.exportPerjadinZip = exportPerjadinZip;
 
 function getEmployeeDocFilePrefix(emp, allEmps) {
   if (!emp) return 'Pegawai';
@@ -514,6 +540,12 @@ function finishExportModal(folderName, fileList, zipBlob) {
         }
       };
     }
+
+    setTimeout(() => {
+      if (typeof resetPerjadinForm === 'function') {
+        resetPerjadinForm(true);
+      }
+    }, 400);
   }
 }
 
@@ -1046,6 +1078,9 @@ function applyPerjadinExcel(wb) {
     if (tabName !== 'input') {
       if (typeof switchTabPanel === 'function') switchTabPanel(tabName);
     }
+  }
+  if (typeof saveCurrentTripToHistory === 'function') {
+    try { saveCurrentTripToHistory(false); } catch (e) {}
   }
   return { employees: selectedEmpIds.size, unknown: unknownNames };
 }

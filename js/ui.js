@@ -93,6 +93,9 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (typeof syncNoSTFromInputs === 'function') {
       syncNoSTFromInputs();
     }
+    if (typeof initAutoSaveAndProtection === 'function') {
+      initAutoSaveAndProtection();
+    }
   } catch (err) {
     console.error('PerdinKu initialization error:', err);
   }
@@ -732,6 +735,7 @@ function initWelcomeModalAfterLoader() {
 // =====================================================================
 const tabMeta = {
   input: ['Input Perjalanan', 'Formulir'],
+  riwayat: ['Riwayat Perjalanan', 'Arsip & Revisi'],
   nominatif: ['Daftar Nominatif', 'Rekapitulasi'],
   'rekap-kuitansi': ['Rekap Kuitansi', 'Rekapitulasi'],
   'kuitansi-perorangan': ['Kuitansi Perorangan', 'Dokumen'],
@@ -749,7 +753,7 @@ function showTab(name) {
   if (currentActive && currentActive.id === 'tab-' + name) {
     return;
   }
-  if (name !== 'input' && name !== 'pengaturan') {
+  if (name !== 'input' && name !== 'pengaturan' && name !== 'riwayat') {
     const val = validateTripForm();
     if (!val.valid) {
       showValidationToast(val.missing, val.dateMismatch ? 'Tanggal kembali tidak boleh sebelum tanggal berangkat!' : null);
@@ -783,6 +787,7 @@ function switchTabPanel(name) {
   if (eyebrowEl) eyebrowEl.textContent = meta[1];
   closeSidebar();
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (name === 'riwayat' && typeof renderTripHistory === 'function') renderTripHistory();
   if (name === 'rincian') populateRincianSelect();
   if (name === 'dpr') populateDPRSelect();
   if (name === 'nominatif') renderNominatif();
@@ -1035,9 +1040,10 @@ function toggleEmployee(id) {
   renderEmployeeList();
   renderSelectedTags();
   renderTripDates();
-    refreshCustomCostAssignments();
+  refreshCustomCostAssignments();
   refreshHotelGuests();
   updateSbmWarnings();
+  if (typeof scheduleAutoSaveDraft === 'function') scheduleAutoSaveDraft();
 }
 
 function renderSelectedTags() {
@@ -1103,14 +1109,16 @@ function setEmpDates(id) {
   if (!g1) return;
   empTripSegments.set(id, [{ start: g1, end: g2 }]);
   renderTripDates();
-  }
+  if (typeof scheduleAutoSaveDraft === 'function') scheduleAutoSaveDraft();
+}
 
 function addEmpSegment(id) {
   const segs = [...(empTripSegments.get(id) || [])];
   segs.push({ start: '', end: '' });
   empTripSegments.set(id, segs);
   renderTripDates();
-  }
+  if (typeof scheduleAutoSaveDraft === 'function') scheduleAutoSaveDraft();
+}
 
 function updateEmpSegment(id, index, field, value) {
   const segs = [...(empTripSegments.get(id) || [])];
@@ -1120,7 +1128,8 @@ function updateEmpSegment(id, index, field, value) {
   if (field === 'end' && segs[index].start && value && value < segs[index].start) segs[index].start = value;
   empTripSegments.set(id, segs);
   renderTripDates();
-  }
+  if (typeof scheduleAutoSaveDraft === 'function') scheduleAutoSaveDraft();
+}
 
 function removeEmpSegment(id, index) {
   const segs = [...(empTripSegments.get(id) || [])];
@@ -1128,12 +1137,14 @@ function removeEmpSegment(id, index) {
   if (segs.length) empTripSegments.set(id, segs);
   else empTripSegments.delete(id);
   renderTripDates();
-  }
+  if (typeof scheduleAutoSaveDraft === 'function') scheduleAutoSaveDraft();
+}
 
 function resetEmpDates(id) {
   empTripSegments.delete(id);
   renderTripDates();
-  }
+  if (typeof scheduleAutoSaveDraft === 'function') scheduleAutoSaveDraft();
+}
 
 function clearAll() {
   selectedEmpIds.clear();
@@ -1141,7 +1152,916 @@ function clearAll() {
   renderEmployeeList();
   renderSelectedTags();
   renderTripDates();
-    refreshCustomCostAssignments();
+  refreshCustomCostAssignments();
   refreshHotelGuests();
   updateSbmWarnings();
+  if (typeof scheduleAutoSaveDraft === 'function') scheduleAutoSaveDraft();
 }
+
+// =====================================================================
+// AUTOSAVE DRAFT & ACCIDENTAL REFRESH / UNLOAD PROTECTION
+// =====================================================================
+const PERJADIN_DRAFT_KEY = 'perdinku_active_draft_v1';
+let autoSaveTimer = null;
+window._isResetting = false;
+
+function isPerjadinDraftDirty() {
+  const noST = (document.getElementById('noSTNum')?.value || document.getElementById('noST')?.value || '').trim();
+  const agenda = (document.getElementById('agenda')?.value || '').trim();
+  const prov = (document.getElementById('provinsiTujuan')?.value || '').trim();
+  const kota = (document.getElementById('kotaTujuan')?.value || '').trim();
+  const tglST = (document.getElementById('tglST')?.value || '').trim();
+  const empCount = (typeof selectedEmpIds !== 'undefined' && selectedEmpIds) ? selectedEmpIds.size : 0;
+  return Boolean(noST || agenda || (prov && prov !== '-') || kota || empCount > 0);
+}
+
+function updateAutosaveIndicator(state) {
+  const badge = document.getElementById('autosaveStatus');
+  if (!badge) return;
+  const textEl = badge.querySelector('.autosave-text');
+  badge.classList.remove('is-saving', 'is-saved', 'is-clean');
+
+  if (state === 'saving') {
+    badge.classList.add('is-saving');
+    if (textEl) textEl.textContent = 'Menyimpan...';
+    badge.title = 'Sedang menyimpan perubahan draft ke browser...';
+  } else if (state === 'saved') {
+    badge.classList.add('is-saved');
+    if (textEl) textEl.textContent = 'Draft Tersimpan';
+    badge.title = 'Draft tersimpan otomatis di browser lokal Anda (aman dari refresh).';
+  } else {
+    badge.classList.add('is-clean');
+    if (textEl) textEl.textContent = 'Draft Otomatis Aktif';
+    badge.title = 'Penyimpanan otomatis aktif. Form siap digunakan.';
+  }
+}
+
+function collectPerjadinDraftData() {
+  const fields = {};
+  const fieldIds = [
+    'noST', 'noSTNum', 'noSTSuffix',
+    'tglST', 'tglSPD', 'tglBerangkat', 'tglKembali', 'lamaTugas',
+    'provinsiTujuan', 'kotaTujuan', 'agenda', 'kodeKegiatan', 'kodeSubKegiatan', 'mak',
+    'cbUH', 'cbHotel', 'cbDPR', 'cbTiket',
+    'persenUH', 'jenisKegiatan', 'cbKonsumsi',
+    'jmlMakanRapat', 'jmlSnackRapat', 'tarifMakan', 'tarifSnack', 'cbTarifMakanManual',
+    'cbMultiProvinsi', 'provinsiTujuan1', 'provinsiTujuan2', 'kotaTujuan1', 'kotaTujuan2',
+    'hariProvinsi1', 'hariProvinsi2', 'cbKonsumsiBiasa', 'manualMakanMode', 'metodePembayaran',
+    'lk_tanggalMasuk', 'lk_pelaksana', 'lk_nomorSPM', 'lk_nomorSPD', 'lk_jenisPerjalanan', 'lk_metodePembayaran'
+  ];
+
+  if (typeof EXCEL_SETTING_FIELDS !== 'undefined') {
+    EXCEL_SETTING_FIELDS.forEach(([, id]) => {
+      if (id && !fieldIds.includes(id)) fieldIds.push(id);
+    });
+  }
+
+  fieldIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (el.type === 'checkbox') {
+      fields[id] = el.checked;
+    } else {
+      fields[id] = el.value;
+    }
+  });
+
+  const empIds = (typeof selectedEmpIds !== 'undefined' && selectedEmpIds) ? [...selectedEmpIds] : [];
+  const segments = [];
+  if (typeof empTripSegments !== 'undefined' && empTripSegments) {
+    empTripSegments.forEach((segs, id) => {
+      segments.push([id, segs]);
+    });
+  }
+  const spdMap = (typeof spdPerEmployee !== 'undefined' && spdPerEmployee) ? { ...spdPerEmployee } : {};
+  const costCfg = (typeof employeeCostConfig !== 'undefined' && employeeCostConfig) ? employeeCostConfig : {};
+  const transports = (typeof employeeTransports !== 'undefined' && employeeTransports) ? employeeTransports : {};
+
+  const hotels = [];
+  document.querySelectorAll('#hotelList .hotel-row').forEach(row => {
+    hotels.push({
+      name: row.querySelector('.hotel-name')?.value || '',
+      nights: Number(row.querySelector('.hotel-nights')?.value) || 0,
+      price: row.querySelector('.hotel-price')?.value || '',
+      guestIds: [...row.querySelectorAll('.hotel-guest-check:checked')].map(cb => Number(cb.dataset.employeeId))
+    });
+  });
+
+  const customCosts = [];
+  document.querySelectorAll('.custom-cost-row').forEach(row => {
+    let amounts = {};
+    try { amounts = JSON.parse(row.dataset.amounts || '{}'); } catch(e) {}
+    customCosts.push({
+      name: row.querySelector('.custom-cost-name')?.value || '',
+      kind: row.querySelector('.custom-kind-btn.active')?.dataset.kind || 'other',
+      pickup: row.querySelector('.custom-cost-pickup')?.value || '',
+      dropoff: row.querySelector('.custom-cost-dropoff')?.value || '',
+      amounts
+    });
+  });
+
+  const manualMeals = [];
+  const mealTbody = document.getElementById('manualMealTableBody') || document.getElementById('manualMealList');
+  if (mealTbody) {
+    const rows = mealTbody.querySelectorAll ? mealTbody.querySelectorAll('.manual-meal-row') : mealTbody.children;
+    rows.forEach(row => {
+      const day = row.querySelector('.manual-meal-day')?.value || '';
+      const session = row.querySelector('.manual-meal-session')?.value || '';
+      const price = row.querySelector('.manual-meal-price')?.value || '';
+      if (day || session || price) {
+        manualMeals.push({ day, session, price });
+      }
+    });
+  }
+
+  return {
+    version: 1,
+    savedAt: Date.now(),
+    fields,
+    empIds,
+    segments,
+    spdMap,
+    costCfg,
+    transports,
+    hotels,
+    customCosts,
+    manualMeals
+  };
+}
+
+function restorePerjadinDraftData(data) {
+  if (!data || !data.fields) return false;
+
+  Object.keys(data.fields).forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const val = data.fields[id];
+    if (el.type === 'checkbox') {
+      el.checked = !!val;
+    } else {
+      el.value = val ?? '';
+    }
+  });
+
+  if (data.fields.noST) {
+    if (typeof syncInputsFromFullNoST === 'function') {
+      syncInputsFromFullNoST(data.fields.noST);
+    }
+  } else if (data.fields.noSTNum) {
+    const numEl = document.getElementById('noSTNum');
+    if (numEl) numEl.value = data.fields.noSTNum;
+    const sfxEl = document.getElementById('noSTSuffix');
+    if (sfxEl && data.fields.noSTSuffix) sfxEl.value = data.fields.noSTSuffix;
+    if (typeof syncNoSTFromInputs === 'function') syncNoSTFromInputs();
+  }
+
+  if (data.fields.provinsiTujuan && typeof changeProvince === 'function') {
+    changeProvince();
+  }
+
+  if (typeof selectedEmpIds !== 'undefined' && Array.isArray(data.empIds)) {
+    selectedEmpIds.clear();
+    data.empIds.forEach(id => selectedEmpIds.add(Number(id)));
+  }
+
+  if (typeof empTripSegments !== 'undefined' && Array.isArray(data.segments)) {
+    empTripSegments.clear();
+    data.segments.forEach(([id, segs]) => {
+      empTripSegments.set(Number(id), segs);
+    });
+  }
+
+  if (typeof spdPerEmployee !== 'undefined' && data.spdMap) {
+    spdPerEmployee = { ...data.spdMap };
+  }
+
+  if (typeof employeeCostConfig !== 'undefined' && data.costCfg) {
+    employeeCostConfig = { ...data.costCfg };
+  }
+  if (typeof employeeTransports !== 'undefined' && data.transports) {
+    employeeTransports = { ...data.transports };
+  }
+
+  if (typeof renderEmployeeList === 'function') renderEmployeeList();
+  if (typeof renderSelectedTags === 'function') renderSelectedTags();
+  if (typeof renderTripDates === 'function') renderTripDates();
+
+  const hotelList = document.getElementById('hotelList');
+  if (hotelList) {
+    hotelList.innerHTML = '';
+    if (Array.isArray(data.hotels) && data.hotels.length > 0) {
+      data.hotels.forEach(h => {
+        if (typeof addHotelRow === 'function') {
+          addHotelRow(h.nights || 1);
+          const row = hotelList.lastElementChild;
+          if (row) {
+            const nameEl = row.querySelector('.hotel-name');
+            if (nameEl) nameEl.value = h.name || '';
+            const priceEl = row.querySelector('.hotel-price');
+            if (priceEl) priceEl.value = h.price || '';
+            const nightsEl = row.querySelector('.hotel-nights');
+            if (nightsEl && h.nights) nightsEl.value = h.nights;
+            if (Array.isArray(h.guestIds)) {
+              row.querySelectorAll('.hotel-guest-check').forEach(cb => {
+                cb.checked = h.guestIds.includes(Number(cb.dataset.employeeId));
+              });
+            }
+            if (typeof updateHotelSummary === 'function') updateHotelSummary(row);
+          }
+        }
+      });
+    }
+  }
+
+  const customCostList = document.getElementById('customCostList');
+  if (customCostList) {
+    customCostList.innerHTML = '';
+    if (Array.isArray(data.customCosts) && data.customCosts.length > 0) {
+      data.customCosts.forEach(c => {
+        if (typeof addCustomCost === 'function') {
+          addCustomCost();
+          const row = customCostList.lastElementChild;
+          if (row) {
+            row.dataset.kindAuto = '0';
+            const nameEl = row.querySelector('.custom-cost-name');
+            if (nameEl) nameEl.value = c.name || '';
+            if (typeof applyCustomCostKind === 'function') applyCustomCostKind(row, c.kind || 'other');
+            const pickEl = row.querySelector('.custom-cost-pickup');
+            if (pickEl) pickEl.value = c.pickup || '';
+            const dropEl = row.querySelector('.custom-cost-dropoff');
+            if (dropEl) dropEl.value = c.dropoff || '';
+            row.dataset.amounts = JSON.stringify(c.amounts || {});
+            if (typeof renderCustomCostAssignments === 'function') renderCustomCostAssignments(row);
+          }
+        }
+      });
+    }
+  }
+
+  if (Array.isArray(data.manualMeals) && data.manualMeals.length > 0 && typeof addManualMealRow === 'function') {
+    const list = document.getElementById('manualMealTableBody') || document.getElementById('manualMealList');
+    if (list) {
+      list.innerHTML = '';
+      data.manualMeals.forEach(m => {
+        addManualMealRow(m.day, m.session, m.price);
+      });
+    }
+  }
+
+  if (typeof toggleMultiProvinsi === 'function') toggleMultiProvinsi();
+  if (typeof toggleUHFields === 'function') toggleUHFields();
+  if (typeof toggleHotelFields === 'function') toggleHotelFields();
+  if (typeof toggleKonsumsiFields === 'function') toggleKonsumsiFields();
+  if (typeof toggleTarifMakanManual === 'function') toggleTarifMakanManual();
+  if (typeof hitungLama === 'function') hitungLama();
+  if (typeof updateSbmWarnings === 'function') updateSbmWarnings();
+  if (typeof updateAllSpdSuffixLabels === 'function') updateAllSpdSuffixLabels();
+  if (typeof renderRincianTransportEditor === 'function') renderRincianTransportEditor();
+  if (typeof refreshHotelSummaries === 'function') refreshHotelSummaries();
+
+  return true;
+}
+
+function scheduleAutoSaveDraft() {
+  updateAutosaveIndicator('saving');
+  if (autoSaveTimer) clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(() => {
+    try {
+      if (isPerjadinDraftDirty()) {
+        const draft = collectPerjadinDraftData();
+        localStorage.setItem(PERJADIN_DRAFT_KEY, JSON.stringify(draft));
+        updateAutosaveIndicator('saved');
+      } else {
+        updateAutosaveIndicator('clean');
+      }
+    } catch (e) {
+      console.warn('Autosave error:', e);
+    }
+  }, 400);
+}
+
+function resetPerjadinForm(isSilent = false) {
+  try {
+    localStorage.removeItem(PERJADIN_DRAFT_KEY);
+  } catch (e) {}
+
+  if (typeof selectedEmpIds !== 'undefined' && selectedEmpIds) {
+    selectedEmpIds.clear();
+  }
+  if (typeof empTripSegments !== 'undefined' && empTripSegments) {
+    empTripSegments.clear();
+  }
+  if (typeof spdPerEmployee !== 'undefined') {
+    spdPerEmployee = {};
+  }
+  if (typeof employeeCostConfig !== 'undefined') {
+    employeeCostConfig = {};
+  }
+  if (typeof employeeTransports !== 'undefined') {
+    employeeTransports = {};
+  }
+
+  const noSTNum = document.getElementById('noSTNum');
+  if (noSTNum) noSTNum.value = '';
+  const noST = document.getElementById('noST');
+  if (noST) noST.value = '';
+  const noSTSuffix = document.getElementById('noSTSuffix');
+  if (noSTSuffix && noSTSuffix.options.length) noSTSuffix.selectedIndex = 0;
+
+  const agenda = document.getElementById('agenda');
+  if (agenda) agenda.value = '';
+  const mak = document.getElementById('mak');
+  if (mak) mak.value = '';
+
+  const prov = document.getElementById('provinsiTujuan');
+  if (prov) prov.value = '';
+  const kota = document.getElementById('kotaTujuan');
+  if (kota) kota.value = '';
+
+  const today = new Date().toISOString().split('T')[0];
+  ['tglST', 'tglSPD', 'tglBerangkat', 'tglKembali'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = today;
+  });
+
+  const lamaTugas = document.getElementById('lamaTugas');
+  if (lamaTugas) lamaTugas.value = '1 Hari';
+
+  const cbMulti = document.getElementById('cbMultiProvinsi');
+  if (cbMulti) cbMulti.checked = false;
+  const sec = document.getElementById('multiProvSection');
+  if (sec) sec.style.display = 'none';
+  const mainProvGroup = document.getElementById('mainProvinsiGroup');
+  if (mainProvGroup) mainProvGroup.style.display = '';
+  ['provinsiTujuan1', 'provinsiTujuan2', 'kotaTujuan1', 'kotaTujuan2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  ['hariProvinsi1', 'hariProvinsi2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = 1;
+  });
+
+  const cbDPR = document.getElementById('cbDPR'); if (cbDPR) cbDPR.checked = true;
+  const cbTiket = document.getElementById('cbTiket'); if (cbTiket) cbTiket.checked = false;
+  const cbKonsumsi = document.getElementById('cbKonsumsi'); if (cbKonsumsi) cbKonsumsi.checked = false;
+  const cbKonsumsiBiasa = document.getElementById('cbKonsumsiBiasa'); if (cbKonsumsiBiasa) cbKonsumsiBiasa.checked = false;
+  const persenUH = document.getElementById('persenUH'); if (persenUH) persenUH.value = '100%';
+  const jenisKegiatan = document.getElementById('jenisKegiatan'); if (jenisKegiatan) jenisKegiatan.value = 'biasa';
+  const jmlMakan = document.getElementById('jmlMakanRapat'); if (jmlMakan) jmlMakan.value = 0;
+  const jmlSnack = document.getElementById('jmlSnackRapat'); if (jmlSnack) jmlSnack.value = 0;
+
+  const hotelList = document.getElementById('hotelList');
+  if (hotelList) hotelList.innerHTML = '';
+  const customCostList = document.getElementById('customCostList');
+  if (customCostList) customCostList.innerHTML = '';
+  const mealTbody = document.getElementById('manualMealTableBody') || document.getElementById('manualMealList');
+  if (mealTbody) mealTbody.innerHTML = '';
+
+  document.querySelectorAll('.field-error-msg.is-visible').forEach(m => m.classList.remove('is-visible'));
+  document.querySelectorAll('.field-control.has-error').forEach(c => c.classList.remove('has-error'));
+  document.querySelectorAll('.is-filled').forEach(el => el.classList.remove('is-filled'));
+  const selBox = document.getElementById('selectedBox');
+  if (selBox) selBox.classList.remove('has-error');
+  if (typeof hideValidationToast === 'function') hideValidationToast();
+
+  if (typeof hitungLama === 'function') hitungLama();
+  if (typeof renderEmployeeList === 'function') renderEmployeeList();
+  if (typeof renderSelectedTags === 'function') renderSelectedTags();
+  if (typeof renderTripDates === 'function') renderTripDates();
+  if (typeof updateSbmWarnings === 'function') updateSbmWarnings();
+  if (typeof changeProvince === 'function') changeProvince();
+  if (typeof toggleUHFields === 'function') toggleUHFields();
+  if (typeof toggleHotelFields === 'function') toggleHotelFields();
+  if (typeof renderTripHistory === 'function') renderTripHistory();
+
+  if (typeof showTab === 'function') showTab('input');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  if (!isSilent && typeof showRefreshToast === 'function') {
+    showRefreshToast(
+      'Formulir Dikosongkan',
+      'Data sebelumnya tersimpan di tab Riwayat. Formulir kini siap untuk input perjalanan baru.'
+    );
+  }
+}
+
+function confirmResetPerjadinDraft() {
+  const dirty = typeof isPerjadinDraftDirty === 'function' ? isPerjadinDraftDirty() : false;
+  const msg = dirty
+    ? 'Apakah Anda yakin ingin mengosongkan formulir?\n\nSemua isian formulir saat ini akan dikosongkan untuk memulai perjalanan baru. Data yang pernah disimpan tetap aman di tab Riwayat.'
+    : 'Kosongkan formulir dan mulai perjalanan baru?';
+
+  if (!confirm(msg)) return;
+
+  resetPerjadinForm(false);
+}
+
+function initAutoSaveAndProtection() {
+  window.addEventListener('beforeunload', (e) => {
+    if (window._isResetting) return;
+    if (isPerjadinDraftDirty()) {
+      e.preventDefault();
+      e.returnValue = '';
+      return '';
+    }
+  });
+
+  document.addEventListener('input', (e) => {
+    if (e.target && (e.target.id === 'searchEmp' || e.target.classList.contains('no-autosave'))) return;
+    scheduleAutoSaveDraft();
+  }, true);
+
+  document.addEventListener('change', () => {
+    scheduleAutoSaveDraft();
+  }, true);
+
+  try {
+    const raw = localStorage.getItem(PERJADIN_DRAFT_KEY);
+    if (raw) {
+      const data = JSON.parse(raw);
+      if (data && data.fields) {
+        const restored = restorePerjadinDraftData(data);
+        if (restored) {
+          updateAutosaveIndicator('saved');
+          setTimeout(() => {
+            if (typeof showRefreshToast === 'function') {
+              showRefreshToast(
+                'Draft Berhasil Dipulihkan',
+                'Data formulir perjalanan dinas terakhir Anda dimuat kembali secara otomatis.'
+              );
+            }
+          }, 300);
+          return;
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Gagal memulihkan draft otomatis:', err);
+  }
+
+  updateAutosaveIndicator('clean');
+}
+
+window.isPerjadinDraftDirty = isPerjadinDraftDirty;
+window.collectPerjadinDraftData = collectPerjadinDraftData;
+window.restorePerjadinDraftData = restorePerjadinDraftData;
+window.scheduleAutoSaveDraft = scheduleAutoSaveDraft;
+window.confirmResetPerjadinDraft = confirmResetPerjadinDraft;
+window.updateAutosaveIndicator = updateAutosaveIndicator;
+window.initAutoSaveAndProtection = initAutoSaveAndProtection;
+
+// =====================================================================
+// RIWAYAT PERJALANAN (TRIP HISTORY & REVISION ARCHIVE)
+// =====================================================================
+const TRIP_HISTORY_KEY = 'perdinku_trip_history_v1';
+
+function getTripHistoryList() {
+  try {
+    const raw = localStorage.getItem(TRIP_HISTORY_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    console.warn('Gagal membaca riwayat perjalanan:', e);
+    return [];
+  }
+}
+
+function saveTripHistoryList(list) {
+  try {
+    localStorage.setItem(TRIP_HISTORY_KEY, JSON.stringify(list));
+  } catch (e) {
+    console.warn('Gagal menyimpan riwayat perjalanan:', e);
+  }
+}
+
+function saveCurrentTripToHistory(isManual = false) {
+  const draft = (typeof collectPerjadinDraftData === 'function') ? collectPerjadinDraftData() : null;
+  if (!draft || !draft.fields) {
+    if (isManual) alert('Formulir masih kosong.');
+    return null;
+  }
+
+  const noST = (draft.fields.noST || draft.fields.noSTNum || '').trim();
+  const agenda = (draft.fields.agenda || '').trim();
+  const prov = (draft.fields.provinsiTujuan || '').trim();
+  const empIds = draft.empIds || [];
+
+  if (!noST && !agenda && empIds.length === 0) {
+    if (isManual) alert('Formulir masih kosong. Silakan isi data perjalanan dinas terlebih dahulu.');
+    return null;
+  }
+
+  let totalBiaya = 0;
+  try {
+    const emps = (typeof employees !== 'undefined' && Array.isArray(employees))
+      ? empIds.map(id => employees.find(e => e.id === id)).filter(Boolean)
+      : [];
+    if (typeof hitungBiaya === 'function') {
+      totalBiaya = emps.reduce((tot, emp) => tot + (hitungBiaya(emp)?.total || 0), 0);
+    }
+  } catch (e) {
+    console.warn('Gagal menghitung total estimasi biaya:', e);
+  }
+
+  const empList = empIds.map(id => {
+    const emp = (typeof employees !== 'undefined') ? employees.find(e => e.id === id) : null;
+    return emp ? { id: emp.id, nama: emp.nama, jabatan: emp.jabatan, nip: emp.nip } : { id };
+  });
+
+  const tripId = 'trip_' + (noST ? noST.replace(/[^a-zA-Z0-9]/g, '_') : Date.now());
+  let provTeks = '';
+  if (draft.fields.cbMultiProvinsi) {
+    const p1 = (typeof getProvinsiDisplayName === 'function') ? getProvinsiDisplayName(draft.fields.provinsiTujuan1) : draft.fields.provinsiTujuan1;
+    const p2 = (typeof getProvinsiDisplayName === 'function') ? getProvinsiDisplayName(draft.fields.provinsiTujuan2) : draft.fields.provinsiTujuan2;
+    provTeks = [p1, p2].filter(Boolean).join(' & ');
+  } else {
+    provTeks = (typeof getProvinsiDisplayName === 'function') ? getProvinsiDisplayName(prov) : prov;
+  }
+
+  const historyItem = {
+    id: tripId,
+    noST: noST || 'Tanpa Nomor ST',
+    agenda: agenda || 'Tanpa Agenda Perjalanan',
+    tglST: draft.fields.tglST || '',
+    tglBerangkat: draft.fields.tglBerangkat || '',
+    tglKembali: draft.fields.tglKembali || '',
+    lamaTugas: draft.fields.lamaTugas || '',
+    provinsiTujuan: provTeks || '',
+    kotaTujuan: draft.fields.kotaTujuan || '',
+    mak: draft.fields.mak || '',
+    empCount: empIds.length,
+    employees: empList,
+    totalBiaya: totalBiaya,
+    savedAt: new Date().toISOString(),
+    draft: draft
+  };
+
+  const list = getTripHistoryList();
+  const existingIdx = list.findIndex(item => item.id === historyItem.id || (noST && item.noST === noST));
+  if (existingIdx >= 0) {
+    list[existingIdx] = historyItem;
+  } else {
+    list.unshift(historyItem);
+  }
+
+  saveTripHistoryList(list);
+
+  if (typeof renderTripHistory === 'function') {
+    renderTripHistory();
+  }
+
+  if (isManual && typeof showRefreshToast === 'function') {
+    showRefreshToast(
+      'Perjalanan Tersimpan ke Riwayat',
+      `Data perjalanan "${historyItem.noST}" berhasil dicatat ke riwayat.`
+    );
+  }
+
+  return historyItem;
+}
+
+function loadTripFromHistory(id) {
+  const list = getTripHistoryList();
+  const item = list.find(x => x.id === id);
+  if (!item || !item.draft) {
+    alert('Data riwayat perjalanan tidak ditemukan.');
+    return;
+  }
+
+  if (typeof restorePerjadinDraftData === 'function') {
+    restorePerjadinDraftData(item.draft);
+  }
+
+  try {
+    localStorage.setItem(PERJADIN_DRAFT_KEY, JSON.stringify(item.draft));
+  } catch (e) {}
+
+  showTab('input');
+
+  setTimeout(() => {
+    if (typeof showRefreshToast === 'function') {
+      showRefreshToast(
+        'Perjalanan Dimuat untuk Revisi',
+        `Data "${item.noST}" berhasil dimuat ke formulir. Silakan edit isian atau cetak dokumen yang diperlukan.`
+      );
+    }
+  }, 250);
+}
+
+function duplicateTripFromHistory(id) {
+  const list = getTripHistoryList();
+  const item = list.find(x => x.id === id);
+  if (!item || !item.draft) return;
+
+  const clonedDraft = JSON.parse(JSON.stringify(item.draft));
+  clonedDraft.fields.noST = '';
+  clonedDraft.fields.noSTNum = '';
+
+  if (typeof restorePerjadinDraftData === 'function') {
+    restorePerjadinDraftData(clonedDraft);
+  }
+
+  showTab('input');
+
+  setTimeout(() => {
+    if (typeof showRefreshToast === 'function') {
+      showRefreshToast(
+        'Perjalanan Berhasil Diduplikasi',
+        `Isian pegawai dan rute telah dimuat. Silakan masukkan Nomor Surat Tugas baru untuk perjalanan ini.`
+      );
+    }
+  }, 250);
+}
+
+function deleteTripFromHistory(id) {
+  const list = getTripHistoryList();
+  const item = list.find(x => x.id === id);
+  if (!item) return;
+
+  if (!confirm(`Hapus perjalanan "${item.noST}" dari riwayat?`)) return;
+
+  const updated = list.filter(x => x.id !== id);
+  saveTripHistoryList(updated);
+  renderTripHistory();
+
+  if (typeof showRefreshToast === 'function') {
+    showRefreshToast('Riwayat Dihapus', `Perjalanan "${item.noST}" telah dihapus dari riwayat.`);
+  }
+}
+
+function exportExcelFromHistory(id, mode = 'excel') {
+  const list = getTripHistoryList();
+  const item = list.find(x => x.id === id);
+  if (!item || !item.draft) return;
+
+  if (typeof restorePerjadinDraftData === 'function') {
+    restorePerjadinDraftData(item.draft);
+  }
+  if (typeof exportPerjadinExcel === 'function') {
+    exportPerjadinExcel(mode);
+  }
+}
+
+function formatHistoryDate(isoStr) {
+  if (!isoStr) return '-';
+  try {
+    const d = new Date(isoStr);
+    if (isNaN(d.getTime())) return isoStr;
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}, ${pad(d.getHours())}:${pad(d.getMinutes())} WIB`;
+  } catch (e) {
+    return isoStr;
+  }
+}
+
+function renderTripHistory(filterText = '') {
+  const container = document.getElementById('historyListContainer');
+  const countBadge = document.getElementById('historyCountBadge');
+  if (!container) return;
+
+  const list = getTripHistoryList();
+  const q = String(filterText || document.getElementById('historySearchInput')?.value || '').trim().toLowerCase();
+
+  const filtered = list.filter(item => {
+    if (!q) return true;
+    const provDisplay = (typeof getProvinsiDisplayName === 'function')
+      ? getProvinsiDisplayName(item.provinsiTujuan)
+      : (item.provinsiTujuan || '');
+    const searchTarget = [
+      item.noST,
+      item.agenda,
+      provDisplay,
+      item.kotaTujuan,
+      item.mak,
+      ...(item.employees || []).map(e => e.nama || '')
+    ].join(' ').toLowerCase();
+    return searchTarget.includes(q);
+  });
+
+  if (countBadge) {
+    countBadge.textContent = `${list.length} Riwayat Tersimpan`;
+  }
+
+  const searchWrap = document.querySelector('.history-search-wrap');
+  if (searchWrap) {
+    searchWrap.classList.toggle('has-val', !!q);
+  }
+
+  if (list.length === 0) {
+    container.innerHTML = `
+      <div class="history-empty-card">
+        <div class="history-empty-icon">
+          <svg class="ico"><use href="#i-history"></use></svg>
+        </div>
+        <h3>Belum Ada Riwayat Perjalanan</h3>
+        <p>Setiap kali Anda mengklik <strong>Simpan Data</strong> (unduh Excel) atau tombol <strong>Simpan ke Riwayat</strong>, arsip perjalanan dinas akan otomatis tersimpan di sini agar dapat Anda buka dan revisi kembali kapan saja.</p>
+        <button type="button" class="btn btn-primary" onclick="showTab('input')">
+          <svg class="ico"><use href="#i-edit"></use></svg>
+          <span>Buka Formulir Input Perjalanan</span>
+        </button>
+      </div>
+    `;
+    return;
+  }
+
+  if (filtered.length === 0) {
+    const safeQ = (typeof escapeHtml === 'function') ? escapeHtml(q) : q;
+    container.innerHTML = `
+      <div class="history-empty-card">
+        <div class="history-empty-icon">
+          <svg class="ico"><use href="#i-search"></use></svg>
+        </div>
+        <h3>Tidak Ditemukan Hasil</h3>
+        <p>Tidak ada riwayat yang cocok dengan kata kunci <em>"${safeQ}"</em>.</p>
+        <button type="button" class="btn btn-secondary" onclick="clearHistorySearch()">
+          <span>Bersihkan Pencarian</span>
+        </button>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = filtered.map(item => {
+    const costFormatted = item.totalBiaya > 0
+      ? ((typeof rp === 'function') ? rp(item.totalBiaya) : 'Rp ' + Number(item.totalBiaya).toLocaleString('id-ID'))
+      : 'Rp 0';
+
+    const tglTeks = (item.tglBerangkat && item.tglKembali)
+      ? `${(typeof formatTgl === 'function' ? formatTgl(item.tglBerangkat) : item.tglBerangkat)} s.d. ${(typeof formatTgl === 'function' ? formatTgl(item.tglKembali) : item.tglKembali)}`
+      : item.tglBerangkat || 'Tanggal belum diisi';
+
+    const durationTeks = item.lamaTugas ? ` (${item.lamaTugas})` : '';
+    const provDisplay = (typeof getProvinsiDisplayName === 'function')
+      ? getProvinsiDisplayName(item.provinsiTujuan)
+      : (item.provinsiTujuan || '');
+    const kota = (item.kotaTujuan || '').trim();
+    let destinationTeks = 'Belum ditentukan';
+    if (kota && provDisplay) {
+      if (kota.toLowerCase().includes(provDisplay.toLowerCase())) {
+        destinationTeks = kota;
+      } else {
+        destinationTeks = `${kota}, ${provDisplay}`;
+      }
+    } else if (kota) {
+      destinationTeks = kota;
+    } else if (provDisplay) {
+      destinationTeks = provDisplay;
+    }
+    const emps = item.employees || [];
+
+    const safeNoST = (typeof escapeHtml === 'function') ? escapeHtml(item.noST) : item.noST;
+    const safeMak = (typeof escapeHtml === 'function') ? escapeHtml(item.mak) : item.mak;
+    const safeAgenda = (typeof escapeHtml === 'function') ? escapeHtml(item.agenda) : item.agenda;
+    const safeDest = (typeof escapeHtml === 'function') ? escapeHtml(destinationTeks) : destinationTeks;
+    const safeTgl = (typeof escapeHtml === 'function') ? escapeHtml(tglTeks) : tglTeks;
+    const safeDuration = (typeof escapeHtml === 'function') ? escapeHtml(durationTeks) : durationTeks;
+
+    const empPillsHtml = emps.slice(0, 5).map(e => {
+      const shortName = (e.nama || '').split(',')[0];
+      const safeName = (typeof escapeHtml === 'function') ? escapeHtml(shortName) : shortName;
+      return `<span class="emp-pill">${safeName}</span>`;
+    }).join('');
+
+    const morePillHtml = emps.length > 5 ? `<span class="emp-pill more">+${emps.length - 5} lainnya</span>` : '';
+
+    return `
+      <div class="history-card" data-trip-id="${item.id}">
+        <div class="history-card-top">
+          <div class="history-card-st">
+            <span class="history-st-badge">${safeNoST}</span>
+            ${safeMak ? `<span class="history-mak-pill" title="Mata Anggaran Kegiatan (MAK)">${safeMak}</span>` : ''}
+          </div>
+          <div class="history-card-date">
+            <svg class="ico"><use href="#i-calendar"></use></svg>
+            <span>Disimpan: ${formatHistoryDate(item.savedAt)}</span>
+          </div>
+        </div>
+
+        <div class="history-card-body">
+          <h3 class="history-card-agenda">${safeAgenda}</h3>
+          
+          <div class="history-meta-grid">
+            <div class="history-meta-item">
+              <span class="meta-label">Tujuan</span>
+              <span class="meta-val">${safeDest}</span>
+            </div>
+            <div class="history-meta-item">
+              <span class="meta-label">Jadwal Pelaksanaan</span>
+              <span class="meta-val">${safeTgl}${safeDuration}</span>
+            </div>
+            <div class="history-meta-item">
+              <span class="meta-label">Pelaksana</span>
+              <span class="meta-val">${item.empCount} Pegawai</span>
+            </div>
+            <div class="history-meta-item history-meta-cost">
+              <span class="meta-label">Total Estimasi Biaya</span>
+              <span class="meta-val cost-text">${costFormatted}</span>
+            </div>
+          </div>
+
+          ${emps.length > 0 ? `
+            <div class="history-emp-pills">
+              ${empPillsHtml}
+              ${morePillHtml}
+            </div>
+          ` : ''}
+        </div>
+
+        <div class="history-card-actions">
+          <button type="button" class="btn btn-primary btn-sm" onclick="loadTripFromHistory('${item.id}')" title="Muat seluruh data perjalanan ini ke formulir untuk diedit/direvisi">
+            <svg class="ico"><use href="#i-edit"></use></svg>
+            <span>Buka & Edit / Revisi</span>
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="exportExcelFromHistory('${item.id}', 'excel')" title="Unduh file Excel perjalanan ini">
+            <svg class="ico"><use href="#i-save"></use></svg>
+            <span>Unduh Excel</span>
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="exportExcelFromHistory('${item.id}', 'zip')" title="Unduh paket ZIP lengkap (Excel + Semua PDF)">
+            <svg class="ico"><use href="#i-package"></use></svg>
+            <span>Unduh ZIP</span>
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="duplicateTripFromHistory('${item.id}')" title="Salin data perjalanan ini untuk membuat perjalanan baru">
+            <svg class="ico"><use href="#i-plus"></use></svg>
+            <span>Duplikat</span>
+          </button>
+          <button type="button" class="btn btn-outline btn-sm" onclick="deleteTripFromHistory('${item.id}')" title="Hapus perjalanan ini dari riwayat">
+            <svg class="ico"><use href="#i-trash"></use></svg>
+            <span>Hapus</span>
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function filterTripHistory() {
+  const input = document.getElementById('historySearchInput');
+  renderTripHistory(input?.value || '');
+}
+
+function clearHistorySearch() {
+  const input = document.getElementById('historySearchInput');
+  if (input) input.value = '';
+  renderTripHistory('');
+}
+
+function toggleSaveMenu(event) {
+  if (event) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+  const group = document.getElementById('saveSplitGroup');
+  const menu = document.getElementById('saveSplitMenu');
+  const btnArrow = document.querySelector('.btn-split-arrow');
+  if (!menu) return;
+  const isHidden = menu.style.display === 'none' || !menu.style.display;
+  if (isHidden) {
+    menu.style.display = 'block';
+    if (group) group.classList.add('open');
+    if (btnArrow) btnArrow.setAttribute('aria-expanded', 'true');
+  } else {
+    menu.style.display = 'none';
+    if (group) group.classList.remove('open');
+    if (btnArrow) btnArrow.setAttribute('aria-expanded', 'false');
+  }
+}
+
+function closeSaveMenu() {
+  const group = document.getElementById('saveSplitGroup');
+  const menu = document.getElementById('saveSplitMenu');
+  const btnArrow = document.querySelector('.btn-split-arrow');
+  if (menu) menu.style.display = 'none';
+  if (group) group.classList.remove('open');
+  if (btnArrow) btnArrow.setAttribute('aria-expanded', 'false');
+}
+
+function selectSaveMode(mode) {
+  closeSaveMenu();
+  if (typeof exportPerjadinExcel === 'function') {
+    exportPerjadinExcel(mode);
+  }
+}
+
+document.addEventListener('click', function (e) {
+  const group = document.getElementById('saveSplitGroup');
+  if (group && !group.contains(e.target)) {
+    closeSaveMenu();
+  }
+});
+
+window.toggleSaveMenu = toggleSaveMenu;
+window.closeSaveMenu = closeSaveMenu;
+window.selectSaveMode = selectSaveMode;
+
+window.saveTripToHistory = saveTripToHistory;
+window.saveCurrentTripToHistory = saveCurrentTripToHistory;
+window.getTripHistoryList = getTripHistoryList;
+window.loadTripFromHistory = loadTripFromHistory;
+window.duplicateTripFromHistory = duplicateTripFromHistory;
+window.deleteTripFromHistory = deleteTripFromHistory;
+window.exportExcelFromHistory = exportExcelFromHistory;
+window.resetPerjadinForm = resetPerjadinForm;
+window.renderTripHistory = renderTripHistory;
+window.filterTripHistory = filterTripHistory;
+window.clearHistorySearch = clearHistorySearch;

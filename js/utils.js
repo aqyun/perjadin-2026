@@ -11,6 +11,33 @@ function rp(n) {
   return 'Rp ' + Number(n).toLocaleString('id-ID');
 }
 
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function getProvinsiDisplayName(val) {
+  if (!val && val !== 0) return '';
+  const str = String(val).trim();
+  if (!str || str === '-') return '';
+  if (/^\d+$/.test(str)) {
+    const id = parseInt(str, 10);
+    const s = (typeof sbmData !== 'undefined' && Array.isArray(sbmData))
+      ? sbmData.find(item => item.id === id)
+      : null;
+    if (s && s.provinsi) {
+      return (typeof formatProvinsi === 'function') ? formatProvinsi(s.provinsi) : s.provinsi;
+    }
+  }
+  return (typeof formatProvinsi === 'function') ? formatProvinsi(str) : str;
+}
+window.getProvinsiDisplayName = getProvinsiDisplayName;
+
 function parseNumber(val) {
   if (typeof val === 'number') return isNaN(val) ? 0 : val;
   if (!val) return 0;
@@ -174,7 +201,8 @@ function getPerjadinNamingInfo() {
   const pelakuStr = getNamaPelakuPerjadin(empIds);
 
   const kotaTeks = (document.getElementById('kotaTujuan')?.value || '').trim();
-  const provTeks = (document.getElementById('provinsiTujuan')?.value || '').trim();
+  const provRaw = (document.getElementById('provinsiTujuan')?.value || '').trim();
+  const provTeks = getProvinsiDisplayName(provRaw);
   const lokasi = (kotaTeks || provTeks || 'DINAS').toUpperCase();
 
   // Format Excel: PERJADIN/PERJADIN KKP_tanggal kegiatan_Nominal_nama pelaku perjadin

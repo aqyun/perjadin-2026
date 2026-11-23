@@ -42,6 +42,9 @@
   <symbol id="i-load" viewBox="0 0 24 24"><path d="M12 20V9"/><path d="m7 14 5-5 5 5"/><path d="M5 4h14"/></symbol>
   <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></symbol>
   <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></symbol>
+  <symbol id="i-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></symbol>
+  <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-package" viewBox="0 0 24 24"><path d="m16.5 9.4-9-5.19M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></symbol>
 </svg>
 
 <!-- App Splash Loader (3 detik) -->
@@ -105,6 +108,10 @@
     <button type="button" class="tab-btn active" data-tab="input" onclick="showTab('input')">
       <span class="nav-ico"><svg class="ico"><use href="#i-edit"></use></svg></span>
       <span class="nav-text">Input Perjalanan</span>
+    </button>
+    <button type="button" class="tab-btn" data-tab="riwayat" onclick="showTab('riwayat')">
+      <span class="nav-ico"><svg class="ico"><use href="#i-history"></use></svg></span>
+      <span class="nav-text">Riwayat Perjalanan</span>
     </button>
 
     <p class="nav-label">Dokumen</p>
@@ -407,28 +414,73 @@
       <svg class="ico"><use href="#i-menu"></use></svg>
     </button>
     <div class="topbar-title">
-      <span class="eyebrow" id="pageEyebrow">Formulir</span>
+      <div class="topbar-meta">
+        <span class="eyebrow" id="pageEyebrow">Formulir</span>
+        <span class="topbar-meta-sep" aria-hidden="true">•</span>
+        <span class="topbar-meta-date" title="Tanggal Hari Ini">
+          <svg class="ico"><use href="#i-calendar"></use></svg>
+          <span id="datePill">—</span>
+        </span>
+      </div>
       <h1 id="pageTitle">Input Perjalanan</h1>
     </div>
     <div class="topbar-tools">
-      <div class="topbar-excel-group">
-        <button type="button" class="btn btn-success btn-sm btn-topbar-save" onclick="exportPerjadinExcel()" title="Simpan data ke file Excel & buat folder berkas PDF perorangan">
-          <svg class="ico"><use href="#i-save"></use></svg>
-          <span>Simpan Data</span>
-        </button>
-        <button type="button" class="btn btn-secondary btn-sm btn-topbar-load" onclick="document.getElementById('excelFileInput').click()" title="Muat isian dari file Excel">
+      <div class="topbar-group-actions">
+        <div class="split-btn-group" id="saveSplitGroup">
+          <button type="button" class="btn-tool btn-tool-save btn-topbar-save btn-split-main" onclick="exportPerjadinExcel('excel')" title="Simpan formulir ke file Excel (.xlsx) & otomatis catat ke riwayat">
+            <svg class="ico"><use href="#i-save"></use></svg>
+            <span>Simpan Data</span>
+          </button>
+          <button type="button" class="btn-tool btn-tool-save-arrow btn-split-arrow" onclick="toggleSaveMenu(event)" title="Pilih opsi simpan (Excel atau Paket ZIP Lengkap)" aria-haspopup="true" aria-expanded="false">
+            <svg class="ico"><use href="#i-chevron-down"></use></svg>
+          </button>
+          <div class="split-dropdown-menu" id="saveSplitMenu" style="display:none;">
+            <div class="split-dd-header">FORMAT SIMPAN</div>
+            <button type="button" class="split-dropdown-item" onclick="selectSaveMode('excel')">
+              <div class="split-dd-icon-box icon-excel">
+                <svg class="ico"><use href="#i-file"></use></svg>
+              </div>
+              <div class="dd-content">
+                <div class="dd-title-row">
+                  <span class="dd-title">File Excel (.xlsx)</span>
+                  <span class="dd-badge-default">Rekomendasi</span>
+                </div>
+                <span class="dd-sub">Simpan data formulir & catat ke riwayat</span>
+              </div>
+            </button>
+            <div class="dd-divider"></div>
+            <button type="button" class="split-dropdown-item" onclick="selectSaveMode('zip')">
+              <div class="split-dd-icon-box icon-zip">
+                <svg class="ico"><use href="#i-package"></use></svg>
+              </div>
+              <div class="dd-content">
+                <div class="dd-title-row">
+                  <span class="dd-title">Paket Lengkap ZIP (.zip)</span>
+                </div>
+                <span class="dd-sub">Kompilasi Excel + Seluruh Dokumen Cetak PDF</span>
+              </div>
+            </button>
+          </div>
+        </div>
+        <button type="button" class="btn-tool btn-tool-secondary btn-topbar-load" onclick="document.getElementById('excelFileInput').click()" title="Muat isian dari file Excel">
           <svg class="ico"><use href="#i-load"></use></svg>
           <span>Muat Excel</span>
         </button>
+        <!-- <button type="button" class="btn-tool btn-tool-ghost btn-topbar-reset" onclick="confirmResetPerjadinDraft()" title="Kosongkan seluruh isian formulir untuk mulai perjalanan baru">
+          <svg class="ico"><use href="#i-refresh"></use></svg>
+          <span>Clear Form</span>
+        </button> -->
       </div>
-      <button type="button" class="btn-topbar-pmk" onclick="openPmkModal()" title="Cek Dokumen Resmi PMK SBM TA 2026">
-        <svg class="ico"><use href="#i-file-lines"></use></svg>
-        <span>Cek File PMK</span>
-      </button>
-      <span class="date-pill"><svg class="ico"><use href="#i-calendar"></use></svg><span id="datePill">—</span></span>
-      <button type="button" class="icon-btn info-btn" onclick="openWelcome()" title="Panduan & Info PerdinKu" aria-label="Panduan & Info PerdinKu">
-        <svg class="ico"><use href="#i-info"></use></svg>
-      </button>
+      <div class="topbar-divider" role="separator" aria-orientation="vertical"></div>
+      <div class="topbar-group-utils">
+        <button type="button" class="btn-tool btn-tool-pmk btn-topbar-pmk" onclick="openPmkModal()" title="Cek Dokumen Resmi PMK SBM TA 2026">
+          <svg class="ico"><use href="#i-file-lines"></use></svg>
+          <span>Cek PMK</span>
+        </button>
+        <button type="button" class="btn-tool-icon info-btn" onclick="openWelcome()" title="Panduan & Info PerdinKu" aria-label="Panduan & Info PerdinKu">
+          <svg class="ico"><use href="#i-info"></use></svg>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -799,12 +851,53 @@
                 <span class="action-body"><strong>Rekap Surat Tugas</strong><small>Daftar SPT dan SPD</small></span>
                 <span class="action-arrow"><svg class="ico"><use href="#i-arrow-right"></use></svg></span>
               </button>
-              <button type="button" class="action-card action-danger" onclick="clearAll()">
-                <span class="action-ico"><svg class="ico"><use href="#i-trash"></use></svg></span>
-                <span class="action-body"><strong>Reset Pilihan</strong><small>Kosongkan pegawai terpilih</small></span>
+              <button type="button" class="action-card action-card-zip" onclick="exportPerjadinExcel('zip')" title="Unduh seluruh dokumen &amp; Excel dalam satu file ZIP">
+                <span class="action-ico"><svg class="ico"><use href="#i-package"></use></svg></span>
+                <span class="action-body"><strong>Unduh Paket ZIP (Semua Dokumen)</strong><small>Kompilasi Excel + semua PDF kuitansi &amp; rekap</small></span>
                 <span class="action-arrow"><svg class="ico"><use href="#i-arrow-right"></use></svg></span>
               </button>
+              <!-- <button type="button" class="action-card action-danger" onclick="confirmResetPerjadinDraft()">
+                <span class="action-ico"><svg class="ico"><use href="#i-trash"></use></svg></span>
+                <span class="action-body"><strong>Mulai Baru / Reset Form</strong><small>Kosongkan seluruh isian formulir</small></span>
+                <span class="action-arrow"><svg class="ico"><use href="#i-arrow-right"></use></svg></span>
+              </button> -->
             </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============================================================ TAB RIWAYAT PERJALANAN -->
+    <div id="tab-riwayat" class="tab-content">
+      <section class="card history-page-card no-print">
+        <div class="card-head history-page-head">
+          <span class="card-ico"><svg class="ico"><use href="#i-history"></use></svg></span>
+          <div class="card-heading">
+            <h2 class="card-title">Riwayat Perjalanan Dinas</h2>
+            <p class="card-sub">Daftar berkas &amp; arsip perjalanan dinas yang pernah dibuat. Klik tombol <strong>Buka &amp; Edit / Revisi</strong> untuk memuat kembali isian jika ada revisi.</p>
+          </div>
+          <div class="history-head-actions">
+            <button type="button" class="btn btn-primary btn-sm btn-save-history-now" onclick="saveCurrentTripToHistory(true)" title="Simpan formulir aktif saat ini ke dalam riwayat">
+              <svg class="ico"><use href="#i-save"></use></svg>
+              <span>Simpan ke Riwayat</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="history-toolbar">
+            <div class="history-search-wrap">
+              <svg class="ico search-ico"><use href="#i-search"></use></svg>
+              <input type="text" id="historySearchInput" placeholder="Cari nomor ST, nama pegawai, agenda, atau tujuan..." oninput="filterTripHistory()">
+              <button type="button" class="history-search-clear" onclick="clearHistorySearch()" title="Bersihkan pencarian">×</button>
+            </div>
+            <div class="history-stats">
+              <span id="historyCountBadge" class="badge">0 Riwayat Tersimpan</span>
+            </div>
+          </div>
+
+          <div id="historyListContainer" class="history-list-container">
+            <!-- Rendered by renderTripHistory() -->
           </div>
         </div>
       </section>
