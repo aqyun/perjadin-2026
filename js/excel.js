@@ -381,14 +381,11 @@ async function generatePdfBlobFromHtml(htmlContent, optOverrides = {}) {
     doc.querySelectorAll('.no-print, button, input').forEach(el => el.remove());
     doc.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
     // Hilangkan padding, margin berlebih, dan border luar agar pas presisi di lembar A4 tanpa overflow ke halaman kosong
-    doc.querySelectorAll('.kuitansi-perorangan-area, .sppd-area, .rincian-doc, .dpr-area, .dpr-kkp-area, .lembar-kendali-area, .nominatif-area, .rekap-kuitansi-area, .rekap-rincian-area, .rekap-spt-area, .doc-page-section, .emp-bundle-doc').forEach(el => {
+    doc.querySelectorAll('.kuitansi-perorangan-area, .kuitansi-area, .sppd-area, .rincian-doc, .dpr-area, .dpr-kkp-area, .lembar-kendali-area, .nominatif-area, .rekap-kuitansi-area, .rekap-rincian-area, .rekap-spt-area').forEach(el => {
       el.style.padding = '0';
       el.style.margin = '0 auto';
-      el.style.maxWidth = '100%';
       el.style.boxShadow = 'none';
       el.style.border = 'none';
-      el.style.pageBreakAfter = 'avoid';
-      el.style.breakAfter = 'avoid';
     });
     cleanHtml = doc.body.innerHTML;
   } catch (e) {
@@ -405,17 +402,16 @@ async function generatePdfBlobFromHtml(htmlContent, optOverrides = {}) {
   const isLandscape = orientation === 'landscape';
 
   const defaultOpt = {
-    margin: isLandscape ? [6, 6, 6, 6] : [4, 6, 4, 6],
+    margin: isLandscape ? [8, 8, 8, 8] : [6, 8, 6, 8],
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: {
       scale: 1.6,
       useCORS: true,
       logging: false,
-      backgroundColor: '#ffffff',
-      windowWidth: 800
+      backgroundColor: '#ffffff'
     },
     jsPDF: { unit: 'mm', format: 'a4', orientation: orientation },
-    pagebreak: { mode: ['css'] } // Hanya gunakan mode css, hindari legacy yang memicu halaman kosong akibat sub-pixel overflow
+    pagebreak: { mode: ['css', 'legacy'] }
   };
 
   const finalOpt = Object.assign({}, defaultOpt, optOverrides);
