@@ -1694,10 +1694,9 @@ function buildAllDocsHtmlForEmp(emp) {
   // 3. SPPD Perorangan
   sections.push(buildSPPDHtml(emp));
   return `
-    <div class="emp-bundle-doc" style="background:#ffffff; color:#000000;">
+    <div class="emp-bundle-doc" style="background:#ffffff; color:#000000; margin:0; padding:0;">
       ${sections.map((sec, idx) => `
-        ${idx > 0 ? '<div class="html2pdf__page-break"></div>' : ''}
-        <div class="doc-page-section">
+        <div class="doc-page-section" style="${idx > 0 ? 'page-break-before: always; break-before: page;' : ''} margin:0; padding:0;">
           ${sec}
         </div>
       `).join('')}

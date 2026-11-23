@@ -380,6 +380,16 @@ async function generatePdfBlobFromHtml(htmlContent, optOverrides = {}) {
     const doc = parser.parseFromString(htmlContent, 'text/html');
     doc.querySelectorAll('.no-print, button, input').forEach(el => el.remove());
     doc.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+    // Hilangkan padding, margin berlebih, dan border luar agar pas presisi di lembar A4 tanpa overflow ke halaman kosong
+    doc.querySelectorAll('.kuitansi-perorangan-area, .sppd-area, .rincian-doc, .dpr-area, .dpr-kkp-area, .lembar-kendali-area, .nominatif-area, .rekap-kuitansi-area, .rekap-rincian-area, .rekap-spt-area, .doc-page-section, .emp-bundle-doc').forEach(el => {
+      el.style.padding = '0';
+      el.style.margin = '0 auto';
+      el.style.maxWidth = '100%';
+      el.style.boxShadow = 'none';
+      el.style.border = 'none';
+      el.style.pageBreakAfter = 'avoid';
+      el.style.breakAfter = 'avoid';
+    });
     cleanHtml = doc.body.innerHTML;
   } catch (e) {
     cleanHtml = (htmlContent || '')
@@ -389,22 +399,23 @@ async function generatePdfBlobFromHtml(htmlContent, optOverrides = {}) {
   }
 
   // Bungkus dalam container putih bersih agar hasil PDF selalu berlatar putih dan teks terbaca jelas
-  cleanHtml = `<div style="background-color: #ffffff !important; color: #000000 !important; width: 100%; box-sizing: border-box;">${cleanHtml}</div>`;
+  cleanHtml = `<div style="background-color: #ffffff !important; color: #000000 !important; width: 100%; box-sizing: border-box; margin: 0; padding: 0;">${cleanHtml}</div>`;
 
   const orientation = (optOverrides && optOverrides.jsPDF && optOverrides.jsPDF.orientation) || 'portrait';
   const isLandscape = orientation === 'landscape';
 
   const defaultOpt = {
-    margin: isLandscape ? [8, 8, 8, 8] : [6, 8, 6, 8],
+    margin: isLandscape ? [6, 6, 6, 6] : [4, 6, 4, 6],
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: {
       scale: 1.6,
       useCORS: true,
       logging: false,
-      backgroundColor: '#ffffff'
+      backgroundColor: '#ffffff',
+      windowWidth: 800
     },
     jsPDF: { unit: 'mm', format: 'a4', orientation: orientation },
-    pagebreak: { mode: ['css', 'legacy'] }
+    pagebreak: { mode: ['css'] } // Hanya gunakan mode css, hindari legacy yang memicu halaman kosong akibat sub-pixel overflow
   };
 
   const finalOpt = Object.assign({}, defaultOpt, optOverrides);
@@ -416,6 +427,40 @@ async function generatePdfBlobFromHtml(htmlContent, optOverrides = {}) {
   }
 
   return await html2pdf().set(finalOpt).from(cleanHtml).output('blob');
+}
+
+/**
+ * Menggabungkan beberapa PDF Blob menjadi satu berkas PDF utuh
+ * menggunakan pustaka pdf-lib (100% presisi per halaman tanpa merusak tata letak).
+ */
+async function mergePdfBlobs(pdfBlobArray) {
+  if (!pdfBlobArray || pdfBlobArray.length === 0) return null;
+  const validBlobs = pdfBlobArray.filter(Boolean);
+  if (validBlobs.length === 0) return null;
+  if (validBlobs.length === 1) return validBlobs[0];
+
+  const PDFLibModule = (typeof PDFLib !== 'undefined') ? PDFLib : (window.PDFLib || null);
+  if (!PDFLibModule || !PDFLibModule.PDFDocument) {
+    throw new Error('Pustaka pdf-lib belum termuat di peramban.');
+  }
+
+  const { PDFDocument } = PDFLibModule;
+  const mergedPdf = await PDFDocument.create();
+
+  for (const blob of validBlobs) {
+    try {
+      const buffer = await blob.arrayBuffer();
+      const doc = await PDFDocument.load(buffer);
+      const pageIndices = doc.getPageIndices();
+      const copiedPages = await mergedPdf.copyPages(doc, pageIndices);
+      copiedPages.forEach(page => mergedPdf.addPage(page));
+    } catch (pageErr) {
+      console.warn('Gagal memproses salah satu dokumen saat penggabungan PDF:', pageErr);
+    }
+  }
+
+  const mergedBytes = await mergedPdf.save();
+  return new Blob([mergedBytes], { type: 'application/pdf' });
 }
 
 function ensureExportProgressModal() {
@@ -575,6 +620,7 @@ async function exportPerjadinActivityFolder(wb, naming) {
   for (let i = 0; i < emps.length; i++) {
     const emp = emps[i];
     const prefix = getEmployeeDocFilePrefix(emp, emps);
+    const empPdfBlobs = [];
 
     await new Promise(r => setTimeout(r, 60));
 
@@ -590,6 +636,7 @@ async function exportPerjadinActivityFolder(wb, naming) {
         const kuitansiBlob = await generatePdfBlobFromHtml(kuitansiHtml);
         const docName = `${prefix} - Kuitansi.pdf`;
         fileList.push({ name: docName, blob: kuitansiBlob, icon: '🧾' });
+        empPdfBlobs.push(kuitansiBlob);
         updateExportProgress(Math.round((currentTask / (totalTasks + 1)) * 90), null, { name: docName, icon: '🧾' });
       }
     } catch (err) {
@@ -610,6 +657,7 @@ async function exportPerjadinActivityFolder(wb, naming) {
         const rincianBlob = await generatePdfBlobFromHtml(rincianHtml);
         const docName = `${prefix} - Rincian Biaya.pdf`;
         fileList.push({ name: docName, blob: rincianBlob, icon: '📋' });
+        empPdfBlobs.push(rincianBlob);
         updateExportProgress(Math.round((currentTask / (totalTasks + 1)) * 90), null, { name: docName, icon: '📋' });
       }
     } catch (err) {
@@ -631,6 +679,7 @@ async function exportPerjadinActivityFolder(wb, naming) {
           const dprBlob = await generatePdfBlobFromHtml(dprHtml);
           const docName = `${prefix} - DPR.pdf`;
           fileList.push({ name: docName, blob: dprBlob, icon: '📝' });
+          empPdfBlobs.push(dprBlob);
           updateExportProgress(Math.round((currentTask / (totalTasks + 1)) * 90), null, { name: docName, icon: '📝' });
         }
       } catch (err) {
@@ -651,6 +700,7 @@ async function exportPerjadinActivityFolder(wb, naming) {
         const sppdBlob = await generatePdfBlobFromHtml(sppdHtml);
         const docName = `${prefix} - SPPD.pdf`;
         fileList.push({ name: docName, blob: sppdBlob, icon: '📑' });
+        empPdfBlobs.push(sppdBlob);
         updateExportProgress(Math.round((currentTask / (totalTasks + 1)) * 90), null, { name: docName, icon: '📑' });
       }
     } catch (err) {
@@ -659,16 +709,30 @@ async function exportPerjadinActivityFolder(wb, naming) {
 
     await new Promise(r => setTimeout(r, 40));
 
-    // E. Dokumen Lengkap per orang
+    // E. Dokumen Lengkap per orang (Merge PDF asli langsung agar tata letak 100% sempurna & tidak rusak)
     currentTask++;
     updateExportProgress(
       Math.round((currentTask / (totalTasks + 1)) * 90),
       `Menggabungkan seluruh dokumen ${prefix}... (${currentTask}/${totalTasks})`
     );
     try {
-      const allDocsHtml = typeof buildAllDocsHtmlForEmp === 'function' ? buildAllDocsHtmlForEmp(emp) : '';
-      if (allDocsHtml) {
-        const allDocsBlob = await generatePdfBlobFromHtml(allDocsHtml);
+      let allDocsBlob = null;
+      if (empPdfBlobs.length > 0) {
+        try {
+          allDocsBlob = await mergePdfBlobs(empPdfBlobs);
+        } catch (mergeErr) {
+          console.warn('Gagal merge PDF via pdf-lib, fallback ke HTML gabungan:', mergeErr);
+        }
+      }
+
+      if (!allDocsBlob) {
+        const allDocsHtml = typeof buildAllDocsHtmlForEmp === 'function' ? buildAllDocsHtmlForEmp(emp) : '';
+        if (allDocsHtml) {
+          allDocsBlob = await generatePdfBlobFromHtml(allDocsHtml);
+        }
+      }
+
+      if (allDocsBlob) {
         const docName = `${prefix} - Lengkap (Semua Dokumen).pdf`;
         fileList.push({ name: docName, blob: allDocsBlob, icon: '📁' });
         updateExportProgress(Math.round((currentTask / (totalTasks + 1)) * 90), null, { name: docName, icon: '📁' });

@@ -1431,6 +1431,10 @@ function scheduleAutoSaveDraft() {
         const draft = collectPerjadinDraftData();
         localStorage.setItem(PERJADIN_DRAFT_KEY, JSON.stringify(draft));
         updateAutosaveIndicator('saved');
+        // Otomatis catat/perbarui riwayat perjalanan tanpa harus klik tombol simpan manual
+        if (typeof saveCurrentTripToHistory === 'function') {
+          saveCurrentTripToHistory(false);
+        }
       } else {
         updateAutosaveIndicator('clean');
       }
@@ -1558,12 +1562,35 @@ function confirmResetPerjadinDraft() {
 }
 
 function initAutoSaveAndProtection() {
+  const saveImmediate = () => {
+    if (window._isResetting) return;
+    try {
+      if (typeof isPerjadinDraftDirty === 'function' && isPerjadinDraftDirty()) {
+        const draft = collectPerjadinDraftData();
+        localStorage.setItem(PERJADIN_DRAFT_KEY, JSON.stringify(draft));
+        if (typeof saveCurrentTripToHistory === 'function') {
+          saveCurrentTripToHistory(false);
+        }
+      }
+    } catch (e) {
+      console.warn('Gagal menyimpan draft langsung:', e);
+    }
+  };
+
   window.addEventListener('beforeunload', (e) => {
     if (window._isResetting) return;
+    saveImmediate();
     if (isPerjadinDraftDirty()) {
       e.preventDefault();
       e.returnValue = '';
       return '';
+    }
+  });
+
+  window.addEventListener('pagehide', saveImmediate);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      saveImmediate();
     }
   });
 

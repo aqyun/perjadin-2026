@@ -877,10 +877,10 @@
             <p class="card-sub">Daftar berkas &amp; arsip perjalanan dinas yang pernah dibuat. Klik tombol <strong>Buka &amp; Edit / Revisi</strong> untuk memuat kembali isian jika ada revisi.</p>
           </div>
           <div class="history-head-actions">
-            <button type="button" class="btn btn-primary btn-sm btn-save-history-now" onclick="saveCurrentTripToHistory(true)" title="Simpan formulir aktif saat ini ke dalam riwayat">
-              <svg class="ico"><use href="#i-save"></use></svg>
-              <span>Simpan ke Riwayat</span>
-            </button>
+            <span class="badge badge-success history-autosave-badge" title="Riwayat perjalanan dinas otomatis tercatat &amp; diperbarui tanpa perlu klik simpan manual">
+              <svg class="ico" style="width:13px;height:13px;margin-right:4px;"><use href="#i-check"></use></svg>
+              <span>Auto-Simpan Riwayat Aktif</span>
+            </span>
           </div>
         </div>
 
@@ -1767,6 +1767,7 @@
 <script src="xlsx.full.min.js"></script>
 <script src="jszip.min.js"></script>
 <script src="html2pdf.bundle.min.js"></script>
+<script src="pdf-lib.min.js"></script>
 <script src="js/data.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/calc.js"></script>

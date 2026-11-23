@@ -5434,38 +5434,67 @@ html[data-theme="dark"] .st-suffix-dropdown-wrap::after {
 }
 
 @media print {
-  .no-print {
-    display: none!important;
+  .no-print,
+  #tab-riwayat,
+  .tabs-nav,
+  .app-header {
+    display: none !important;
   }
 
   body {
-    background: #fff;
+    background: #fff !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   .tab-content {
-    display: block!important;
-    padding: 8px;
+    display: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
 
-  #tab-nominatif.tab-content, #tab-rincian.tab-content {
-    display: block!important;
-  }
-
-  .tabs-nav, .app-header {
-    display: none;
+  /* Tampilkan tab aktif jika Ctrl+P tanpa print mode khusus */
+  .tab-content.active {
+    display: block !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
 
   .card {
-    box-shadow: none;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
 
-  body.print-nominatif #tab-input.tab-content, body.print-nominatif #tab-rekap-kuitansi.tab-content, body.print-nominatif #tab-kuitansi-perorangan.tab-content, body.print-nominatif #tab-lembar-kendali.tab-content, body.print-nominatif #tab-rekap-rincian.tab-content, body.print-nominatif #tab-rekap-spt.tab-content, body.print-nominatif #tab-sppd-perorangan.tab-content, body.print-nominatif #tab-rincian.tab-content, body.print-nominatif #tab-dpr.tab-content, body.print-nominatif #tab-pengaturan.tab-content {
-    display: none!important;
+  /* Cegah pemisahan atau halaman kosong di dalam dokumen cetak tunggal */
+  .sppd-area,
+  .kuitansi-perorangan-area,
+  .rincian-doc,
+  .dpr-area,
+  .dpr-kkp-area,
+  .lembar-kendali-area,
+  .nominatif-area,
+  .rekap-kuitansi-area,
+  .rekap-rincian-area,
+  .rekap-spt-area {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+    margin-bottom: 0 !important;
+  }
+
+  /* Saat cetak mode khusus dari tombol cetak, sembunyikan semua tab dan hanya tampilkan tab sasaran */
+  body[class*="print-"] .tab-content {
+    display: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
 
   body.print-nominatif #tab-nominatif.tab-content {
-    display: block!important;
-    padding: 0;
+    display: block !important;
+    padding: 0 !important;
   }
 
   body.print-nominatif .nominatif-area {
@@ -5475,13 +5504,9 @@ html[data-theme="dark"] .st-suffix-dropdown-wrap::after {
     border-radius: 0;
   }
 
-  body.print-rekap-spt #tab-input.tab-content, body.print-rekap-spt #tab-nominatif.tab-content, body.print-rekap-spt #tab-rekap-kuitansi.tab-content, body.print-rekap-spt #tab-kuitansi-perorangan.tab-content, body.print-rekap-spt #tab-lembar-kendali.tab-content, body.print-rekap-spt #tab-rekap-rincian.tab-content, body.print-rekap-spt #tab-sppd-perorangan.tab-content, body.print-rekap-spt #tab-rincian.tab-content, body.print-rekap-spt #tab-dpr.tab-content, body.print-rekap-spt #tab-pengaturan.tab-content {
-    display: none!important;
-  }
-
   body.print-rekap-spt #tab-rekap-spt.tab-content {
-    display: block!important;
-    padding: 0;
+    display: block !important;
+    padding: 0 !important;
   }
 
   body.print-rekap-spt .rekap-spt-area {
@@ -5490,13 +5515,9 @@ html[data-theme="dark"] .st-suffix-dropdown-wrap::after {
     border: 0;
   }
 
-  body.print-rekap-rincian #tab-input.tab-content, body.print-rekap-rincian #tab-nominatif.tab-content, body.print-rekap-rincian #tab-rekap-kuitansi.tab-content, body.print-rekap-rincian #tab-kuitansi-perorangan.tab-content, body.print-rekap-rincian #tab-lembar-kendali.tab-content, body.print-rekap-rincian #tab-rekap-spt.tab-content, body.print-rekap-rincian #tab-sppd-perorangan.tab-content, body.print-rekap-rincian #tab-rincian.tab-content, body.print-rekap-rincian #tab-dpr.tab-content, body.print-rekap-rincian #tab-pengaturan.tab-content {
-    display: none!important;
-  }
-
   body.print-rekap-rincian #tab-rekap-rincian.tab-content {
-    display: block!important;
-    padding: 0;
+    display: block !important;
+    padding: 0 !important;
   }
 
   body.print-rekap-rincian .rekap-rincian-area {
@@ -5506,13 +5527,9 @@ html[data-theme="dark"] .st-suffix-dropdown-wrap::after {
     overflow: visible;
   }
 
-  body.print-kuitansi #tab-input.tab-content, body.print-kuitansi #tab-nominatif.tab-content, body.print-kuitansi #tab-kuitansi-perorangan.tab-content, body.print-kuitansi #tab-lembar-kendali.tab-content, body.print-kuitansi #tab-rekap-rincian.tab-content, body.print-kuitansi #tab-rekap-spt.tab-content, body.print-kuitansi #tab-sppd-perorangan.tab-content, body.print-kuitansi #tab-rincian.tab-content, body.print-kuitansi #tab-dpr.tab-content, body.print-kuitansi #tab-pengaturan.tab-content {
-    display: none!important;
-  }
-
   body.print-kuitansi #tab-rekap-kuitansi.tab-content {
-    display: block!important;
-    padding: 0;
+    display: block !important;
+    padding: 0 !important;
   }
 
   body.print-kuitansi .kuitansi-area {
@@ -5521,43 +5538,31 @@ html[data-theme="dark"] .st-suffix-dropdown-wrap::after {
     margin: 0 auto;
   }
 
-  body.print-kuitansi-perorangan #tab-input.tab-content, body.print-kuitansi-perorangan #tab-nominatif.tab-content, body.print-kuitansi-perorangan #tab-rekap-kuitansi.tab-content, body.print-kuitansi-perorangan #tab-lembar-kendali.tab-content, body.print-kuitansi-perorangan #tab-rekap-rincian.tab-content, body.print-kuitansi-perorangan #tab-rekap-spt.tab-content, body.print-kuitansi-perorangan #tab-sppd-perorangan.tab-content, body.print-kuitansi-perorangan #tab-rincian.tab-content, body.print-kuitansi-perorangan #tab-dpr.tab-content, body.print-kuitansi-perorangan #tab-pengaturan.tab-content {
-    display: none!important;
-  }
-
   body.print-kuitansi-perorangan #tab-kuitansi-perorangan.tab-content {
-    display: block!important;
-    padding: 0;
+    display: block !important;
+    padding: 0 !important;
   }
 
   body.print-kuitansi-perorangan .kuitansi-perorangan-area {
     max-width: 660px;
-    padding: 10px;
+    padding: 0;
     margin: 0 auto;
   }
 
-  body.print-rincian #tab-input.tab-content, body.print-rincian #tab-nominatif.tab-content, body.print-rincian #tab-rekap-kuitansi.tab-content, body.print-rincian #tab-kuitansi-perorangan.tab-content, body.print-rincian #tab-lembar-kendali.tab-content, body.print-rincian #tab-rekap-rincian.tab-content, body.print-rincian #tab-rekap-spt.tab-content, body.print-rincian #tab-sppd-perorangan.tab-content, body.print-rincian #tab-dpr.tab-content, body.print-rincian #tab-pengaturan.tab-content {
-    display: none!important;
-  }
-
   body.print-rincian #tab-rincian.tab-content {
-    display: block!important;
-    padding: 0;
+    display: block !important;
+    padding: 0 !important;
   }
 
   body.print-rincian .rincian-doc {
     max-width: none;
-    margin: 0;
+    margin: 0 auto;
     padding: 0;
-  }
-
-  body.print-lembar-kendali #tab-input.tab-content, body.print-lembar-kendali #tab-nominatif.tab-content, body.print-lembar-kendali #tab-rekap-kuitansi.tab-content, body.print-lembar-kendali #tab-kuitansi-perorangan.tab-content, body.print-lembar-kendali #tab-rekap-rincian.tab-content, body.print-lembar-kendali #tab-rekap-spt.tab-content, body.print-lembar-kendali #tab-sppd-perorangan.tab-content, body.print-lembar-kendali #tab-rincian.tab-content, body.print-lembar-kendali #tab-dpr.tab-content, body.print-lembar-kendali #tab-pengaturan.tab-content {
-    display: none!important;
   }
 
   body.print-lembar-kendali #tab-lembar-kendali.tab-content {
-    display: block!important;
-    padding: 0;
+    display: block !important;
+    padding: 0 !important;
   }
 
   body.print-lembar-kendali .lembar-kendali-area {
@@ -5565,28 +5570,20 @@ html[data-theme="dark"] .st-suffix-dropdown-wrap::after {
     padding: 0;
   }
 
-  body.print-sppd #tab-input.tab-content, body.print-sppd #tab-nominatif.tab-content, body.print-sppd #tab-rekap-kuitansi.tab-content, body.print-sppd #tab-kuitansi-perorangan.tab-content, body.print-sppd #tab-lembar-kendali.tab-content, body.print-sppd #tab-rekap-rincian.tab-content, body.print-sppd #tab-rekap-spt.tab-content, body.print-sppd #tab-rincian.tab-content, body.print-sppd #tab-dpr.tab-content, body.print-sppd #tab-pengaturan.tab-content {
-    display: none!important;
-  }
-
   body.print-sppd #tab-sppd-perorangan.tab-content {
-    display: block!important;
-    padding: 0;
+    display: block !important;
+    padding: 0 !important;
   }
 
   body.print-sppd .sppd-area {
     max-width: none;
     padding: 0;
-    margin: 0;
-  }
-
-  body.print-dpr #tab-input.tab-content, body.print-dpr #tab-nominatif.tab-content, body.print-dpr #tab-rekap-kuitansi.tab-content, body.print-dpr #tab-kuitansi-perorangan.tab-content, body.print-dpr #tab-sppd-perorangan.tab-content, body.print-dpr #tab-lembar-kendali.tab-content, body.print-dpr #tab-rekap-rincian.tab-content, body.print-dpr #tab-rekap-spt.tab-content, body.print-dpr #tab-rincian.tab-content, body.print-dpr #tab-pengaturan.tab-content {
-    display: none!important;
+    margin: 0 auto;
   }
 
   body.print-dpr #tab-dpr.tab-content {
-    display: block!important;
-    padding: 0;
+    display: block !important;
+    padding: 0 !important;
   }
 
   body.print-dpr .dpr-area,
