@@ -848,6 +848,9 @@ function applyPerjadinExcel(wb) {
       el.value = String(value).trim() === '' ? '' : String(num);
     } else {
       el.value = String(value ?? '').trim();
+      if (id === 'noST' && typeof syncInputsFromFullNoST === 'function') {
+        syncInputsFromFullNoST(el.value);
+      }
     }
   });
 
