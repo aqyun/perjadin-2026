@@ -440,13 +440,13 @@
       <section class="flow-hero">
         <div class="flow-hero-text">
           <span class="flow-kicker">Formulir perjalanan dinas</span>
-          <h2>Susun data, pilih komponen biaya, lalu cetak dokumen.</h2>
+          <h2>Susun data perjalanan, lalu cetak dokumen.</h2>
           <p>Perhitungan mengikuti tarif SBM dan seluruh keluaran otomatis siap cetak.</p>
         </div>
         <ol class="flow-steps">
           <li class="on"><span>1</span>Data</li>
           <li class="on"><span>2</span>Pegawai</li>
-          <li class="on"><span>3</span>Biaya</li>
+          <li class="on"><span>3</span>Dokumen</li>
         </ol>
       </section>
 
@@ -696,181 +696,57 @@
         </div>
       </section>
 
-      <!-- Pilih Komponen Biaya -->
+      <!-- Komponen Biaya (Disimpan di latar belakang untuk kompatibilitas sistem & perhitungan otomatis) -->
+      <div style="display:none !important;" aria-hidden="true">
+        <input type="checkbox" id="cbUH" checked onchange="toggleUHFields()">
+        <input type="checkbox" id="cbHotel" onchange="toggleHotelFields()">
+        <small id="noteJakartaDPR" style="display:none;"></small>
+        <input type="checkbox" id="cbDPR" style="display:none">
+        <input type="checkbox" id="cbTiket" style="display:none">
+        <input type="hidden" id="dprManual" value="0">
+        <div id="dprManualField" style="display:none"></div>
+        <div id="sbmWarnings" class="sbm-warnings" style="display:none"></div>
+        <div id="uhFields" class="uh-fields">
+          <select id="uhPersentase"><option value="1">100%</option><option value="0.6">60%</option></select>
+          <select id="jenisKegiatan" onchange="toggleKonsumsiFields()">
+            <option value="biasa">Perjalanan Dinas Biasa</option>
+            <option value="rapat">Rapat / Bimbingan Teknis</option>
+            <option value="fullboard">Paket Meeting Fullboard</option>
+            <option value="diklat">Diklat (Pendidikan &amp; Pelatihan)</option>
+          </select>
+          <input type="checkbox" id="cbKonsumsiBiasa" onchange="toggleKonsumsiFields()">
+          <div id="konsumsiFields">
+            <input type="hidden" id="manualMakanMode" value="flat">
+            <input type="checkbox" id="cbTarifMakanManual" onchange="toggleTarifMakanManual()">
+            <input type="text" id="tarifMakan" value="0">
+            <input type="number" id="hariMakan" value="">
+            <input type="number" id="jumlahMakan" value="1">
+            <div id="manualMealDetailWrap">
+              <tbody id="manualMealTableBody"></tbody>
+              <div id="manualMealSummary"></div>
+            </div>
+            <input type="text" id="tarifSnack" value="0">
+            <input type="number" id="hariSnack" value="">
+            <input type="number" id="jumlahSnack" value="0">
+          </div>
+        </div>
+        <div id="hotelFields"><div id="hotelList"></div></div>
+        <div id="customCostList" class="custom-cost-list"></div>
+      </div>
+
+      <!-- Buat Dokumen (Langkah 3) -->
       <section class="card">
         <div class="card-head">
-          <span class="card-ico"><svg class="ico"><use href="#i-wallet"></use></svg></span>
+          <span class="card-ico"><svg class="ico"><use href="#i-print"></use></svg></span>
           <div class="card-heading">
-            <h2 class="card-title">Komponen Biaya yang Dibayarkan</h2>
-            <p class="card-sub">Aktifkan komponen yang masuk ke perhitungan</p>
+            <h2 class="card-title">Buat Dokumen</h2>
+            <p class="card-sub">Pilih format keluaran — semua berkas siap cetak &amp; otomatis tersinkron</p>
           </div>
           <span class="card-badge">Langkah 3</span>
         </div>
         <div class="card-body">
-          <div class="opt-grid">
-            <label class="opt-tile">
-              <input type="checkbox" id="cbUH" checked onchange="toggleUHFields()">
-              <span class="opt-text">
-                <strong>Uang Harian</strong>
-                <small>Dihitung per hari perjalanan</small>
-                <small id="noteJakartaDPR" class="note-dki-dpr is-clickable" style="display:none;" onclick="openPmkModal(69)" title="Klik untuk membuka dokumen resmi PMK Hal 69">*Khusus DKI Jakarta tidak mendapatkan uang harian. Tetapi, DPR yang dibayarkan sebesar Rp170.000 <span class="note-link">(Cek PMK Hal 69 ↗)</span></small>
-              </span>
-            </label>
-            <label class="opt-tile">
-              <input type="checkbox" id="cbHotel" onchange="toggleHotelFields()">
-              <span class="opt-text"><strong>Penginapan / Hotel</strong><small>Harga manual, bisa ganti hotel</small></span>
-            </label>
-          </div>
-          <!-- Hidden compatibility elements -->
-          <input type="checkbox" id="cbDPR" style="display:none">
-          <input type="checkbox" id="cbTiket" style="display:none">
-          <input type="hidden" id="dprManual" value="0">
-          <div id="dprManualField" style="display:none"></div>
-
-          <div id="sbmWarnings" class="sbm-warnings" style="display:none"></div>
-
-          <!-- Pengaturan Uang Harian & Konsumsi (Otomatis Sembunyi jika Uang Harian Tidak Dipilih) -->
-          <div id="uhFields" class="uh-fields">
-            <div class="cost-extra-grid">
-              <div class="form-group">
-                <label for="uhPersentase">Persentase Uang Harian</label>
-                <select id="uhPersentase">
-                  <option value="1">100%</option>
-                  <option value="0.6">60% (Menggunakan Kendaraan Dinas Operasional)</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label for="jenisKegiatan">Jenis Kegiatan</label>
-                <select id="jenisKegiatan" onchange="toggleKonsumsiFields()">
-                  <option value="biasa">Perjalanan Dinas Biasa</option>
-                  <option value="rapat">Rapat / Bimbingan Teknis</option>
-                  <option value="fullboard">Paket Meeting Fullboard</option>
-                  <option value="diklat">Diklat (Pendidikan &amp; Pelatihan)</option>
-                </select>
-              </div>
-            </div>
-
-            <div id="optKonsumsiBiasaWrap" class="opt-konsumsi-biasa-wrap" style="display:flex;">
-              <label class="opt-check-inline opt-konsumsi-pill">
-                <input type="checkbox" id="cbKonsumsiBiasa" onchange="toggleKonsumsiFields()">
-                <span>Disediakan Makan/Snack (Potong Konsumsi)</span>
-              </label>
-            </div>
-
-            <div id="konsumsiFields" class="form-grid konsumsi-grid" style="display:none">
-              <div class="alert-info form-group full">Tarif makan dan snack otomatis mengikuti Standar Biaya Masukan (SBM PMK) provinsi tujuan. Anda cukup menentukan jumlah hari dan berapa kali konsumsi disediakan.</div>
-
-              <!-- Checklist Input Manual di Kiri Atas & Mode Toggle -->
-              <div class="form-group full opt-manual-makan-bar">
-                <input type="hidden" id="manualMakanMode" value="flat">
-                <label class="opt-manual-makan-pill" title="Centang untuk input tarif makan manual (tidak mengikuti SBM PMK)">
-                  <input type="checkbox" id="cbTarifMakanManual" onchange="toggleTarifMakanManual()">
-                  <span>Input Tarif Makan Manual (Khusus Peliputan, Dokumentasi, &amp; Publikasi / Non-SBM)</span>
-                </label>
-                <div id="manualMealModeToggle" class="manual-meal-mode-toggle" style="display:none;">
-                  <button type="button" id="btnMealModeFlat" class="meal-mode-btn is-active" onclick="setManualMealMode('flat')">
-                    Tarif Sama Tiap Hari
-                  </button>
-                  <button type="button" id="btnMealModeDetail" class="meal-mode-btn" onclick="setManualMealMode('detail')">
-                    Beda Harga Tiap Hari / Sesi
-                  </button>
-                </div>
-              </div>
-
-              <!-- Baris 1: Konsumsi Makan (3 Kolom Sejajar - Ditampilkan jika mode 'flat' atau SBM) -->
-              <div class="form-group" id="tarifMakanGroup">
-                <label for="tarifMakan" id="labelTarifMakan">Tarif Makan SBM (Rp/kali)</label>
-                <input type="text" id="tarifMakan" class="is-readonly" readonly value="0" placeholder="Rp 0" oninput="onTarifMakanManualInput()">
-              </div>
-              <div class="form-group" id="hariMakanGroup">
-                <label for="hariMakan">Hari Disediakan Makan</label>
-                <input type="number" id="hariMakan" min="0" step="1" value="" placeholder="Hari (default: lama tugas)" oninput="onKonsumsiInputChange()">
-              </div>
-              <div class="form-group" id="jumlahMakanGroup">
-                <label for="jumlahMakan">Makan per Hari (Kali)</label>
-                <input type="number" id="jumlahMakan" min="0" max="3" step="1" value="1" placeholder="0 - 3 kali" oninput="onKonsumsiInputChange()">
-              </div>
-
-              <!-- Detail Beda Harga Tiap Hari / Sesi Makan (Tabel Rapi & Kompak - Menggantikan 3 Kolom di atas saat mode 'detail') -->
-              <div id="manualMealDetailWrap" class="form-group full manual-meal-detail-wrap" style="display:none;">
-                <div class="manual-meal-table-container">
-                  <table class="manual-meal-table">
-                    <thead>
-                      <tr>
-                        <th style="width: 44px; text-align: center;">No.</th>
-                        <th style="width: 25%;">Hari Ke-</th>
-                        <th style="width: 25%;">Waktu / Sesi</th>
-                        <th>Tarif Riil per Orang (Rp)</th>
-                        <th style="width: 50px; text-align: center;">Aksi</th>
-                      </tr>
-                    </thead>
-                    <tbody id="manualMealTableBody" class="manual-meal-list"></tbody>
-                  </table>
-                </div>
-                <div class="manual-meal-table-footer">
-                  <button type="button" class="btn btn-outline btn-sm" style="font-size:12px; padding:5px 12px; border-radius:8px;" onclick="addManualMealRow()">
-                    <svg class="ico"><use href="#i-plus"></use></svg> Tambah Sesi Makan
-                  </button>
-                  <div id="manualMealSummary" class="manual-meal-summary">
-                    Total Potongan: 0 kali makan = Rp 0
-                  </div>
-                </div>
-              </div>
-
-              <!-- Baris 2: Snack (3 Kolom Sejajar) -->
-              <div class="form-group">
-                <label for="tarifSnack">Tarif Snack SBM (Rp/kali)</label>
-                <input type="text" id="tarifSnack" class="is-readonly" readonly value="0">
-              </div>
-              <div class="form-group">
-                <label for="hariSnack">Hari Disediakan Snack</label>
-                <input type="number" id="hariSnack" min="0" step="1" value="" placeholder="Hari (default: lama tugas)" oninput="onKonsumsiInputChange()">
-              </div>
-              <div class="form-group">
-                <label for="jumlahSnack">Snack per Hari (Kali)</label>
-                <input type="number" id="jumlahSnack" min="0" max="3" step="1" value="0" placeholder="0 - 3 kali" oninput="onKonsumsiInputChange()">
-              </div>
-            </div>
-          </div>
-
-          <div id="hotelFields" class="hotel-group" style="display:none">
-            <div class="field-head">
-              <label>Rincian penginapan</label>
-              <span class="field-tip">Input manual — total per kamar = malam × harga, dibebankan penuh ke tiap pegawai yang dicentang. Kosongkan jika ingin memakai tarif SBM.</span>
-            </div>
-            <div id="hotelList" class="hotel-list"></div>
-            <button class="add-cost-btn" type="button" onclick="addHotelRow()">
-              <svg class="ico"><use href="#i-plus"></use></svg>Tambah hotel
-            </button>
-          </div>
-
-          <p class="field-note">Uang harian dihitung per hari perjalanan. Penginapan dihitung per malam. Potongan konsumsi rapat/bimtek berlaku sesuai tarif dan frekuensi yang diisi.</p>
-
-          <div class="form-group full custom-cost-group">
-            <div class="field-head">
-              <label>Tiket &amp; Biaya Tambahan Perjalanan</label>
-              <span class="field-tip">Tiket Kereta Api, Whoosh, Pesawat, Kapal, atau biaya bersama lainnya. Rute tiket otomatis mengikuti Kota Asal &mdash; Kota Tujuan PP.</span>
-            </div>
-            <div class="transport-rincian-notice">
-              <span class="notice-icon">💡</span>
-              <div class="notice-content">
-                <strong>Transport Lokal / DPR Perorangan</strong> (Grab, Gojek, Taksi, MRT, KRL, LRT, Tol, Bensin) dengan rute berbeda tiap pegawai dapat diisi langsung secara detail di menu <strong>Rincian per Orang</strong>.
-              </div>
-            </div>
-            <div id="customCostList" class="custom-cost-list"></div>
-            <button class="add-cost-btn" type="button" onclick="addCustomCost()">
-              <svg class="ico"><use href="#i-plus"></use></svg>Tambah Tiket / Biaya Tambahan
-            </button>
-          </div>
-        
-          <div class="action-panel">
-            <div class="action-panel-head">
-              <div>
-                <h3>Buat Dokumen</h3>
-                <p>Pilih format keluaran — semua sudah siap dicetak.</p>
-              </div>
-              <input type="file" id="excelFileInput" accept=".xlsx,.xls" style="display:none" onchange="importPerjadinExcel(this)">
-            </div>
+          <div class="action-panel" style="margin-top:0; padding-top:0; border-top:none;">
+            <input type="file" id="excelFileInput" accept=".xlsx,.xls" style="display:none" onchange="importPerjadinExcel(this)">
             <div class="action-grid">
               <button type="button" class="action-card" onclick="showTab('kuitansi-perorangan')">
                 <span class="action-ico"><svg class="ico"><use href="#i-user"></use></svg></span>
