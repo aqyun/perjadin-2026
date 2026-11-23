@@ -145,7 +145,7 @@ svg.ico {
 .brand-logo-wrap {
   width: 44px;
   height: 44px;
-  border-radius: 50%;
+  border-radius: 12px;
   background: transparent;
   display: grid;
   place-items: center;
@@ -155,6 +155,7 @@ svg.ico {
 .brand-logo {
   width: 44px;
   height: 44px;
+  border-radius: 11px;
   object-fit: contain;
   display: block;
 }
@@ -1096,8 +1097,8 @@ html[data-theme="dark"] .topbar-meta-date .ico {
 .loader-pulse-ring {
   position: absolute;
   inset: 0;
-  border-radius: 50%;
-  border: 2px solid rgba(56, 189, 248, 0.3);
+  border-radius: 24px;
+  border: 2px solid rgba(245, 165, 36, 0.35);
   animation: pulseRing 2s cubic-bezier(0.25, 1, 0.5, 1) infinite;
 }
 
@@ -5997,7 +5998,7 @@ Responsive UI (screen only) — tidak menyentuh aturan cetak
 .welcome-logo-wrap {
   width: 54px;
   height: 54px;
-  border-radius: 50%;
+  border-radius: 14px;
   overflow: hidden;
   flex: none;
   box-shadow: 0 10px 24px -8px rgba(11,23,41,.4);
@@ -6009,6 +6010,7 @@ Responsive UI (screen only) — tidak menyentuh aturan cetak
 .welcome-logo {
   width: 54px;
   height: 54px;
+  border-radius: 13px;
   object-fit: contain;
   display: block;
 }
@@ -11243,8 +11245,10 @@ html[data-theme="dark"] .val-toast-success .val-toast-close:hover {
 .history-page-head {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 18px 22px;
+  gap: 16px;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--line, #edf2f9);
+  background: linear-gradient(180deg, var(--surface, #ffffff), var(--surface-1, #fbfdff));
 }
 
 .history-page-head .card-heading {
@@ -11258,6 +11262,7 @@ html[data-theme="dark"] .val-toast-success .val-toast-close:hover {
   color: var(--ink, #0f172a);
   margin: 0 0 3px;
   line-height: 1.3;
+  letter-spacing: -0.01em;
 }
 
 .history-page-head .card-sub {
@@ -11271,8 +11276,69 @@ html[data-theme="dark"] .val-toast-success .val-toast-close:hover {
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex-shrink: 0;
+}
+
+.history-autosave-badge,
+.history-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #047857;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+  box-shadow: 0 1px 2px rgba(16, 185, 129, 0.06);
+  user-select: none;
+  transition: all 0.2s ease;
+}
+
+.history-autosave-badge:hover,
+.history-status-pill:hover {
+  background: #d1fae5;
+  border-color: #6ee7b7;
+}
+
+.history-status-dot {
+  width: 7.5px;
+  height: 7.5px;
+  border-radius: 50%;
+  background-color: #10b981;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6);
+  animation: pulseGreenStatus 2.2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+  flex-shrink: 0;
+}
+
+@keyframes pulseGreenStatus {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 5px rgba(16, 185, 129, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+.history-autosave-badge .ico,
+.history-status-pill .ico {
+  width: 13px;
+  height: 13px;
+  display: inline-block;
+  flex-shrink: 0;
+  color: #059669;
+  vertical-align: middle;
 }
 
 .history-toolbar {
@@ -11619,6 +11685,43 @@ html[data-theme="dark"] .history-card-actions .btn-outline {
 
 html[data-theme="dark"] .history-card-actions .btn-outline:hover {
   background: rgba(239, 68, 68, 0.15);
+}
+
+html[data-theme="dark"] .history-page-head {
+  background: linear-gradient(180deg, #13223d, #101c31);
+  border-bottom-color: var(--line, #243552);
+}
+
+html[data-theme="dark"] .history-autosave-badge,
+html[data-theme="dark"] .history-status-pill {
+  background: rgba(16, 185, 129, 0.14);
+  border-color: rgba(16, 185, 129, 0.35);
+  color: #34d399;
+  box-shadow: none;
+}
+
+html[data-theme="dark"] .history-autosave-badge:hover,
+html[data-theme="dark"] .history-status-pill:hover {
+  background: rgba(16, 185, 129, 0.22);
+}
+
+html[data-theme="dark"] .history-status-dot {
+  background-color: #34d399;
+  box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7);
+}
+
+@media (max-width: 640px) {
+  .history-page-head {
+    flex-wrap: wrap;
+    padding: 14px 16px;
+    gap: 12px;
+  }
+
+  .history-head-actions {
+    width: 100%;
+    margin-left: 0;
+    justify-content: flex-start;
+  }
 }
 
 
