@@ -1030,8 +1030,8 @@ function renderRekapSPT() {
 
       <table class="rekap-spt-table">
         <colgroup>
-          <col style="width:5%"><col style="width:10%"><col style="width:29%">
-          <col style="width:12%"><col style="width:16%"><col style="width:13%"><col style="width:15%">
+          <col style="width:4%"><col style="width:8%"><col style="width:36%">
+          <col style="width:11%"><col style="width:15%"><col style="width:12%"><col style="width:14%">
         </colgroup>
         <thead>
           <tr>
@@ -1336,85 +1336,86 @@ function buildRincianHtml(emp) {
 
   if (cbUH && (b.uhGross > 0 || b.uh > 0)) {
     if (b.isMultiProv && b.multiProvData) {
-      let deductionBlock = '';
-      if (b.mealDeduction > 0 || b.snackDeduction > 0) {
-        let deductionRows = '';
-        if (b.mealDeduction > 0) {
+      const hasMeal = b.mealDeduction > 0;
+      const hasSnack = b.snackDeduction > 0;
+      const hasDeductions = hasMeal || hasSnack;
+      const totalRows = 1 + 1 + (hasDeductions ? (1 + (hasMeal ? 1 : 0) + (hasSnack ? 1 : 0)) : 0);
+
+      let deductionNativeRows = '';
+      if (hasDeductions) {
+        deductionNativeRows += `
+          <tr class="rincian-item-sub">
+            <td class="live-editable" contenteditable="true" style="padding-left:12px;">Terpotong konsumsi:</td>
+            <td></td>
+            <td></td>
+          </tr>`;
+        if (hasMeal) {
+          const isMealLast = !hasSnack;
           if (b.mealDetails && b.mealDetails.length > 0) {
             const detailRowsHtml = b.mealDetails.map(m =>
               `<span style="padding-left:12px; display:block;">• ${escHtml(m.day)} (${escHtml(m.session)}): 1 &times; ${rp(m.price)}</span>`
             ).join('');
-            deductionRows += `
-              <tr>
-                <td style="padding-left:24px;">
+            deductionNativeRows += `
+              <tr class="rincian-item-sub${isMealLast ? ' rincian-item-last' : ''}">
+                <td class="live-editable" contenteditable="true" style="padding-left:24px;">
                   * Makan (${b.mealDetails.length} kali makan):<br>
                   ${detailRowsHtml}
                 </td>
-                <td class="tr" style="vertical-align:bottom;">- ${rp(b.mealDeduction)}</td>
-                <td style="vertical-align:bottom;">${mealKet}</td>
+                <td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()" style="vertical-align:bottom;">- ${rp(b.mealDeduction)}</td>
+                <td class="live-editable" contenteditable="true" style="vertical-align:bottom;">${mealKet}</td>
               </tr>`;
           } else {
-            deductionRows += `
-              <tr>
-                <td style="padding-left:24px;">
+            deductionNativeRows += `
+              <tr class="rincian-item-sub${isMealLast ? ' rincian-item-last' : ''}">
+                <td class="live-editable" contenteditable="true" style="padding-left:24px;">
                   * Makan<br>
                   <span style="padding-left:12px;">${b.mealDays} hari &times; ${b.mealCount} kali &times; ${rp(b.mealRate)}</span>
                 </td>
-                <td class="tr" style="vertical-align:bottom;">- ${rp(b.mealDeduction)}</td>
-                <td style="vertical-align:bottom;">${mealKet}</td>
+                <td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()" style="vertical-align:bottom;">- ${rp(b.mealDeduction)}</td>
+                <td class="live-editable" contenteditable="true" style="vertical-align:bottom;">${mealKet}</td>
               </tr>`;
           }
         }
-        if (b.snackDeduction > 0) {
-          deductionRows += `
-            <tr>
-              <td style="padding-left:24px;">
+        if (hasSnack) {
+          deductionNativeRows += `
+            <tr class="rincian-item-sub rincian-item-last">
+              <td class="live-editable" contenteditable="true" style="padding-left:24px;">
                 * Snack<br>
                 <span style="padding-left:12px;">${b.snackDays} hari &times; ${b.snackCount} kali &times; ${rp(b.snackRate)}</span>
               </td>
-              <td class="tr" style="vertical-align:bottom;">- ${rp(b.snackDeduction)}</td>
-              <td></td>
+              <td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()" style="vertical-align:bottom;">- ${rp(b.snackDeduction)}</td>
+              <td class="live-editable" contenteditable="true"></td>
             </tr>`;
         }
-        deductionBlock = `
-          <tr>
-            <td style="padding-left:12px;">Terpotong konsumsi:</td>
-            <td></td>
-            <td></td>
-          </tr>
-          ${deductionRows}`;
       }
 
-      rincianRows += `<tr>
-        <td class="tc">${no++}</td>
-        <td colspan="3" class="rincian-subtbl-cell" style="padding:0">
-          <table class="rincian-subtbl">
-            <colgroup><col class="col-rincian-biaya"><col class="col-rincian-jumlah" style="width:125px"><col class="col-rincian-ket" style="width:250px"></colgroup>
-            <tbody>
-              <tr>
-                <td class="live-editable" contenteditable="true">${b.multiProvData.title1}<br><span style="padding-left:12px">${b.multiProvData.days1} hari &nbsp; X &nbsp; ${rp(b.multiProvData.uhRate1)}</span></td>
-                <td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()" style="vertical-align:bottom;">${rp(b.multiProvData.uhGross1)}</td>
-                <td class="live-editable" contenteditable="true">${uhKeterangan}</td>
-              </tr>
-              <tr>
-                <td class="live-editable" contenteditable="true">${b.multiProvData.title2}<br><span style="padding-left:12px">${b.multiProvData.days2} hari &nbsp; X &nbsp; ${rp(b.multiProvData.uhRate2)}</span></td>
-                <td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()" style="vertical-align:bottom;">${rp(b.multiProvData.uhGross2)}</td>
-                <td class="live-editable" contenteditable="true"></td>
-              </tr>
-              ${deductionBlock}
-            </tbody>
-          </table>
-        </td>
-      </tr>`;
+      rincianRows += `
+        <tr class="rincian-item-main has-sub">
+          <td class="tc rincian-no-cell" rowspan="${totalRows}">${no++}</td>
+          <td class="live-editable" contenteditable="true">${b.multiProvData.title1}<br><span style="padding-left:12px">${b.multiProvData.days1} hari &nbsp; X &nbsp; ${rp(b.multiProvData.uhRate1)}</span></td>
+          <td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()" style="vertical-align:bottom;">${rp(b.multiProvData.uhGross1)}</td>
+          <td class="live-editable" contenteditable="true">${uhKeterangan}</td>
+        </tr>
+        <tr class="rincian-item-sub${hasDeductions ? '' : ' rincian-item-last'}">
+          <td class="live-editable" contenteditable="true">${b.multiProvData.title2}<br><span style="padding-left:12px">${b.multiProvData.days2} hari &nbsp; X &nbsp; ${rp(b.multiProvData.uhRate2)}</span></td>
+          <td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()" style="vertical-align:bottom;">${rp(b.multiProvData.uhGross2)}</td>
+          <td class="live-editable" contenteditable="true"></td>
+        </tr>
+        ${deductionNativeRows}`;
     } else if (b.mealDeduction > 0 || b.snackDeduction > 0) {
-      let deductionRows = '';
-      if (b.mealDeduction > 0) {
+      const hasMeal = b.mealDeduction > 0;
+      const hasSnack = b.snackDeduction > 0;
+      const totalRows = 1 + 1 + (hasMeal ? 1 : 0) + (hasSnack ? 1 : 0);
+
+      let deductionNativeRows = '';
+      if (hasMeal) {
+        const isMealLast = !hasSnack;
         if (b.mealDetails && b.mealDetails.length > 0) {
           const detailRowsHtml = b.mealDetails.map(m =>
             `<span style="padding-left:12px; display:block;">• ${escHtml(m.day)} (${escHtml(m.session)}): 1 &times; ${rp(m.price)}</span>`
           ).join('');
-          deductionRows += `
-            <tr>
+          deductionNativeRows += `
+            <tr class="rincian-item-sub${isMealLast ? ' rincian-item-last' : ''}">
               <td class="live-editable" contenteditable="true" style="padding-left:24px;">
                 * Makan (${b.mealDetails.length} kali makan):<br>
                 ${detailRowsHtml}
@@ -1423,8 +1424,8 @@ function buildRincianHtml(emp) {
               <td class="live-editable" contenteditable="true" style="vertical-align:bottom;">${mealKet}</td>
             </tr>`;
         } else {
-          deductionRows += `
-            <tr>
+          deductionNativeRows += `
+            <tr class="rincian-item-sub${isMealLast ? ' rincian-item-last' : ''}">
               <td class="live-editable" contenteditable="true" style="padding-left:24px;">
                 * Makan<br>
                 <span style="padding-left:12px;">${b.mealDays} hari &times; ${b.mealCount} kali &times; ${rp(b.mealRate)}</span>
@@ -1434,9 +1435,9 @@ function buildRincianHtml(emp) {
             </tr>`;
         }
       }
-      if (b.snackDeduction > 0) {
-        deductionRows += `
-          <tr>
+      if (hasSnack) {
+        deductionNativeRows += `
+          <tr class="rincian-item-sub rincian-item-last">
             <td class="live-editable" contenteditable="true" style="padding-left:24px;">
               * Snack<br>
               <span style="padding-left:12px;">${b.snackDays} hari &times; ${b.snackCount} kali &times; ${rp(b.snackRate)}</span>
@@ -1445,27 +1446,20 @@ function buildRincianHtml(emp) {
             <td class="live-editable" contenteditable="true"></td>
           </tr>`;
       }
-      rincianRows += `<tr>
-        <td class="tc">${no++}</td>
-        <td colspan="3" class="rincian-subtbl-cell" style="padding:0">
-          <table class="rincian-subtbl">
-            <colgroup><col class="col-rincian-biaya"><col class="col-rincian-jumlah" style="width:125px"><col class="col-rincian-ket" style="width:250px"></colgroup>
-            <tbody>
-              <tr>
-                <td class="live-editable" contenteditable="true">${b.uhTitle || 'Uang Harian'}<br><span style="padding-left:12px">${days} hari &nbsp; X &nbsp; ${rp(b.uhBaseRate)}</span></td>
-                <td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()" style="vertical-align:bottom;">${rp(b.uhGross)}</td>
-                <td class="live-editable" contenteditable="true">${uhKeterangan}</td>
-              </tr>
-              <tr>
-                <td class="live-editable" contenteditable="true" style="padding-left:12px;">Terpotong konsumsi:</td>
-                <td></td>
-                <td></td>
-              </tr>
-              ${deductionRows}
-            </tbody>
-          </table>
-        </td>
-      </tr>`;
+
+      rincianRows += `
+        <tr class="rincian-item-main has-sub">
+          <td class="tc rincian-no-cell" rowspan="${totalRows}">${no++}</td>
+          <td class="live-editable" contenteditable="true">${b.uhTitle || 'Uang Harian'}<br><span style="padding-left:12px">${days} hari &nbsp; X &nbsp; ${rp(b.uhBaseRate)}</span></td>
+          <td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()" style="vertical-align:bottom;">${rp(b.uhGross)}</td>
+          <td class="live-editable" contenteditable="true">${uhKeterangan}</td>
+        </tr>
+        <tr class="rincian-item-sub">
+          <td class="live-editable" contenteditable="true" style="padding-left:12px;">Terpotong konsumsi:</td>
+          <td></td>
+          <td></td>
+        </tr>
+        ${deductionNativeRows}`;
     } else {
       rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td class="live-editable" contenteditable="true">${b.uhTitle || 'Uang Harian'}<br><span style="padding-left:12px">${days} hari &nbsp; X &nbsp; ${rp(b.uhBaseRate)}</span></td><td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()">${rp(b.uh)}</td><td class="rincian-ket-cell live-editable" contenteditable="true">${uhKeterangan}</td></tr>`;
     }
@@ -1511,6 +1505,7 @@ function buildRincianHtml(emp) {
     if (transportCosts.length) {
       const hasDates = transportCosts.some(t => t.date);
       let detailRows = '';
+      let subRowCount = 1; // starts with 1 for the "Rincian Transport:" label row
       if (hasDates) {
         const groups = {};
         transportCosts.forEach(item => {
@@ -1524,6 +1519,14 @@ function buildRincianHtml(emp) {
           return a.localeCompare(b);
         });
 
+        let totalItems = 0;
+        sortedKeys.forEach(dateKey => {
+          if (dateKey !== 'tanpa_tanggal') subRowCount++;
+          subRowCount += groups[dateKey].length;
+          totalItems += groups[dateKey].length;
+        });
+
+        let itemIndex = 0;
         detailRows = sortedKeys.map(dateKey => {
           let headerHtml = '';
           const items = groups[dateKey];
@@ -1532,7 +1535,7 @@ function buildRincianHtml(emp) {
           if (dateKey !== 'tanpa_tanggal') {
             const dateDisplay = typeof formatTgl === 'function' ? formatTgl(dateKey) : dateKey;
             headerHtml = `
-              <tr class="rincian-date-group-row" style="background-color: ${groupColor}; font-weight: 700;">
+              <tr class="rincian-item-sub rincian-date-group-row" style="background-color: ${groupColor}; font-weight: 700;">
                 <td class="live-editable" contenteditable="true" style="padding-left: 18px; font-weight: 700; color: #000; background-color: ${groupColor};">
                   ${dateDisplay}
                   <input type="color" class="date-color-picker no-print" value="${groupColor}" onchange="setTransportDateColorForDate('${emp.id}', '${dateKey}', this.value)" title="Ganti warna baris ${dateDisplay}">
@@ -1543,32 +1546,37 @@ function buildRincianHtml(emp) {
           }
 
           const itemsHtml = items.map(item => {
+            itemIndex++;
+            const isLast = itemIndex === totalItems;
             const route = [item.pickup, item.dropoff].filter(Boolean).join(' - ');
             const paddingLeft = dateKey !== 'tanpa_tanggal' ? '28px' : '24px';
-            return `<tr><td class="live-editable" contenteditable="true" style="padding-left: ${paddingLeft};"><em>${escHtml(item.name)}</em></td><td class="tr live-editable" contenteditable="true"><em>${rp(item.amount)}</em></td><td class="live-editable" contenteditable="true">${escHtml(route)}</td></tr>`;
+            return `<tr class="rincian-item-sub${isLast ? ' rincian-item-last' : ''}"><td class="live-editable" contenteditable="true" style="padding-left: ${paddingLeft};"><em>${escHtml(item.name)}</em></td><td class="tr live-editable" contenteditable="true"><em>${rp(item.amount)}</em></td><td class="live-editable" contenteditable="true">${escHtml(route)}</td></tr>`;
           }).join('');
 
           return headerHtml + itemsHtml;
         }).join('');
       } else {
-        detailRows = transportCosts.map(item => {
+        subRowCount += transportCosts.length;
+        detailRows = transportCosts.map((item, idx) => {
+          const isLast = idx === transportCosts.length - 1;
           const route = [item.pickup, item.dropoff].filter(Boolean).join(' - ');
-          return `<tr><td class="live-editable" contenteditable="true" style="padding-left: 24px;"><em>${escHtml(item.name)}</em></td><td class="tr live-editable" contenteditable="true"><em>${rp(item.amount)}</em></td><td class="live-editable" contenteditable="true">${escHtml(route)}</td></tr>`;
+          return `<tr class="rincian-item-sub${isLast ? ' rincian-item-last' : ''}"><td class="live-editable" contenteditable="true" style="padding-left: 24px;"><em>${escHtml(item.name)}</em></td><td class="tr live-editable" contenteditable="true"><em>${rp(item.amount)}</em></td><td class="live-editable" contenteditable="true">${escHtml(route)}</td></tr>`;
         }).join('');
       }
-      rincianRows += `<tr>
-        <td class="tc">${no++}</td>
-        <td colspan="3" class="rincian-subtbl-cell" style="padding:0">
-          <table class="rincian-subtbl">
-            <colgroup><col class="col-rincian-biaya"><col class="col-rincian-jumlah" style="width:125px"><col class="col-rincian-ket" style="width:250px"></colgroup>
-            <tbody>
-              <tr><td class="live-editable" contenteditable="true">${dprUraian}</td><td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()"><strong>${rp(transportTotal)}</strong></td><td class="live-editable" contenteditable="true"></td></tr>
-              <tr><td class="live-editable" contenteditable="true" style="padding-left:12px"><em>Rincian Transport:</em></td><td></td><td></td></tr>
-              ${detailRows}
-            </tbody>
-          </table>
-        </td>
-      </tr>`;
+      const totalRows = 1 + subRowCount;
+      rincianRows += `
+        <tr class="rincian-item-main has-sub">
+          <td class="tc rincian-no-cell" rowspan="${totalRows}">${no++}</td>
+          <td class="live-editable" contenteditable="true">${dprUraian}</td>
+          <td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()"><strong>${rp(transportTotal)}</strong></td>
+          <td class="live-editable" contenteditable="true"></td>
+        </tr>
+        <tr class="rincian-item-sub">
+          <td class="live-editable" contenteditable="true" style="padding-left:12px"><em>Rincian Transport:</em></td>
+          <td></td>
+          <td></td>
+        </tr>
+        ${detailRows}`;
     } else {
       rincianRows += `<tr class="rincian-ket-row"><td class="tc">${no++}</td><td class="live-editable" contenteditable="true">${dprUraian}</td><td class="tr live-editable tr-amount" contenteditable="true" oninput="onRincianDocAmountChange()">${rp(transportTotal)}</td><td class="rincian-ket-cell live-editable" contenteditable="true"></td></tr>`;
     }

@@ -4499,31 +4499,31 @@ html[data-theme="dark"] .st-suffix-dropdown-wrap::after {
 }
 
 .rekap-spt-table col:nth-child(1) {
-  width: 5%;
+  width: 4%;
 }
 
 .rekap-spt-table col:nth-child(2) {
-  width: 10%;
+  width: 8%;
 }
 
 .rekap-spt-table col:nth-child(3) {
-  width: 29%;
+  width: 36%;
 }
 
 .rekap-spt-table col:nth-child(4) {
-  width: 12%;
+  width: 11%;
 }
 
 .rekap-spt-table col:nth-child(5) {
-  width: 16%;
+  width: 15%;
 }
 
 .rekap-spt-table col:nth-child(6) {
-  width: 13%;
+  width: 12%;
 }
 
 .rekap-spt-table col:nth-child(7) {
-  width: 15%;
+  width: 14%;
 }
 
 .rekap-spt-table td span {
@@ -4536,18 +4536,26 @@ html[data-theme="dark"] .st-suffix-dropdown-wrap::after {
 }
 
 .rekap-spt-emp-nama {
-  padding: 6px 6px;
+  padding: 6px 8px;
   border-bottom: 1px solid #222;
   word-break: break-word;
   line-height: 1.35;
   font-size: 12px;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
 }
 
 .rekap-spt-emp-nip {
-  padding: 5px 6px;
+  padding: 5px 8px;
   white-space: nowrap;
   font-size: 12px;
   line-height: 1.35;
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
 }
 
 .rekap-spt-center {
@@ -4823,6 +4831,32 @@ html[data-theme="dark"] .st-suffix-dropdown-wrap::after {
 }
 
 .rincian-tbl .tr {
+  text-align: right;
+  padding-right: 8px;
+}
+
+/* Native sub-rows in rincian-tbl (100% straight border alignment) */
+.rincian-tbl td.rincian-no-cell {
+  text-align: center;
+  vertical-align: top;
+}
+
+.rincian-tbl tr.rincian-item-main.has-sub td:not(.rincian-no-cell) {
+  border-bottom: none !important;
+}
+
+.rincian-tbl tr.rincian-item-sub td {
+  border-top: none !important;
+  border-bottom: none !important;
+  padding: 2px 6px !important;
+  font-size: 12px !important;
+}
+
+.rincian-tbl tr.rincian-item-sub.rincian-item-last td {
+  border-bottom: 1px solid #000000 !important;
+}
+
+.rincian-tbl tr.rincian-item-sub td.tr {
   text-align: right;
   padding-right: 8px;
 }
@@ -7825,13 +7859,21 @@ MODE GELAP — layar saja; kertas dokumen & cetak tetap putih
     padding: 0 !important;
   }
   body.print-rekap-spt .rekap-spt-emp-nama {
-    padding: 5px 4px !important;
+    padding: 5px 6px !important;
     border-bottom: 1px solid #222 !important;
     font-size: 12px !important;
+    min-height: 38px !important;
+    display: flex !important;
+    align-items: center !important;
+    box-sizing: border-box !important;
   }
   body.print-rekap-spt .rekap-spt-emp-nip {
-    padding: 4px 4px !important;
+    padding: 4px 6px !important;
     font-size: 12px !important;
+    min-height: 24px !important;
+    display: flex !important;
+    align-items: center !important;
+    box-sizing: border-box !important;
   }
   body.print-rekap-spt .rekap-spt-signature {
     margin-top: 16px !important;
@@ -7875,6 +7917,18 @@ MODE GELAP — layar saja; kertas dokumen & cetak tetap putih
   body.print-rincian .rincian-tbl .rincian-subtbl td {
     padding: 2px 6px !important;
     font-size: 12px !important;
+  }
+  body.print-rincian .rincian-tbl tr.rincian-item-main.has-sub td:not(.rincian-no-cell) {
+    border-bottom: none !important;
+  }
+  body.print-rincian .rincian-tbl tr.rincian-item-sub td {
+    border-top: none !important;
+    border-bottom: none !important;
+    padding: 2px 6px !important;
+    font-size: 12px !important;
+  }
+  body.print-rincian .rincian-tbl tr.rincian-item-sub.rincian-item-last td {
+    border-bottom: 1px solid #000000 !important;
   }
   .date-color-picker {
     display: none !important;
