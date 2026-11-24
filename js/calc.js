@@ -6,9 +6,37 @@
 // =====================================================================
 // SBM & LAMA TUGAS
 // =====================================================================
+function isKepulauanSeribuTarget(sbmObj, kotaTeks, agendaTeks) {
+  if (sbmObj && sbmObj.isKepulauanSeribu) return true;
+  if (sbmObj && sbmObj.sekitarJakarta && sbmObj.sekitarJakarta.id === 'kep_seribu') return true;
+  const kota = String(kotaTeks !== undefined ? kotaTeks : (typeof document !== 'undefined' ? (document.getElementById('kotaTujuan')?.value || '') : '')).trim();
+  const agenda = String(agendaTeks !== undefined ? agendaTeks : (typeof document !== 'undefined' ? (document.getElementById('agenda')?.value || '') : '')).trim();
+  return /seribu|pulau\s+seribu|pramuka|tidung|pari|kelapa|harapan|lancang/i.test(`${kota} ${agenda}`);
+}
+
 function adjustSbmForSekitarJakarta(sbm) {
   const kotaTujuan = typeof document !== 'undefined' ? (document.getElementById('kotaTujuan')?.value || '') : '';
+  const agenda = typeof document !== 'undefined' ? (document.getElementById('agenda')?.value || '') : '';
+  const isKepSeribu = isKepulauanSeribuTarget(sbm, kotaTujuan, agenda);
   const sekitar = typeof getSbmSekitarJakarta === 'function' ? getSbmSekitarJakarta(kotaTujuan) : null;
+
+  if (isKepSeribu) {
+    const baseSbm = (sbm && sbm.provinsi === 'DKI JAKARTA') ? sbm : (typeof sbmData !== 'undefined' ? (sbmData.find(s => s.id === 13) || sbm) : sbm);
+    const kepSeribuSekitar = sekitar || (typeof sbmTransportSekitarJakarta !== 'undefined' ? sbmTransportSekitarJakarta.find(item => item.id === 'kep_seribu') : null);
+    if (!baseSbm) return null;
+    return {
+      ...baseSbm,
+      isSekitarJakarta: true,
+      sekitarJakarta: kepSeribuSekitar,
+      isKepulauanSeribu: true,
+      uh: 210000,              // Khusus Kepulauan Seribu: Uang Harian Rp 210.000
+      jktPP: kepSeribuSekitar ? kepSeribuSekitar.pp : 772000,
+      taxi: 0,
+      dpr: kepSeribuSekitar ? kepSeribuSekitar.pp : 772000,
+      dprOneWay: kepSeribuSekitar ? kepSeribuSekitar.oneWay : 386000
+    };
+  }
+
   if (sekitar) {
     const baseSbm = sbm || (typeof sbmData !== 'undefined' ? sbmData.find(s => s.id === sekitar.provId) : null);
     if (!baseSbm) return null;
@@ -16,12 +44,14 @@ function adjustSbmForSekitarJakarta(sbm) {
       ...baseSbm,
       isSekitarJakarta: true,
       sekitarJakarta: sekitar,
+      uh: baseSbm.uh,
       jktPP: sekitar.pp,       // SBM Transport Jakarta - Daerah Sekitar PP (One Way x 2)
       taxi: 0,                 // Termasuk dalam rute PP
       dpr: sekitar.pp,         // Batas SBM Transport / DPR = One Way x 2
       dprOneWay: sekitar.oneWay
     };
   }
+
   return sbm;
 }
 
@@ -1124,7 +1154,9 @@ function updateSBMPreview() {
   if (!pv) return;
   if (!sbm) { pv.style.display = 'none'; return; }
   pv.style.display = 'block';
+  const isKepSeribu = typeof isKepulauanSeribuTarget === 'function' ? isKepulauanSeribuTarget(sbm) : !!(sbm.isKepulauanSeribu || (sbm.sekitarJakarta && sbm.sekitarJakarta.id === 'kep_seribu'));
   const isDkiJakarta = sbm.provinsi === 'DKI JAKARTA';
+  const isDkiNoUh = isDkiJakarta && !isKepSeribu;
   const multi = getMultiProvData();
   const cbUH = document.getElementById('cbUH');
   const isUHActive = !cbUH || cbUH.checked;
@@ -1137,14 +1169,16 @@ function updateSBMPreview() {
       const p1 = getProvShortName(multi.sbm1.provinsi);
       const p2 = getProvShortName(multi.sbm2.provinsi);
       elUH.textContent = `${rp(multi.sbm1.uh)} (${p1}) & ${rp(multi.sbm2.uh)} (${p2})`;
+    } else if (isKepSeribu) {
+      elUH.textContent = rp(210000);
     } else {
-      elUH.textContent = isDkiJakarta ? `${rp(0)} (tidak dibayarkan)` : rp(sbm.uh);
+      elUH.textContent = isDkiNoUh ? `${rp(0)} (tidak dibayarkan)` : rp(sbm.uh);
     }
   }
   const elDiklat = document.getElementById('sbm_diklat');
-  if (elDiklat) elDiklat.textContent = !isUHActive ? `${rp(0)} (tidak dipilih)` : (isDkiJakarta ? `${rp(0)} (tidak dibayarkan)` : rp(sbm.diklat || 110000));
+  if (elDiklat) elDiklat.textContent = !isUHActive ? `${rp(0)} (tidak dipilih)` : (isDkiNoUh ? `${rp(0)} (tidak dibayarkan)` : rp(sbm.diklat || 110000));
   const elFullboard = document.getElementById('sbm_fullboard');
-  if (elFullboard) elFullboard.textContent = !isUHActive ? `${rp(0)} (tidak dipilih)` : (isDkiJakarta ? `${rp(0)} (tidak dibayarkan)` : rp(sbm.fullboard || 130000));
+  if (elFullboard) elFullboard.textContent = !isUHActive ? `${rp(0)} (tidak dipilih)` : (isDkiNoUh ? `${rp(0)} (tidak dibayarkan)` : rp(sbm.fullboard || 130000));
   const isManualMakan = !!document.getElementById('cbTarifMakanManual')?.checked;
   const wrapDetail = document.getElementById('manualMealDetailWrap');
   const isDetailOpen = wrapDetail && wrapDetail.style.display !== 'none';
@@ -1182,12 +1216,16 @@ function updateSBMPreview() {
   }
   document.getElementById('sbm_tiket').textContent = sbm.tiket ? rp(sbm.tiket) : '(tidak ada tiket pesawat)';
 
-  const isDkiTarget = isDkiJakarta || (multi && ((multi.sbm1 && multi.sbm1.provinsi === 'DKI JAKARTA') || (multi.sbm2 && multi.sbm2.provinsi === 'DKI JAKARTA')));
+  const isDkiTarget = isDkiNoUh || (multi && ((multi.sbm1 && multi.sbm1.provinsi === 'DKI JAKARTA') || (multi.sbm2 && multi.sbm2.provinsi === 'DKI JAKARTA')));
   const noteJkt = document.getElementById('noteJakartaDPR');
   if (noteJkt) {
     if (sbm.isSekitarJakarta && sbm.sekitarJakarta) {
       noteJkt.style.display = 'block';
-      noteJkt.innerHTML = `*Transport Jakarta &harr; ${sbm.sekitarJakarta.nama}: ${rp(sbm.dprOneWay)} (One Way) &times; 2 = <strong>${rp(sbm.dpr)} PP</strong> <span class="note-link">(Cek PMK Hal 68 ↗)</span>`;
+      if (isKepSeribu) {
+        noteJkt.innerHTML = `*Transport Jakarta &harr; ${sbm.sekitarJakarta.nama}: ${rp(sbm.dprOneWay)} (One Way) &times; 2 = <strong>${rp(sbm.dpr)} PP</strong> <span class="note-link">(PMK Hal 68 ↗)</span>. Uang Harian Dalam Kota Jakarta: <strong>${rp(sbm.uh || 210000)}/hari</strong>.`;
+      } else {
+        noteJkt.innerHTML = `*Transport Jakarta &harr; ${sbm.sekitarJakarta.nama}: ${rp(sbm.dprOneWay)} (One Way) &times; 2 = <strong>${rp(sbm.dpr)} PP</strong> <span class="note-link">(Cek PMK Hal 68 ↗)</span>`;
+      }
       noteJkt.setAttribute('onclick', 'openPmkModal(68)');
       noteJkt.setAttribute('title', 'Klik untuk membuka dokumen resmi PMK Hal 68 (Transport Jakarta ke Daerah Sekitar)');
     } else if (isDkiTarget) {
@@ -2896,6 +2934,8 @@ function hitungBiaya(emp) {
   const cbHotel = cfg.hotelActive;
   const uhPercent = cfg.uhPercent ?? (Number(document.getElementById('uhPersentase')?.value) || 1);
   const isDkiJakarta = sbm.provinsi === 'DKI JAKARTA';
+  const isKepSeribu = typeof isKepulauanSeribuTarget === 'function' ? isKepulauanSeribuTarget(sbm) : !!(sbm.isKepulauanSeribu || (sbm.sekitarJakarta && sbm.sekitarJakarta.id === 'kep_seribu'));
+  const isDkiNoUh = isDkiJakarta && !isKepSeribu;
 
   let uhBaseRate = 0;
   let uhTitle = '';
@@ -2910,7 +2950,7 @@ function hitungBiaya(emp) {
     uhTitle = 'Uang Harian Fullboard';
     effectivePercent = 1;
   } else {
-    uhBaseRate = sbm.uh;
+    uhBaseRate = isKepSeribu ? 210000 : sbm.uh;
     effectivePercent = uhPercent;
     uhTitle = `Uang Harian ${Math.round(uhPercent * 100)}%`;
   }
@@ -2944,7 +2984,7 @@ function hitungBiaya(emp) {
 
   const uhGross = isMultiProv
     ? (uhGross1 + uhGross2)
-    : (cbUH && !isDkiJakarta ? Math.round(uhBaseRate * days * effectivePercent) : 0);
+    : (cbUH && !isDkiNoUh ? Math.round(uhBaseRate * days * effectivePercent) : 0);
 
   const hasKonsumsi = cbUH && cfg.hasKonsumsi;
   const isMealManual = cfg.mealMode === 'manual';

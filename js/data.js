@@ -133,7 +133,7 @@ const sbmTransportSekitarJakarta = [
   { id: 'tangsel', nama: 'Kota Tangerang Selatan', provId: 11, provName: 'BANTEN', oneWay: 258000, pp: 516000, regex: /tangerang\s+selatan|tangsel/i },
   { id: 'kab_tangerang', nama: 'Kab. Tangerang', provId: 11, provName: 'BANTEN', oneWay: 279000, pp: 558000, regex: /kab(\.|upaten)?\s+tangerang|tigaraksa/i },
   { id: 'kota_tangerang', nama: 'Kota Tangerang', provId: 11, provName: 'BANTEN', oneWay: 258000, pp: 516000, regex: /\btangerang\b/i },
-  { id: 'kep_seribu', nama: 'Kepulauan Seribu', provId: 13, provName: 'DKI JAKARTA', oneWay: 386000, pp: 772000, regex: /seribu|pulau\s+seribu/i }
+  { id: 'kep_seribu', nama: 'Kepulauan Seribu', provId: 13, provName: 'DKI JAKARTA', oneWay: 386000, pp: 772000, regex: /seribu|pulau\s+seribu|pramuka|tidung|pari|kelapa|harapan/i }
 ];
 
 function getSbmSekitarJakarta(kotaTeks, kotaAsalTeks) {
