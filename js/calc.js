@@ -6,18 +6,17 @@
 // =====================================================================
 // SBM & LAMA TUGAS
 // =====================================================================
-function isKepulauanSeribuTarget(sbmObj, kotaTeks, agendaTeks) {
-  if (sbmObj && sbmObj.isKepulauanSeribu) return true;
-  if (sbmObj && sbmObj.sekitarJakarta && sbmObj.sekitarJakarta.id === 'kep_seribu') return true;
+function isKepulauanSeribuTarget(sbmObj, kotaTeks) {
   const kota = String(kotaTeks !== undefined ? kotaTeks : (typeof document !== 'undefined' ? (document.getElementById('kotaTujuan')?.value || '') : '')).trim();
-  const agenda = String(agendaTeks !== undefined ? agendaTeks : (typeof document !== 'undefined' ? (document.getElementById('agenda')?.value || '') : '')).trim();
-  return /seribu|pulau\s+seribu|pramuka|tidung|pari|kelapa|harapan|lancang/i.test(`${kota} ${agenda}`);
+  const isMatchKota = /seribu|pulau\s+seribu|pramuka|tidung|pari|kelapa|harapan|lancang/i.test(kota);
+  if (isMatchKota) return true;
+  if (sbmObj && sbmObj.isKepulauanSeribu && !kota) return true;
+  return false;
 }
 
 function adjustSbmForSekitarJakarta(sbm) {
   const kotaTujuan = typeof document !== 'undefined' ? (document.getElementById('kotaTujuan')?.value || '') : '';
-  const agenda = typeof document !== 'undefined' ? (document.getElementById('agenda')?.value || '') : '';
-  const isKepSeribu = isKepulauanSeribuTarget(sbm, kotaTujuan, agenda);
+  const isKepSeribu = isKepulauanSeribuTarget(sbm, kotaTujuan);
   const sekitar = typeof getSbmSekitarJakarta === 'function' ? getSbmSekitarJakarta(kotaTujuan) : null;
 
   if (isKepSeribu) {
@@ -2952,7 +2951,7 @@ function hitungBiaya(emp) {
   } else {
     uhBaseRate = isKepSeribu ? 210000 : sbm.uh;
     effectivePercent = uhPercent;
-    uhTitle = `Uang Harian ${Math.round(uhPercent * 100)}%`;
+    uhTitle = Math.round((uhPercent ?? 1) * 100) === 100 ? 'Uang Harian' : `Uang Harian ${Math.round((uhPercent ?? 1) * 100)}%`;
   }
 
   const multiProv = typeof getMultiProvData === 'function' ? getMultiProvData() : null;
