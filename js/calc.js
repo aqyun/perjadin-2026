@@ -231,7 +231,10 @@ function getTujuanDisplay(kotaTeks) {
 }
 
 function changeProvince() {
-  currentRateProvinceId = document.getElementById('provinsiTujuan').value;
+  const provEl = document.getElementById('provinsiTujuan');
+  if (provEl) {
+    currentRateProvinceId = provEl.value;
+  }
   const sbm = getSBM();
   const makanRate = sbm ? (sbm.makan || 0) : 0;
   const snackRate = sbm ? (sbm.snack || 0) : 0;
@@ -3103,6 +3106,453 @@ function hitungBiaya(emp) {
   };
 }
 
+// =====================================================================
+// VIEWER SBM COCKPIT & KAMUS TARIF (DASHBOARD)
+// Mematuhi 100% PMK Nomor 32 Tahun 2025 & Aturan Transport Sekitar Jakarta
+// =====================================================================
+let currentViewerSbmCityId = 'all';
+
+function initViewerSbmCockpit() {
+  const selProv = document.getElementById('viewerSbmSelectProv');
+  if (!selProv || !Array.isArray(sbmData)) return;
+
+  if (selProv.options.length <= 1) {
+    selProv.innerHTML = '';
+    sbmData.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      // Langsung nama provinsi saja, tanpa ibukota provinsi (cth: DKI JAKARTA)
+      opt.textContent = s.provinsi;
+      if (s.provinsi === 'DKI JAKARTA') {
+        opt.selected = true;
+      }
+      selProv.appendChild(opt);
+    });
+  }
+
+  const curProvVal = selProv.value || 13;
+  populateViewerSbmCities(curProvVal, currentViewerSbmCityId);
+  onViewerSbmProvChange(curProvVal, currentViewerSbmCityId);
+}
+
+function populateViewerSbmCities(provId, selectedCityId = null) {
+  const selCity = document.getElementById('viewerSbmSelectCity');
+  if (!selCity) return;
+
+  const sbm = sbmData.find(x => String(x.id) === String(provId)) || sbmData[0];
+  const provCities = (typeof getDaftarKotaByProvinsi === 'function') 
+    ? getDaftarKotaByProvinsi(provId) 
+    : [];
+
+  selCity.innerHTML = '';
+
+  const optAll = document.createElement('option');
+  optAll.value = 'all';
+  optAll.textContent = (sbm.provinsi === 'DKI JAKARTA') ? 'Seluruh Wilayah DKI Jakarta' : `Seluruh Kota/Kabupaten di ${sbm.provinsi}`;
+  if (!selectedCityId || selectedCityId === 'all') {
+    optAll.selected = true;
+  }
+  selCity.appendChild(optAll);
+
+  if (provCities.length > 0) {
+    provCities.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.id;
+      let label = `${c.tipe || 'Kota'} ${c.nama}`;
+      if (c.isBodetabek) label += ' (Bodetabek PMK Hal 68)';
+      if (c.isKhusus) label += ' (Khusus PMK Hal 15 & 68)';
+      opt.textContent = label;
+      if (selectedCityId && c.id === selectedCityId) {
+        opt.selected = true;
+      }
+      selCity.appendChild(opt);
+    });
+  } else if (sbm.ibukota && sbm.ibukota !== '-') {
+    const optIbukota = document.createElement('option');
+    optIbukota.value = 'ibukota';
+    optIbukota.textContent = `Kota ${sbm.ibukota}`;
+    optIbukota.selected = true;
+    selCity.appendChild(optIbukota);
+  }
+}
+
+function onViewerSbmProvChange(provId, cityIdOrObj = null) {
+  if (!Array.isArray(sbmData)) return;
+  const sbm = sbmData.find(x => String(x.id) === String(provId)) || sbmData.find(x => x.provinsi === 'DKI JAKARTA') || sbmData[0];
+  if (!sbm) return;
+
+  const selProv = document.getElementById('viewerSbmSelectProv');
+  if (selProv && String(selProv.value) !== String(sbm.id)) {
+    selProv.value = sbm.id;
+  }
+
+  // Cari objek kota yang sesuai
+  let cityObj = null;
+  if (cityIdOrObj && typeof cityIdOrObj === 'object') {
+    cityObj = cityIdOrObj;
+  } else if (typeof cityIdOrObj === 'string' && cityIdOrObj !== 'all') {
+    cityObj = (typeof daftarKotaSbm !== 'undefined') ? daftarKotaSbm.find(x => x.id === cityIdOrObj) : null;
+  } else {
+    const selCity = document.getElementById('viewerSbmSelectCity');
+    if (selCity && selCity.value && selCity.value !== 'all') {
+      cityObj = (typeof daftarKotaSbm !== 'undefined') ? daftarKotaSbm.find(x => x.id === selCity.value) : null;
+    }
+  }
+
+  currentViewerSbmCityId = cityObj ? cityObj.id : 'all';
+
+  // Sinkronkan dropdown kota jika provinsi baru
+  const selCity = document.getElementById('viewerSbmSelectCity');
+  if (selCity) {
+    const currentProvInCity = selCity.querySelector('option:first-child')?.textContent || '';
+    if (!currentProvInCity.includes(sbm.provinsi)) {
+      populateViewerSbmCities(sbm.id, cityObj ? cityObj.id : null);
+    } else if (cityObj) {
+      selCity.value = cityObj.id;
+    } else {
+      selCity.value = 'all';
+    }
+  }
+
+  // Update Active Badges: Langsung nama provinsi saja tanpa ibukota
+  const activeNameEl = document.getElementById('viewerSbmActiveName');
+  if (activeNameEl) {
+    activeNameEl.textContent = sbm.provinsi;
+  }
+
+  const activeCityBadge = document.getElementById('viewerSbmActiveCityBadge');
+  if (activeCityBadge) {
+    activeCityBadge.textContent = (cityObj && cityObj.id !== 'all' && cityObj.id !== 'jkt_pusat') 
+      ? `${cityObj.nama}` 
+      : (sbm.provinsi === 'DKI JAKARTA' ? 'DKI Jakarta' : `Wilayah ${sbm.provinsi}`);
+  }
+
+  const zoneBadge = document.getElementById('viewerSbmZoneBadge');
+  if (zoneBadge) {
+    if (sbm.provinsi === 'DKI JAKARTA') zoneBadge.textContent = 'Jawa • Ibukota Negara';
+    else if (cityObj && cityObj.isBodetabek) zoneBadge.textContent = 'Wilayah Penyangga Jakarta (Bodetabek)';
+    else if (sbm.provinsi.includes('JAWA') || sbm.provinsi.includes('BANTEN') || sbm.provinsi.includes('YOGYAKARTA')) zoneBadge.textContent = 'Zona Pulau Jawa';
+    else if (sbm.provinsi.includes('SUMATERA') || sbm.provinsi.includes('RIAU') || sbm.provinsi.includes('ACEH') || sbm.provinsi.includes('LAMPUNG') || sbm.provinsi.includes('JAMBI') || sbm.provinsi.includes('BENGKULU') || sbm.provinsi.includes('BANGKA')) zoneBadge.textContent = 'Zona Pulau Sumatera';
+    else if (sbm.provinsi.includes('KALIMANTAN')) zoneBadge.textContent = 'Zona Pulau Kalimantan';
+    else if (sbm.provinsi.includes('SULAWESI') || sbm.provinsi.includes('GORONTALO')) zoneBadge.textContent = 'Zona Pulau Sulawesi';
+    else if (sbm.provinsi.includes('BALI') || sbm.provinsi.includes('NUSA TENGGARA')) zoneBadge.textContent = 'Zona Bali & Nusa Tenggara';
+    else if (sbm.provinsi.includes('MALUKU')) zoneBadge.textContent = 'Zona Kepulauan Maluku';
+    else if (sbm.provinsi.includes('PAPUA')) zoneBadge.textContent = 'Zona Wilayah Papua';
+    else zoneBadge.textContent = 'Wilayah Indonesia';
+  }
+
+  // Hero Title: Langsung nama provinsi atau kota spesifik, jangan ada misal "Jakarta - Jakarta Pusat"
+  const heroTitle = document.getElementById('viewerSbmHeroTitle');
+  if (heroTitle) {
+    if (sbm.provinsi === 'DKI JAKARTA') {
+      if (cityObj && (cityObj.id === 'kep_seribu' || /seribu/i.test(cityObj.nama))) {
+        heroTitle.textContent = 'DKI JAKARTA — Kepulauan Seribu';
+      } else if (cityObj && cityObj.nama && cityObj.id !== 'all' && cityObj.id !== 'jkt_pusat' && cityObj.id !== 'jkt_dki') {
+        heroTitle.textContent = `DKI JAKARTA — ${cityObj.nama}`;
+      } else {
+        heroTitle.textContent = 'DKI JAKARTA';
+      }
+    } else {
+      if (cityObj && cityObj.id !== 'all') {
+        heroTitle.textContent = `${cityObj.nama} (${sbm.provinsi})`;
+      } else {
+        heroTitle.textContent = sbm.provinsi;
+      }
+    }
+  }
+
+  const heroSub = document.getElementById('viewerSbmHeroSub');
+  if (heroSub) {
+    heroSub.textContent = `Dasar hukum tarif resmi mengikuti Peraturan Menteri Keuangan PMK Nomor 32 Tahun 2025 Lampiran Standar Biaya Masukan.`;
+  }
+
+  const isDki = sbm.provinsi === 'DKI JAKARTA';
+  const isKepSeribu = cityObj && (cityObj.id === 'kep_seribu' || /seribu/i.test(cityObj.nama));
+  const isBodetabek = cityObj && cityObj.isBodetabek;
+  const formatRp = typeof rp === 'function' ? rp : (n) => 'Rp ' + Number(n || 0).toLocaleString('id-ID');
+
+  // UPDATE 11 KARTU TARIF SBM
+  // 1. Uang Harian
+  const elUh = document.getElementById('vsbm_uh');
+  const elUhUnit = document.getElementById('vsbm_uh_unit');
+  if (elUh) {
+    if (isKepSeribu) {
+      elUh.textContent = formatRp(210000);
+      if (elUhUnit) elUhUnit.textContent = '/ Orang / Hari (Kep. Seribu PMK Hal 15)';
+    } else if (isDki) {
+      elUh.textContent = `${formatRp(0)} (dalam kota)`;
+      if (elUhUnit) elUhUnit.textContent = 'Dinas biasa (Rp 210.000 jika >8 jam)';
+    } else {
+      elUh.textContent = formatRp(sbm.uh || 0);
+      if (elUhUnit) elUhUnit.textContent = '/ Orang / Hari (OH) Penuh 100%';
+    }
+  }
+
+  // 2. Uang Harian Diklat
+  const elDiklat = document.getElementById('vsbm_diklat');
+  if (elDiklat) {
+    elDiklat.textContent = formatRp(sbm.diklat || 110000);
+  }
+
+  // 3. Uang Harian Fullboard
+  const elFullboard = document.getElementById('vsbm_fullboard');
+  if (elFullboard) {
+    elFullboard.textContent = formatRp(sbm.fullboard || 130000);
+  }
+
+  // 4. Makan Rapat SBM
+  const elMakan = document.getElementById('vsbm_makan');
+  if (elMakan) {
+    elMakan.textContent = formatRp(sbm.makan || 0);
+  }
+
+  // 5. Snack Rapat SBM
+  const elSnack = document.getElementById('vsbm_snack');
+  if (elSnack) {
+    elSnack.textContent = formatRp(sbm.snack || 0);
+  }
+
+  // 6. Penginapan Gol IV
+  const elH4 = document.getElementById('vsbm_h4');
+  if (elH4) {
+    elH4.textContent = formatRp(sbm.h4 || 0);
+  }
+
+  // 7. Penginapan Gol III
+  const elH3 = document.getElementById('vsbm_h3');
+  if (elH3) {
+    elH3.textContent = formatRp(sbm.h3 || 0);
+  }
+
+  // 8. DPR Jakarta PP / Transport Darat
+  const elJkt = document.getElementById('vsbm_jkt');
+  if (elJkt) {
+    if (isBodetabek && cityObj.transportPP) {
+      elJkt.textContent = `${formatRp(cityObj.transportPP)}`;
+    } else if (isKepSeribu) {
+      elJkt.textContent = `${formatRp(772000)}`;
+    } else {
+      elJkt.textContent = sbm.jktPP ? formatRp(sbm.jktPP) : '- (dalam kota)';
+    }
+  }
+
+  // 9. Taxi Lokal
+  const elTaxi = document.getElementById('vsbm_taxi');
+  if (elTaxi) {
+    elTaxi.textContent = sbm.taxi ? formatRp(sbm.taxi) : '-';
+  }
+
+  // 10. DPR dibayarkan
+  const elDpr = document.getElementById('vsbm_dpr');
+  if (elDpr) {
+    if (isDki) {
+      elDpr.textContent = `${formatRp(170000)}`;
+    } else {
+      elDpr.textContent = '- (khusus DKI Jakarta)';
+    }
+  }
+
+  // 11. Tiket Pesawat PP
+  const elTiket = document.getElementById('vsbm_tiket');
+  if (elTiket) {
+    elTiket.textContent = sbm.tiket ? formatRp(sbm.tiket) : '- (jalur darat / tidak ada)';
+  }
+
+  // RENDER SPECIAL NOTICE BANNER
+  const noticeBox = document.getElementById('viewerSbmSpecialNotice');
+  if (noticeBox) {
+    if (isBodetabek && cityObj.transportPP) {
+      noticeBox.innerHTML = `
+        <div class="sbm-notice-card notice-bodetabek">
+          <div class="notice-badge">🚗 ATURAN TRANSPORT KHUSUS BODETABEK (PMK HAL 68)</div>
+          <strong class="notice-headline">Transport Darat PP Resmi: ${formatRp(cityObj.transportPP)}</strong>
+          <p class="notice-desc">Tujuan ke <strong>${cityObj.nama}</strong> memiliki ketentuan biaya transport darat PP sebesar <strong>${formatRp(cityObj.transportPP)}</strong> (one way ${formatRp(cityObj.oneWay)}). DPR dibayarkan sesuai bukti pengeluaran riil atau standar pagu SBM.</p>
+        </div>
+      `;
+    } else if (isKepSeribu) {
+      noticeBox.innerHTML = `
+        <div class="sbm-notice-card notice-island">
+          <div class="notice-badge">⛴️ ATURAN KHUSUS KEPULAUAN SERIBU (PMK HAL 15 &amp; 68)</div>
+          <strong class="notice-headline">Uang Harian: Rp 210.000 | Tiket Kapal Laut: Rp 772.000 PP</strong>
+          <p class="notice-desc">Perjalanan dinas ke Kepulauan Seribu mendapatkan uang harian resmi <strong>Rp 210.000 / hari</strong> (PMK Hal 15) dan satuan biaya sewa/tiket kapal laut PP sebesar <strong>Rp 772.000</strong> (one way Rp 386.000, PMK Hal 68).</p>
+        </div>
+      `;
+    } else if (isDki) {
+      noticeBox.innerHTML = `
+        <div class="sbm-notice-card notice-dki">
+          <div class="notice-badge">🏛️ KETENTUAN PERJALANAN DALAM KOTA DKI JAKARTA (PMK HAL 69)</div>
+          <strong class="notice-headline">Uang Harian Rp 0 (Biasa) | DPR Lokal Dibayarkan Rp 170.000</strong>
+          <p class="notice-desc">Sesuai ketentuan, perjalanan dinas dalam kota tidak diberikan uang harian (diberikan Rp 210.000 jika surat tugas menyatakan penugasan melebihi 8 jam). Uang transport lokal (DPR) dibayarkan sebesar <strong>Rp 170.000 / hari</strong>.</p>
+        </div>
+      `;
+    } else {
+      noticeBox.innerHTML = `
+        <div class="sbm-notice-card notice-luarkota">
+          <div class="notice-badge">✈️ KETENTUAN PERJALANAN LUAR KOTA (${sbm.provinsi})</div>
+          <strong class="notice-headline">Uang Harian 100%: ${formatRp(sbm.uh)} / Hari</strong>
+          <p class="notice-desc">Tujuan ${cityObj ? cityObj.nama + ' (' + sbm.provinsi + ')' : sbm.provinsi} berhak atas Uang Harian penuh <strong>${formatRp(sbm.uh)}</strong>/hari, pagu hotel Gol. IV <strong>${formatRp(sbm.h4)}</strong>, Gol. III <strong>${formatRp(sbm.h3)}</strong>, taksi lokal <strong>${formatRp(sbm.taxi)}</strong>, dan tiket pesawat PP <strong>${sbm.tiket ? formatRp(sbm.tiket) : 'Jalur Darat'}</strong>.</p>
+        </div>
+      `;
+    }
+  }
+
+  // Update state chip
+  document.querySelectorAll('.sbm-chip-btn').forEach(btn => {
+    btn.classList.toggle('active', !!cityObj && btn.getAttribute('data-chip') === cityObj.id);
+  });
+}
+
+function onViewerSbmCityDropdownChange(cityId) {
+  if (!cityId || cityId === 'all') {
+    const selProv = document.getElementById('viewerSbmSelectProv');
+    onViewerSbmProvChange(selProv ? selProv.value : 13, null);
+    return;
+  }
+  const city = (typeof daftarKotaSbm !== 'undefined') ? daftarKotaSbm.find(x => x.id === cityId) : null;
+  if (city) {
+    onViewerSbmProvChange(city.provId, city);
+  }
+}
+
+function quickSelectSbmCity(cityId) {
+  if (cityId === 'all' || cityId === 'jkt_pusat' || cityId === 'jkt_dki') {
+    const selProv = document.getElementById('viewerSbmSelectProv');
+    if (selProv) selProv.value = 13;
+    onViewerSbmProvChange(13, 'all');
+    return;
+  }
+  const city = (typeof daftarKotaSbm !== 'undefined') ? daftarKotaSbm.find(x => x.id === cityId) : null;
+  if (!city) return;
+  const selProv = document.getElementById('viewerSbmSelectProv');
+  if (selProv) selProv.value = city.provId;
+  onViewerSbmProvChange(city.provId, city);
+}
+
+function onViewerSbmSearchInput(keyword) {
+  const q = String(keyword || '').trim().toLowerCase();
+  const resBox = document.getElementById('viewerSbmSearchResults');
+  const clearBtn = document.getElementById('btnSbmSearchClear');
+  if (clearBtn) clearBtn.style.display = q ? 'block' : 'none';
+
+  if (!resBox) return;
+
+  if (!q) {
+    resBox.style.display = 'none';
+    resBox.innerHTML = '';
+    return;
+  }
+
+  const matchedCities = (typeof cariKotaSbm === 'function') ? cariKotaSbm(q) : [];
+  const matchedProvs = Array.isArray(sbmData) 
+    ? sbmData.filter(x => x.provinsi.toLowerCase().includes(q) || (x.ibukota && x.ibukota.toLowerCase().includes(q)))
+    : [];
+
+  if (matchedCities.length === 0 && matchedProvs.length === 0) {
+    resBox.innerHTML = `
+      <div class="sbm-search-empty">
+        Tidak ditemukan kota atau provinsi dengan kata kunci "<strong>${keyword}</strong>".
+      </div>
+    `;
+    resBox.style.display = 'block';
+    return;
+  }
+
+  const formatRp = typeof rp === 'function' ? rp : (n) => 'Rp ' + Number(n || 0).toLocaleString('id-ID');
+
+  let html = '';
+
+  // Tampilkan hasil kota
+  if (matchedCities.length > 0) {
+    html += `<div class="sbm-search-section-title">Kota &amp; Kabupaten (${matchedCities.length})</div>`;
+    matchedCities.slice(0, 8).forEach(c => {
+      const sbm = sbmData.find(x => Number(x.id) === Number(c.provId)) || {};
+      const note = c.isBodetabek 
+        ? `<span class="search-bodetabek-tag">Bodetabek Transport PP ${formatRp(c.transportPP)}</span>`
+        : `<span class="search-rate-tag">UH ${formatRp(sbm.uh || 0)} • Hotel IV ${formatRp(sbm.h4 || 0)}</span>`;
+      html += `
+        <div class="sbm-search-item" onclick="selectCityFromSearch('${c.id}')">
+          <div class="search-item-left">
+            <span class="search-item-ico">📍</span>
+            <div>
+              <strong>${c.tipe || 'Kota'} ${c.nama}</strong>
+              <small>${c.provName}</small>
+            </div>
+          </div>
+          <div class="search-item-right">
+            ${note}
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  // Tampilkan hasil provinsi
+  if (matchedProvs.length > 0) {
+    html += `<div class="sbm-search-section-title">Provinsi SBM (${matchedProvs.length})</div>`;
+    matchedProvs.slice(0, 6).forEach(p => {
+      html += `
+        <div class="sbm-search-item" onclick="selectProvFromSearch(${p.id})">
+          <div class="search-item-left">
+            <span class="search-item-ico">🏛️</span>
+            <div>
+              <strong>${p.provinsi}</strong>
+              <small>Provinsi SBM PMK 32/2025</small>
+            </div>
+          </div>
+          <div class="search-item-right">
+            <span class="search-rate-tag">UH ${formatRp(p.uh || 0)} • Tiket PP ${p.tiket ? formatRp(p.tiket) : 'Jalur Darat'}</span>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  resBox.innerHTML = html;
+  resBox.style.display = 'block';
+}
+
+function selectCityFromSearch(cityId) {
+  const city = (typeof daftarKotaSbm !== 'undefined') ? daftarKotaSbm.find(x => x.id === cityId) : null;
+  if (!city) return;
+  const selProv = document.getElementById('viewerSbmSelectProv');
+  if (selProv) selProv.value = city.provId;
+  onViewerSbmProvChange(city.provId, city);
+  clearViewerSbmSearch();
+}
+
+function selectProvFromSearch(provId) {
+  const selProv = document.getElementById('viewerSbmSelectProv');
+  if (selProv) selProv.value = provId;
+  onViewerSbmProvChange(provId, null);
+  clearViewerSbmSearch();
+}
+
+function clearViewerSbmSearch() {
+  const input = document.getElementById('viewerSbmSearchInput');
+  const resBox = document.getElementById('viewerSbmSearchResults');
+  const clearBtn = document.getElementById('btnSbmSearchClear');
+  if (input) input.value = '';
+  if (resBox) {
+    resBox.style.display = 'none';
+    resBox.innerHTML = '';
+  }
+  if (clearBtn) clearBtn.style.display = 'none';
+}
+
+function resetSbmViewerToDefault() {
+  clearViewerSbmSearch();
+  quickSelectSbmCity('jkt_pusat');
+}
+
+// Tutup dropdown hasil pencarian jika klik di luar
+document.addEventListener('click', function(e) {
+  const searchBox = document.querySelector('.sbm-search-city-box');
+  const resBox = document.getElementById('viewerSbmSearchResults');
+  if (resBox && searchBox && !searchBox.contains(e.target)) {
+    resBox.style.display = 'none';
+  }
+});
+
 if (typeof window !== 'undefined') {
   window.openSbmLimitModal = openSbmLimitModal;
   window.openMealLimitModal = openMealLimitModal;
@@ -3115,4 +3565,14 @@ if (typeof window !== 'undefined') {
   window.onCockpitManualMealChange = onCockpitManualMealChange;
   window.onCockpitUHChange = onCockpitUHChange;
   window.switchCockpitTab = switchCockpitTab;
+  window.initViewerSbmCockpit = initViewerSbmCockpit;
+  window.onViewerSbmProvChange = onViewerSbmProvChange;
+  window.populateViewerSbmCities = populateViewerSbmCities;
+  window.onViewerSbmCityDropdownChange = onViewerSbmCityDropdownChange;
+  window.quickSelectSbmCity = quickSelectSbmCity;
+  window.onViewerSbmSearchInput = onViewerSbmSearchInput;
+  window.selectCityFromSearch = selectCityFromSearch;
+  window.selectProvFromSearch = selectProvFromSearch;
+  window.clearViewerSbmSearch = clearViewerSbmSearch;
+  window.resetSbmViewerToDefault = resetSbmViewerToDefault;
 }

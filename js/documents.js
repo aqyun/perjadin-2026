@@ -1030,8 +1030,8 @@ function renderRekapSPT() {
 
       <table class="rekap-spt-table">
         <colgroup>
-          <col style="width:4%"><col style="width:8%"><col style="width:36%">
-          <col style="width:11%"><col style="width:15%"><col style="width:12%"><col style="width:14%">
+          <col style="width:4%"><col style="width:7%"><col style="width:39%">
+          <col style="width:10%"><col style="width:17%"><col style="width:10%"><col style="width:13%">
         </colgroup>
         <thead>
           <tr>
@@ -1049,8 +1049,10 @@ function renderRekapSPT() {
               <td class="rekap-spt-center">${index + 1}</td>
               <td class="rekap-spt-center">${mak}</td>
               <td class="rekap-spt-emp-cell">
-                <div class="rekap-spt-emp-nama">${emp.nama}</div>
-                <div class="rekap-spt-emp-nip">NIP. ${emp.nip}</div>
+                <div class="rekap-spt-emp-box">
+                  <div class="rekap-spt-emp-nama">${emp.nama}</div>
+                  <div class="rekap-spt-emp-nip">NIP. ${emp.nip}</div>
+                </div>
               </td>
               <td>Perjalanan Dinas ke</td>
               <td class="rekap-spt-center">${kotaTujuan}</td>

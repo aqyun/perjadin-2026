@@ -46,7 +46,7 @@ initTheme();
 // =====================================================================
 // INIT
 // =====================================================================
-document.addEventListener('DOMContentLoaded', () => {
+function bootPerdinKu() {
   // Always trigger loader early so progress begins immediately
   try {
     initAppLoader();
@@ -83,6 +83,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof toggleHotelFields === 'function') toggleHotelFields();
     if (typeof updateSbmWarnings === 'function') updateSbmWarnings();
     if (typeof setupRealtimeValidation === 'function') setupRealtimeValidation();
+    if (typeof initViewerSbmCockpit === 'function') initViewerSbmCockpit();
+    if (typeof renderDashboardModule === 'function') renderDashboardModule();
+    if (typeof renderTripHistory === 'function') renderTripHistory();
     if (typeof updateKKPBadgesAndNav === 'function') updateKKPBadgesAndNav();
     if (typeof updateAllSpdSuffixLabels === 'function') updateAllSpdSuffixLabels();
     if (typeof syncJenisPerjalananFromMak === 'function') syncJenisPerjalananFromMak();
@@ -99,7 +102,13 @@ document.addEventListener('DOMContentLoaded', () => {
   } catch (err) {
     console.error('PerdinKu initialization error:', err);
   }
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', bootPerdinKu);
+} else {
+  bootPerdinKu();
+}
 
 // =====================================================================
 // FORM VALIDATION & REQUIRED INDICATORS (!)
@@ -723,7 +732,8 @@ function initWelcomeModalAfterLoader() {
     isDismissed = localStorage.getItem('perdinku_welcome_dismissed') === '1';
   } catch (e) {}
 
-  if (!isDismissed) {
+  // Hanya tampilkan sambutan jika user sudah login (tidak terkunci di gerbang login)
+  if (!isDismissed && !document.body.classList.contains('auth-locked')) {
     setTimeout(() => {
       openWelcome();
     }, 300);
@@ -735,7 +745,9 @@ function initWelcomeModalAfterLoader() {
 // =====================================================================
 const tabMeta = {
   input: ['Input Perjalanan', 'Formulir'],
-  riwayat: ['Riwayat Perjalanan', 'Arsip & Revisi'],
+  dashboard: ['Dashboard Eksekutif', 'Portal Pemantau'],
+  riwayat: ['Riwayat Perjalanan Dinas', 'Arsip & Berkas'],
+  sbm: ['Kamus & Cek Tarif SBM 2026', 'Standar Biaya Masukan'],
   nominatif: ['Daftar Nominatif', 'Rekapitulasi'],
   'rekap-kuitansi': ['Rekap Kuitansi', 'Rekapitulasi'],
   'kuitansi-perorangan': ['Kuitansi Perorangan', 'Dokumen'],
@@ -749,11 +761,17 @@ const tabMeta = {
 };
 
 function showTab(name) {
+  const canEdit = (typeof canCurrentUserEdit === 'function') ? canCurrentUserEdit() : (typeof isCurrentUserAdmin === 'function' && isCurrentUserAdmin());
+  const isViewer = !canEdit && !!window.currentAuthUser;
+  const viewerAllowedTabs = ['dashboard', 'riwayat', 'sbm'];
+  if (isViewer && !viewerAllowedTabs.includes(name)) {
+    name = 'dashboard';
+  }
   const currentActive = document.querySelector('.tab-content.active');
   if (currentActive && currentActive.id === 'tab-' + name) {
     return;
   }
-  if (name !== 'input' && name !== 'pengaturan' && name !== 'riwayat') {
+  if (!['input', 'pengaturan', 'dashboard', 'riwayat', 'sbm'].includes(name)) {
     const val = validateTripForm();
     if (!val.valid) {
       showValidationToast(val.missing, val.dateMismatch ? 'Tanggal kembali tidak boleh sebelum tanggal berangkat!' : null);
@@ -763,6 +781,13 @@ function showTab(name) {
   triggerTabProgress();
   showPageTransitionLoader(name, () => {
     switchTabPanel(name);
+    if (name === 'dashboard' && typeof renderDashboardModule === 'function') {
+      renderDashboardModule();
+    } else if (name === 'sbm' && typeof initViewerSbmCockpit === 'function') {
+      initViewerSbmCockpit();
+    } else if (name === 'riwayat' && typeof renderTripHistory === 'function') {
+      renderTripHistory();
+    }
   });
 }
 
@@ -787,6 +812,8 @@ function switchTabPanel(name) {
   if (eyebrowEl) eyebrowEl.textContent = meta[1];
   closeSidebar();
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (name === 'dashboard' && typeof renderDashboardModule === 'function') renderDashboardModule();
+  if (name === 'sbm' && typeof initViewerSbmCockpit === 'function') initViewerSbmCockpit();
   if (name === 'riwayat' && typeof renderTripHistory === 'function') renderTripHistory();
   if (name === 'rincian') populateRincianSelect();
   if (name === 'dpr') populateDPRSelect();
@@ -1661,7 +1688,7 @@ function saveTripHistoryList(list) {
   }
 }
 
-function saveCurrentTripToHistory(isManual = false) {
+function saveCurrentTripToHistory(isManual = false, customCsvData = null) {
   const draft = (typeof collectPerjadinDraftData === 'function') ? collectPerjadinDraftData() : null;
   if (!draft || !draft.fields) {
     if (isManual) alert('Formulir masih kosong.');
@@ -1692,7 +1719,7 @@ function saveCurrentTripToHistory(isManual = false) {
 
   const empList = empIds.map(id => {
     const emp = (typeof employees !== 'undefined') ? employees.find(e => e.id === id) : null;
-    return emp ? { id: emp.id, nama: emp.nama, jabatan: emp.jabatan, nip: emp.nip } : { id };
+    return emp ? { id: emp.id, nama: emp.nama, jabatan: emp.jabatan, nip: emp.nip, golongan: emp.golongan || emp.gol } : { id };
   });
 
   const tripId = 'trip_' + (noST ? noST.replace(/[^a-zA-Z0-9]/g, '_') : Date.now());
@@ -1703,6 +1730,22 @@ function saveCurrentTripToHistory(isManual = false) {
     provTeks = [p1, p2].filter(Boolean).join(' & ');
   } else {
     provTeks = (typeof getProvinsiDisplayName === 'function') ? getProvinsiDisplayName(prov) : prov;
+  }
+
+  // Siapkan konversi CSV otomatis di latar belakang untuk integrasi database Supabase
+  let csvStr = (typeof customCsvData === 'string' && customCsvData) ? customCsvData : '';
+  if (!csvStr && typeof generatePerjadinCsvString === 'function') {
+    try {
+      csvStr = generatePerjadinCsvString(null, {
+        noST, agenda, tglST: draft.fields.tglST,
+        tglBerangkat: draft.fields.tglBerangkat, tglKembali: draft.fields.tglKembali,
+        lamaTugas: draft.fields.lamaTugas, provinsiTujuan: provTeks,
+        kotaTujuan: draft.fields.kotaTujuan, mak: draft.fields.mak,
+        employees: empList, totalBiaya, draft
+      });
+    } catch (csvGenErr) {
+      console.warn('Otomatisasi pembuatan CSV riwayat:', csvGenErr);
+    }
   }
 
   const historyItem = {
@@ -1719,13 +1762,25 @@ function saveCurrentTripToHistory(isManual = false) {
     empCount: empIds.length,
     employees: empList,
     totalBiaya: totalBiaya,
+    status_berkas: 'diproses',
     savedAt: new Date().toISOString(),
-    draft: draft
+    draft: draft,
+    csv_data: csvStr
   };
 
   const list = getTripHistoryList();
   const existingIdx = list.findIndex(item => item.id === historyItem.id || (noST && item.noST === noST));
   if (existingIdx >= 0) {
+    if (list[existingIdx].cloudId) {
+      historyItem.cloudId = list[existingIdx].cloudId;
+      historyItem.isCloud = true;
+    }
+    if (list[existingIdx].status_berkas) {
+      historyItem.status_berkas = list[existingIdx].status_berkas;
+    }
+    if (!historyItem.csv_data && list[existingIdx].csv_data) {
+      historyItem.csv_data = list[existingIdx].csv_data;
+    }
     list[existingIdx] = historyItem;
   } else {
     list.unshift(historyItem);
@@ -1737,7 +1792,41 @@ function saveCurrentTripToHistory(isManual = false) {
     renderTripHistory();
   }
 
-  if (isManual && typeof showRefreshToast === 'function') {
+  // Auto-integrasi langsung ke Cloud Database Supabase (tabel riwayat_perjadin)
+  if (typeof uploadTripToCloud === 'function') {
+    uploadTripToCloud(historyItem).then(cloudId => {
+      if (cloudId) {
+        historyItem.cloudId = cloudId;
+        historyItem.isCloud = true;
+        const curList = getTripHistoryList();
+        const curIdx = curList.findIndex(x => x.id === historyItem.id || (historyItem.noST && x.noST === historyItem.noST));
+        if (curIdx >= 0) {
+          curList[curIdx] = historyItem;
+        }
+        saveTripHistoryList(curList);
+        if (typeof renderTripHistory === 'function') renderTripHistory();
+        if (isManual && typeof showRefreshToast === 'function') {
+          showRefreshToast(
+            'Tersimpan & Terintegrasi ke Database',
+            `Data perjalanan "${historyItem.noST}" telah tersimpan di riwayat dan otomatis masuk ke database cloud Supabase.`
+          );
+        }
+      } else if (isManual && typeof showRefreshToast === 'function') {
+        showRefreshToast(
+          'Perjalanan Tersimpan ke Riwayat',
+          `Data perjalanan "${historyItem.noST}" berhasil dicatat ke riwayat.`
+        );
+      }
+    }).catch(err => {
+      console.warn('Gagal auto-integrasi ke Supabase:', err);
+      if (isManual && typeof showRefreshToast === 'function') {
+        showRefreshToast(
+          'Perjalanan Tersimpan ke Riwayat',
+          `Data perjalanan "${historyItem.noST}" berhasil dicatat ke riwayat.`
+        );
+      }
+    });
+  } else if (isManual && typeof showRefreshToast === 'function') {
     showRefreshToast(
       'Perjalanan Tersimpan ke Riwayat',
       `Data perjalanan "${historyItem.noST}" berhasil dicatat ke riwayat.`
@@ -1747,7 +1836,8 @@ function saveCurrentTripToHistory(isManual = false) {
   return historyItem;
 }
 
-function loadTripFromHistory(id) {
+function loadTripFromHistory(id, event = null) {
+  if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
   const list = getTripHistoryList();
   const item = list.find(x => x.id === id);
   if (!item || !item.draft) {
@@ -1763,6 +1853,14 @@ function loadTripFromHistory(id) {
     localStorage.setItem(PERJADIN_DRAFT_KEY, JSON.stringify(item.draft));
   } catch (e) {}
 
+  const canEdit = (typeof canCurrentUserEdit === 'function') ? canCurrentUserEdit() : (typeof isCurrentUserAdmin === 'function' && isCurrentUserAdmin());
+  const isViewer = !canEdit && !!window.currentAuthUser;
+
+  if (isViewer) {
+    openTripPdfModal(id);
+    return;
+  }
+
   showTab('input');
 
   setTimeout(() => {
@@ -1775,7 +1873,8 @@ function loadTripFromHistory(id) {
   }, 250);
 }
 
-function duplicateTripFromHistory(id) {
+function duplicateTripFromHistory(id, event = null) {
+  if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
   const list = getTripHistoryList();
   const item = list.find(x => x.id === id);
   if (!item || !item.draft) return;
@@ -1800,12 +1899,22 @@ function duplicateTripFromHistory(id) {
   }, 250);
 }
 
-function deleteTripFromHistory(id) {
+function deleteTripFromHistory(id, event = null) {
+  if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
   const list = getTripHistoryList();
   const item = list.find(x => x.id === id);
   if (!item) return;
 
+  if (typeof isCurrentUserAdmin === 'function' && !isCurrentUserAdmin() && window.currentAuthUser) {
+    alert('Akun Viewer hanya memiliki izin baca. Anda tidak memiliki wewenang menghapus data riwayat.');
+    return;
+  }
+
   if (!confirm(`Hapus perjalanan "${item.noST}" dari riwayat?`)) return;
+
+  if (item.cloudId && typeof removeTripFromCloud === 'function' && typeof isCurrentUserAdmin === 'function' && isCurrentUserAdmin()) {
+    removeTripFromCloud(item.cloudId);
+  }
 
   const updated = list.filter(x => x.id !== id);
   saveTripHistoryList(updated);
@@ -1816,7 +1925,8 @@ function deleteTripFromHistory(id) {
   }
 }
 
-function exportExcelFromHistory(id, mode = 'excel') {
+function exportExcelFromHistory(id, mode = 'excel', event = null) {
+  if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
   const list = getTripHistoryList();
   const item = list.find(x => x.id === id);
   if (!item || !item.draft) return;
@@ -1842,15 +1952,169 @@ function formatHistoryDate(isoStr) {
   }
 }
 
+let currentTripStatusFilter = 'all';
+
+function setTripStatusFilter(filter) {
+  currentTripStatusFilter = filter;
+  const filterMap = { all: 'btnFilterAll', diproses: 'btnFilterDiproses', dicairkan: 'btnFilterDicairkan' };
+  ['all', 'diproses', 'dicairkan'].forEach(f => {
+    const btn = document.querySelector(`.btn-filter-pill[data-filter="${f}"]`) || document.getElementById(filterMap[f]);
+    if (btn) btn.classList.toggle('active', f === filter);
+  });
+  renderTripHistory();
+}
+
+function renderDashboardModule(passedList = null) {
+  const list = passedList || getTripHistoryList();
+  const totalAll = list.length;
+  const diprosesItems = list.filter(x => (x.status_berkas || 'diproses') !== 'dicairkan');
+  const dicairkanItems = list.filter(x => x.status_berkas === 'dicairkan');
+  const totalDiproses = diprosesItems.length;
+  const totalDicairkan = dicairkanItems.length;
+  const sumNominalDicairkan = dicairkanItems.reduce((acc, cur) => acc + (Number(cur.totalBiaya) || 0), 0);
+
+  // Update KPI cards
+  const elCountDiproses = document.getElementById('kpiCountDiproses');
+  if (elCountDiproses) elCountDiproses.textContent = totalDiproses;
+
+  const elCountDicairkan = document.getElementById('kpiCountDicairkan');
+  if (elCountDicairkan) elCountDicairkan.textContent = totalDicairkan;
+
+  const elNominalDicairkan = document.getElementById('kpiNominalDicairkan');
+  if (elNominalDicairkan) {
+    const formattedNominal = (typeof rp === 'function') ? rp(sumNominalDicairkan) : 'Rp ' + sumNominalDicairkan.toLocaleString('id-ID');
+    elNominalDicairkan.textContent = `Total Dana: ${formattedNominal}`;
+  }
+
+  const elCountTotal = document.getElementById('kpiCountTotal');
+  if (elCountTotal) elCountTotal.textContent = totalAll;
+
+  // Update Progress Bar
+  const pct = totalAll > 0 ? Math.round((totalDicairkan / totalAll) * 100) : 0;
+  const fill = document.getElementById('dashboardProgressFill');
+  if (fill) fill.style.width = pct + '%';
+
+  const progressTxt = document.getElementById('dashboardProgressText');
+  if (progressTxt) progressTxt.textContent = `${totalDicairkan} dari ${totalAll} Berkas Telah Dicairkan (${totalDiproses} Sedang Diproses)`;
+
+  const progressPct = document.getElementById('dashboardProgressPct');
+  if (progressPct) progressPct.textContent = `${pct}% Tuntas`;
+
+  // Render recent 5 trips on dashboard
+  const recentContainer = document.getElementById('dashboardRecentList');
+  if (recentContainer) {
+    if (list.length === 0) {
+      recentContainer.innerHTML = `
+        <div style="text-align:center; padding:28px 16px; color:var(--text-muted, #64748b);">
+          Belum ada perjalanan dinas yang tercatat.
+        </div>
+      `;
+    } else {
+      const recentFive = list.slice(0, 5);
+      recentContainer.innerHTML = `
+        <table class="dashboard-recent-table">
+          <colgroup>
+            <col class="col-st-w">
+            <col class="col-agenda-w">
+            <col class="col-emp-w">
+            <col class="col-cost-w">
+            <col class="col-status-w">
+            <col class="col-act-w">
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Nomor ST</th>
+              <th>Maksud &amp; Tujuan</th>
+              <th>Pelaksana</th>
+              <th style="text-align:right;">Total Biaya</th>
+              <th style="text-align:center;">Status Satker</th>
+              <th style="text-align:right;">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${recentFive.map(item => {
+              const status = item.status_berkas || 'diproses';
+              const isDicairkan = (status === 'dicairkan');
+              const canEdit = (typeof canCurrentUserEdit === 'function') ? canCurrentUserEdit() : (typeof isCurrentUserAdmin === 'function' && isCurrentUserAdmin());
+              const statusBadge = isDicairkan
+                ? `<span class="history-status-badge status-dicairkan" ${canEdit ? `onclick="toggleTripStatus('${item.id}', event)" style="font-size:11px;padding:3px 9px;cursor:pointer;" title="Klik untuk mengubah status kembali ke Diproses ke Satker"` : 'style="font-size:11px;padding:3px 9px;"'}><svg class="ico" style="width:12px;height:12px;"><use href="#i-check"></use></svg>Dicairkan</span>`
+                : `<span class="history-status-badge status-diproses" ${canEdit ? `onclick="toggleTripStatus('${item.id}', event)" style="font-size:11px;padding:3px 9px;cursor:pointer;" title="Klik untuk menandai berkas Sudah Dicairkan"` : 'style="font-size:11px;padding:3px 9px;"'}><svg class="ico" style="width:12px;height:12px;"><use href="#i-clipboard"></use></svg>Diproses</span>`;
+              const cost = item.totalBiaya > 0 ? ((typeof rp === 'function') ? rp(item.totalBiaya) : 'Rp ' + Number(item.totalBiaya).toLocaleString('id-ID')) : 'Rp 0';
+              const safeNo = (typeof escapeHtml === 'function') ? escapeHtml(item.noST || '-') : (item.noST || '-');
+              const safeAgenda = (typeof escapeHtml === 'function') ? escapeHtml(item.agenda || '-') : (item.agenda || '-');
+              const empCount = item.empCount || (item.employees || []).length || 1;
+              return `
+                <tr>
+                  <td class="col-st">
+                    <span class="recent-st-badge" title="${safeNo}">${safeNo}</span>
+                  </td>
+                  <td class="col-agenda">
+                    <div class="recent-agenda-text" title="${safeAgenda}">${safeAgenda}</div>
+                  </td>
+                  <td class="col-emp">
+                    <span class="recent-pelaksana-badge">
+                      <svg class="ico" style="width:13px;height:13px;"><use href="#i-user"></use></svg>
+                      <span>${empCount} Orang</span>
+                    </span>
+                  </td>
+                  <td class="col-cost" style="text-align:right;">
+                    <span class="recent-cost-val">${cost}</span>
+                  </td>
+                  <td class="col-status" style="text-align:center;">
+                    ${statusBadge}
+                  </td>
+                  <td class="col-act" style="text-align:right;">
+                    <button type="button" class="btn-recent-pdf" onclick="openTripPdfModal('${item.id}', event)" title="Buka berkas PDF lengkap per pelaksana">
+                      <svg class="ico" style="width:13px;height:13px;"><use href="#i-file-lines"></use></svg>
+                      <span>Berkas PDF</span>
+                    </button>
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+  }
+}
+
 function renderTripHistory(filterText = '') {
   const container = document.getElementById('historyListContainer');
   const countBadge = document.getElementById('historyCountBadge');
   if (!container) return;
 
   const list = getTripHistoryList();
+
+  // Jika ada berkas riwayat lokal yang belum terintegrasi ke Supabase Cloud, dorong otomatis di latar belakang
+  if (typeof autoSyncLocalTripsToCloud === 'function' && list.some(x => !x.cloudId)) {
+    autoSyncLocalTripsToCloud();
+  }
+
+  // Hitung metrik KPI real-time untuk Dashboard & Filter Pills
+  const totalAll = list.length;
+  const diprosesItems = list.filter(x => (x.status_berkas || 'diproses') !== 'dicairkan');
+  const dicairkanItems = list.filter(x => x.status_berkas === 'dicairkan');
+  const totalDiproses = diprosesItems.length;
+  const totalDicairkan = dicairkanItems.length;
+
+  const elPillAll = document.getElementById('filterCountAll');
+  if (elPillAll) elPillAll.textContent = totalAll;
+  const elPillDiproses = document.getElementById('filterCountDiproses');
+  if (elPillDiproses) elPillDiproses.textContent = totalDiproses;
+  const elPillDicairkan = document.getElementById('filterCountDicairkan');
+  if (elPillDicairkan) elPillDicairkan.textContent = totalDicairkan;
+
+  // Sinkronkan data ke Dashboard Eksekutif
+  renderDashboardModule(list);
+
   const q = String(filterText || document.getElementById('historySearchInput')?.value || '').trim().toLowerCase();
 
   const filtered = list.filter(item => {
+    const status = item.status_berkas || 'diproses';
+    if (currentTripStatusFilter === 'diproses' && status === 'dicairkan') return false;
+    if (currentTripStatusFilter === 'dicairkan' && status !== 'dicairkan') return false;
+
     if (!q) return true;
     const provDisplay = (typeof getProvinsiDisplayName === 'function')
       ? getProvinsiDisplayName(item.provinsiTujuan)
@@ -1861,6 +2125,7 @@ function renderTripHistory(filterText = '') {
       provDisplay,
       item.kotaTujuan,
       item.mak,
+      item.status_berkas || 'diproses',
       ...(item.employees || []).map(e => e.nama || '')
     ].join(' ').toLowerCase();
     return searchTarget.includes(q);
@@ -1951,13 +2216,80 @@ function renderTripHistory(filterText = '') {
     }).join('');
 
     const morePillHtml = emps.length > 5 ? `<span class="emp-pill more">+${emps.length - 5} lainnya</span>` : '';
+    const canEdit = (typeof canCurrentUserEdit === 'function') ? canCurrentUserEdit() : (typeof isCurrentUserAdmin === 'function' && isCurrentUserAdmin());
+    const isViewer = !canEdit && !!window.currentAuthUser;
+    const isCloud = !!item.isCloud;
+    const storagePill = isCloud
+      ? '<span class="history-cloud-pill" title="Tersimpan di Cloud Database Supabase">☁️ Cloud</span>'
+      : '<span class="history-local-pill" title="Tersimpan di Penyimpanan Lokal Browser">💾 Lokal</span>';
+
+    const status = item.status_berkas || 'diproses';
+    const isDicairkan = status === 'dicairkan';
+    const statusBadge = isDicairkan
+      ? `<span class="history-status-badge status-dicairkan" ${canEdit ? `onclick="toggleTripStatus('${item.id}', event)" style="cursor:pointer;" title="Klik untuk mengubah status kembali ke Diproses ke Satker"` : 'title="Berkas telah diverifikasi dan dana dicairkan"'}><svg class="ico" style="width:14px;height:14px;"><use href="#i-check"></use></svg>Sudah Dicairkan</span>`
+      : `<span class="history-status-badge status-diproses" ${canEdit ? `onclick="toggleTripStatus('${item.id}', event)" style="cursor:pointer;" title="Klik untuk menandai berkas Sudah Dicairkan"` : 'title="Berkas sedang dalam verifikasi &amp; pengujian Satker"'}><svg class="ico" style="width:14px;height:14px;"><use href="#i-clipboard"></use></svg>Diproses ke Satker</span>`;
+
+    const statusToggleBtn = canEdit ? `
+      <button type="button" class="btn btn-status-toggle ${isDicairkan ? 'is-diproses' : 'is-dicairkan'}" onclick="toggleTripStatus('${item.id}', event)" title="Perbarui status progres berkas ke Satker / Pencairan">
+        <svg class="ico"><use href="${isDicairkan ? '#i-refresh' : '#i-check'}"></use></svg>
+        <span>${isDicairkan ? 'Ubah ke Diproses' : 'Tandai Dicairkan'}</span>
+      </button>
+    ` : '';
+
+    const cardActionsHtml = isViewer ? `
+      <div class="history-card-actions">
+        <button type="button" class="btn btn-primary btn-sm trip-pdf-btn-bundle" onclick="openTripPdfModal('${item.id}', event)" title="Buka dan unduh dokumen PDF lengkap per pelaksana">
+          <svg class="ico"><use href="#i-file-lines"></use></svg>
+          <span>Buka Dokumen PDF Lengkap</span>
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="exportExcelFromHistory('${item.id}', 'excel', event)" title="Unduh file Excel perjalanan ini">
+          <svg class="ico"><use href="#i-save"></use></svg>
+          <span>Unduh Excel</span>
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="exportExcelFromHistory('${item.id}', 'zip', event)" title="Unduh paket ZIP lengkap (Excel + Semua PDF)">
+          <svg class="ico"><use href="#i-package"></use></svg>
+          <span>Unduh ZIP</span>
+        </button>
+      </div>
+    ` : `
+      <div class="history-card-actions">
+        ${statusToggleBtn}
+        <button type="button" class="btn btn-primary btn-sm" onclick="loadTripFromHistory('${item.id}', event)" title="Muat seluruh data perjalanan ini ke formulir untuk diedit/direvisi">
+          <svg class="ico"><use href="#i-edit"></use></svg>
+          <span>Edit / Revisi</span>
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm trip-pdf-btn-bundle" onclick="openTripPdfModal('${item.id}', event)" title="Buka dan unduh berkas PDF lengkap per pelaksana">
+          <svg class="ico"><use href="#i-file-lines"></use></svg>
+          <span>Dokumen PDF</span>
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="exportExcelFromHistory('${item.id}', 'excel', event)" title="Unduh file Excel perjalanan ini">
+          <svg class="ico"><use href="#i-save"></use></svg>
+          <span>Unduh Excel</span>
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="exportExcelFromHistory('${item.id}', 'zip', event)" title="Unduh paket ZIP lengkap">
+          <svg class="ico"><use href="#i-package"></use></svg>
+          <span>Unduh ZIP</span>
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="duplicateTripFromHistory('${item.id}', event)" title="Salin data perjalanan ini untuk membuat perjalanan baru">
+          <svg class="ico"><use href="#i-plus"></use></svg>
+          <span>Duplikat</span>
+        </button>
+        ${(typeof isCurrentUserAdmin === 'function' && isCurrentUserAdmin()) ? `
+        <button type="button" class="btn btn-outline btn-sm" onclick="deleteTripFromHistory('${item.id}', event)" title="Hapus perjalanan ini dari riwayat">
+          <svg class="ico"><use href="#i-trash"></use></svg>
+          <span>Hapus</span>
+        </button>` : ''}
+      </div>
+    `;
 
     return `
-      <div class="history-card" data-trip-id="${item.id}">
+      <div class="history-card" data-trip-id="${item.id}" onclick="handleTripCardClick(event, '${item.id}')" title="Klik untuk membuka dokumen PDF lengkap perjalanan ini">
         <div class="history-card-top">
           <div class="history-card-st">
             <span class="history-st-badge">${safeNoST}</span>
             ${safeMak ? `<span class="history-mak-pill" title="Mata Anggaran Kegiatan (MAK)">${safeMak}</span>` : ''}
+            ${statusBadge}
+            ${storagePill}
           </div>
           <div class="history-card-date">
             <svg class="ico"><use href="#i-calendar"></use></svg>
@@ -1995,32 +2327,53 @@ function renderTripHistory(filterText = '') {
           ` : ''}
         </div>
 
-        <div class="history-card-actions">
-          <button type="button" class="btn btn-primary btn-sm" onclick="loadTripFromHistory('${item.id}')" title="Muat seluruh data perjalanan ini ke formulir untuk diedit/direvisi">
-            <svg class="ico"><use href="#i-edit"></use></svg>
-            <span>Buka & Edit / Revisi</span>
-          </button>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="exportExcelFromHistory('${item.id}', 'excel')" title="Unduh file Excel perjalanan ini">
-            <svg class="ico"><use href="#i-save"></use></svg>
-            <span>Unduh Excel</span>
-          </button>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="exportExcelFromHistory('${item.id}', 'zip')" title="Unduh paket ZIP lengkap (Excel + Semua PDF)">
-            <svg class="ico"><use href="#i-package"></use></svg>
-            <span>Unduh ZIP</span>
-          </button>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="duplicateTripFromHistory('${item.id}')" title="Salin data perjalanan ini untuk membuat perjalanan baru">
-            <svg class="ico"><use href="#i-plus"></use></svg>
-            <span>Duplikat</span>
-          </button>
-          <button type="button" class="btn btn-outline btn-sm" onclick="deleteTripFromHistory('${item.id}')" title="Hapus perjalanan ini dari riwayat">
-            <svg class="ico"><use href="#i-trash"></use></svg>
-            <span>Hapus</span>
-          </button>
-        </div>
+        ${cardActionsHtml}
       </div>
     `;
   }).join('');
 }
+
+async function toggleTripStatus(tripId, e) {
+  if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+  const canEdit = (typeof canCurrentUserEdit === 'function') ? canCurrentUserEdit() : (typeof isCurrentUserAdmin === 'function' && isCurrentUserAdmin());
+  if (!canEdit) {
+    alert('Hanya Admin dan Role Khusus yang berhak memperbarui progres berkas.');
+    return;
+  }
+  const list = getTripHistoryList();
+  const item = list.find(x => x.id === tripId);
+  if (!item) return;
+
+  const currentStatus = item.status_berkas || 'diproses';
+  const newStatus = (currentStatus === 'dicairkan') ? 'diproses' : 'dicairkan';
+  const newLabel = (newStatus === 'dicairkan') ? 'Sudah Dicairkan' : 'Diproses ke Satker';
+
+  item.status_berkas = newStatus;
+  saveTripHistoryList(list);
+  renderTripHistory();
+  renderDashboardModule(list);
+
+  if (typeof showRefreshToast === 'function') {
+    showRefreshToast(
+      'Progres Berkas Diperbarui',
+      `Status berkas "${item.noST}" telah diubah menjadi [${newLabel}].`
+    );
+  }
+
+  // Update ke database Supabase Cloud jika terhubung
+  if (typeof uploadTripToCloud === 'function') {
+    uploadTripToCloud(item).then(cloudId => {
+      if (cloudId && !item.cloudId) {
+        item.cloudId = cloudId;
+        item.isCloud = true;
+        saveTripHistoryList(list);
+      }
+    }).catch(e => {
+      console.warn('Gagal sinkron status ke Supabase:', e);
+    });
+  }
+}
+window.toggleTripStatus = toggleTripStatus;
 
 function filterTripHistory() {
   const input = document.getElementById('historySearchInput');
@@ -2077,11 +2430,446 @@ document.addEventListener('click', function (e) {
   }
 });
 
+// =====================================================================
+// TRIP PDF MODAL (DOKUMEN LENGKAP PER ORANG)
+// =====================================================================
+
+function handleTripCardClick(e, tripId) {
+  if (e && e.target && e.target.closest('button, a, input, select, .btn-status-toggle, .history-status-badge')) {
+    return;
+  }
+  openTripPdfModal(tripId, e);
+}
+
+let currentPdfModalTrip = null;
+let currentPdfModalTripEmps = [];
+
+function openTripPdfModal(tripId, e) {
+  if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+  const list = getTripHistoryList();
+  const item = list.find(x => x.id === tripId);
+  if (!item) {
+    alert('Data perjalanan tidak ditemukan.');
+    return;
+  }
+  currentPdfModalTrip = item;
+
+  const overlay = document.getElementById('tripPdfModalOverlay');
+  if (!overlay) return;
+
+  const elNoST = document.getElementById('tripPdfModalNoST');
+  if (elNoST) elNoST.textContent = item.noST || 'Perjalanan Dinas';
+
+  const elMAK = document.getElementById('tripPdfModalMAK');
+  if (elMAK) {
+    elMAK.textContent = item.mak || '-';
+    elMAK.style.display = item.mak ? 'inline-block' : 'none';
+  }
+
+  const elStatus = document.getElementById('tripPdfModalStatus');
+  if (elStatus) {
+    const isDicairkan = (item.status_berkas === 'dicairkan');
+    elStatus.className = `history-status-badge ${isDicairkan ? 'status-dicairkan' : 'status-diproses'}`;
+    elStatus.innerHTML = `<svg class="ico" style="width:14px;height:14px;"><use href="${isDicairkan ? '#i-check' : '#i-clipboard'}"></use></svg>${isDicairkan ? 'Sudah Dicairkan' : 'Diproses ke Satker'}`;
+    const canEdit = (typeof canCurrentUserEdit === 'function') ? canCurrentUserEdit() : (typeof isCurrentUserAdmin === 'function' && isCurrentUserAdmin());
+    if (canEdit) {
+      elStatus.style.cursor = 'pointer';
+      elStatus.title = 'Klik untuk memperbarui progres status berkas (Diproses / Dicairkan)';
+      elStatus.onclick = (ev) => {
+        if (ev && typeof ev.stopPropagation === 'function') ev.stopPropagation();
+        toggleTripStatus(item.id, ev);
+        const updated = getTripHistoryList().find(x => x.id === item.id);
+        if (updated) {
+          const updDicairkan = (updated.status_berkas === 'dicairkan');
+          elStatus.className = `history-status-badge ${updDicairkan ? 'status-dicairkan' : 'status-diproses'}`;
+          elStatus.innerHTML = `<svg class="ico" style="width:14px;height:14px;"><use href="${updDicairkan ? '#i-check' : '#i-clipboard'}"></use></svg>${updDicairkan ? 'Sudah Dicairkan' : 'Diproses ke Satker'}`;
+        }
+      };
+    } else {
+      elStatus.style.cursor = 'default';
+      elStatus.onclick = null;
+    }
+  }
+
+  const elAgenda = document.getElementById('tripPdfModalAgenda');
+  if (elAgenda) elAgenda.textContent = item.agenda || 'Tanpa Agenda';
+
+  const provDisplay = (typeof getProvinsiDisplayName === 'function') ? getProvinsiDisplayName(item.provinsiTujuan) : (item.provinsiTujuan || '');
+  const kota = (item.kotaTujuan || '').trim();
+  let dest = kota && provDisplay ? (kota.toLowerCase().includes(provDisplay.toLowerCase()) ? kota : `${kota}, ${provDisplay}`) : (kota || provDisplay || '-');
+  const elDest = document.getElementById('tripPdfModalDest');
+  if (elDest) elDest.textContent = `Tujuan: ${dest}`;
+
+  const tglTeks = (item.tglBerangkat && item.tglKembali)
+    ? `${(typeof formatTgl === 'function' ? formatTgl(item.tglBerangkat) : item.tglBerangkat)} s.d. ${(typeof formatTgl === 'function' ? formatTgl(item.tglKembali) : item.tglKembali)}`
+    : (item.tglBerangkat || '-');
+  const duration = item.lamaTugas ? ` (${item.lamaTugas})` : '';
+  const elDates = document.getElementById('tripPdfModalDates');
+  if (elDates) elDates.textContent = `Tanggal: ${tglTeks}${duration}`;
+
+  // Temporarily restore draft so hitungBiaya and document builders have exact context
+  if (item.draft && typeof restorePerjadinDraftData === 'function') {
+    try {
+      restorePerjadinDraftData(item.draft);
+    } catch (e) {
+      console.warn('Draft restoration notice:', e);
+    }
+  }
+
+  const masterEmps = (typeof employees !== 'undefined' && Array.isArray(employees)) ? employees : [];
+
+  // Determine the exact list of employees assigned to this specific trip
+  let tripEmps = [];
+  const rawEmpIds = (item.draft && Array.isArray(item.draft.empIds) && item.draft.empIds.length > 0)
+    ? item.draft.empIds
+    : (Array.isArray(item.employees) && item.employees.length > 0 ? item.employees.map(e => e.id) : []);
+
+  if (rawEmpIds.length > 0) {
+    tripEmps = rawEmpIds.map(id => {
+      const found = masterEmps.find(e => Number(e.id) === Number(id));
+      if (found) return found;
+      if (Array.isArray(item.employees)) {
+        const itemEmp = item.employees.find(e => Number(e.id) === Number(id));
+        if (itemEmp) return itemEmp;
+      }
+      return null;
+    }).filter(Boolean);
+  } else if (Array.isArray(item.employees) && item.employees.length > 0) {
+    tripEmps = item.employees.map(ie => {
+      const found = masterEmps.find(me => Number(me.id) === Number(ie.id));
+      return found ? { ...ie, ...found } : ie;
+    });
+  } else if (typeof selectedEmpIds !== 'undefined' && selectedEmpIds.size > 0) {
+    tripEmps = masterEmps.filter(e => selectedEmpIds.has(Number(e.id)));
+  }
+
+  currentPdfModalTripEmps = tripEmps;
+
+  // Make sure selectedEmpIds strictly matches this trip's assigned employees
+  if (typeof selectedEmpIds !== 'undefined') {
+    selectedEmpIds.clear();
+    tripEmps.forEach(e => selectedEmpIds.add(Number(e.id)));
+  }
+
+  let displayCost = item.totalBiaya;
+  if (!displayCost || displayCost <= 0) {
+    displayCost = tripEmps.reduce((sum, emp) => sum + (typeof hitungBiaya === 'function' ? (hitungBiaya(emp)?.total || 0) : 0), 0);
+  }
+  const costFormatted = displayCost > 0 ? ((typeof rp === 'function') ? rp(displayCost) : 'Rp ' + Number(displayCost).toLocaleString('id-ID')) : 'Rp 0';
+  const elCost = document.getElementById('tripPdfModalTotalCost');
+  if (elCost) elCost.textContent = `Total Biaya: ${costFormatted}`;
+
+  const empContainer = document.getElementById('tripPdfEmpList');
+  if (empContainer) {
+    if (tripEmps.length === 0) {
+      empContainer.innerHTML = `
+        <div style="padding:32px 20px; text-align:center; color:#64748b; background:#f8fafc; border-radius:12px; border:1px dashed #cbd5e1;">
+          <svg class="ico" style="width:36px;height:36px;stroke:#94a3b8;margin-bottom:8px;"><use href="#i-users"></use></svg>
+          <div style="font-weight:600; font-size:15px; color:#334155; margin-bottom:4px;">Tidak Ada Data Pelaksana</div>
+          <div style="font-size:13px;">Berkas perjalanan ini tidak memiliki daftar pelaksana yang tersimpan.</div>
+        </div>
+      `;
+    } else {
+      const hasDpr = typeof isDPRAvailableForTrip === 'function' ? isDPRAvailableForTrip() : false;
+
+      empContainer.innerHTML = tripEmps.map((emp) => {
+        const initial = (emp.nama || 'P').charAt(0).toUpperCase();
+        const nipTeks = emp.nip ? `NIP. ${emp.nip}` : 'NIP -';
+        const golTeks = emp.golongan ? `Gol. ${emp.golongan}` : (emp.jabatan || '');
+        const biaya = typeof hitungBiaya === 'function' ? hitungBiaya(emp) : { total: 0 };
+        const costEmp = biaya.total > 0 ? ((typeof rp === 'function') ? rp(biaya.total) : 'Rp ' + Number(biaya.total).toLocaleString('id-ID')) : 'Rp 0';
+
+        const safeName = (typeof escapeHtml === 'function') ? escapeHtml(emp.nama || 'Pegawai') : (emp.nama || 'Pegawai');
+        const safeNip = (typeof escapeHtml === 'function') ? escapeHtml(nipTeks) : nipTeks;
+        const safeGol = (typeof escapeHtml === 'function') ? escapeHtml(golTeks) : golTeks;
+
+        return `
+          <div class="trip-pdf-emp-card">
+            <div class="trip-pdf-emp-main">
+              <div class="trip-pdf-emp-profile">
+                <div class="trip-pdf-avatar">${initial}</div>
+                <div class="trip-pdf-emp-details">
+                  <div class="trip-pdf-emp-name">${safeName}</div>
+                  <div class="trip-pdf-emp-sub">
+                    <span>${safeNip}</span>
+                    ${safeGol ? `<span>&bull;</span><span>${safeGol}</span>` : ''}
+                  </div>
+                </div>
+              </div>
+              <div class="trip-pdf-cost-badge">
+                <span class="trip-pdf-cost-label">Total Biaya Riil</span>
+                <span class="trip-pdf-cost-val">${costEmp}</span>
+              </div>
+            </div>
+
+            <div class="trip-pdf-doc-pills">
+              <span class="doc-pill">✓ Kuitansi Perorangan</span>
+              <span class="doc-pill">✓ Rincian Biaya Riil</span>
+              <span class="doc-pill">✓ SPPD Perorangan</span>
+              ${hasDpr ? '<span class="doc-pill">✓ DPR Perorangan</span>' : ''}
+            </div>
+
+            <div class="trip-pdf-emp-actions">
+              <div class="trip-pdf-quick-links">
+                <button type="button" class="btn-mini-doc" onclick="downloadSingleDocFromModal(${emp.id}, 'kuitansi')" title="Unduh file Kuitansi saja">
+                  <span>🧾 Kuitansi</span>
+                </button>
+                <button type="button" class="btn-mini-doc" onclick="downloadSingleDocFromModal(${emp.id}, 'rincian')" title="Unduh file Rincian Biaya saja">
+                  <span>📋 Rincian</span>
+                </button>
+                <button type="button" class="btn-mini-doc" onclick="downloadSingleDocFromModal(${emp.id}, 'sppd')" title="Unduh file SPPD saja">
+                  <span>📑 SPPD</span>
+                </button>
+                ${hasDpr ? `
+                <button type="button" class="btn-mini-doc" onclick="downloadSingleDocFromModal(${emp.id}, 'dpr')" title="Unduh file DPR saja">
+                  <span>📝 DPR</span>
+                </button>` : ''}
+              </div>
+
+              <div style="display:flex; gap:8px;">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="previewCompleteEmpPdfFromModal(${emp.id}, this)" title="Lihat dan cetak dokumen lengkap pegawai ini">
+                  <svg class="ico"><use href="#i-receipt"></use></svg>
+                  <span>Pratinjau / Cetak</span>
+                </button>
+                <button type="button" class="btn btn-primary btn-sm trip-pdf-btn-bundle" onclick="downloadCompleteEmpPdfFromModal(${emp.id}, this)" title="Unduh berkas PDF gabungan lengkap (Kuitansi + Rincian + DPR + SPPD)">
+                  <svg class="ico"><use href="#i-load"></use></svg>
+                  <span>Unduh PDF Lengkap</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
+  overlay.classList.add('is-open');
+  overlay.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeTripPdfModal() {
+  const overlay = document.getElementById('tripPdfModalOverlay');
+  if (overlay) {
+    overlay.classList.remove('is-open');
+    overlay.style.display = 'none';
+  }
+  document.body.style.overflow = '';
+}
+
+function handleTripPdfBackdrop(e) {
+  if (e && e.target && e.target.id === 'tripPdfModalOverlay') {
+    closeTripPdfModal();
+  }
+}
+
+// Global listener untuk tombol Escape agar modal menutup dan scroll layar pulih aman
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeTripPdfModal();
+    if (typeof closeWelcomeOverlay === 'function') closeWelcomeOverlay();
+    if (typeof closePMKOverlay === 'function') closePMKOverlay();
+    document.body.style.overflow = '';
+  }
+});
+
+async function getEmpMergedPdfBlob(empId) {
+  if (!currentPdfModalTrip) throw new Error('Data perjalanan belum dimuat.');
+  const masterEmps = (typeof employees !== 'undefined' && Array.isArray(employees)) ? employees : [];
+  const emp = (currentPdfModalTripEmps || []).find(e => Number(e.id) === Number(empId))
+           || masterEmps.find(e => Number(e.id) === Number(empId));
+  if (!emp) throw new Error('Data pegawai tidak ditemukan.');
+
+  const hasDpr = typeof isDPRAvailableForTrip === 'function' ? isDPRAvailableForTrip() : false;
+  const kuitansiHtml = typeof buildKuitansiHtml === 'function' ? buildKuitansiHtml(emp) : '';
+  const rincianHtml = typeof buildRincianHtml === 'function' ? buildRincianHtml(emp) : '';
+  const dprHtml = (hasDpr && typeof buildDPRHtml === 'function') ? buildDPRHtml(emp) : '';
+  const sppdHtml = typeof buildSPPDHtml === 'function' ? buildSPPDHtml(emp) : '';
+
+  const blobs = [];
+  if (kuitansiHtml && typeof generatePdfBlobFromHtml === 'function') {
+    blobs.push(await generatePdfBlobFromHtml(kuitansiHtml));
+  }
+  if (rincianHtml && typeof generatePdfBlobFromHtml === 'function') {
+    blobs.push(await generatePdfBlobFromHtml(rincianHtml));
+  }
+  if (dprHtml && typeof generatePdfBlobFromHtml === 'function') {
+    blobs.push(await generatePdfBlobFromHtml(dprHtml));
+  }
+  if (sppdHtml && typeof generatePdfBlobFromHtml === 'function') {
+    blobs.push(await generatePdfBlobFromHtml(sppdHtml));
+  }
+
+  let mergedBlob = null;
+  if (typeof mergePdfBlobs === 'function') {
+    try {
+      mergedBlob = await mergePdfBlobs(blobs);
+    } catch (err) {
+      console.warn('mergePdfBlobs fallback:', err);
+    }
+  }
+
+  if (!mergedBlob) {
+    const allDocsHtml = typeof buildAllDocsHtmlForEmp === 'function' ? buildAllDocsHtmlForEmp(emp) : '';
+    if (allDocsHtml && typeof generatePdfBlobFromHtml === 'function') {
+      mergedBlob = await generatePdfBlobFromHtml(allDocsHtml);
+    }
+  }
+
+  return { emp, blob: mergedBlob };
+}
+
+async function downloadCompleteEmpPdfFromModal(empId, btnEl) {
+  const origHtml = btnEl ? btnEl.innerHTML : '';
+  try {
+    if (btnEl) {
+      btnEl.disabled = true;
+      btnEl.innerHTML = '<span>⏳ Menyiapkan PDF...</span>';
+    }
+    const { emp, blob } = await getEmpMergedPdfBlob(empId);
+    if (!blob) throw new Error('Gagal mengompilasi PDF.');
+
+    const cleanSt = (currentPdfModalTrip.noST || 'Perjadin').replace(/[\/\\:*?"<>|]/g, '_');
+    const cleanNama = (emp.nama || 'Pegawai').split(',')[0].replace(/[\/\\:*?"<>|]/g, '_');
+    const fileName = `${cleanSt} - ${cleanNama} - Dokumen Lengkap.pdf`;
+
+    if (typeof downloadBlob === 'function') {
+      downloadBlob(blob, fileName);
+    }
+    if (typeof showRefreshToast === 'function') {
+      showRefreshToast('Unduh PDF Berhasil', `Berkas lengkap "${fileName}" berhasil diunduh.`);
+    }
+  } catch (err) {
+    console.error('Download PDF error:', err);
+    alert('Gagal membuat dokumen PDF: ' + (err.message || err));
+  } finally {
+    if (btnEl) {
+      btnEl.disabled = false;
+      btnEl.innerHTML = origHtml;
+    }
+  }
+}
+
+async function previewCompleteEmpPdfFromModal(empId, btnEl) {
+  const origHtml = btnEl ? btnEl.innerHTML : '';
+  try {
+    if (btnEl) {
+      btnEl.disabled = true;
+      btnEl.innerHTML = '<span>⏳ Membuka...</span>';
+    }
+    const { emp, blob } = await getEmpMergedPdfBlob(empId);
+    if (!blob) throw new Error('Gagal mengompilasi PDF.');
+
+    const blobUrl = URL.createObjectURL(blob);
+    window.open(blobUrl, '_blank');
+  } catch (err) {
+    console.error('Preview PDF error:', err);
+    alert('Gagal membuka pratinjau PDF: ' + (err.message || err));
+  } finally {
+    if (btnEl) {
+      btnEl.disabled = false;
+      btnEl.innerHTML = origHtml;
+    }
+  }
+}
+
+async function downloadSingleDocFromModal(empId, docType) {
+  if (!currentPdfModalTrip) return;
+  const masterEmps = (typeof employees !== 'undefined' && Array.isArray(employees)) ? employees : [];
+  const emp = (currentPdfModalTripEmps || []).find(e => Number(e.id) === Number(empId))
+           || masterEmps.find(e => Number(e.id) === Number(empId));
+  if (!emp) return;
+
+  let html = '';
+  let label = 'Dokumen';
+  if (docType === 'kuitansi') {
+    html = typeof buildKuitansiHtml === 'function' ? buildKuitansiHtml(emp) : '';
+    label = 'Kuitansi';
+  } else if (docType === 'rincian') {
+    html = typeof buildRincianHtml === 'function' ? buildRincianHtml(emp) : '';
+    label = 'Rincian Biaya';
+  } else if (docType === 'sppd') {
+    html = typeof buildSPPDHtml === 'function' ? buildSPPDHtml(emp) : '';
+    label = 'SPPD';
+  } else if (docType === 'dpr') {
+    html = typeof buildDPRHtml === 'function' ? buildDPRHtml(emp) : '';
+    label = 'DPR';
+  }
+
+  if (!html) {
+    alert('Dokumen tidak tersedia.');
+    return;
+  }
+
+  try {
+    if (typeof generatePdfBlobFromHtml === 'function') {
+      const blob = await generatePdfBlobFromHtml(html);
+      const cleanSt = (currentPdfModalTrip.noST || 'Perjadin').replace(/[\/\\:*?"<>|]/g, '_');
+      const cleanNama = (emp.nama || 'Pegawai').split(',')[0].replace(/[\/\\:*?"<>|]/g, '_');
+      if (typeof downloadBlob === 'function') {
+        downloadBlob(blob, `${cleanSt} - ${cleanNama} - ${label}.pdf`);
+      }
+    }
+  } catch (e) {
+    alert('Gagal membuat PDF: ' + e.message);
+  }
+}
+
+async function downloadTripRincianPdfFromModal() {
+  if (!currentPdfModalTrip) return;
+  const btn = document.getElementById('btnTripPdfRincian') || document.getElementById('btnTripPdfNominatif');
+  const origHtml = btn ? btn.innerHTML : '';
+  try {
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span>Menyiapkan Rincian...</span>';
+    }
+    if (typeof renderRekapRincian === 'function') renderRekapRincian();
+    const el = document.getElementById('rekapRincianOut');
+    const html = el ? el.innerHTML : '';
+    if (!html || html.includes('alert-warn')) throw new Error('Data rincian biaya belum lengkap.');
+
+    if (typeof generatePdfBlobFromHtml === 'function') {
+      const blob = await generatePdfBlobFromHtml(html, {
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+      });
+      const cleanSt = (currentPdfModalTrip.noST || 'Perjadin').replace(/[\/\\:*?"<>|]/g, '_');
+      if (typeof downloadBlob === 'function') {
+        downloadBlob(blob, `${cleanSt} - Rekap Rincian Biaya Riil.pdf`);
+      }
+    }
+  } catch (e) {
+    alert('Gagal mengunduh Rekap Rincian: ' + e.message);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = origHtml;
+    }
+  }
+}
+window.downloadTripRincianPdfFromModal = downloadTripRincianPdfFromModal;
+window.downloadTripNominatifPdfFromModal = downloadTripRincianPdfFromModal;
+
+function downloadTripZipFromModal() {
+  if (!currentPdfModalTrip) return;
+  exportExcelFromHistory(currentPdfModalTrip.id, 'zip');
+}
+
+window.handleTripCardClick = handleTripCardClick;
+window.openTripPdfModal = openTripPdfModal;
+window.closeTripPdfModal = closeTripPdfModal;
+window.handleTripPdfBackdrop = handleTripPdfBackdrop;
+window.downloadCompleteEmpPdfFromModal = downloadCompleteEmpPdfFromModal;
+window.previewCompleteEmpPdfFromModal = previewCompleteEmpPdfFromModal;
+window.downloadSingleDocFromModal = downloadSingleDocFromModal;
+window.downloadTripNominatifPdfFromModal = downloadTripNominatifPdfFromModal;
+window.downloadTripZipFromModal = downloadTripZipFromModal;
+
 window.toggleSaveMenu = toggleSaveMenu;
 window.closeSaveMenu = closeSaveMenu;
 window.selectSaveMode = selectSaveMode;
 
-window.saveTripToHistory = saveTripToHistory;
+window.saveTripToHistory = saveCurrentTripToHistory;
 window.saveCurrentTripToHistory = saveCurrentTripToHistory;
 window.getTripHistoryList = getTripHistoryList;
 window.loadTripFromHistory = loadTripFromHistory;
@@ -2089,6 +2877,8 @@ window.duplicateTripFromHistory = duplicateTripFromHistory;
 window.deleteTripFromHistory = deleteTripFromHistory;
 window.exportExcelFromHistory = exportExcelFromHistory;
 window.resetPerjadinForm = resetPerjadinForm;
+window.renderDashboardModule = renderDashboardModule;
+window.setTripStatusFilter = setTripStatusFilter;
 window.renderTripHistory = renderTripHistory;
 window.filterTripHistory = filterTripHistory;
 window.clearHistorySearch = clearHistorySearch;

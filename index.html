@@ -11,9 +11,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20261124_06">
+  <link rel="stylesheet" href="style.css?v=20261124_30">
 </head>
-<body>
+<body class="auth-locked">
 
 <svg class="svg-sprite" aria-hidden="true" focusable="false">
   <symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></symbol>
@@ -45,6 +45,12 @@
   <symbol id="i-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></symbol>
   <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
   <symbol id="i-package" viewBox="0 0 24 24"><path d="m16.5 9.4-9-5.19M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>
+  <symbol id="i-zap" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
+  <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></symbol>
 </svg>
 
 <!-- App Splash Loader (3 detik) -->
@@ -73,6 +79,15 @@
     </div>
   </div>
 </div>
+<script>
+  // Fallback safety: pastikan splash screen tertutup maksimal dalam 3.2 detik jika terjadi gangguan/cache lama
+  setTimeout(function() {
+    var l = document.getElementById('appLoader');
+    if (l && !l.classList.contains('is-hidden')) {
+      l.classList.add('is-hidden');
+    }
+  }, 3200);
+</script>
 
 <!-- Top Lazy-Loading Progress Bar for Tabs -->
 <div id="tabProgress" class="tab-progress"></div>
@@ -86,6 +101,210 @@
       <img src="logo-perdinku.png?v=3" alt="PerdinKu" class="spinner-center-logo">
     </div>
     <div class="spinner-text" id="pageLoaderText">Memuat halaman...</div>
+  </div>
+</div>
+
+<!-- ============================================================ AUTH GATE SCREEN (PORTAL LOGIN KEMENTERIAN PKP) -->
+<div id="authGateScreen" class="auth-gate-screen no-print">
+  <div class="auth-gate-wrapper">
+    
+    <!-- SISI KIRI: BRANDING HERO KEMENTERIAN & APLIKASI -->
+    <div class="auth-gate-hero">
+      <div class="gate-hero-decorations">
+        <div class="hero-orb orb-1"></div>
+        <div class="hero-orb orb-2"></div>
+        <div class="hero-grid-pattern"></div>
+      </div>
+      
+      <div class="gate-hero-content">
+        <!-- Badge Resmi RI & Kementerian -->
+        <div class="gov-official-badge">
+          <span class="gov-badge-dot"></span>
+          <span>REPUBLIK INDONESIA &bull; KEMENTERIAN PKP</span>
+        </div>
+
+        <!-- Brand Title & Logo -->
+        <div class="gate-hero-brand">
+          <div class="gate-hero-logo-box">
+            <img src="logo-perdinku.png?v=3" alt="Logo PerdinKu" class="gate-hero-logo">
+          </div>
+          <div>
+            <h1 class="gate-hero-title">PerdinKu <span class="title-year">2026</span></h1>
+            <p class="gate-hero-lead">Sistem Administrasi Perjalanan Dinas Terpadu</p>
+          </div>
+        </div>
+
+        <p class="gate-hero-sub">
+          Platform digital Biro Komunikasi Publik untuk otomasi perhitungan biaya perjalanan dinas sesuai Standar Biaya Masukan (SBM) PMK Kemenkeu RI dan penerbitan berkas pertanggungjawaban lengkap.
+        </p>
+
+        <!-- 3 Feature Highlights Cards -->
+        <div class="gate-features-list">
+          <div class="gate-feature-item">
+            <div class="feat-icon-box"><svg class="ico"><use href="#i-zap"></use></svg></div>
+            <div class="feat-text-box">
+              <strong>Kalkulasi SBM PMK 2026 Otomatis</strong>
+              <span>Uang harian, penginapan, dan representasi 38 provinsi terisi instan tanpa hitung manual.</span>
+            </div>
+          </div>
+          <div class="gate-feature-item">
+            <div class="feat-icon-box"><svg class="ico"><use href="#i-cloud"></use></svg></div>
+            <div class="feat-text-box">
+              <strong>Database Cloud Terintegrasi</strong>
+              <span>Sinkronisasi riwayat perjalanan dinas dan arsip bersama antar tim secara aman dan real-time.</span>
+            </div>
+          </div>
+          <div class="gate-feature-item">
+            <div class="feat-icon-box"><svg class="ico"><use href="#i-file-lines"></use></svg></div>
+            <div class="feat-text-box">
+              <strong>Paket Berkas Siap Cetak &amp; TTE</strong>
+              <span>Menerbitkan SPT, SPD, Kuitansi, Rincian Riil, dan Daftar Nominatif (DNP) standar audit.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="gate-hero-footer">
+          <svg class="ico"><use href="#i-check"></use></svg>
+          <span>Aman &bull; Akurat &bull; Terstandarisasi Kemenkeu &amp; KemenPKP</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SISI KANAN: FORMULIR AUTENTIKASI -->
+    <div class="auth-gate-form-panel">
+      <div class="auth-gate-form-box">
+        
+        <div class="gate-form-header">
+          <div class="gate-kicker">PORTAL PERJADIN</div>
+          <h2 class="gate-form-title">Selamat Datang</h2>
+          <p class="gate-form-sub">Silakan masuk menggunakan akun Anda.</p>
+
+          <!-- Tab Selector -->
+          <div class="gate-tab-switcher">
+            <button type="button" class="gate-tab-btn active" id="tabGateLogin" onclick="switchGateTab('login')">
+              <span>Masuk (Login)</span>
+            </button>
+            <button type="button" class="gate-tab-btn" id="tabGateSignup" onclick="switchGateTab('signup')">
+              <span>Daftar Akun Baru</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- PANE LOGIN -->
+        <div class="auth-pane" id="gateLoginPane">
+          <div class="auth-alert" id="gateLoginAlert" style="display:none;"></div>
+          <form onsubmit="handleGateLogin(event)" class="gate-modern-form">
+            <div class="gate-input-group">
+              <label for="gateLoginEmail">Alamat Email <span class="label-req" style="color:#ef4444; font-weight:700;">*</span> <span style="font-size:11px; color:#ef4444; font-weight:600; margin-left:3px;">(Wajib diisi)</span></label>
+              <div class="input-with-icon">
+                <svg class="input-icon"><use href="#i-mail"></use></svg>
+                <input type="email" id="gateLoginEmail" placeholder="contoh: nama@gmail.com" required autocomplete="email">
+              </div>
+            </div>
+
+            <div class="gate-input-group">
+              <div class="gate-label-row">
+                <label for="gateLoginPassword">Kata Sandi <span class="label-req" style="color:#ef4444; font-weight:700;">*</span> <span style="font-size:11px; color:#ef4444; font-weight:600; margin-left:3px;">(Wajib diisi)</span></label>
+                <a href="javascript:void(0)" class="gate-forgot-link" onclick="switchGateTab('reset')">Lupa kata sandi?</a>
+              </div>
+              <div class="input-with-icon has-toggle">
+                <svg class="input-icon"><use href="#i-lock"></use></svg>
+                <input type="password" id="gateLoginPassword" placeholder="Masukkan kata sandi" required autocomplete="current-password">
+                <button type="button" class="btn-toggle-pw" onclick="togglePasswordVisibility('gateLoginPassword', this)" title="Tampilkan kata sandi" aria-label="Tampilkan kata sandi">
+                  <svg class="ico"><use href="#i-eye"></use></svg>
+                </button>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-gate-primary" id="btnGateSubmitLogin">
+              <span>Masuk ke PerdinKu</span>
+              <svg class="ico"><use href="#i-arrow-right"></use></svg>
+            </button>
+          </form>
+
+          <div class="gate-footer-hint">
+            Belum memiliki akun? <a href="javascript:void(0)" onclick="switchGateTab('signup')">Daftar akun di sini</a>
+          </div>
+        </div>
+
+        <!-- PANE SIGN UP -->
+        <div class="auth-pane" id="gateSignupPane" style="display:none;">
+          <div class="auth-alert" id="gateSignupAlert" style="display:none;"></div>
+          <form onsubmit="handleGateSignUp(event)" class="gate-modern-form">
+            <div class="gate-input-group">
+              <label for="gateSignupName">Nama Lengkap <span class="label-req" style="color:#ef4444; font-weight:700;">*</span> <span style="font-size:11px; color:#ef4444; font-weight:600; margin-left:3px;">(Wajib diisi)</span></label>
+              <div class="input-with-icon">
+                <svg class="input-icon"><use href="#i-user"></use></svg>
+                <input type="text" id="gateSignupName" placeholder="Contoh: Aqyun Rista Maulidin" required autocomplete="name">
+              </div>
+            </div>
+
+            <div class="gate-input-group">
+              <label for="gateSignupEmail">Alamat Email Kedinasan <span class="label-req" style="color:#ef4444; font-weight:700;">*</span> <span style="font-size:11px; color:#ef4444; font-weight:600; margin-left:3px;">(Wajib diisi)</span></label>
+              <div class="input-with-icon">
+                <svg class="input-icon"><use href="#i-mail"></use></svg>
+                <input type="email" id="gateSignupEmail" placeholder="contoh: nama@gmail.com" required autocomplete="email">
+              </div>
+            </div>
+
+            <div class="gate-input-group">
+              <label for="gateSignupPassword">Kata Sandi Baru <span class="label-req" style="color:#ef4444; font-weight:700;">*</span> <span style="font-size:11px; color:#ef4444; font-weight:600; margin-left:3px;">(Wajib diisi)</span></label>
+              <div class="input-with-icon has-toggle">
+                <svg class="input-icon"><use href="#i-lock"></use></svg>
+                <input type="password" id="gateSignupPassword" placeholder="Minimal 6 karakter" minlength="6" required autocomplete="new-password">
+                <button type="button" class="btn-toggle-pw" onclick="togglePasswordVisibility('gateSignupPassword', this)" title="Tampilkan kata sandi" aria-label="Tampilkan kata sandi">
+                  <svg class="ico"><use href="#i-eye"></use></svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="gate-role-notice">
+              <div class="notice-badge">ℹ️ Info Hak Akses</div>
+              <p>Akun baru otomatis didaftarkan dengan hak akses <strong>Viewer (Hanya Lihat &amp; Cetak)</strong>. Wewenang <strong>Admin</strong> (edit &amp; hapus) diberikan oleh Administrator utama.</p>
+            </div>
+
+            <button type="submit" class="btn-gate-primary" id="btnGateSubmitSignup">
+              <span>Daftar Akun Sekarang</span>
+              <svg class="ico"><use href="#i-plus"></use></svg>
+            </button>
+          </form>
+
+          <div class="gate-footer-hint">
+            Sudah memiliki akun? <a href="javascript:void(0)" onclick="switchGateTab('login')">Masuk di sini</a>
+          </div>
+        </div>
+
+        <!-- PANE RESET PASSWORD -->
+        <div class="auth-pane" id="gateResetPane" style="display:none;">
+          <div class="auth-alert" id="gateResetAlert" style="display:none;"></div>
+          <p class="gate-pane-desc">Masukkan email terdaftar Anda. Tautan pemulihan kata sandi akan otomatis dikirimkan ke kotak masuk email Anda.</p>
+          <form onsubmit="handleGateForgotPassword(event)" class="gate-modern-form">
+            <div class="gate-input-group">
+              <label for="gateResetEmail">Alamat Email Terdaftar <span class="label-req" style="color:#ef4444; font-weight:700;">*</span> <span style="font-size:11px; color:#ef4444; font-weight:600; margin-left:3px;">(Wajib diisi)</span></label>
+              <div class="input-with-icon">
+                <svg class="input-icon"><use href="#i-mail"></use></svg>
+                <input type="email" id="gateResetEmail" placeholder="contoh: nama@gmail.com" required autocomplete="email">
+              </div>
+            </div>
+
+            <button type="submit" class="btn-gate-primary" id="btnGateSubmitReset">
+              <span>Kirim Tautan Atur Ulang</span>
+              <svg class="ico"><use href="#i-refresh"></use></svg>
+            </button>
+          </form>
+
+          <div class="gate-footer-hint">
+            Ingat kata sandi? <a href="javascript:void(0)" onclick="switchGateTab('login')">&larr; Kembali ke halaman Masuk</a>
+          </div>
+        </div>
+
+        <div class="gate-copyright-tag">
+          &copy; 2026 Biro Komunikasi Publik &bull; Kementerian PKP RI
+        </div>
+
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -104,17 +323,25 @@
   </div>
 
   <nav class="sidebar-nav">
-    <p class="nav-label">Utama</p>
+    <p class="nav-label nav-label-utama">Utama</p>
     <button type="button" class="tab-btn active" data-tab="input" onclick="showTab('input')">
       <span class="nav-ico"><svg class="ico"><use href="#i-edit"></use></svg></span>
       <span class="nav-text">Input Perjalanan</span>
     </button>
+    <button type="button" class="tab-btn" data-tab="dashboard" onclick="showTab('dashboard')">
+      <span class="nav-ico"><svg class="ico"><use href="#i-chart"></use></svg></span>
+      <span class="nav-text">Dashboard</span>
+    </button>
     <button type="button" class="tab-btn" data-tab="riwayat" onclick="showTab('riwayat')">
-      <span class="nav-ico"><svg class="ico"><use href="#i-history"></use></svg></span>
+      <span class="nav-ico"><svg class="ico"><use href="#i-clipboard"></use></svg></span>
       <span class="nav-text">Riwayat Perjalanan</span>
     </button>
+    <button type="button" class="tab-btn" data-tab="sbm" onclick="showTab('sbm')">
+      <span class="nav-ico"><svg class="ico"><use href="#i-wallet"></use></svg></span>
+      <span class="nav-text">Kamus Tarif SBM</span>
+    </button>
 
-    <p class="nav-label">Dokumen</p>
+    <p class="nav-label nav-label-dokumen">Dokumen</p>
     <button type="button" class="tab-btn" data-tab="kuitansi-perorangan" onclick="showTab('kuitansi-perorangan')">
       <span class="nav-ico"><svg class="ico"><use href="#i-user"></use></svg></span>
       <span class="nav-text">Kuitansi Perorangan</span>
@@ -132,7 +359,7 @@
       <span class="nav-text">SPPD Perorangan</span>
     </button>
 
-    <p class="nav-label">Rekapitulasi</p>
+    <p class="nav-label nav-label-rekap">Rekapitulasi</p>
     <button type="button" class="tab-btn" data-tab="lembar-kendali" onclick="showTab('lembar-kendali')">
       <span class="nav-ico"><svg class="ico"><use href="#i-clipboard"></use></svg></span>
       <span class="nav-text">Lembar Kendali</span>
@@ -154,13 +381,13 @@
       <span class="nav-text">Rekap Surat Tugas</span>
     </button>
 
-    <p class="nav-label">Sistem</p>
+    <p class="nav-label nav-label-sistem">Sistem</p>
     <button type="button" class="tab-btn" data-tab="pengaturan" onclick="showTab('pengaturan')">
       <span class="nav-ico"><svg class="ico"><use href="#i-sliders"></use></svg></span>
       <span class="nav-text">Pengaturan</span>
     </button>
 
-    <p class="nav-label">Referensi</p>
+    <p class="nav-label nav-label-referensi">Referensi</p>
     <button type="button" class="tab-btn" onclick="openPmkModal()" title="Cek Dokumen Resmi PMK SBM TA 2026">
       <span class="nav-ico"><svg class="ico"><use href="#i-file-lines"></use></svg></span>
       <span class="nav-text">Cek File PMK SBM</span>
@@ -247,6 +474,261 @@
         <span>Kementerian Perumahan dan Kawasan Permukiman</span>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ============================================================ AUTH MODAL (LOGIN / SIGN UP) -->
+<div class="welcome-overlay no-print" id="authModalOverlay" role="dialog" aria-modal="true" aria-labelledby="authModalTitle" onclick="handleAuthBackdrop(event)">
+  <div class="welcome-modal auth-modal-card">
+    <button type="button" class="icon-btn welcome-close" onclick="closeAuthModal()" aria-label="Tutup jendela">
+      <svg class="ico"><use href="#i-close"></use></svg>
+    </button>
+    <div class="auth-modal-header">
+      <div class="auth-logo-badge">
+        <img src="logo-perdinku.png" alt="PerdinKu" class="auth-logo-img">
+        <span>PerdinKu Cloud Database</span>
+      </div>
+      <h3 class="auth-modal-title" id="authModalTitle">Akun &amp; Basis Data Bersama</h3>
+      <p class="auth-modal-sub">Masuk untuk melihat dan berbagi arsip perjalanan dinas dengan rekan kerja.</p>
+
+      <div class="auth-nav-tabs">
+        <button type="button" class="auth-nav-tab active" id="tabAuthLogin" onclick="switchAuthTab('login')">Masuk (Login)</button>
+        <button type="button" class="auth-nav-tab" id="tabAuthSignup" onclick="switchAuthTab('signup')">Daftar Akun Baru</button>
+      </div>
+    </div>
+
+    <!-- PANE LOGIN -->
+    <div class="auth-pane" id="authLoginPane">
+      <div class="auth-alert" id="authLoginAlert" style="display:none;"></div>
+      <form onsubmit="handleAuthLogin(event)" class="auth-form">
+        <div class="auth-field">
+          <label for="authLoginEmail">Alamat Email <span class="label-req" style="color:#ef4444; font-weight:700;">*</span> <span style="font-size:11px; color:#ef4444; font-weight:600; margin-left:3px;">(Wajib diisi)</span></label>
+          <input type="email" id="authLoginEmail" placeholder="contoh: nama@gmail.com" value="aqyunrm@gmail.com" required autocomplete="email">
+        </div>
+        <div class="auth-field">
+          <div class="auth-label-row">
+            <label for="authLoginPassword">Kata Sandi <span class="label-req" style="color:#ef4444; font-weight:700;">*</span> <span style="font-size:11px; color:#ef4444; font-weight:600; margin-left:3px;">(Wajib diisi)</span></label>
+            <a href="javascript:void(0)" class="auth-forgot-link" onclick="switchAuthTab('reset')">Lupa Kata Sandi?</a>
+          </div>
+          <input type="password" id="authLoginPassword" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn btn-primary btn-auth-submit" id="btnSubmitLogin">
+          <svg class="ico"><use href="#i-check"></use></svg>
+          <span>Masuk</span>
+        </button>
+      </form>
+      <div class="auth-footer-links">
+        <span>Belum punya akun? <a href="javascript:void(0)" onclick="switchAuthTab('signup')">Daftar di sini</a></span>
+      </div>
+    </div>
+
+    <!-- PANE SIGN UP -->
+    <div class="auth-pane" id="authSignupPane" style="display:none;">
+      <div class="auth-alert" id="authSignupAlert" style="display:none;"></div>
+      <form onsubmit="handleAuthSignUp(event)" class="auth-form">
+        <div class="auth-field">
+          <label for="authSignupName">Nama Lengkap &amp; Gelar <span class="label-req" style="color:#ef4444; font-weight:700;">*</span> <span style="font-size:11px; color:#ef4444; font-weight:600; margin-left:3px;">(Wajib diisi)</span></label>
+          <input type="text" id="authSignupName" placeholder="Contoh: Budi Santoso, S.Kom." required autocomplete="name">
+        </div>
+        <div class="auth-field">
+          <label for="authSignupEmail">Alamat Email <span class="label-req" style="color:#ef4444; font-weight:700;">*</span> <span style="font-size:11px; color:#ef4444; font-weight:600; margin-left:3px;">(Wajib diisi)</span></label>
+          <input type="email" id="authSignupEmail" placeholder="contoh: nama@gmail.com" required autocomplete="email">
+        </div>
+        <div class="auth-field">
+          <label for="authSignupPassword">Kata Sandi (Minimal 6 karakter) <span class="label-req" style="color:#ef4444; font-weight:700;">*</span> <span style="font-size:11px; color:#ef4444; font-weight:600; margin-left:3px;">(Wajib diisi)</span></label>
+          <input type="password" id="authSignupPassword" placeholder="••••••••" minlength="6" required autocomplete="new-password">
+        </div>
+        <div class="auth-field">
+          <div class="auth-role-signup-notice">
+            <svg class="ico"><use href="#i-info"></use></svg>
+            <div>
+              <strong>Hak Akses Akun:</strong> Akun baru otomatis didaftarkan sebagai <strong>Viewer</strong> (Hanya Lihat). Hak akses <strong>Admin</strong> (edit &amp; hapus) diberikan langsung oleh Administrator utama.
+            </div>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-auth-submit" id="btnSubmitSignup">
+          <svg class="ico"><use href="#i-plus"></use></svg>
+          <span>Daftar Akun</span>
+        </button>
+      </form>
+      <div class="auth-footer-links">
+        <span>Sudah punya akun? <a href="javascript:void(0)" onclick="switchAuthTab('login')">Masuk di sini</a></span>
+      </div>
+    </div>
+
+    <!-- PANE RESET PASSWORD -->
+    <div class="auth-pane" id="authResetPane" style="display:none;">
+      <div class="auth-alert" id="authResetAlert" style="display:none;"></div>
+      <p class="auth-pane-desc">Masukkan alamat email akun Anda yang telah terdaftar. Kami akan mengirimkan tautan untuk mengatur ulang kata sandi ke email Anda.</p>
+      <form onsubmit="handleAuthForgotPassword(event)" class="auth-form">
+        <div class="auth-field">
+          <label for="authResetEmail">Alamat Email Terdaftar <span class="label-req" style="color:#ef4444; font-weight:700;">*</span> <span style="font-size:11px; color:#ef4444; font-weight:600; margin-left:3px;">(Wajib diisi)</span></label>
+          <input type="email" id="authResetEmail" placeholder="contoh: nama@gmail.com" required autocomplete="email">
+        </div>
+        <button type="submit" class="btn btn-primary btn-auth-submit" id="btnSubmitReset">
+          <svg class="ico"><use href="#i-refresh"></use></svg>
+          <span>Kirim Tautan Atur Ulang</span>
+        </button>
+      </form>
+      <div class="auth-footer-links">
+        <span>Ingat kata sandi? <a href="javascript:void(0)" onclick="switchAuthTab('login')">Kembali ke Masuk</a></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ MODAL UPDATE KATA SANDI (RECOVERY) -->
+<div class="welcome-overlay no-print" id="updatePasswordOverlay" role="dialog" aria-modal="true" aria-labelledby="updatePasswordTitle">
+  <div class="welcome-modal auth-modal-card">
+    <button type="button" class="icon-btn welcome-close" onclick="closeUpdatePasswordModal()" aria-label="Tutup jendela">
+      <svg class="ico"><use href="#i-close"></use></svg>
+    </button>
+    <div class="auth-modal-header">
+      <div class="auth-logo-badge">
+        <img src="logo-perdinku.png" alt="PerdinKu" class="auth-logo-img">
+        <span>Atur Ulang Kata Sandi</span>
+      </div>
+      <h3 class="auth-modal-title" id="updatePasswordTitle">Buat Kata Sandi Baru</h3>
+      <p class="auth-modal-sub">Masukkan kata sandi baru untuk akun Anda agar dapat login kembali.</p>
+    </div>
+    <div class="auth-pane">
+      <div class="auth-alert" id="updatePasswordAlert" style="display:none;"></div>
+      <form onsubmit="handleAuthUpdatePassword(event)" class="auth-form">
+        <div class="auth-field">
+          <label for="newPasswordInput">Kata Sandi Baru</label>
+          <input type="password" id="newPasswordInput" placeholder="Minimal 6 karakter" minlength="6" required autocomplete="new-password">
+        </div>
+        <div class="auth-field">
+          <label for="newPasswordConfirmInput">Konfirmasi Kata Sandi Baru</label>
+          <input type="password" id="newPasswordConfirmInput" placeholder="Ketik ulang kata sandi baru" minlength="6" required autocomplete="new-password">
+        </div>
+        <button type="submit" class="btn btn-primary btn-auth-submit" id="btnSubmitNewPassword">
+          <svg class="ico"><use href="#i-check"></use></svg>
+          <span>Simpan Kata Sandi Baru</span>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ MODAL MANAJEMEN PENGGUNA (HANYA ADMIN) -->
+<div class="welcome-overlay no-print" id="userMgmtOverlay" role="dialog" aria-modal="true" aria-labelledby="userMgmtTitle" onclick="handleUserMgmtBackdrop(event)">
+  <div class="welcome-modal auth-modal-card user-mgmt-modal-card">
+    <!-- Tombol Close (X) Aktif & Responsif -->
+    <button type="button" class="user-mgmt-close-btn" onclick="closeUserManagementModal()" aria-label="Tutup jendela Manajemen Pengguna" title="Tutup jendela (Esc)">
+      <svg class="ico"><use href="#i-close"></use></svg>
+    </button>
+    
+    <div class="user-mgmt-header">
+      <div class="user-mgmt-badge">
+        <svg class="ico"><use href="#i-user"></use></svg>
+        <span>Kelola Hak Akses Tim</span>
+      </div>
+      <h3 class="user-mgmt-title" id="userMgmtTitle">Manajemen Pengguna &amp; Peran</h3>
+      <p class="user-mgmt-sub">Sebagai Admin, Anda dapat memberikan hak akses <strong>Admin</strong> (edit &amp; hapus) atau <strong>Viewer</strong> (hanya lihat) kepada anggota tim yang terdaftar.</p>
+      
+      <!-- Stats Ringkasan Pengguna -->
+      <div class="user-mgmt-stats-bar" id="userMgmtStatsBar">
+        <div class="user-stat-item">
+          <span class="user-stat-dot dot-total"></span>
+          <span class="user-stat-label">Total Anggota:</span>
+          <strong id="statTotalUsers" class="user-stat-val">1</strong>
+        </div>
+        <div class="user-stat-divider"></div>
+        <div class="user-stat-item">
+          <span class="user-stat-dot dot-admin"></span>
+          <span class="user-stat-label">Admin:</span>
+          <strong id="statAdminUsers" class="user-stat-val val-admin">1</strong>
+        </div>
+        <div class="user-stat-divider"></div>
+        <div class="user-stat-item">
+          <span class="user-stat-dot dot-operator" style="background:#3b82f6;"></span>
+          <span class="user-stat-label">Role Khusus:</span>
+          <strong id="statOperatorUsers" class="user-stat-val val-operator" style="color:#2563eb;">0</strong>
+        </div>
+        <div class="user-stat-divider"></div>
+        <div class="user-stat-item">
+          <span class="user-stat-dot dot-viewer"></span>
+          <span class="user-stat-label">Viewer:</span>
+          <strong id="statViewerUsers" class="user-stat-val val-viewer">0</strong>
+        </div>
+      </div>
+    </div>
+    
+    <div class="user-mgmt-toolbar">
+      <div class="user-mgmt-search-wrap">
+        <svg class="ico"><use href="#i-search"></use></svg>
+        <input type="search" id="userMgmtSearch" placeholder="Cari nama atau email pengguna..." oninput="filterUserManagementList()">
+      </div>
+      <button type="button" class="btn btn-secondary btn-sm btn-refresh-users" onclick="loadUserManagementList()" title="Muat ulang daftar pengguna">
+        <svg class="ico"><use href="#i-refresh"></use></svg>
+        <span>Segarkan</span>
+      </button>
+    </div>
+
+    <div class="user-mgmt-body">
+      <div id="userMgmtAlert" class="auth-alert" style="display:none;"></div>
+      <div id="userMgmtList" class="user-mgmt-list">
+        <!-- Rendered dynamically by js/supabase.js -->
+        <div class="user-mgmt-loading">
+          <div class="user-mgmt-spinner"></div>
+          <span>Memuat data pengguna dari cloud...</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="user-mgmt-footer">
+      <div class="user-mgmt-footer-hint">
+        <svg class="ico"><use href="#i-info"></use></svg>
+        <span>Anggota baru yang mendaftar otomatis menjadi <strong>Viewer</strong>. Hak Admin hanya dapat diberikan oleh Anda.</span>
+      </div>
+      <button type="button" class="btn btn-outline btn-sm" onclick="closeUserManagementModal()">
+        <span>Tutup</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ MODAL KONFIGURASI SUPABASE -->
+<div class="welcome-overlay no-print" id="sbConfigOverlay" role="dialog" aria-modal="true" aria-labelledby="sbConfigTitle" onclick="handleSbConfigBackdrop(event)">
+  <div class="welcome-modal auth-modal-card">
+    <button type="button" class="icon-btn welcome-close" onclick="closeSbConfigModal()" aria-label="Tutup jendela">
+      <svg class="ico"><use href="#i-close"></use></svg>
+    </button>
+    <div class="auth-modal-header">
+      <div class="auth-logo-badge">
+        <svg class="ico" style="width:18px;height:18px;fill:none;stroke:#3ecf8e;stroke-width:2;"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        <span>Supabase Connection</span>
+      </div>
+      <h3 class="auth-modal-title" id="sbConfigTitle">Koneksi Database Cloud</h3>
+      <p class="auth-modal-sub">Hubungkan PerdinKu dengan project Supabase Anda untuk berbagi riwayat perjalanan dinas secara aman.</p>
+    </div>
+
+    <form onsubmit="saveSbConfig(event)" class="auth-form" style="padding: 0 4px;">
+      <div class="auth-field">
+        <label for="sbCfgUrl">Project URL Supabase</label>
+        <input type="text" id="sbCfgUrl" value="https://nrwnovsmbbacngmktrhz.supabase.co" required>
+        <small class="auth-field-hint">Dapat dilihat di Project Settings ➔ API ➔ Project URL.</small>
+      </div>
+      <div class="auth-field">
+        <label for="sbCfgAnon">Project API Key (Anon / Public Key)</label>
+        <textarea id="sbCfgAnon" rows="3" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." required style="width:100%;font-family:monospace;font-size:11px;padding:8px;border-radius:6px;border:1px solid #cbd5e1;resize:vertical;"></textarea>
+        <small class="auth-field-hint" style="line-height:1.4;display:block;margin-top:4px;">
+          Gunakan <strong>Anon Public Key</strong> (diawali <code>eyJhbGci...</code> atau <code>sb_publishable_...</code>).<br>
+          <span style="color:#e11d48;font-weight:600;">⚠️ Jangan gunakan Secret Key (sb_secret_...) di browser!</span>
+        </small>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button type="submit" class="btn btn-primary btn-auth-submit" style="flex:1;">
+          <svg class="ico"><use href="#i-save"></use></svg>
+          <span>Simpan &amp; Hubungkan</span>
+        </button>
+        <button type="button" class="btn btn-outline" onclick="resetSbConfigToDefault()" title="Kembalikan URL &amp; API Key bawaan proyek" style="white-space:nowrap;font-size:12px;padding:10px 14px;">
+          <svg class="ico"><use href="#i-refresh"></use></svg>
+          <span>Reset Default</span>
+        </button>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -340,6 +822,66 @@
             </a>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ MODAL DOKUMEN & BERKAS PDF LENGKAP PER ORANG -->
+<div class="welcome-overlay no-print" id="tripPdfModalOverlay" role="dialog" aria-modal="true" aria-labelledby="tripPdfModalAgenda" onclick="handleTripPdfBackdrop(event)" style="display:none;">
+  <div class="welcome-modal trip-pdf-modal">
+    <!-- Tombol Close (X) -->
+    <button type="button" class="icon-btn welcome-close" onclick="closeTripPdfModal()" aria-label="Tutup jendela">
+      <svg class="ico"><use href="#i-close"></use></svg>
+    </button>
+
+    <!-- Header Dokumen Modal -->
+    <div class="trip-pdf-modal-header">
+      <div class="trip-pdf-kicker-row">
+        <span class="trip-pdf-badge-st" id="tripPdfModalNoST">000/ST/Sj.07/2026</span>
+        <span class="trip-pdf-badge-mak" id="tripPdfModalMAK">524111</span>
+        <span class="history-status-badge status-diproses" id="tripPdfModalStatus">Diproses ke Satker</span>
+      </div>
+      <h2 class="trip-pdf-modal-title" id="tripPdfModalAgenda">Agenda Perjalanan Dinas</h2>
+      <div class="trip-pdf-modal-meta">
+        <span id="tripPdfModalDest">Tujuan: -</span>
+        <span class="meta-sep">&bull;</span>
+        <span id="tripPdfModalDates">Tanggal: -</span>
+        <span class="meta-sep">&bull;</span>
+        <span class="trip-pdf-total-cost" id="tripPdfModalTotalCost">Total: Rp 0</span>
+      </div>
+    </div>
+
+    <!-- Info Banner Panduan Unduh -->
+    <div class="trip-pdf-info-banner">
+      <div class="banner-ico">💡</div>
+      <div class="banner-txt">
+        <strong>Dokumen Lengkap Siap Unduh &amp; Cetak per Pelaksana</strong>
+        <p>Klik tombol <strong>Unduh PDF Lengkap</strong> pada nama pelaksana untuk langsung mengunduh seluruh berkas pertanggungjawaban (Kuitansi, Rincian Riil, DPR, dan SPPD) dalam 1 file PDF terkompilasi resmi.</p>
+      </div>
+    </div>
+
+    <!-- Daftar Pelaksana Per Orang -->
+    <div class="trip-pdf-emp-list" id="tripPdfEmpList">
+      <!-- Diisi secara dinamis oleh ui.js -->
+    </div>
+
+    <!-- Footer Modal -->
+    <div class="trip-pdf-modal-footer">
+      <div class="trip-pdf-footer-left">
+        <button type="button" class="btn btn-secondary btn-sm" id="btnTripPdfRincian" onclick="downloadTripRincianPdfFromModal()" title="Unduh rekapitulasi Rincian Biaya Perjalanan (PDF)">
+          <svg class="ico"><use href="#i-list"></use></svg>
+          <span>Unduh Rincian (PDF)</span>
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" id="btnTripPdfZip" onclick="downloadTripZipFromModal()" title="Unduh seluruh paket kegiatan (Semua PDF + Excel) dalam file ZIP">
+          <svg class="ico"><use href="#i-package"></use></svg>
+          <span>Unduh Semua Berkas (ZIP)</span>
+        </button>
+      </div>
+      <div class="trip-pdf-footer-right">
+        <button type="button" class="btn btn-primary btn-sm" onclick="closeTripPdfModal()">
+          <span>Tutup</span>
+        </button>
       </div>
     </div>
   </div>
@@ -460,6 +1002,19 @@
                 <span class="dd-sub">Kompilasi Excel + Seluruh Dokumen Cetak PDF</span>
               </div>
             </button>
+            <div class="dd-divider"></div>
+            <button type="button" class="split-dropdown-item" onclick="selectSaveMode('csv')">
+              <div class="split-dd-icon-box" style="background:#ecfdf5;color:#059669;display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;">
+                <svg class="ico"><use href="#i-table"></use></svg>
+              </div>
+              <div class="dd-content">
+                <div class="dd-title-row">
+                  <span class="dd-title">File CSV Supabase (.csv)</span>
+                  <span class="dd-badge-default" style="background:#d1fae5;color:#065f46;">Upload Supabase</span>
+                </div>
+                <span class="dd-sub">Khusus untuk fitur "Upload CSV" di Supabase Table Editor</span>
+              </div>
+            </button>
           </div>
         </div>
         <button type="button" class="btn-tool btn-tool-secondary btn-topbar-load" onclick="document.getElementById('excelFileInput').click()" title="Muat isian dari file Excel">
@@ -480,6 +1035,10 @@
         <button type="button" class="btn-tool-icon info-btn" onclick="openWelcome()" title="Panduan & Info PerdinKu" aria-label="Panduan & Info PerdinKu">
           <svg class="ico"><use href="#i-info"></use></svg>
         </button>
+      </div>
+      <div class="topbar-divider" role="separator" aria-orientation="vertical"></div>
+      <div id="authTopbarWidget" class="auth-topbar-widget">
+        <!-- Rendered by js/supabase.js -->
       </div>
     </div>
   </header>
@@ -868,16 +1427,131 @@
       </section>
     </div>
 
+    <!-- ============================================================ TAB DASHBOARD EKSEKUTIF -->
+    <div id="tab-dashboard" class="tab-content">
+      <!-- DASHBOARD HERO BANNER -->
+      <div class="dashboard-hero-card no-print">
+        <div class="dashboard-hero-content">
+          <div class="gov-official-badge" style="margin-bottom:8px;">
+            <span class="gov-badge-dot"></span>
+            <span>PORTAL &bull; BIRO KOMUNIKASI PUBLIK TA 2026</span>
+          </div>
+          <h2 class="dashboard-hero-title">Dashboard Pemantauan Perjalanan Dinas</h2>
+          <p class="dashboard-hero-sub">Ringkasan status pengajuan berkas, progres pengujian Satker, pencairan anggaran, dan arsip dokumen resmi perjalanan dinas.</p>
+        </div>
+        <div class="dashboard-hero-actions">
+          <button type="button" class="btn btn-secondary" onclick="showTab('riwayat')">
+            <svg class="ico"><use href="#i-clipboard"></use></svg>
+            <span>Buka Riwayat Berkas</span>
+          </button>
+          <button type="button" class="btn btn-primary" onclick="showTab('sbm')">
+            <svg class="ico"><use href="#i-wallet"></use></svg>
+            <span>Kamus Tarif SBM</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- DASHBOARD KPI STATS (3 KARTU METRIK) -->
+      <section class="dashboard-kpi-grid no-print" id="viewerKpiSection">
+        <div class="kpi-card kpi-card-processing" onclick="showTab('riwayat'); setTripStatusFilter('diproses');" style="cursor:pointer;" title="Klik untuk melihat berkas yang sedang diproses">
+          <div class="kpi-icon-wrap">
+            <svg class="ico"><use href="#i-clipboard"></use></svg>
+          </div>
+          <div class="kpi-content">
+            <span class="kpi-label">Berkas Diproses ke Satker</span>
+            <div class="kpi-value-row">
+              <strong class="kpi-number" id="kpiCountDiproses">0</strong>
+              <span class="kpi-unit">Berkas</span>
+            </div>
+            <p class="kpi-hint">Sedang verifikasi administrasi &amp; pengujian Satker</p>
+          </div>
+        </div>
+
+        <div class="kpi-card kpi-card-disbursed" onclick="showTab('riwayat'); setTripStatusFilter('dicairkan');" style="cursor:pointer;" title="Klik untuk melihat berkas yang sudah dicairkan">
+          <div class="kpi-icon-wrap">
+            <svg class="ico"><use href="#i-wallet"></use></svg>
+          </div>
+          <div class="kpi-content">
+            <span class="kpi-label">Berkas yang Sudah Dicairkan</span>
+            <div class="kpi-value-row">
+              <strong class="kpi-number" id="kpiCountDicairkan">0</strong>
+              <span class="kpi-unit">Berkas</span>
+            </div>
+            <p class="kpi-hint" id="kpiNominalDicairkan">Total Dana: Rp 0</p>
+          </div>
+        </div>
+
+        <div class="kpi-card kpi-card-total" onclick="showTab('riwayat'); setTripStatusFilter('all');" style="cursor:pointer;" title="Klik untuk melihat seluruh riwayat berkas">
+          <div class="kpi-icon-wrap">
+            <svg class="ico"><use href="#i-file-lines"></use></svg>
+          </div>
+          <div class="kpi-content">
+            <span class="kpi-label">Total Berkas Perdin</span>
+            <div class="kpi-value-row">
+              <strong class="kpi-number" id="kpiCountTotal">0</strong>
+              <span class="kpi-unit">Tercatat</span>
+            </div>
+            <p class="kpi-hint">Sinkronisasi Real-Time Basis Data Cloud</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- CARD PROGRES PENCIRAN DANA & SATKER -->
+      <section class="card dashboard-progress-card no-print">
+        <div class="card-head">
+          <span class="card-ico"><svg class="ico"><use href="#i-chart"></use></svg></span>
+          <div class="card-heading">
+            <h3 class="card-title">Realisasi &amp; Status Progres Berkas Satker</h3>
+            <p class="card-sub">Persentase berkas yang telah tuntas dicairkan bendahara dibandingkan berkas dalam proses.</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="dashboard-progress-stats">
+            <div class="progress-bar-wrap">
+              <div class="dashboard-progress-fill" id="dashboardProgressFill" style="width: 0%;"></div>
+            </div>
+            <div class="progress-labels-row">
+              <span class="progress-detail-text" id="dashboardProgressText">0 dari 0 Berkas Dicairkan</span>
+              <strong class="dashboard-progress-pct" id="dashboardProgressPct">0% Tuntas</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- DAFTAR USULAN TERKINI (5 BERKAS TERAKHIR) -->
+      <section class="card dashboard-recent-card no-print">
+        <div class="card-head">
+          <span class="card-ico"><svg class="ico"><use href="#i-history"></use></svg></span>
+          <div class="card-heading">
+            <h3 class="card-title">Daftar Pengajuan Terkini</h3>
+            <p class="card-sub">5 usulan perjalanan dinas terakhir yang tercatat dalam sistem.</p>
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="showTab('riwayat')">
+            <span>Buka Riwayat Lengkap &rarr;</span>
+          </button>
+        </div>
+        <div class="card-body">
+          <div id="dashboardRecentList" class="dashboard-recent-table-wrap">
+            <!-- Rendered by renderTripHistory() -->
+          </div>
+        </div>
+      </section>
+    </div>
+
     <!-- ============================================================ TAB RIWAYAT PERJALANAN -->
     <div id="tab-riwayat" class="tab-content">
       <section class="card history-page-card no-print">
         <div class="card-head history-page-head">
-          <span class="card-ico"><svg class="ico"><use href="#i-history"></use></svg></span>
+          <span class="card-ico"><svg class="ico"><use href="#i-clipboard"></use></svg></span>
           <div class="card-heading">
             <h2 class="card-title">Riwayat Perjalanan Dinas</h2>
-            <p class="card-sub">Daftar berkas &amp; arsip perjalanan dinas yang pernah dibuat. Klik tombol <strong>Buka &amp; Edit / Revisi</strong> untuk memuat kembali isian jika ada revisi.</p>
+            <p class="card-sub">Daftar berkas &amp; arsip perjalanan dinas. Klik kartu perjalanan untuk membuka &amp; mengunduh dokumen PDF lengkap per orang.</p>
           </div>
           <div class="history-head-actions">
+            <button type="button" id="btnCloudSync" class="btn-tool btn-tool-cloud-sync" onclick="syncTripsFromCloud()" title="Tarik arsip terbaru dari Cloud Database Supabase" style="display:none;">
+              <svg class="ico"><use href="#i-refresh"></use></svg>
+              <span>Tarik Cloud</span>
+            </button>
             <span class="history-autosave-badge" title="Riwayat perjalanan dinas otomatis tercatat &amp; tersimpan di perangkat ini">
               <span class="history-status-dot"></span>
               <span>Auto-Simpan Riwayat Aktif</span>
@@ -886,6 +1560,14 @@
         </div>
 
         <div class="card-body">
+          <div id="historyRoleNotice" class="history-role-banner banner-guest" style="display:none;"></div>
+          
+          <div class="history-filter-pill-row">
+            <button type="button" class="btn-filter-pill active" id="btnFilterAll" data-filter="all" onclick="setTripStatusFilter('all')">Semua Berkas (<span id="filterCountAll">0</span>)</button>
+            <button type="button" class="btn-filter-pill" id="btnFilterDiproses" data-filter="diproses" onclick="setTripStatusFilter('diproses')">Sedang Diproses (<span id="filterCountDiproses">0</span>)</button>
+            <button type="button" class="btn-filter-pill" id="btnFilterDicairkan" data-filter="dicairkan" onclick="setTripStatusFilter('dicairkan')">Sudah Dicairkan (<span id="filterCountDicairkan">0</span>)</button>
+          </div>
+
           <div class="history-toolbar">
             <div class="history-search-wrap">
               <svg class="ico search-ico"><use href="#i-search"></use></svg>
@@ -899,6 +1581,267 @@
 
           <div id="historyListContainer" class="history-list-container">
             <!-- Rendered by renderTripHistory() -->
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============================================================ TAB KAMUS TARIF SBM 2026 -->
+    <div id="tab-sbm" class="tab-content">
+      <section class="card sbm-viewer-cockpit-card no-print" id="viewerSbmCockpitCard">
+        <!-- HEADER COCKPIT -->
+        <div class="card-head sbm-viewer-head">
+          <div class="sbm-viewer-heading-group">
+            <span class="card-ico sbm-viewer-ico"><svg class="ico"><use href="#i-wallet"></use></svg></span>
+            <div class="card-heading">
+              <div class="sbm-viewer-badge-tag">PANDUAN STANDAR BIAYA MASUKAN TA 2026 • PMK NOMOR 32 TAHUN 2025</div>
+              <h2 class="card-title">Kamus &amp; Cek Tarif SBM Resmi 2026</h2>
+              <p class="card-sub">Cek acuan pagu plafon resmi SBM 2026 berdasarkan Kota / Kabupaten maupun Provinsi di seluruh Indonesia.</p>
+            </div>
+          </div>
+          <div class="sbm-viewer-actions">
+            <button type="button" class="btn-sbm-pmk sbm-viewer-btn-pmk" onclick="openPmkModal()" title="Cek Dokumen Asli PMK SBM 2026">
+              <svg class="ico"><use href="#i-file-lines"></use></svg>
+              <span>Cek Dasar PMK</span>
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="resetSbmViewerToDefault()" title="Kembali ke acuan awal DKI Jakarta">
+              <svg class="ico"><use href="#i-refresh"></use></svg>
+              <span>Reset DKI Jakarta</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="card-body sbm-viewer-body">
+          <!-- SEARCH & SELECTION CONSOLE -->
+          <div class="sbm-console-wrapper">
+            <!-- PENCARIAN CEPAT KOTA / PROVINSI -->
+            <div class="sbm-search-city-box">
+              <div class="sbm-search-input-wrap">
+                <svg class="ico sbm-search-icon"><use href="#i-search"></use></svg>
+                <input type="text" id="viewerSbmSearchInput" class="sbm-search-input" placeholder="Cari nama kota, kabupaten, atau provinsi (contoh: Surabaya, Bandung, Bogor, Balikpapan, Denpasar, Medan...)" autocomplete="off" oninput="onViewerSbmSearchInput(this.value)">
+                <button type="button" id="btnSbmSearchClear" class="sbm-search-clear-btn" onclick="clearViewerSbmSearch()" style="display:none;" title="Bersihkan pencarian">×</button>
+              </div>
+              <div id="viewerSbmSearchResults" class="sbm-search-results-floating" style="display:none;"></div>
+            </div>
+
+            <!-- DUAL DROPDOWN ROW (PROVINSI & KOTA) -->
+            <div class="sbm-dual-select-row">
+              <div class="sbm-select-col">
+                <label for="viewerSbmSelectProv" class="sbm-field-label">
+                  <svg class="ico" style="width:15px;height:15px;fill:currentColor;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                  <span>Pilih Provinsi Acuan SBM:</span>
+                </label>
+                <div class="field-control is-select sbm-select-control">
+                  <select id="viewerSbmSelectProv" class="sbm-filter-select" onchange="onViewerSbmProvChange(this.value)">
+                    <!-- Populated by initViewerSbmCockpit() -->
+                  </select>
+                </div>
+              </div>
+
+              <div class="sbm-select-col">
+                <label for="viewerSbmSelectCity" class="sbm-field-label">
+                  <svg class="ico" style="width:15px;height:15px;fill:currentColor;"><path d="M15 11V5l-3-3-3 3v2H3v14h18V11h-6zm-8 8H5v-2h2v2zm0-4H5v-2h2v2zm0-4H5V9h2v2zm6 8h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V9h2v2zm0-4h-2V5h2v2zm6 12h-2v-2h2v2zm0-4h-2v-2h2v2z"/></svg>
+                  <span>Pilih Kota / Kabupaten Tujuan:</span>
+                </label>
+                <div class="field-control is-select sbm-select-control">
+                  <select id="viewerSbmSelectCity" class="sbm-filter-select" onchange="onViewerSbmCityDropdownChange(this.value)">
+                    <!-- Populated by initViewerSbmCockpit() -->
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- CHIPS DESTINASI POPULER -->
+            <div class="sbm-popular-chips-wrap">
+              <span class="sbm-chips-label">Pencarian Cepat:</span>
+              <div class="sbm-chips-scroll">
+                <button type="button" class="sbm-chip-btn active" data-chip="all" onclick="quickSelectSbmCity('all')">🏛️ DKI Jakarta</button>
+                <button type="button" class="sbm-chip-btn" data-chip="bgr_kota" onclick="quickSelectSbmCity('bgr_kota')">🚗 Kota Bogor</button>
+                <button type="button" class="sbm-chip-btn" data-chip="bks_kota" onclick="quickSelectSbmCity('bks_kota')">🚗 Kota Bekasi</button>
+                <button type="button" class="sbm-chip-btn" data-chip="dpk_kota" onclick="quickSelectSbmCity('dpk_kota')">🚗 Depok</button>
+                <button type="button" class="sbm-chip-btn" data-chip="tgr_kota" onclick="quickSelectSbmCity('tgr_kota')">🚗 Tangerang</button>
+                <button type="button" class="sbm-chip-btn" data-chip="kep_seribu" onclick="quickSelectSbmCity('kep_seribu')">⛴️ Kep. Seribu</button>
+                <button type="button" class="sbm-chip-btn" data-chip="bdg_kota" onclick="quickSelectSbmCity('bdg_kota')">📍 Bandung</button>
+                <button type="button" class="sbm-chip-btn" data-chip="sby_kota" onclick="quickSelectSbmCity('sby_kota')">📍 Surabaya</button>
+                <button type="button" class="sbm-chip-btn" data-chip="jog_kota" onclick="quickSelectSbmCity('jog_kota')">📍 Yogyakarta</button>
+                <button type="button" class="sbm-chip-btn" data-chip="smg_kota" onclick="quickSelectSbmCity('smg_kota')">📍 Semarang</button>
+                <button type="button" class="sbm-chip-btn" data-chip="dps_kota" onclick="quickSelectSbmCity('dps_kota')">📍 Denpasar (Bali)</button>
+                <button type="button" class="sbm-chip-btn" data-chip="ikn_ppu" onclick="quickSelectSbmCity('ikn_ppu')">📍 IKN / Balikpapan</button>
+                <button type="button" class="sbm-chip-btn" data-chip="mks_kota" onclick="quickSelectSbmCity('mks_kota')">📍 Makassar</button>
+                <button type="button" class="sbm-chip-btn" data-chip="mdn_sumut" onclick="quickSelectSbmCity('mdn_sumut')">📍 Medan</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ACTIVE LOCATION & SPECIAL RULES BANNER -->
+          <div class="sbm-location-hero-card" id="viewerSbmLocationBanner">
+            <div class="sbm-location-hero-main">
+              <div class="sbm-hero-badges-row">
+                <span class="sbm-prov-pill" id="viewerSbmActivePill">
+                  <span class="sbm-prov-pill-dot"></span>
+                  <span id="viewerSbmActiveName">DKI JAKARTA</span>
+                </span>
+                <span class="sbm-city-badge" id="viewerSbmActiveCityBadge">Jakarta Pusat</span>
+                <span class="sbm-zone-badge" id="viewerSbmZoneBadge">Jawa • Wilayah Ibukota</span>
+              </div>
+              <h3 class="sbm-hero-title" id="viewerSbmHeroTitle">DKI JAKARTA — Jakarta Pusat</h3>
+              <p class="sbm-hero-sub" id="viewerSbmHeroSub">Dasar hukum tarif resmi mengikuti Peraturan Menteri Keuangan PMK Nomor 32 Tahun 2025.</p>
+            </div>
+            <div class="sbm-location-hero-note" id="viewerSbmSpecialNotice">
+              <!-- Diisi secara dinamis jika terdapat aturan khusus (Bodetabek/Kep. Seribu/Dalam Kota) -->
+            </div>
+          </div>
+
+          <!-- 4 KATEGORI UTAMA TARIF SBM (TOTAL 11 KARTU RESMI) -->
+          <div class="sbm-sections-container">
+            
+            <!-- KATEGORI 1: UANG HARIAN & UANG SAKU -->
+            <div class="sbm-category-group">
+              <div class="sbm-category-header cat-header-green">
+                <div class="sbm-cat-icon">🪙</div>
+                <div class="sbm-cat-info">
+                  <h4 class="sbm-cat-title">Uang Harian &amp; Uang Saku</h4>
+                  <span class="sbm-cat-sub">Satuan biaya per hari tugas (Orang / Hari)</span>
+                </div>
+              </div>
+              <div class="sbm-category-grid grid-cols-3">
+                <div class="sbm-card-item is-clickable" onclick="openPmkModal(15)" title="Klik untuk cek dasar tarif di PMK Hal 15 (Uang Harian)">
+                  <div class="sbm-card-top">
+                    <span class="sbm-card-label">Uang Harian Perdin ↗</span>
+                    <span class="sbm-card-badge badge-pmk">PMK Hal 15</span>
+                  </div>
+                  <strong class="sbm-card-val sbm-val-highlight" id="vsbm_uh">-</strong>
+                  <span class="sbm-card-unit" id="vsbm_uh_unit">/ Orang / Hari (OH)</span>
+                </div>
+
+                <div class="sbm-card-item is-clickable" onclick="openPmkModal(15)" title="Klik untuk cek dasar tarif di PMK Hal 15 (Uang Harian Diklat)">
+                  <div class="sbm-card-top">
+                    <span class="sbm-card-label">Uang Harian Diklat ↗</span>
+                    <span class="sbm-card-badge badge-pmk">PMK Hal 15</span>
+                  </div>
+                  <strong class="sbm-card-val" id="vsbm_diklat">-</strong>
+                  <span class="sbm-card-unit">/ Orang / Hari Diklat</span>
+                </div>
+
+                <div class="sbm-card-item is-clickable" onclick="openPmkModal(20)" title="Klik untuk cek dasar tarif di PMK Hal 20 (Rapat Fullboard)">
+                  <div class="sbm-card-top">
+                    <span class="sbm-card-label">Uang Saku Fullboard ↗</span>
+                    <span class="sbm-card-badge badge-pmk">PMK Hal 20</span>
+                  </div>
+                  <strong class="sbm-card-val" id="vsbm_fullboard">-</strong>
+                  <span class="sbm-card-unit">/ Orang / Hari Paket Rapat</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- KATEGORI 2: PLAFON HOTEL / AKOMODASI -->
+            <div class="sbm-category-group">
+              <div class="sbm-category-header cat-header-purple">
+                <div class="sbm-cat-icon">🏨</div>
+                <div class="sbm-cat-info">
+                  <h4 class="sbm-cat-title">Plafon Hotel / Akomodasi</h4>
+                  <span class="sbm-cat-sub">Pagu tarif tertinggi resmi per kamar per malam</span>
+                </div>
+              </div>
+              <div class="sbm-category-grid grid-cols-2">
+                <div class="sbm-card-item is-clickable" onclick="openPmkModal(19)" title="Klik untuk cek dasar tarif di PMK Hal 19 (Penginapan Gol IV)">
+                  <div class="sbm-card-top">
+                    <span class="sbm-card-label">Penginapan Golongan IV / Eselon III ↗</span>
+                    <span class="sbm-card-badge badge-pmk">PMK Hal 19</span>
+                  </div>
+                  <strong class="sbm-card-val sbm-val-purple" id="vsbm_h4">-</strong>
+                  <span class="sbm-card-unit">/ Kamar / Malam (Pagu Maksimal)</span>
+                </div>
+
+                <div class="sbm-card-item is-clickable" onclick="openPmkModal(19)" title="Klik untuk cek dasar tarif di PMK Hal 19 (Penginapan Gol III)">
+                  <div class="sbm-card-top">
+                    <span class="sbm-card-label">Penginapan Golongan III / Pelaksana ↗</span>
+                    <span class="sbm-card-badge badge-pmk">PMK Hal 19</span>
+                  </div>
+                  <strong class="sbm-card-val sbm-val-purple" id="vsbm_h3">-</strong>
+                  <span class="sbm-card-unit">/ Kamar / Malam (Pagu Maksimal)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- KATEGORI 3: TRANSPORTASI & TIKET PERJALANAN PP -->
+            <div class="sbm-category-group">
+              <div class="sbm-category-header cat-header-blue">
+                <div class="sbm-cat-icon">✈️</div>
+                <div class="sbm-cat-info">
+                  <h4 class="sbm-cat-title">Transportasi, Taksi &amp; Tiket Pesawat PP</h4>
+                  <span class="sbm-cat-sub">Biaya transportasi antar provinsi, taksi, dan tiket resmi</span>
+                </div>
+              </div>
+              <div class="sbm-category-grid grid-cols-4">
+                <div class="sbm-card-item is-clickable" onclick="openPmkModal(86)" title="Klik untuk cek dasar tarif di PMK Hal 86 (Tiket Pesawat PP)">
+                  <div class="sbm-card-top">
+                    <span class="sbm-card-label">Tiket Pesawat PP ↗</span>
+                    <span class="sbm-card-badge badge-pmk">PMK Hal 86</span>
+                  </div>
+                  <strong class="sbm-card-val sbm-val-blue" id="vsbm_tiket">-</strong>
+                  <span class="sbm-card-unit">Ekonomi Jakarta PP</span>
+                </div>
+
+                <div class="sbm-card-item is-clickable" onclick="openPmkModal(68)" title="Klik untuk cek dasar tarif di PMK Hal 68 (Transport Jakarta-Sekitar)">
+                  <div class="sbm-card-top">
+                    <span class="sbm-card-label">DPR Jakarta PP ↗</span>
+                    <span class="sbm-card-badge badge-pmk">PMK Hal 68</span>
+                  </div>
+                  <strong class="sbm-card-val" id="vsbm_jkt">-</strong>
+                  <span class="sbm-card-unit">Transportasi Darat PP</span>
+                </div>
+
+                <div class="sbm-card-item is-clickable" onclick="openPmkModal(68)" title="Klik untuk cek dasar tarif di PMK Hal 68 (Sewa Kendaraan &amp; Transport)">
+                  <div class="sbm-card-top">
+                    <span class="sbm-card-label">Taxi Lokal / Bandara ↗</span>
+                    <span class="sbm-card-badge badge-pmk">PMK Hal 68</span>
+                  </div>
+                  <strong class="sbm-card-val" id="vsbm_taxi">-</strong>
+                  <span class="sbm-card-unit">Satuan Biaya Taksi Asal/Tujuan</span>
+                </div>
+
+                <div class="sbm-card-item is-clickable" onclick="openPmkModal(69)" title="Klik untuk cek dasar tarif di PMK Hal 69 (DPR Dalam Kota Rp 170.000)">
+                  <div class="sbm-card-top">
+                    <span class="sbm-card-label">DPR Dibayarkan ↗</span>
+                    <span class="sbm-card-badge badge-pmk">PMK Hal 69</span>
+                  </div>
+                  <strong class="sbm-card-val" id="vsbm_dpr">-</strong>
+                  <span class="sbm-card-unit">Ketetapan Khusus Penugasan</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- KATEGORI 4: KONSUMSI KEGIATAN RAPAT SBM -->
+            <div class="sbm-category-group">
+              <div class="sbm-category-header cat-header-amber">
+                <div class="sbm-cat-icon">🍱</div>
+                <div class="sbm-cat-info">
+                  <h4 class="sbm-cat-title">Konsumsi Kegiatan Rapat Resmi</h4>
+                  <span class="sbm-cat-sub">Standar biaya makan dan kudapan rapat dinas di luar kantor</span>
+                </div>
+              </div>
+              <div class="sbm-category-grid grid-cols-2">
+                <div class="sbm-card-item is-clickable" onclick="openPmkModal(37)" title="Klik untuk cek dasar tarif di PMK Hal 37 (Makan Rapat)">
+                  <div class="sbm-card-top">
+                    <span class="sbm-card-label">Makan Rapat SBM ↗</span>
+                    <span class="sbm-card-badge badge-pmk">PMK Hal 37</span>
+                  </div>
+                  <strong class="sbm-card-val sbm-val-amber" id="vsbm_makan">-</strong>
+                  <span class="sbm-card-unit">/ Orang / Kali Makan Rapat</span>
+                </div>
+
+                <div class="sbm-card-item is-clickable" onclick="openPmkModal(37)" title="Klik untuk cek dasar tarif di PMK Hal 37 (Snack Rapat)">
+                  <div class="sbm-card-top">
+                    <span class="sbm-card-label">Snack Rapat SBM ↗</span>
+                    <span class="sbm-card-badge badge-pmk">PMK Hal 37</span>
+                  </div>
+                  <strong class="sbm-card-val sbm-val-amber" id="vsbm_snack">-</strong>
+                  <span class="sbm-card-unit">/ Orang / Kali Snack Rapat</span>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
@@ -1769,11 +2712,13 @@
 <script src="jszip.min.js"></script>
 <script src="html2pdf.bundle.min.js"></script>
 <script src="pdf-lib.min.js"></script>
-<script src="js/data.js?v=20261124_06"></script>
-<script src="js/utils.js?v=20261124_06"></script>
-<script src="js/calc.js?v=20261124_06"></script>
-<script src="js/documents.js?v=20261124_06"></script>
-<script src="js/excel.js?v=20261124_06"></script>
-<script src="js/ui.js?v=20261124_06"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
+<script src="js/supabase.js?v=20261124_33"></script>
+<script src="js/data.js?v=20261124_33"></script>
+<script src="js/utils.js?v=20261124_33"></script>
+<script src="js/calc.js?v=20261124_33"></script>
+<script src="js/documents.js?v=20261124_33"></script>
+<script src="js/excel.js?v=20261124_33"></script>
+<script src="js/ui.js?v=20261124_33"></script>
 </body>
 </html>

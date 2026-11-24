@@ -307,6 +307,31 @@ function exportPerjadinExcel(mode = 'excel') {
         empIds
       };
 
+  // Konversi otomatis seluruh lembar kerja Excel ke format CSV di latar belakang untuk integrasi database Supabase
+  let csvData = '';
+  try {
+    csvData = generatePerjadinCsvString(wb);
+  } catch (csvErr) {
+    console.warn('Gagal mengonversi Excel ke CSV:', csvErr);
+  }
+
+  // Simpan ke riwayat lokal dan integrasikan otomatis ke tabel riwayat_perjadin di Supabase
+  if (typeof saveCurrentTripToHistory === 'function') {
+    try {
+      const savedTrip = saveCurrentTripToHistory(false, csvData);
+      if (savedTrip && typeof uploadTripToCloud === 'function') {
+        uploadTripToCloud(savedTrip);
+      }
+    } catch (e) {
+      console.warn('Auto-save & cloud upload warning:', e);
+    }
+  }
+
+  if (mode === 'csv') {
+    exportPerjadinSupabaseCsv();
+    return;
+  }
+
   if (mode === 'zip' || mode === 'all') {
     // Mode ZIP: buat folder kegiatan & kompilasi seluruh berkas PDF + Excel dalam 1 arsip ZIP
     if (empIds.length > 0 && typeof html2pdf !== 'undefined') {
@@ -320,7 +345,7 @@ function exportPerjadinExcel(mode = 'excel') {
     if (typeof showRefreshToast === 'function') {
       showRefreshToast(
         'Excel Berhasil Disimpan',
-        `File "${naming.excelFileName}" berhasil diunduh dan tersimpan di Riwayat Perjalanan.`
+        `File "${naming.excelFileName}" berhasil diunduh dan terintegrasi otomatis ke database Cloud Supabase.`
       );
     }
     // Auto-reset formulir setelah berhasil disimpan (data telah aman di Riwayat)
@@ -332,12 +357,152 @@ function exportPerjadinExcel(mode = 'excel') {
   }
 }
 
+// Ekspor file CSV khusus berstandar format tabel Supabase (riwayat_perjadin)
+// File ini dapat diunggah langsung via fitur "Upload CSV" di Table Editor Supabase tanpa kendala!
+function exportPerjadinSupabaseCsv() {
+  const draft = (typeof collectPerjadinDraftData === 'function') ? collectPerjadinDraftData() : null;
+  const f = draft?.fields || {};
+  const noST = (f.noST || f.noSTNum || 'Perjadin').trim();
+  const safeCsv = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+
+  let totalBiaya = 0;
+  const empIds = draft?.empIds || [];
+  try {
+    const emps = (typeof employees !== 'undefined' && Array.isArray(employees))
+      ? empIds.map(id => employees.find(e => e.id === id)).filter(Boolean)
+      : [];
+    if (typeof hitungBiaya === 'function') {
+      totalBiaya = emps.reduce((tot, emp) => tot + (hitungBiaya(emp)?.total || 0), 0);
+    }
+  } catch (e) {}
+
+  const headers = ['nomor_st', 'tujuan', 'agenda', 'tgl_berangkat', 'tgl_kembali', 'total_biaya', 'status_berkas', 'payload_json'];
+  const row = [
+    safeCsv(noST),
+    safeCsv(f.kotaTujuan || f.provinsiTujuan || ''),
+    safeCsv(f.agenda || ''),
+    safeCsv(f.tglBerangkat || ''),
+    safeCsv(f.tglKembali || ''),
+    totalBiaya,
+    safeCsv('diproses'),
+    safeCsv(JSON.stringify(draft || {}))
+  ];
+
+  const csvContent = headers.join(',') + '\n' + row.join(',');
+  const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const cleanSt = noST.replace(/[^a-zA-Z0-9]/g, '_');
+  a.href = url;
+  a.download = `PERJADIN_SUPABASE_${cleanSt}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  if (typeof showRefreshToast === 'function') {
+    showRefreshToast(
+      'CSV Supabase Berhasil Diunduh',
+      `File "PERJADIN_SUPABASE_${cleanSt}.csv" siap diunggah langsung ke fitur "Upload CSV" Table Editor Supabase.`
+    );
+  }
+}
+
+function generatePerjadinCsvString(wb, tripData) {
+  let csvResult = '';
+
+  // 1. Jika workbook XLSX (wb) tersedia, konversikan seluruh sheet ke format CSV standar
+  if (wb && wb.SheetNames && typeof XLSX !== 'undefined') {
+    wb.SheetNames.forEach((sheetName, idx) => {
+      const ws = wb.Sheets[sheetName];
+      if (ws) {
+        const sheetCsv = XLSX.utils.sheet_to_csv(ws, { FS: ',', RS: '\n' });
+        if (sheetCsv && sheetCsv.trim()) {
+          if (csvResult) csvResult += '\n\n';
+          csvResult += `=== LEMBAR KERJA: ${sheetName} ===\n` + sheetCsv.trim();
+        }
+      }
+    });
+  }
+
+  // 2. Tambahkan atau bangun tabel data CSV terstruktur (Flat Perjadin Table)
+  try {
+    const f = tripData?.fields || tripData?.draft?.fields || (typeof collectPerjadinDraftData === 'function' ? collectPerjadinDraftData()?.fields : {}) || {};
+    const noSTVal = tripData?.noST || f.noST || f.noSTNum || '';
+    const tglSTVal = tripData?.tglST || f.tglST || '';
+    const agendaVal = tripData?.agenda || f.agenda || '';
+    const tujuanVal = tripData?.kotaTujuan || tripData?.provinsiTujuan || f.kotaTujuan || f.provinsiTujuan || '';
+    const tglBerangkatVal = tripData?.tglBerangkat || f.tglBerangkat || '';
+    const tglKembaliVal = tripData?.tglKembali || f.tglKembali || '';
+    const lamaTugasVal = tripData?.lamaTugas || f.lamaTugas || '';
+    const makVal = tripData?.mak || f.mak || '';
+    const totalBiayaVal = tripData?.totalBiaya || 0;
+    const statusBerkasVal = tripData?.status_berkas || 'diproses';
+
+    let emps = [];
+    if (Array.isArray(tripData?.employees) && tripData.employees.length > 0) {
+      emps = tripData.employees;
+    } else {
+      const empIds = tripData?.empIds || tripData?.draft?.empIds || (typeof collectPerjadinDraftData === 'function' ? collectPerjadinDraftData()?.empIds : []) || [];
+      emps = (typeof employees !== 'undefined' && Array.isArray(employees))
+        ? empIds.map(id => employees.find(e => e.id === id)).filter(Boolean)
+        : [];
+    }
+
+    if (noSTVal || agendaVal || emps.length > 0) {
+      const headers = ['nomor_st', 'tgl_st', 'agenda', 'tujuan', 'tgl_berangkat', 'tgl_kembali', 'lama_tugas', 'mak', 'nama_pegawai', 'nip_pegawai', 'golongan', 'jabatan', 'total_biaya', 'status_berkas'];
+      const rows = [headers.join(',')];
+      const safe = str => `"${String(str ?? '').replace(/"/g, '""')}"`;
+
+      const baseCols = [
+        safe(noSTVal),
+        safe(tglSTVal),
+        safe(agendaVal),
+        safe(tujuanVal),
+        safe(tglBerangkatVal),
+        safe(tglKembaliVal),
+        safe(lamaTugasVal),
+        safe(makVal)
+      ];
+
+      if (emps.length === 0) {
+        rows.push([...baseCols, '""', '""', '""', '""', safe(totalBiayaVal), safe(statusBerkasVal)].join(','));
+      } else {
+        emps.forEach(emp => {
+          rows.push([
+            ...baseCols,
+            safe(emp?.nama || ''),
+            safe(emp?.nip || ''),
+            safe(emp?.golongan || emp?.gol || ''),
+            safe(emp?.jabatan || ''),
+            safe(totalBiayaVal),
+            safe(statusBerkasVal)
+          ].join(','));
+        });
+      }
+
+      const flatCsv = rows.join('\n');
+      if (csvResult) {
+        csvResult = `=== DATA TABEL RIWAYAT PERJADIN ===\n` + flatCsv + '\n\n' + csvResult;
+      } else {
+        csvResult = flatCsv;
+      }
+    }
+  } catch (err) {
+    console.warn('generatePerjadinCsvString flat table error:', err);
+  }
+
+  return csvResult;
+}
+
 function exportPerjadinZip() {
   exportPerjadinExcel('zip');
 }
 
 window.exportPerjadinExcel = exportPerjadinExcel;
 window.exportPerjadinZip = exportPerjadinZip;
+window.exportPerjadinSupabaseCsv = exportPerjadinSupabaseCsv;
+window.generatePerjadinCsvString = generatePerjadinCsvString;
 
 function getEmployeeDocFilePrefix(emp, allEmps) {
   if (!emp) return 'Pegawai';
@@ -458,6 +623,10 @@ async function mergePdfBlobs(pdfBlobArray) {
   const mergedBytes = await mergedPdf.save();
   return new Blob([mergedBytes], { type: 'application/pdf' });
 }
+
+window.downloadBlob = downloadBlob;
+window.generatePdfBlobFromHtml = generatePdfBlobFromHtml;
+window.mergePdfBlobs = mergePdfBlobs;
 
 function ensureExportProgressModal() {
   let overlay = document.getElementById('exportProgressOverlay');
