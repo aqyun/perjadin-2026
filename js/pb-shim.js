@@ -111,10 +111,37 @@
       }, 1500);
     }
 
-    // Tautan reset kata sandi dari email: #type=recovery&token=XXXX
+    // Tautan reset kata sandi atau verifikasi email dari email:
     try {
       const h = new URLSearchParams((window.location.hash || '').replace(/^#\??/, ''));
-      if (h.get('type') === 'recovery' && h.get('token')) recoveryToken = h.get('token');
+      const s = new URLSearchParams((window.location.search || '').replace(/^\??/, ''));
+      const token = h.get('token') || s.get('token');
+      const type = h.get('type') || s.get('type');
+      if (type === 'recovery' && token) recoveryToken = token;
+      if ((type === 'verify' || type === 'verification') && token) {
+        pb.collection('users').confirmVerification(token).then(() => {
+          try {
+            window.history.replaceState(null, '', window.location.pathname);
+          } catch (e) {}
+          setTimeout(() => {
+            if (typeof window.showRefreshToast === 'function') {
+              window.showRefreshToast('Email Terverifikasi', 'Email Anda telah berhasil diverifikasi! Silakan masuk ke akun Anda.');
+            }
+            const alertEl = document.getElementById('gateLoginAlert') || document.getElementById('authLoginAlert');
+            if (alertEl && typeof window.showAuthAlert === 'function') {
+              window.showAuthAlert(alertEl, 'success', '✅ Email Anda telah berhasil diverifikasi! Silakan masuk menggunakan kata sandi Anda.');
+            }
+          }, 400);
+        }).catch((err) => {
+          console.warn('Gagal konfirmasi verifikasi email:', err);
+          setTimeout(() => {
+            const alertEl = document.getElementById('gateLoginAlert') || document.getElementById('authLoginAlert');
+            if (alertEl && typeof window.showAuthAlert === 'function') {
+              window.showAuthAlert(alertEl, 'error', 'Tautan verifikasi email sudah kedaluwarsa atau tidak valid. Silakan coba masuk atau minta kirim ulang verifikasi.');
+            }
+          }, 400);
+        });
+      }
     } catch (e) { /* abaikan */ }
 
     function jwtEmail(tok) {
@@ -147,6 +174,20 @@
       async signInWithPassword({ email, password }) {
         try {
           await pb.collection('users').authWithPassword(email, password);
+          const r = pb.authStore.record;
+          // Pengecekan keamanan verifikasi email:
+          // Jika akun belum diverifikasi, tolak login dan minta konfirmasi email
+          if (r && r.verified === false) {
+            pb.authStore.clear();
+            return {
+              data: { user: null, session: null },
+              error: {
+                message: `Email belum dikonfirmasi. Harap periksa kotak masuk (inbox atau spam) di email Anda (${email}) dan klik tautan verifikasi sebelum masuk.`,
+                isUnverified: true,
+                email
+              }
+            };
+          }
           const session = sessionOut();
           notifyPending();
           emit('SIGNED_IN', session);
@@ -166,6 +207,12 @@
           await pb.collection('users').create({
             email, password, passwordConfirm: password, name: full, emailVisibility: true
           });
+          // Kirim email verifikasi ke pengguna untuk keamanan
+          try {
+            await pb.collection('users').requestVerification(email);
+          } catch (vErr) {
+            console.warn('requestVerification notice:', vErr);
+          }
         } catch (e) {
           const d = e && e.response && e.response.data;
           if (d && d.email) {
@@ -173,9 +220,16 @@
           }
           return { data: { user: null, session: null }, error: errOut(e) };
         }
-        const res = await auth.signInWithPassword({ email, password });
-        if (res.error) return { data: { user: null, session: null }, error: res.error };
-        return { data: res.data, error: null };
+        // Jangan auto-login. Kembalikan session null agar user diarahkan verifikasi email dulu
+        return { data: { user: null, session: null }, error: null };
+      },
+      async resendVerificationEmail(email) {
+        try {
+          await pb.collection('users').requestVerification(email);
+          return { data: {}, error: null };
+        } catch (e) {
+          return { data: null, error: errOut(e) };
+        }
       },
       async signOut() {
         pb.authStore.clear();

@@ -470,8 +470,8 @@ async function handleAuthLogin(e) {
     let msg = err.message || 'Gagal masuk. Periksa email dan password.';
     if (msg.includes('Invalid login credentials')) {
       msg = 'Email atau kata sandi tidak cocok. Silakan coba lagi.';
-    } else if (msg.includes('Email not confirmed')) {
-      msg = 'Email belum dikonfirmasi. Silakan periksa <strong>kotak masuk</strong> (atau folder Spam) pada email Anda terlebih dahulu.';
+    } else if (msg.includes('Email not confirmed') || msg.includes('Email belum dikonfirmasi') || err.isUnverified) {
+      msg = `Email Anda belum dikonfirmasi. Silakan periksa <strong>kotak masuk</strong> (atau folder Spam) pada email Anda terlebih dahulu dan klik tautan verifikasi sebelum masuk.<br><button type="button" class="btn btn-outline btn-sm" onclick="resendVerificationLink('${email}')" style="margin-top:8px; font-size:11.5px; padding:3px 10px;">📧 Kirim Ulang Email Verifikasi</button>`;
     } else if (msg.includes('Invalid API key')) {
       msg = 'Koneksi sesi diperbarui otomatis. Silakan klik Masuk sekali lagi.';
     }
@@ -718,8 +718,8 @@ async function handleGateLogin(e) {
     let msg = err.message || 'Gagal masuk. Periksa email dan password.';
     if (msg.includes('Invalid login credentials')) {
       msg = 'Email atau kata sandi tidak cocok. Silakan coba lagi.';
-    } else if (msg.includes('Email not confirmed')) {
-      msg = 'Email belum dikonfirmasi. Silakan periksa <strong>kotak masuk</strong> (atau folder Spam) pada email Anda terlebih dahulu.';
+    } else if (msg.includes('Email not confirmed') || msg.includes('Email belum dikonfirmasi') || err.isUnverified) {
+      msg = `Email Anda belum dikonfirmasi. Silakan periksa <strong>kotak masuk</strong> (atau folder Spam) pada email Anda terlebih dahulu dan klik tautan verifikasi sebelum masuk.<br><button type="button" class="btn btn-outline btn-sm" onclick="resendVerificationLink('${email}')" style="margin-top:8px; font-size:11.5px; padding:3px 10px;">📧 Kirim Ulang Email Verifikasi</button>`;
     } else if (msg.includes('Invalid API key')) {
       msg = 'Koneksi sesi diperbarui otomatis. Silakan klik Masuk sekali lagi.';
     }
@@ -2167,6 +2167,28 @@ window.closeSbConfigModal = closeSbConfigModal;
 window.saveSbConfig = saveSbConfig;
 window.resetSbConfigToDefault = resetSbConfigToDefault;
 window.handleAuthForgotPassword = handleAuthForgotPassword;
+async function resendVerificationLink(email) {
+  if (!email) return;
+  const client = getSupabaseClient();
+  try {
+    if (client && client.auth && typeof client.auth.resendVerificationEmail === 'function') {
+      const res = await client.auth.resendVerificationEmail(email);
+      if (res && res.error) {
+        if (typeof showRefreshToast === 'function') showRefreshToast('Gagal Mengirim', res.error.message || 'Silakan coba lagi nanti.');
+        return;
+      }
+    }
+    if (typeof showRefreshToast === 'function') {
+      showRefreshToast('Email Terkirim', `Tautan verifikasi baru telah dikirim ke ${email}.`);
+    }
+  } catch (e) {
+    if (typeof showRefreshToast === 'function') {
+      showRefreshToast('Gagal Mengirim', 'Silakan coba beberapa saat lagi.');
+    }
+  }
+}
+
+window.resendVerificationLink = resendVerificationLink;
 window.openUpdatePasswordModal = openUpdatePasswordModal;
 window.closeUpdatePasswordModal = closeUpdatePasswordModal;
 window.handleAuthUpdatePassword = handleAuthUpdatePassword;
