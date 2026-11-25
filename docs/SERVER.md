@@ -65,7 +65,7 @@ selalu kosong sampai admin memberi peran lewat **Kelola Pengguna Tim** di aplika
    .pb-test\pocketbase.exe serve --http=127.0.0.1:8099 --dir=.pb-test\data --migrationsDir=pb_migrations --publicDir=.
    ```
 
-3. Buka http://127.0.0.1:8099 untuk mencoba aplikasi. Di terminal lain, jalankan 41 pemeriksaan otomatis
+3. Buka http://127.0.0.1:8099 untuk mencoba aplikasi. Di terminal lain, jalankan 46 pemeriksaan otomatis
    (butuh Node.js, tanpa paket tambahan): `node tests/run-test.js`.
    Hapus `.pb-test\data` untuk mengulang dari kosong.
 
@@ -80,3 +80,19 @@ selalu kosong sampai admin memberi peran lewat **Kelola Pengguna Tim** di aplika
   Kelola pengguna dan data lewat aplikasi (akun admin).
 - `pocketbase.umd.js` adalah SDK resmi v0.29.0 dari npm. Kalau diperbarui, cek isinya sama dengan paket resmi.
 - Reset kata sandi lewat email baru berfungsi setelah SMTP diatur di server (belum).
+
+## Verifikasi email (saklar)
+
+Verifikasi email untuk akun baru **dimatikan** secara bawaan karena server belum punya SMTP: email verifikasi
+tidak akan terkirim, dan akun yang belum `verified` akan tertolak login (termasuk akun yang sudah ada).
+
+Sebelum menghidupkannya:
+
+1. Atur SMTP di dashboard PocketBase (Settings, Mail) dan tes kirim email.
+2. Tandai akun yang sudah ada sebagai `verified` (koleksi `users`), terutama akun admin.
+3. Taruh di `index.html`, sebelum `<script src="js/pb-shim.js...">`:
+   `<script>window.PERDINKU_REQUIRE_EMAIL_VERIFICATION = true;</script>`
+
+Bagian 7 di `tests/run-test.js` menguji mode ini. Penolakan login untuk akun belum terverifikasi
+saat ini hanya dijaga di sisi browser; bila verifikasi dijadikan syarat keamanan, tambahkan juga
+aturan `@request.auth.verified = true` lewat file migrasi.

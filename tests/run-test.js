@@ -153,6 +153,25 @@ async function setRole(userId, role) {
   r = await c2.from('profiles').select('*');
   check('viewer melihat daftar pengguna', !r.error && r.data.length >= 2, r);
 
+  console.log('7. Verifikasi email dihidupkan (PERDINKU_REQUIRE_EMAIL_VERIFICATION = true)');
+  window.PERDINKU_REQUIRE_EMAIL_VERIFICATION = true;
+  const c3 = window.supabase.createClient(BASE, 'x');
+  r = await c3.auth.signUp({ email: 'verif@example.com', password: 'rahasia1', options: { data: { full_name: 'Perlu Verifikasi' } } });
+  check('daftar tidak auto-login (tanpa sesi, tanpa error)', !r.error && r.data.session === null, r);
+  r = await c3.auth.signInWithPassword({ email: 'verif@example.com', password: 'rahasia1' });
+  check('login akun belum terverifikasi ditolak (isUnverified)', r.error && r.error.isUnverified === true, r);
+  check('tidak ada sesi tersisa setelah ditolak', (await c3.auth.getSession()).data.session === null);
+  const t3 = await suToken();
+  const found = await (await fetch(BASE + "/api/collections/users/records?filter=" + encodeURIComponent("email='verif@example.com'"), { headers: { Authorization: t3 } })).json();
+  const vid = found.items && found.items[0] && found.items[0].id;
+  const vr = await fetch(BASE + '/api/collections/users/records/' + vid, {
+    method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: t3 }, body: JSON.stringify({ verified: true })
+  });
+  check('(server) tandai akun terverifikasi', vr.ok);
+  r = await c3.auth.signInWithPassword({ email: 'verif@example.com', password: 'rahasia1' });
+  check('setelah terverifikasi: login berhasil', !r.error && r.data.session, r.error);
+  window.PERDINKU_REQUIRE_EMAIL_VERIFICATION = false;
+
   console.log('\nHasil: ' + pass + ' lulus, ' + fail + ' gagal');
   process.exit(fail ? 1 : 0);
 })().catch((e) => { console.error('ERROR', e); process.exit(2); });
