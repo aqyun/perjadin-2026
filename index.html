@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20261125_05">
+  <link rel="stylesheet" href="style.css?v=20261125_06">
 </head>
 <body class="auth-locked">
 
@@ -1566,8 +1566,10 @@
           
           <div class="history-filter-pill-row">
             <button type="button" class="btn-filter-pill active" id="btnFilterAll" data-filter="all" onclick="setTripStatusFilter('all')">Semua Berkas (<span id="filterCountAll">0</span>)</button>
-            <button type="button" class="btn-filter-pill" id="btnFilterDiproses" data-filter="diproses" onclick="setTripStatusFilter('diproses')">Sedang Diproses (<span id="filterCountDiproses">0</span>)</button>
-            <button type="button" class="btn-filter-pill" id="btnFilterDicairkan" data-filter="dicairkan" onclick="setTripStatusFilter('dicairkan')">Sudah Dicairkan (<span id="filterCountDicairkan">0</span>)</button>
+            <button type="button" class="btn-filter-pill filter-pill-ls" id="btnFilterLs" data-filter="ls" onclick="setTripStatusFilter('ls')">Berkas LS (<span id="filterCountLs">0</span>)</button>
+            <button type="button" class="btn-filter-pill filter-pill-kkp" id="btnFilterKkp" data-filter="kkp" onclick="setTripStatusFilter('kkp')">Berkas KKP (<span id="filterCountKkp">0</span>)</button>
+            <button type="button" class="btn-filter-pill filter-pill-diproses" id="btnFilterDiproses" data-filter="diproses" onclick="setTripStatusFilter('diproses')">Sedang Diproses (<span id="filterCountDiproses">0</span>)</button>
+            <button type="button" class="btn-filter-pill filter-pill-dicairkan" id="btnFilterDicairkan" data-filter="dicairkan" onclick="setTripStatusFilter('dicairkan')">Sudah Dicairkan (<span id="filterCountDicairkan">0</span>)</button>
           </div>
 
           <div class="history-toolbar">
@@ -2739,12 +2741,12 @@
 <script src="html2pdf.bundle.min.js"></script>
 <script src="pdf-lib.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
-<script src="js/supabase.js?v=20261125_05"></script>
+<script src="js/supabase.js?v=20261125_06"></script>
 <script src="js/data.js?v=20261124_33"></script>
 <script src="js/utils.js?v=20261124_33"></script>
 <script src="js/calc.js?v=20261124_33"></script>
 <script src="js/documents.js?v=20261124_33"></script>
 <script src="js/excel.js?v=20261125_02"></script>
-<script src="js/ui.js?v=20261125_05"></script>
+<script src="js/ui.js?v=20261125_06"></script>
 </body>
 </html>

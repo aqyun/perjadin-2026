@@ -2206,8 +2206,14 @@ let currentTripStatusFilter = 'all';
 
 function setTripStatusFilter(filter) {
   currentTripStatusFilter = filter;
-  const filterMap = { all: 'btnFilterAll', diproses: 'btnFilterDiproses', dicairkan: 'btnFilterDicairkan' };
-  ['all', 'diproses', 'dicairkan'].forEach(f => {
+  const filterMap = {
+    all: 'btnFilterAll',
+    ls: 'btnFilterLs',
+    kkp: 'btnFilterKkp',
+    diproses: 'btnFilterDiproses',
+    dicairkan: 'btnFilterDicairkan'
+  };
+  ['all', 'ls', 'kkp', 'diproses', 'dicairkan'].forEach(f => {
     const btn = document.querySelector(`.btn-filter-pill[data-filter="${f}"]`) || document.getElementById(filterMap[f]);
     if (btn) btn.classList.toggle('active', f === filter);
   });
@@ -2417,13 +2423,28 @@ function renderTripHistory(filterText = '') {
 
   // Hitung metrik KPI real-time untuk Dashboard & Filter Pills (tanpa auto-push ulang agar tidak ada duplikat DB)
   const totalAll = list.length;
+  const lsItems = list.filter(x => {
+    const raw = x.metodePembayaran || x.draft?.fields?.metodePembayaran || x.draft?.fields?.lk_metodePembayaran || 'LS';
+    return String(raw).trim().toUpperCase() !== 'KKP';
+  });
+  const kkpItems = list.filter(x => {
+    const raw = x.metodePembayaran || x.draft?.fields?.metodePembayaran || x.draft?.fields?.lk_metodePembayaran || 'LS';
+    return String(raw).trim().toUpperCase() === 'KKP';
+  });
   const diprosesItems = list.filter(x => (x.status_berkas || 'diproses') !== 'dicairkan');
   const dicairkanItems = list.filter(x => x.status_berkas === 'dicairkan');
+
+  const totalLs = lsItems.length;
+  const totalKkp = kkpItems.length;
   const totalDiproses = diprosesItems.length;
   const totalDicairkan = dicairkanItems.length;
 
   const elPillAll = document.getElementById('filterCountAll');
   if (elPillAll) elPillAll.textContent = totalAll;
+  const elPillLs = document.getElementById('filterCountLs');
+  if (elPillLs) elPillLs.textContent = totalLs;
+  const elPillKkp = document.getElementById('filterCountKkp');
+  if (elPillKkp) elPillKkp.textContent = totalKkp;
   const elPillDiproses = document.getElementById('filterCountDiproses');
   if (elPillDiproses) elPillDiproses.textContent = totalDiproses;
   const elPillDicairkan = document.getElementById('filterCountDicairkan');
@@ -2436,6 +2457,11 @@ function renderTripHistory(filterText = '') {
 
   const filtered = list.filter(item => {
     const status = item.status_berkas || 'diproses';
+    const rawMetode = item.metodePembayaran || item.draft?.fields?.metodePembayaran || item.draft?.fields?.lk_metodePembayaran || 'LS';
+    const isKKP = String(rawMetode).trim().toUpperCase() === 'KKP';
+
+    if (currentTripStatusFilter === 'ls' && isKKP) return false;
+    if (currentTripStatusFilter === 'kkp' && !isKKP) return false;
     if (currentTripStatusFilter === 'diproses' && status === 'dicairkan') return false;
     if (currentTripStatusFilter === 'dicairkan' && status !== 'dicairkan') return false;
 
@@ -2613,7 +2639,7 @@ function renderTripHistory(filterText = '') {
     const metodeLabel = isKKP ? 'KKP' : 'LS';
 
     return `
-      <div class="history-card" data-trip-id="${item.id}" onclick="handleTripCardClick(event, '${item.id}')" title="Klik untuk membuka dokumen PDF lengkap perjalanan ini">
+      <div class="history-card ${isKKP ? 'card-method-kkp' : 'card-method-ls'}" data-trip-id="${item.id}" onclick="handleTripCardClick(event, '${item.id}')" title="Klik untuk membuka dokumen PDF lengkap perjalanan ini">
         <div class="history-card-top">
           <div class="history-card-st">
             <span class="history-st-badge">${safeNoST}</span>
