@@ -23,8 +23,21 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Pastikan kolom updated_at ada jika tabel sudah terbuat sebelumnya
+-- Pastikan kolom updated_at ada & constraint role mendukung admin, operator, viewer jika tabel sudah terbuat sebelumnya
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+DO $$
+DECLARE r RECORD;
+BEGIN
+  FOR r IN (
+    SELECT conname FROM pg_constraint
+    WHERE conrelid = 'public.profiles'::regclass
+      AND contype = 'c'
+      AND pg_get_constraintdef(oid) LIKE '%role%'
+  ) LOOP
+    EXECUTE 'ALTER TABLE public.profiles DROP CONSTRAINT IF EXISTS ' || quote_ident(r.conname);
+  END LOOP;
+END $$;
+ALTER TABLE public.profiles ADD CONSTRAINT profiles_role_check CHECK (role IN ('admin', 'operator', 'viewer'));
 
 -- Indeks tabel profiles
 CREATE INDEX IF NOT EXISTS idx_profiles_email ON public.profiles (email);
@@ -186,9 +199,6 @@ CREATE TABLE IF NOT EXISTS public.riwayat_perjadin (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
-
--- Pastikan kolom updated_at ada jika tabel sudah terbuat sebelumnya
-ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
 
 -- Pastikan kolom status_berkas dan csv_data ada jika tabel sudah pernah dibuat sebelumnya
 ALTER TABLE public.riwayat_perjadin ADD COLUMN IF NOT EXISTS status_berkas TEXT DEFAULT 'diproses';

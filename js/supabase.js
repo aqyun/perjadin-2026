@@ -1353,6 +1353,22 @@ GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
 GRANT ALL ON ALL ROUTINES IN SCHEMA public TO anon, authenticated;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated;
 
+-- Pastikan kolom & constraint role pada tabel profiles mendukung admin, operator (Role Khusus), viewer
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+DO $$
+DECLARE r RECORD;
+BEGIN
+  FOR r IN (
+    SELECT conname FROM pg_constraint
+    WHERE conrelid = 'public.profiles'::regclass
+      AND contype = 'c'
+      AND pg_get_constraintdef(oid) LIKE '%role%'
+  ) LOOP
+    EXECUTE 'ALTER TABLE public.profiles DROP CONSTRAINT IF EXISTS ' || quote_ident(r.conname);
+  END LOOP;
+END $$;
+ALTER TABLE public.profiles ADD CONSTRAINT profiles_role_check CHECK (role IN ('admin', 'operator', 'viewer'));
+
 -- Pastikan izin Admin utama dan hak update profil
 CREATE OR REPLACE FUNCTION public.is_admin()
 RETURNS BOOLEAN AS $$
@@ -1362,7 +1378,7 @@ BEGIN
     OR EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
   );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 CREATE OR REPLACE FUNCTION public.admin_set_user_role(target_user_id UUID, new_role TEXT)
 RETURNS JSONB AS $$
@@ -1379,11 +1395,33 @@ BEGIN
   IF NOT caller_is_admin THEN
     RAISE EXCEPTION 'Akses ditolak: Hanya Admin yang dapat mengubah peran.';
   END IF;
+  IF new_role NOT IN ('admin', 'operator', 'viewer') THEN
+    RAISE EXCEPTION 'Peran tidak valid: %. Pilihan: admin, operator, viewer', new_role;
+  END IF;
   UPDATE public.profiles SET role = new_role WHERE id = target_user_id RETURNING * INTO updated_row;
+  IF updated_row.id IS NULL THEN
+    INSERT INTO public.profiles (id, email, role)
+    VALUES (target_user_id, (SELECT email FROM auth.users WHERE id = target_user_id), new_role)
+    RETURNING * INTO updated_row;
+  END IF;
   RETURN jsonb_build_object('success', true, 'id', updated_row.id, 'role', updated_row.role);
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 GRANT EXECUTE ON FUNCTION public.admin_set_user_role(UUID, TEXT) TO authenticated, anon;
+
+-- Pastikan RLS tabel profiles mengizinkan Admin membaca & mengubah peran anggota
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Profiles dapat dilihat oleh pengguna terotentikasi" ON public.profiles;
+CREATE POLICY "Profiles dapat dilihat oleh pengguna terotentikasi"
+  ON public.profiles FOR SELECT TO authenticated USING (true);
+
+DROP POLICY IF EXISTS "Admin dapat mengupdate profil dan role pengguna" ON public.profiles;
+DROP POLICY IF EXISTS "Pengguna dapat mengupdate profil sendiri" ON public.profiles;
+DROP POLICY IF EXISTS "Admin atau pemilik akun dapat mengupdate profil" ON public.profiles;
+CREATE POLICY "Admin atau pemilik akun dapat mengupdate profil"
+  ON public.profiles FOR UPDATE TO authenticated
+  USING (public.is_admin() OR auth.uid() = id)
+  WITH CHECK (public.is_admin() OR role = (SELECT p.role FROM public.profiles p WHERE p.id = auth.uid()));
 
 -- Pastikan seluruh kolom penting tersedia di tabel riwayat_perjadin
 ALTER TABLE public.riwayat_perjadin ADD COLUMN IF NOT EXISTS status_berkas TEXT DEFAULT 'diproses';
@@ -1498,8 +1536,71 @@ async function loadUserManagementList() {
   }
 }
 
+function escapeAttrSafe(str) {
+  if (typeof escapeHtml === 'function') return escapeHtml(str);
+  return String(str == null ? '' : str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function getRoleMeta(rawRole) {
+  const r = String(rawRole || 'viewer').toLowerCase().trim();
+  if (r === 'admin') {
+    return {
+      key: 'admin',
+      label: 'ADMIN',
+      fullName: 'ADMIN (Akses Penuh)',
+      badgeClass: 'badge-role-admin',
+      selectClass: 'select-role-admin'
+    };
+  }
+  if (r === 'operator' || r === 'editor') {
+    return {
+      key: 'operator',
+      label: 'ROLE KHUSUS',
+      fullName: 'ROLE KHUSUS (Buat & Update Progres)',
+      badgeClass: 'badge-role-operator',
+      selectClass: 'select-role-operator'
+    };
+  }
+  return {
+    key: 'viewer',
+    label: 'VIEWER',
+    fullName: 'VIEWER (Hanya Dashboard)',
+    badgeClass: 'badge-role-viewer',
+    selectClass: 'select-role-viewer'
+  };
+}
+
+function applyUserRowRoleVisual(userId, roleValue, selectEl) {
+  const meta = getRoleMeta(roleValue);
+  const safeId = (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') ? CSS.escape(String(userId)) : String(userId);
+  const rowEl = document.querySelector(`.user-mgmt-row[data-user-id="${safeId}"]`);
+  if (rowEl) {
+    const roleWrap = rowEl.querySelector('.user-mgmt-role-wrap');
+    if (roleWrap) {
+      roleWrap.innerHTML = `<span class="${meta.badgeClass}">${meta.label}</span>`;
+    }
+    const sel = selectEl || rowEl.querySelector('.user-role-select');
+    if (sel) {
+      sel.value = meta.key;
+      sel.classList.remove('select-role-admin', 'select-role-operator', 'select-role-viewer');
+      sel.classList.add(meta.selectClass);
+    }
+  } else if (selectEl) {
+    selectEl.value = meta.key;
+    selectEl.classList.remove('select-role-admin', 'select-role-operator', 'select-role-viewer');
+    selectEl.classList.add(meta.selectClass);
+  }
+}
+
 function filterUserManagementList() {
   const q = String(document.getElementById('userMgmtSearch')?.value || '').trim().toLowerCase();
+  const container = document.getElementById('userMgmtList');
+  if (!container) return;
   if (!q) {
     renderUserManagementRows(cachedUserProfiles);
     return;
@@ -1507,7 +1608,8 @@ function filterUserManagementList() {
   const filtered = cachedUserProfiles.filter(u => {
     return (u.nama_lengkap || '').toLowerCase().includes(q) || (u.email || '').toLowerCase().includes(q);
   });
-  renderUserManagementRows(filtered);
+  container.innerHTML = generateUserRowsHtml(filtered);
+  updateUserStats(cachedUserProfiles);
 }
 
 function generateUserRowsHtml(users) {
@@ -1520,19 +1622,16 @@ function generateUserRowsHtml(users) {
   return users.map(u => {
     const isRootAdmin = ['aqyunrm@gmail.com', 'aqyun.maulidin@pkp.go.id'].includes((u.email || '').toLowerCase());
     const isSelf = currentUser && (currentUser.id === u.id || (currentUser.email && currentUser.email.toLowerCase() === (u.email || '').toLowerCase()));
-    const role = (u.role || 'viewer').toLowerCase();
+    const roleMeta = getRoleMeta(u.role);
+    const role = roleMeta.key;
     const isAdm = role === 'admin';
-    const isOperator = role === 'operator' || role === 'editor';
-    let roleBadge = '';
-    if (isAdm) {
-      roleBadge = '<span class="badge-role-admin">ADMIN</span>';
-    } else if (isOperator) {
-      roleBadge = '<span class="badge-role-operator" style="background:#fef3c7;color:#b45309;padding:4px 9px;border-radius:20px;font-weight:700;font-size:11px;border:1px solid #fde68a;">ROLE KHUSUS</span>';
-    } else {
-      roleBadge = '<span class="badge-role-viewer">VIEWER</span>';
-    }
+    const isOperator = role === 'operator';
+    const roleBadge = `<span class="${roleMeta.badgeClass}">${roleMeta.label}</span>`;
 
     const rawName = u.nama_lengkap || u.email || 'Pengguna';
+    const safeName = escapeAttrSafe(rawName);
+    const safeEmail = escapeAttrSafe(u.email || '-');
+    const safeId = escapeAttrSafe(u.id);
     const initials = rawName.split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase() || 'U';
 
     let actionBtnHtml = '';
@@ -1542,7 +1641,11 @@ function generateUserRowsHtml(users) {
       actionBtnHtml = '<span class="badge-self-pill" title="Akun Anda yang sedang aktif">Akun Anda</span>';
     } else {
       actionBtnHtml = `
-        <select class="user-role-select" onchange="updateUserRole('${u.id}', '${u.email}', this.value)" style="padding:6px 12px;border-radius:8px;font-size:12px;font-weight:700;border:1.5px solid #cbd5e1;cursor:pointer;background:#fff;" title="Ubah peran pengguna">
+        <select class="user-role-select ${roleMeta.selectClass}"
+                data-user-id="${safeId}"
+                data-user-email="${escapeAttrSafe(u.email || '')}"
+                onchange="updateUserRole(this.dataset.userId, this.dataset.userEmail, this.value, this)"
+                title="Ubah peran pengguna">
           <option value="viewer" ${role === 'viewer' ? 'selected' : ''}>Viewer (Hanya Dashboard)</option>
           <option value="operator" ${isOperator ? 'selected' : ''}>Role Khusus (Buat &amp; Update Progres)</option>
           <option value="admin" ${isAdm ? 'selected' : ''}>Admin (Akses Penuh)</option>
@@ -1551,14 +1654,14 @@ function generateUserRowsHtml(users) {
     }
 
     return `
-      <div class="user-mgmt-row" data-user-id="${u.id}">
-        <div class="user-mgmt-avatar" title="${rawName}">${initials}</div>
+      <div class="user-mgmt-row" data-user-id="${safeId}">
+        <div class="user-mgmt-avatar" title="${safeName}">${initials}</div>
         <div class="user-mgmt-info">
           <div class="user-mgmt-name-wrap">
-            <strong class="user-mgmt-name">${rawName}</strong>
+            <strong class="user-mgmt-name">${safeName}</strong>
             ${isSelf ? '<span class="badge-self-pill">Anda</span>' : ''}
           </div>
-          <span class="user-mgmt-email">${u.email || '-'}</span>
+          <span class="user-mgmt-email">${safeEmail}</span>
         </div>
         <div class="user-mgmt-role-wrap">
           ${roleBadge}
@@ -1575,134 +1678,128 @@ function renderUserManagementRows(users) {
   const container = document.getElementById('userMgmtList');
   if (!container) return;
   container.innerHTML = generateUserRowsHtml(users);
-  updateUserStats(users);
+  updateUserStats(cachedUserProfiles.length ? cachedUserProfiles : users);
 }
 
-async function updateUserRole(userId, userEmail, newRole) {
+async function updateUserRole(userId, userEmail, newRole, selectEl) {
   const client = getSupabaseClient();
   if (!client || !isCurrentUserAdmin()) {
     alert('Hanya Admin yang berhak mengubah peran pengguna.');
+    filterUserManagementList();
     return;
   }
 
-  const roleLabels = {
-    admin: 'ADMIN (Akses Penuh)',
-    operator: 'ROLE KHUSUS (Buat Berkas & Update Progres)',
-    viewer: 'VIEWER (Hanya Dashboard & Riwayat)'
-  };
-  const roleLabel = roleLabels[newRole] || newRole.toUpperCase();
-  if (!confirm(`Ubah peran untuk "${userEmail}" menjadi [${roleLabel}]?`)) {
-    renderUserManagementRows(cachedUserProfiles);
-    return;
-  }
+  const targetMeta = getRoleMeta(newRole);
+  const targetRole = targetMeta.key;
+  const targetUser = cachedUserProfiles.find(u => String(u.id) === String(userId));
+  const previousRole = targetUser ? getRoleMeta(targetUser.role).key : 'viewer';
+
+  // Auto-update instan di UI (nama badge, warna badge, warna dropdown, dan counter statistik)
+  if (targetUser) targetUser.role = targetRole;
+  applyUserRowRoleVisual(userId, targetRole, selectEl);
+  updateUserStats(cachedUserProfiles);
 
   const alertEl = document.getElementById('userMgmtAlert');
+  if (alertEl) {
+    alertEl.style.display = 'none';
+    alertEl.innerHTML = '';
+  }
+
+  if (selectEl) selectEl.disabled = true;
 
   try {
     let updateSuccess = false;
+    let verifiedRow = null;
     let lastErrMsg = '';
 
-    // Cara 1: Update langsung ke tabel profiles dengan .select() untuk verifikasi database
+    // Cara 1: Update langsung ke tabel profiles dengan .select() untuk memverifikasi baris benar-benar berubah di DB
     try {
       const { data, error } = await client
         .from('profiles')
-        .update({ role: newRole })
+        .update({ role: targetRole })
         .eq('id', userId)
         .select();
 
-      if (!error && Array.isArray(data) && data.length > 0) {
+      if (!error && Array.isArray(data) && data.length > 0 && getRoleMeta(data[0].role).key === targetRole) {
         updateSuccess = true;
+        verifiedRow = data[0];
       } else if (error) {
         lastErrMsg = error.message;
+      } else {
+        lastErrMsg = 'Update langsung ditolak kebijakan RLS Supabase (0 baris berubah).';
       }
     } catch (e1) {
       lastErrMsg = e1.message;
     }
 
-    // Cara 2: Jika RLS membatasi, panggil RPC admin_set_user_role (Security Definer)
+    // Cara 2: Jika Cara 1 diblokir RLS, panggil RPC admin_set_user_role (Security Definer)
     if (!updateSuccess) {
       try {
         const { data: rpcRes, error: rpcErr } = await client.rpc('admin_set_user_role', {
           target_user_id: userId,
-          new_role: newRole
+          new_role: targetRole
         });
-        if (!rpcErr && rpcRes && rpcRes.success) {
+        if (!rpcErr && rpcRes && rpcRes.success && getRoleMeta(rpcRes.role).key === targetRole) {
           updateSuccess = true;
+          verifiedRow = { ...(targetUser || {}), id: userId, role: rpcRes.role };
         } else if (rpcErr) {
-          lastErrMsg = rpcErr.message;
+          lastErrMsg = rpcErr.message || lastErrMsg;
         }
       } catch (e2) {
         lastErrMsg = e2.message || lastErrMsg;
       }
     }
 
-    // Cara 3: Update standar tanpa select jika schema cache belum sinkron
     if (!updateSuccess) {
-      try {
-        const { error: simpleErr } = await client
-          .from('profiles')
-          .update({ role: newRole })
-          .eq('id', userId);
-        if (!simpleErr) {
-          updateSuccess = true;
-        } else {
-          lastErrMsg = simpleErr.message;
-        }
-      } catch (e3) {
-        lastErrMsg = e3.message || lastErrMsg;
+      throw new Error(lastErrMsg || 'Izin RLS / fungsi admin_set_user_role di Supabase belum diaktifkan.');
+    }
+
+    // Sinkronkan cache lokal dengan hasil terverifikasi dari database
+    if (verifiedRow) {
+      const idx = cachedUserProfiles.findIndex(u => String(u.id) === String(userId));
+      if (idx !== -1) {
+        cachedUserProfiles[idx] = { ...cachedUserProfiles[idx], ...verifiedRow, role: targetRole };
       }
     }
 
-    if (!updateSuccess) {
-      throw new Error(lastErrMsg || 'Gagal menyimpan perubahan peran ke database Supabase.');
-    }
-
-    if (alertEl) {
-      alertEl.style.display = 'none';
-      alertEl.textContent = '';
-    }
-
-    // Ambil data terbaru langsung dari Supabase untuk verifikasi integrasi database real-time
-    try {
-      const { data: freshList, error: freshErr } = await client
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: true });
-
-      if (!freshErr && freshList && freshList.length > 0) {
-        cachedUserProfiles = freshList;
-      } else {
-        const target = cachedUserProfiles.find(u => u.id === userId);
-        if (target) target.role = newRole;
-      }
-    } catch (fetchErr) {
-      const target = cachedUserProfiles.find(u => u.id === userId);
-      if (target) target.role = newRole;
-    }
-
-    // Render ulang baris tabel dan statistik counter
-    renderUserManagementRows(cachedUserProfiles);
+    applyUserRowRoleVisual(userId, targetRole, selectEl);
     updateUserStats(cachedUserProfiles);
 
     if (typeof showRefreshToast === 'function') {
-      showRefreshToast('Hak Akses Diperbarui di Database', `Peran untuk ${userEmail} berhasil diintegrasikan ke database sebagai [${roleLabel}].`);
+      showRefreshToast('Hak Akses Diperbarui di Database', `Peran untuk ${userEmail} berhasil disimpan sebagai [${targetMeta.fullName}].`);
     }
 
     // Jika yang diubah adalah akun pengguna yang sedang login saat ini, perbarui status aktifnya
-    if (currentAuthUser && currentAuthUser.id === userId) {
-      currentAuthUser.role = newRole;
+    if (currentAuthUser && String(currentAuthUser.id) === String(userId)) {
+      currentAuthUser.role = targetRole;
       if (typeof applyRolePermissions === 'function') applyRolePermissions();
       if (typeof renderAuthWidget === 'function') renderAuthWidget();
     }
   } catch (err) {
     console.error('Gagal memperbarui peran:', err);
+    // Kembalikan state & visual ke role sebelumnya di database agar UI selalu jujur
+    if (targetUser) targetUser.role = previousRole;
+    applyUserRowRoleVisual(userId, previousRole, selectEl);
+    updateUserStats(cachedUserProfiles);
+
+    const safeErrMsg = escapeAttrSafe(err.message || 'Gagal memperbarui peran di database.');
     if (alertEl) {
-      showAuthAlert(alertEl, 'error', `Gagal mengubah peran: ${err.message}`);
+      showAuthAlert(alertEl, 'error', `
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <span><strong>Gagal menyimpan ke Supabase:</strong> ${safeErrMsg}</span>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span style="font-size:12px;">Jika belum pernah dijalankan, salin lalu jalankan query SQL perbaikan di <strong>SQL Editor</strong> Supabase:</span>
+            <button type="button" class="btn-copy-sql" onclick="copySchemaSqlToClipboard(this)">
+              <span>Salin Perintah SQL Perbaikan</span>
+            </button>
+          </div>
+        </div>
+      `);
     } else {
       alert(`Gagal mengubah peran: ${err.message}`);
     }
-    // Kembalikan render ke state saat ini
-    renderUserManagementRows(cachedUserProfiles);
+  } finally {
+    if (selectEl) selectEl.disabled = false;
   }
 }
 
