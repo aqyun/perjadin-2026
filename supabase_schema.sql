@@ -13,7 +13,7 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authentic
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO anon, authenticated;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON ROUTINES TO anon, authenticated;
 
--- 1. TABEL PROFILES (Data pengguna & Hak Akses: Admin, Role Khusus/Operator, Viewer)
+-- 1. TABEL PROFILES (Data pengguna & Hak Akses: Admin, Operator, Viewer)
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   email TEXT UNIQUE,
@@ -61,7 +61,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Helper Function: Mengecek apakah pengguna dapat membuat & mengedit berkas (Admin atau Role Khusus/Operator)
+-- Helper Function: Mengecek apakah pengguna dapat membuat & mengedit berkas (Admin atau Operator)
 CREATE OR REPLACE FUNCTION public.can_edit()
 RETURNS BOOLEAN AS $$
 BEGIN
