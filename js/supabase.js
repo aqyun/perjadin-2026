@@ -2,10 +2,13 @@
 // PERDINKU 2026 - SUPABASE DATABASE & AUTHENTICATION INTEGRATION
 // =====================================================================
 
-const DEFAULT_SUPABASE_URL = 'https://nrwnovsmbbacngmktrhz.supabase.co';
-// Gunakan Kunci Anon JWT standar untuk kompatibilitas penuh 100% dengan Supabase JS client
-const DEFAULT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yd25vdnNtYmJhY25nbWt0cmh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU0ODY3MDksImV4cCI6MjExMTA2MjcwOX0.Egvt9OdWEW_yIU3Zhmt0Uzey_jkb7SgYpCfGtP0yzw8';
-const DEFAULT_SUPABASE_PUB_KEY = 'sb_publishable_LE12eNB96-6akcfd7mt7Ig_Azs7L9vt';
+// Backend sekarang PocketBase (server https://perdinku.thearchiver.my.id).
+// Lapisan js/pb-shim.js meniru antarmuka supabase-js di atas PocketBase.
+const DEFAULT_SUPABASE_URL = (typeof window !== 'undefined' && window.location.hostname.includes('thearchiver.my.id'))
+  ? window.location.origin
+  : 'https://perdinku.thearchiver.my.id';
+const DEFAULT_SUPABASE_ANON_KEY = 'pocketbase';
+const DEFAULT_SUPABASE_PUB_KEY = '';
 const STORAGE_KEY_SB_URL = 'perdinku_sb_url';
 const STORAGE_KEY_SB_ANON = 'perdinku_sb_anon_key';
 
@@ -23,19 +26,18 @@ function getCurrentAuthUser() {
 
 // Ambil konfigurasi URL dan Anon Key dari localStorage atau default tertanam
 function getSupabaseConfig() {
+  let storedUrl = (localStorage.getItem(STORAGE_KEY_SB_URL) || '').trim();
+  if (storedUrl.includes('supabase.co')) {
+    localStorage.removeItem(STORAGE_KEY_SB_URL);
+    storedUrl = '';
+  }
   let storedAnon = (localStorage.getItem(STORAGE_KEY_SB_ANON) || '').trim();
-  // Validasi ketat: jika di localStorage tersimpan secret key, connection string postgres, atau format salah, bersihkan otomatis!
-  if (storedAnon) {
-    const isJwt = storedAnon.startsWith('eyJhbGci');
-    const isPub = storedAnon.startsWith('sb_publishable_');
-    if (!isJwt && !isPub || storedAnon.includes('postgres') || storedAnon.includes('secret')) {
-      console.warn('Membersihkan API key usang/invalid dari localStorage:', storedAnon);
-      localStorage.removeItem(STORAGE_KEY_SB_ANON);
-      storedAnon = '';
-    }
+  if (storedAnon && (storedAnon.includes('postgres') || storedAnon.includes('secret') || storedAnon.startsWith('eyJhbGci'))) {
+    localStorage.removeItem(STORAGE_KEY_SB_ANON);
+    storedAnon = '';
   }
   return {
-    url: DEFAULT_SUPABASE_URL,
+    url: storedUrl || DEFAULT_SUPABASE_URL,
     anonKey: storedAnon || DEFAULT_SUPABASE_ANON_KEY
   };
 }
