@@ -212,9 +212,6 @@ function excelGetHotelRows() {
 }
 
 function exportPerjadinExcel(mode = 'excel') {
-  if (typeof saveCurrentTripToHistory === 'function') {
-    try { saveCurrentTripToHistory(false); } catch (e) {}
-  }
   if (typeof XLSX === 'undefined') {
     alert('Pustaka Excel (xlsx.full.min.js) tidak termuat. Periksa file di folder aplikasi.');
     return;
@@ -315,13 +312,12 @@ function exportPerjadinExcel(mode = 'excel') {
     console.warn('Gagal mengonversi Excel ke CSV:', csvErr);
   }
 
-  // Simpan ke riwayat lokal dan integrasikan otomatis ke tabel riwayat_perjadin di Supabase
-  if (typeof saveCurrentTripToHistory === 'function') {
+  const fromHistoryDownload = !!window._isExportingFromHistory;
+
+  // Simpan ke riwayat lokal dan integrasikan otomatis 1x ke tabel riwayat_perjadin di Supabase (kecuali sekadar unduh ulang dari Riwayat)
+  if (!fromHistoryDownload && typeof saveCurrentTripToHistory === 'function') {
     try {
-      const savedTrip = saveCurrentTripToHistory(false, csvData);
-      if (savedTrip && typeof uploadTripToCloud === 'function') {
-        uploadTripToCloud(savedTrip);
-      }
+      saveCurrentTripToHistory(false, csvData);
     } catch (e) {
       console.warn('Auto-save & cloud upload warning:', e);
     }
@@ -335,6 +331,7 @@ function exportPerjadinExcel(mode = 'excel') {
   if (mode === 'zip' || mode === 'all') {
     // Mode ZIP: buat folder kegiatan & kompilasi seluruh berkas PDF + Excel dalam 1 arsip ZIP
     if (empIds.length > 0 && typeof html2pdf !== 'undefined') {
+      window._skipNextExportFormReset = fromHistoryDownload;
       exportPerjadinActivityFolder(wb, naming);
     } else {
       XLSX.writeFile(wb, naming.excelFileName);
@@ -345,15 +342,19 @@ function exportPerjadinExcel(mode = 'excel') {
     if (typeof showRefreshToast === 'function') {
       showRefreshToast(
         'Excel Berhasil Disimpan',
-        `File "${naming.excelFileName}" berhasil diunduh dan terintegrasi otomatis ke database Cloud Supabase.`
+        fromHistoryDownload
+          ? `File "${naming.excelFileName}" berhasil diunduh dari riwayat.`
+          : `File "${naming.excelFileName}" berhasil diunduh dan terintegrasi ke database Cloud Supabase.`
       );
     }
-    // Auto-reset formulir setelah berhasil disimpan (data telah aman di Riwayat)
-    setTimeout(() => {
-      if (typeof resetPerjadinForm === 'function') {
-        resetPerjadinForm(false);
-      }
-    }, 450);
+    // Auto-reset formulir setelah berhasil disimpan dari form (data telah aman di Riwayat)
+    if (!fromHistoryDownload) {
+      setTimeout(() => {
+        if (typeof resetPerjadinForm === 'function') {
+          resetPerjadinForm(false);
+        }
+      }, 450);
+    }
   }
 }
 
@@ -751,11 +752,15 @@ function finishExportModal(folderName, fileList, zipBlob) {
       };
     }
 
-    setTimeout(() => {
-      if (typeof resetPerjadinForm === 'function') {
-        resetPerjadinForm(true);
-      }
-    }, 400);
+    const shouldSkipReset = !!window._skipNextExportFormReset;
+    window._skipNextExportFormReset = false;
+    if (!shouldSkipReset) {
+      setTimeout(() => {
+        if (typeof resetPerjadinForm === 'function') {
+          resetPerjadinForm(true);
+        }
+      }, 400);
+    }
   }
 }
 
@@ -1307,9 +1312,6 @@ function applyPerjadinExcel(wb) {
     if (tabName !== 'input') {
       if (typeof switchTabPanel === 'function') switchTabPanel(tabName);
     }
-  }
-  if (typeof saveCurrentTripToHistory === 'function') {
-    try { saveCurrentTripToHistory(false); } catch (e) {}
   }
   return { employees: selectedEmpIds.size, unknown: unknownNames };
 }

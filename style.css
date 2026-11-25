@@ -15578,3 +15578,262 @@ html[data-theme="dark"] .btn-filter-pill.active {
   border-color: #3b82f6;
   color: #ffffff;
 }
+
+/* =====================================================================
+   MODE REVISI BANNER & LOG REVISI RIWAYAT
+   ===================================================================== */
+.active-revision-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%);
+  border: 1.5px solid #93c5fd;
+  border-radius: 12px;
+  flex-wrap: wrap;
+}
+
+.rev-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 240px;
+}
+
+.rev-banner-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.rev-banner-text {
+  font-size: 13px;
+  color: #1e3a8a;
+  line-height: 1.4;
+}
+
+.rev-banner-cancel {
+  flex-shrink: 0;
+}
+
+.history-revision-box {
+  margin-top: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #f8fafc;
+  overflow: hidden;
+}
+
+.history-revision-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  font-size: 12px;
+  color: #475569;
+  transition: background 0.15s ease;
+}
+
+.history-revision-toggle:hover {
+  background: #f1f5f9;
+}
+
+.rev-badge-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 14px;
+  font-size: 11px;
+  font-weight: 700;
+  background: #e0e7ff;
+  color: #3730a3;
+  flex-shrink: 0;
+}
+
+.rev-latest-summary {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: #475569;
+}
+
+.rev-latest-time {
+  color: #64748b;
+  font-size: 11.5px;
+}
+
+.rev-chevron {
+  font-size: 12px;
+  color: #64748b;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.history-revision-toggle.is-open .rev-chevron {
+  transform: rotate(180deg);
+}
+
+.rev-role-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: 12px;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+.rev-role-tag.rev-role-admin {
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.rev-role-tag.rev-role-operator {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.rev-role-tag.rev-role-viewer {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.history-revision-timeline {
+  border-top: 1px solid #e2e8f0;
+  padding: 10px 12px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rev-log-entry {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed #e2e8f0;
+}
+
+.rev-log-entry:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.rev-log-marker {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #475569;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 2px 6px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.rev-log-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.rev-log-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: #1e293b;
+}
+
+.rev-log-email {
+  color: #64748b;
+  font-size: 11.5px;
+}
+
+.rev-log-time {
+  color: #64748b;
+  font-size: 11.5px;
+}
+
+.rev-log-note {
+  margin-top: 3px;
+  font-size: 12px;
+  color: #475569;
+  line-height: 1.4;
+}
+
+html[data-theme="dark"] .active-revision-banner {
+  background: linear-gradient(135deg, rgba(30, 58, 138, 0.35) 0%, #0f172a 100%);
+  border-color: #2563eb;
+}
+
+html[data-theme="dark"] .rev-banner-text {
+  color: #bfdbfe;
+}
+
+html[data-theme="dark"] .history-revision-box {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .history-revision-toggle,
+html[data-theme="dark"] .rev-latest-summary {
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .history-revision-toggle:hover {
+  background: #273549;
+}
+
+html[data-theme="dark"] .rev-badge-count {
+  background: rgba(99, 102, 241, 0.25);
+  color: #c7d2fe;
+}
+
+html[data-theme="dark"] .history-revision-timeline {
+  background: #0f172a;
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .rev-log-entry {
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .rev-log-meta {
+  color: #f1f5f9;
+}
+
+html[data-theme="dark"] .rev-log-note {
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .rev-log-marker {
+  background: #1e293b;
+  border-color: #475569;
+  color: #cbd5e1;
+}

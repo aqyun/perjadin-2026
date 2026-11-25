@@ -1450,31 +1450,18 @@ function restorePerjadinDraftData(data) {
 }
 
 function scheduleAutoSaveDraft() {
-  updateAutosaveIndicator('saving');
+  // Tidak otomatis insert/push ke database riwayat saat sedang mengetik untuk mencegah duplikasi data
   if (autoSaveTimer) clearTimeout(autoSaveTimer);
-  autoSaveTimer = setTimeout(() => {
-    try {
-      if (isPerjadinDraftDirty()) {
-        const draft = collectPerjadinDraftData();
-        localStorage.setItem(PERJADIN_DRAFT_KEY, JSON.stringify(draft));
-        updateAutosaveIndicator('saved');
-        // Otomatis catat/perbarui riwayat perjalanan tanpa harus klik tombol simpan manual
-        if (typeof saveCurrentTripToHistory === 'function') {
-          saveCurrentTripToHistory(false);
-        }
-      } else {
-        updateAutosaveIndicator('clean');
-      }
-    } catch (e) {
-      console.warn('Autosave error:', e);
-    }
-  }, 400);
+  updateAutosaveIndicator('clean');
 }
 
 function resetPerjadinForm(isSilent = false) {
+  window._isResetting = true;
   try {
     localStorage.removeItem(PERJADIN_DRAFT_KEY);
   } catch (e) {}
+  window._activeEditingTrip = null;
+  if (typeof updateRevisionBanner === 'function') updateRevisionBanner(null);
 
   if (typeof selectedEmpIds !== 'undefined' && selectedEmpIds) {
     selectedEmpIds.clear();
@@ -1568,6 +1555,7 @@ function resetPerjadinForm(isSilent = false) {
 
   if (typeof showTab === 'function') showTab('input');
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  window._isResetting = false;
 
   if (!isSilent && typeof showRefreshToast === 'function') {
     showRefreshToast(
@@ -1589,71 +1577,24 @@ function confirmResetPerjadinDraft() {
 }
 
 function initAutoSaveAndProtection() {
-  const saveImmediate = () => {
-    if (window._isResetting) return;
+  // Setiap kali halaman baru dibuka / di-refresh / web dibuka ulang: auto-clear draft formulir lama
+  // Data perjalanan yang sudah disimpan tetap aman di database & tab Riwayat Perjalanan untuk dipulihkan kapan saja.
+  window._activeEditingTrip = null;
+  try {
+    localStorage.removeItem(PERJADIN_DRAFT_KEY);
+  } catch (e) {}
+
+  const clearDraftOnLeave = () => {
     try {
-      if (typeof isPerjadinDraftDirty === 'function' && isPerjadinDraftDirty()) {
-        const draft = collectPerjadinDraftData();
-        localStorage.setItem(PERJADIN_DRAFT_KEY, JSON.stringify(draft));
-        if (typeof saveCurrentTripToHistory === 'function') {
-          saveCurrentTripToHistory(false);
-        }
-      }
-    } catch (e) {
-      console.warn('Gagal menyimpan draft langsung:', e);
-    }
+      localStorage.removeItem(PERJADIN_DRAFT_KEY);
+    } catch (e) {}
   };
 
-  window.addEventListener('beforeunload', (e) => {
-    if (window._isResetting) return;
-    saveImmediate();
-    if (isPerjadinDraftDirty()) {
-      e.preventDefault();
-      e.returnValue = '';
-      return '';
-    }
-  });
+  window.addEventListener('pagehide', clearDraftOnLeave);
 
-  window.addEventListener('pagehide', saveImmediate);
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') {
-      saveImmediate();
-    }
-  });
-
-  document.addEventListener('input', (e) => {
-    if (e.target && (e.target.id === 'searchEmp' || e.target.classList.contains('no-autosave'))) return;
-    scheduleAutoSaveDraft();
-  }, true);
-
-  document.addEventListener('change', () => {
-    scheduleAutoSaveDraft();
-  }, true);
-
-  try {
-    const raw = localStorage.getItem(PERJADIN_DRAFT_KEY);
-    if (raw) {
-      const data = JSON.parse(raw);
-      if (data && data.fields) {
-        const restored = restorePerjadinDraftData(data);
-        if (restored) {
-          updateAutosaveIndicator('saved');
-          setTimeout(() => {
-            if (typeof showRefreshToast === 'function') {
-              showRefreshToast(
-                'Draft Berhasil Dipulihkan',
-                'Data formulir perjalanan dinas terakhir Anda dimuat kembali secara otomatis.'
-              );
-            }
-          }, 300);
-          return;
-        }
-      }
-    }
-  } catch (err) {
-    console.warn('Gagal memulihkan draft otomatis:', err);
+  if (typeof updateRevisionBanner === 'function') {
+    updateRevisionBanner(null);
   }
-
   updateAutosaveIndicator('clean');
 }
 
@@ -1688,7 +1629,128 @@ function saveTripHistoryList(list) {
   }
 }
 
+function getCurrentRevisionActor() {
+  const user = (typeof getCurrentAuthUser === 'function' ? getCurrentAuthUser() : null) || window.currentAuthUser || null;
+  if (!user) {
+    return { id: null, nama: 'Pengguna Lokal', email: '-', role: 'local', roleLabel: 'Lokal' };
+  }
+  const role = String(user.role || 'viewer').toLowerCase().trim();
+  let roleLabel = 'Viewer';
+  if (role === 'admin') roleLabel = 'Admin';
+  else if (role === 'operator' || role === 'editor') roleLabel = 'Role Khusus';
+  return {
+    id: user.id || null,
+    nama: user.nama || (user.email ? user.email.split('@')[0] : 'Pengguna'),
+    email: user.email || '-',
+    role: (role === 'editor' ? 'operator' : role),
+    roleLabel
+  };
+}
+
+function normalizeTripNoStKey(noST) {
+  const s = String(noST || '').trim();
+  if (!s) return '';
+  const low = s.toLowerCase();
+  if (low === 'tanpa nomor st' || low === 'tanpa no st' || low === '-') return '';
+  return low;
+}
+
+function computeTripDraftSignature(item) {
+  if (!item) return '';
+  const d = item.draft || {};
+  try {
+    return JSON.stringify({
+      noST: item.noST || '',
+      agenda: item.agenda || '',
+      prov: item.provinsiTujuan || '',
+      kota: item.kotaTujuan || '',
+      tglBerangkat: item.tglBerangkat || '',
+      tglKembali: item.tglKembali || '',
+      empCount: item.empCount || 0,
+      totalBiaya: Number(item.totalBiaya) || 0,
+      fields: d.fields || {},
+      empIds: d.empIds || [],
+      segments: d.segments || [],
+      spdMap: d.spdMap || {},
+      costCfg: d.costCfg || {},
+      transports: d.transports || {},
+      hotels: d.hotels || [],
+      customCosts: d.customCosts || [],
+      manualMeals: d.manualMeals || []
+    });
+  } catch (e) {
+    return `${item.noST}|${item.totalBiaya}|${item.empCount}`;
+  }
+}
+
+function buildRevisionSummaryNote(oldItem, newItem) {
+  if (!oldItem || !newItem) return 'Revisi data perjalanan dinas';
+  const diffs = [];
+  if (normalizeTripNoStKey(oldItem.noST) !== normalizeTripNoStKey(newItem.noST)) {
+    diffs.push(`No. ST (${oldItem.noST} → ${newItem.noST})`);
+  }
+  if ((oldItem.agenda || '').trim() !== (newItem.agenda || '').trim()) {
+    diffs.push('Agenda');
+  }
+  if ((oldItem.kotaTujuan || '').trim() !== (newItem.kotaTujuan || '').trim() || (oldItem.provinsiTujuan || '').trim() !== (newItem.provinsiTujuan || '').trim()) {
+    diffs.push('Tujuan');
+  }
+  if ((oldItem.tglBerangkat || '') !== (newItem.tglBerangkat || '') || (oldItem.tglKembali || '') !== (newItem.tglKembali || '')) {
+    diffs.push('Jadwal');
+  }
+  if ((Number(oldItem.empCount) || 0) !== (Number(newItem.empCount) || 0)) {
+    diffs.push(`Pelaksana (${oldItem.empCount || 0} → ${newItem.empCount || 0} org)`);
+  }
+  if ((Number(oldItem.totalBiaya) || 0) !== (Number(newItem.totalBiaya) || 0)) {
+    const oldRp = (typeof rp === 'function') ? rp(oldItem.totalBiaya) : oldItem.totalBiaya;
+    const newRp = (typeof rp === 'function') ? rp(newItem.totalBiaya) : newItem.totalBiaya;
+    diffs.push(`Total Biaya (${oldRp} → ${newRp})`);
+  }
+  return diffs.length > 0 ? `Revisi: ${diffs.join(', ')}` : 'Revisi rincian berkas perjalanan dinas';
+}
+
+function updateRevisionBanner(editTrip) {
+  const banner = document.getElementById('activeRevisionBanner');
+  if (!banner) return;
+  if (!editTrip) {
+    banner.style.display = 'none';
+    banner.innerHTML = '';
+    return;
+  }
+  const safeNo = (typeof escapeHtml === 'function') ? escapeHtml(editTrip.origNoST || editTrip.noST || 'Berkas Terpilih') : (editTrip.origNoST || 'Berkas Terpilih');
+  banner.style.display = 'flex';
+  banner.innerHTML = `
+    <div class="rev-banner-left">
+      <span class="rev-banner-pill">MODE REVISI</span>
+      <span class="rev-banner-text">Sedang merevisi berkas <strong>${safeNo}</strong> &bull; Perubahan akan memperbarui data yang sudah ada dan tercatat di <strong>Log Revisi</strong> (tidak membuat data ganda).</span>
+    </div>
+    <button type="button" class="btn btn-secondary btn-sm rev-banner-cancel" onclick="cancelActiveRevision()" title="Batalkan revisi dan mulai form baru">
+      <span>Batal / Buat Baru</span>
+    </button>
+  `;
+}
+
+function cancelActiveRevision() {
+  window._activeEditingTrip = null;
+  resetPerjadinForm(false);
+}
+window.cancelActiveRevision = cancelActiveRevision;
+
+function toggleTripRevisionLog(tripId, event = null) {
+  if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+  const safeId = (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') ? CSS.escape(tripId) : tripId;
+  const panel = document.getElementById(`revLog-${tripId}`) || document.querySelector(`[data-rev-log="${safeId}"]`);
+  const btn = event?.currentTarget || panel?.previousElementSibling;
+  if (!panel) return;
+  const isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : 'block';
+  if (btn) btn.classList.toggle('is-open', !isOpen);
+}
+window.toggleTripRevisionLog = toggleTripRevisionLog;
+
 function saveCurrentTripToHistory(isManual = false, customCsvData = null) {
+  if (window._isExportingFromHistory) return null;
+
   const draft = (typeof collectPerjadinDraftData === 'function') ? collectPerjadinDraftData() : null;
   if (!draft || !draft.fields) {
     if (isManual) alert('Formulir masih kosong.');
@@ -1722,7 +1784,12 @@ function saveCurrentTripToHistory(isManual = false, customCsvData = null) {
     return emp ? { id: emp.id, nama: emp.nama, jabatan: emp.jabatan, nip: emp.nip, golongan: emp.golongan || emp.gol } : { id };
   });
 
-  const tripId = 'trip_' + (noST ? noST.replace(/[^a-zA-Z0-9]/g, '_') : Date.now());
+  const activeEdit = window._activeEditingTrip || null;
+  const stKey = normalizeTripNoStKey(noST);
+  const tripId = (activeEdit && activeEdit.id)
+    ? activeEdit.id
+    : ('trip_' + (stKey ? noST.replace(/[^a-zA-Z0-9]/g, '_') : Date.now()));
+
   let provTeks = '';
   if (draft.fields.cbMultiProvinsi) {
     const p1 = (typeof getProvinsiDisplayName === 'function') ? getProvinsiDisplayName(draft.fields.provinsiTujuan1) : draft.fields.provinsiTujuan1;
@@ -1748,6 +1815,9 @@ function saveCurrentTripToHistory(isManual = false, customCsvData = null) {
     }
   }
 
+  const nowIso = new Date().toISOString();
+  const actor = getCurrentRevisionActor();
+
   const historyItem = {
     id: tripId,
     noST: noST || 'Tanpa Nomor ST',
@@ -1762,26 +1832,89 @@ function saveCurrentTripToHistory(isManual = false, customCsvData = null) {
     empCount: empIds.length,
     employees: empList,
     totalBiaya: totalBiaya,
-    status_berkas: 'diproses',
-    savedAt: new Date().toISOString(),
+    status_berkas: (activeEdit && activeEdit.status_berkas) || 'diproses',
+    savedAt: nowIso,
+    createdAt: nowIso,
+    createdBy: actor,
+    revision_log: [],
     draft: draft,
     csv_data: csvStr
   };
 
-  const list = getTripHistoryList();
-  const existingIdx = list.findIndex(item => item.id === historyItem.id || (noST && item.noST === noST));
+  let list = getTripHistoryList();
+  // Cari entri yang sudah ada berdasarkan context revisi aktif, cloudId, id, atau nomor ST (anti-duplikat)
+  const existingIdx = list.findIndex(item => {
+    if (!item) return false;
+    if (activeEdit) {
+      if (activeEdit.id && item.id === activeEdit.id) return true;
+      if (activeEdit.cloudId && item.cloudId && item.cloudId === activeEdit.cloudId) return true;
+    }
+    if (item.id === historyItem.id) return true;
+    if (stKey && normalizeTripNoStKey(item.noST) === stKey) return true;
+    return false;
+  });
+
+  let isRevisionRecorded = false;
+
   if (existingIdx >= 0) {
-    if (list[existingIdx].cloudId) {
-      historyItem.cloudId = list[existingIdx].cloudId;
+    const existing = list[existingIdx];
+    historyItem.id = existing.id;
+    if (existing.cloudId) {
+      historyItem.cloudId = existing.cloudId;
+      historyItem.isCloud = true;
+    } else if (activeEdit && activeEdit.cloudId) {
+      historyItem.cloudId = activeEdit.cloudId;
       historyItem.isCloud = true;
     }
-    if (list[existingIdx].status_berkas) {
-      historyItem.status_berkas = list[existingIdx].status_berkas;
+    if (existing.status_berkas) {
+      historyItem.status_berkas = existing.status_berkas;
     }
-    if (!historyItem.csv_data && list[existingIdx].csv_data) {
-      historyItem.csv_data = list[existingIdx].csv_data;
+    if (!historyItem.csv_data && existing.csv_data) {
+      historyItem.csv_data = existing.csv_data;
     }
+    historyItem.createdAt = existing.createdAt || existing.savedAt || nowIso;
+    historyItem.createdBy = existing.createdBy || actor;
+
+    const prevLogs = Array.isArray(existing.revision_log) ? [...existing.revision_log] : [];
+    const oldSig = computeTripDraftSignature(existing);
+    const newSig = computeTripDraftSignature(historyItem);
+
+    // Catat log revisi apabila isi/data berkas berubah atau direvisi dari Mode Revisi
+    if (oldSig !== newSig || activeEdit) {
+      const revEntry = {
+        id: 'rev_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+        at: nowIso,
+        actorId: actor.id,
+        actorName: actor.nama,
+        actorEmail: actor.email,
+        actorRole: actor.role,
+        actorRoleLabel: actor.roleLabel,
+        action: 'revisi',
+        note: buildRevisionSummaryNote(existing, historyItem)
+      };
+      // Cegah dobel log identik dalam 2 detik jika ter-klik beruntun
+      const latestRev = prevLogs[0];
+      const isRapidDup = latestRev
+        && latestRev.note === revEntry.note
+        && latestRev.actorEmail === revEntry.actorEmail
+        && Math.abs(new Date(nowIso).getTime() - new Date(latestRev.at || 0).getTime()) < 2000;
+      if (!isRapidDup) {
+        prevLogs.unshift(revEntry);
+        isRevisionRecorded = true;
+      }
+    }
+    historyItem.revision_log = prevLogs;
     list[existingIdx] = historyItem;
+
+    // Bersihkan jika sempat ada baris duplikat lain di lokal untuk noST/id/cloudId ini
+    list = list.filter((it, idx) => {
+      if (idx === existingIdx) return true;
+      if (!it) return false;
+      if (it.id === historyItem.id) return false;
+      if (historyItem.cloudId && it.cloudId === historyItem.cloudId) return false;
+      if (stKey && normalizeTripNoStKey(it.noST) === stKey) return false;
+      return true;
+    });
   } else {
     list.unshift(historyItem);
   }
@@ -1792,28 +1925,30 @@ function saveCurrentTripToHistory(isManual = false, customCsvData = null) {
     renderTripHistory();
   }
 
-  // Auto-integrasi langsung ke Cloud Database Supabase (tabel riwayat_perjadin)
+  // Auto-integrasi langsung 1x ke Cloud Database Supabase (tabel riwayat_perjadin)
   if (typeof uploadTripToCloud === 'function') {
     uploadTripToCloud(historyItem).then(cloudId => {
       if (cloudId) {
         historyItem.cloudId = cloudId;
         historyItem.isCloud = true;
         const curList = getTripHistoryList();
-        const curIdx = curList.findIndex(x => x.id === historyItem.id || (historyItem.noST && x.noST === historyItem.noST));
+        const curIdx = curList.findIndex(x => x.id === historyItem.id || (stKey && normalizeTripNoStKey(x.noST) === stKey));
         if (curIdx >= 0) {
-          curList[curIdx] = historyItem;
+          curList[curIdx] = { ...curList[curIdx], ...historyItem, cloudId, isCloud: true };
         }
         saveTripHistoryList(curList);
         if (typeof renderTripHistory === 'function') renderTripHistory();
         if (isManual && typeof showRefreshToast === 'function') {
           showRefreshToast(
-            'Tersimpan & Terintegrasi ke Database',
-            `Data perjalanan "${historyItem.noST}" telah tersimpan di riwayat dan otomatis masuk ke database cloud Supabase.`
+            isRevisionRecorded ? 'Revisi Tersimpan & Dicatat di Log' : 'Tersimpan & Terintegrasi ke Database',
+            isRevisionRecorded
+              ? `Revisi "${historyItem.noST}" oleh ${actor.nama} (${actor.roleLabel}) berhasil diperbarui ke database.`
+              : `Data perjalanan "${historyItem.noST}" telah tersimpan dan masuk ke database cloud Supabase.`
           );
         }
       } else if (isManual && typeof showRefreshToast === 'function') {
         showRefreshToast(
-          'Perjalanan Tersimpan ke Riwayat',
+          isRevisionRecorded ? 'Revisi Tersimpan ke Riwayat' : 'Perjalanan Tersimpan ke Riwayat',
           `Data perjalanan "${historyItem.noST}" berhasil dicatat ke riwayat.`
         );
       }
@@ -1845,14 +1980,6 @@ function loadTripFromHistory(id, event = null) {
     return;
   }
 
-  if (typeof restorePerjadinDraftData === 'function') {
-    restorePerjadinDraftData(item.draft);
-  }
-
-  try {
-    localStorage.setItem(PERJADIN_DRAFT_KEY, JSON.stringify(item.draft));
-  } catch (e) {}
-
   const canEdit = (typeof canCurrentUserEdit === 'function') ? canCurrentUserEdit() : (typeof isCurrentUserAdmin === 'function' && isCurrentUserAdmin());
   const isViewer = !canEdit && !!window.currentAuthUser;
 
@@ -1861,13 +1988,28 @@ function loadTripFromHistory(id, event = null) {
     return;
   }
 
+  window._activeEditingTrip = {
+    id: item.id,
+    cloudId: item.cloudId || null,
+    isCloud: !!item.isCloud,
+    origNoST: item.noST || '',
+    status_berkas: item.status_berkas || 'diproses',
+    revision_log: Array.isArray(item.revision_log) ? [...item.revision_log] : []
+  };
+
+  if (typeof restorePerjadinDraftData === 'function') {
+    restorePerjadinDraftData(item.draft);
+  }
+
+  // Jangan simpan PERJADIN_DRAFT_KEY ke localStorage agar refresh/tutup web tetap auto-clear form
+  updateRevisionBanner(window._activeEditingTrip);
   showTab('input');
 
   setTimeout(() => {
     if (typeof showRefreshToast === 'function') {
       showRefreshToast(
         'Perjalanan Dimuat untuk Revisi',
-        `Data "${item.noST}" berhasil dimuat ke formulir. Silakan edit isian atau cetak dokumen yang diperlukan.`
+        `Data "${item.noST}" siap direvisi. Saat disimpan nanti akan memperbarui data yang ada dan tercatat di Log Revisi.`
       );
     }
   }, 250);
@@ -1878,6 +2020,9 @@ function duplicateTripFromHistory(id, event = null) {
   const list = getTripHistoryList();
   const item = list.find(x => x.id === id);
   if (!item || !item.draft) return;
+
+  window._activeEditingTrip = null;
+  updateRevisionBanner(null);
 
   const clonedDraft = JSON.parse(JSON.stringify(item.draft));
   clonedDraft.fields.noST = '';
@@ -1912,6 +2057,11 @@ function deleteTripFromHistory(id, event = null) {
 
   if (!confirm(`Hapus perjalanan "${item.noST}" dari riwayat?`)) return;
 
+  if (window._activeEditingTrip && window._activeEditingTrip.id === id) {
+    window._activeEditingTrip = null;
+    updateRevisionBanner(null);
+  }
+
   if (item.cloudId && typeof removeTripFromCloud === 'function' && typeof isCurrentUserAdmin === 'function' && isCurrentUserAdmin()) {
     removeTripFromCloud(item.cloudId);
   }
@@ -1931,11 +2081,16 @@ function exportExcelFromHistory(id, mode = 'excel', event = null) {
   const item = list.find(x => x.id === id);
   if (!item || !item.draft) return;
 
-  if (typeof restorePerjadinDraftData === 'function') {
-    restorePerjadinDraftData(item.draft);
-  }
-  if (typeof exportPerjadinExcel === 'function') {
-    exportPerjadinExcel(mode);
+  window._isExportingFromHistory = true;
+  try {
+    if (typeof restorePerjadinDraftData === 'function') {
+      restorePerjadinDraftData(item.draft);
+    }
+    if (typeof exportPerjadinExcel === 'function') {
+      exportPerjadinExcel(mode);
+    }
+  } finally {
+    window._isExportingFromHistory = false;
   }
 }
 
@@ -2079,6 +2234,60 @@ function renderDashboardModule(passedList = null) {
   }
 }
 
+function renderRevisionLogHtml(item) {
+  const revs = Array.isArray(item.revision_log) ? item.revision_log : [];
+  if (revs.length === 0) return '';
+
+  const esc = (s) => (typeof escapeHtml === 'function') ? escapeHtml(s) : String(s == null ? '' : s);
+  const latest = revs[0];
+  const latestName = esc(latest.actorName || latest.actorEmail || 'Pengguna');
+  const latestRoleKey = (latest.actorRole === 'admin') ? 'admin' : ((latest.actorRole === 'operator' || latest.actorRole === 'editor') ? 'operator' : 'viewer');
+  const latestRoleLabel = esc(latest.actorRoleLabel || (latestRoleKey === 'admin' ? 'Admin' : (latestRoleKey === 'operator' ? 'Role Khusus' : 'Pengguna')));
+  const latestTime = esc(formatHistoryDate(latest.at));
+
+  const timelineRows = revs.map((rev, idx) => {
+    const revNum = revs.length - idx;
+    const roleKey = (rev.actorRole === 'admin') ? 'admin' : ((rev.actorRole === 'operator' || rev.actorRole === 'editor') ? 'operator' : 'viewer');
+    const roleLbl = esc(rev.actorRoleLabel || (roleKey === 'admin' ? 'Admin' : (roleKey === 'operator' ? 'Role Khusus' : 'Pengguna')));
+    const actorName = esc(rev.actorName || rev.actorEmail || 'Pengguna');
+    const actorEmail = (rev.actorEmail && rev.actorEmail !== '-') ? ` (${esc(rev.actorEmail)})` : '';
+    const note = esc(rev.note || 'Revisi data berkas');
+    const timeStr = esc(formatHistoryDate(rev.at));
+
+    return `
+      <div class="rev-log-entry">
+        <div class="rev-log-marker">#${revNum}</div>
+        <div class="rev-log-content">
+          <div class="rev-log-meta">
+            <strong class="rev-log-actor">${actorName}</strong><span class="rev-log-email">${actorEmail}</span>
+            <span class="rev-role-tag rev-role-${roleKey}">${roleLbl}</span>
+            <span class="rev-log-time">&bull; ${timeStr}</span>
+          </div>
+          <div class="rev-log-note">${note}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  const safeTripId = esc(item.id);
+  return `
+    <div class="history-revision-box" onclick="event.stopPropagation()">
+      <button type="button" class="history-revision-toggle" onclick="toggleTripRevisionLog('${safeTripId}', event)" title="Klik untuk melihat riwayat log revisi lengkap">
+        <span class="rev-badge-count">🕒 ${revs.length}x Revisi</span>
+        <span class="rev-latest-summary">
+          Terakhir: <strong>${latestName}</strong>
+          <span class="rev-role-tag rev-role-${latestRoleKey}">${latestRoleLabel}</span>
+          <span class="rev-latest-time">&bull; ${latestTime}</span>
+        </span>
+        <span class="rev-chevron">▾</span>
+      </button>
+      <div class="history-revision-timeline" id="revLog-${safeTripId}" data-rev-log="${safeTripId}" style="display:none;">
+        ${timelineRows}
+      </div>
+    </div>
+  `;
+}
+
 function renderTripHistory(filterText = '') {
   const container = document.getElementById('historyListContainer');
   const countBadge = document.getElementById('historyCountBadge');
@@ -2086,12 +2295,7 @@ function renderTripHistory(filterText = '') {
 
   const list = getTripHistoryList();
 
-  // Jika ada berkas riwayat lokal yang belum terintegrasi ke Supabase Cloud, dorong otomatis di latar belakang
-  if (typeof autoSyncLocalTripsToCloud === 'function' && list.some(x => !x.cloudId)) {
-    autoSyncLocalTripsToCloud();
-  }
-
-  // Hitung metrik KPI real-time untuk Dashboard & Filter Pills
+  // Hitung metrik KPI real-time untuk Dashboard & Filter Pills (tanpa auto-push ulang agar tidak ada duplikat DB)
   const totalAll = list.length;
   const diprosesItems = list.filter(x => (x.status_berkas || 'diproses') !== 'dicairkan');
   const dicairkanItems = list.filter(x => x.status_berkas === 'dicairkan');
@@ -2325,6 +2529,8 @@ function renderTripHistory(filterText = '') {
               ${morePillHtml}
             </div>
           ` : ''}
+
+          ${renderRevisionLogHtml(item)}
         </div>
 
         ${cardActionsHtml}
@@ -2346,9 +2552,27 @@ async function toggleTripStatus(tripId, e) {
 
   const currentStatus = item.status_berkas || 'diproses';
   const newStatus = (currentStatus === 'dicairkan') ? 'diproses' : 'dicairkan';
+  const oldLabel = (currentStatus === 'dicairkan') ? 'Sudah Dicairkan' : 'Diproses ke Satker';
   const newLabel = (newStatus === 'dicairkan') ? 'Sudah Dicairkan' : 'Diproses ke Satker';
+  const nowIso = new Date().toISOString();
+  const actor = getCurrentRevisionActor();
 
   item.status_berkas = newStatus;
+  item.savedAt = nowIso;
+  const logs = Array.isArray(item.revision_log) ? [...item.revision_log] : [];
+  logs.unshift({
+    id: 'rev_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+    at: nowIso,
+    actorId: actor.id,
+    actorName: actor.nama,
+    actorEmail: actor.email,
+    actorRole: actor.role,
+    actorRoleLabel: actor.roleLabel,
+    action: 'status',
+    note: `Update status berkas: ${oldLabel} → ${newLabel}`
+  });
+  item.revision_log = logs;
+
   saveTripHistoryList(list);
   renderTripHistory();
   renderDashboardModule(list);
@@ -2356,7 +2580,7 @@ async function toggleTripStatus(tripId, e) {
   if (typeof showRefreshToast === 'function') {
     showRefreshToast(
       'Progres Berkas Diperbarui',
-      `Status berkas "${item.noST}" telah diubah menjadi [${newLabel}].`
+      `Status berkas "${item.noST}" diubah ke [${newLabel}] oleh ${actor.nama} (${actor.roleLabel}).`
     );
   }
 
@@ -2435,7 +2659,7 @@ document.addEventListener('click', function (e) {
 // =====================================================================
 
 function handleTripCardClick(e, tripId) {
-  if (e && e.target && e.target.closest('button, a, input, select, .btn-status-toggle, .history-status-badge')) {
+  if (e && e.target && e.target.closest('button, a, input, select, .btn-status-toggle, .history-status-badge, .history-revision-box')) {
     return;
   }
   openTripPdfModal(tripId, e);

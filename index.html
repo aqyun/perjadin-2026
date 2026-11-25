@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20261125_01">
+  <link rel="stylesheet" href="style.css?v=20261125_02">
 </head>
 <body class="auth-locked">
 
@@ -625,7 +625,7 @@
         <span>Kelola Hak Akses Tim</span>
       </div>
       <h3 class="user-mgmt-title" id="userMgmtTitle">Manajemen Pengguna &amp; Peran</h3>
-      <p class="user-mgmt-sub">Sebagai Admin, Anda dapat mengatur hak akses <strong>Admin</strong> (akses penuh), <strong>Role Khusus</strong> (buat &amp; update progres), atau <strong>Viewer</strong> (hanya lihat) kepada anggota tim yang terdaftar.</p>
+      <p class="user-mgmt-sub">Sebagai Admin, Anda dapat mengatur hak akses <strong>Admin</strong> (akses penuh), <strong>Operator</strong> (buat &amp; update progres), atau <strong>Viewer</strong> (hanya lihat) kepada anggota tim yang terdaftar.</p>
       
       <!-- Stats Ringkasan Pengguna -->
       <div class="user-mgmt-stats-bar" id="userMgmtStatsBar">
@@ -643,7 +643,7 @@
         <div class="user-stat-divider"></div>
         <div class="user-stat-item">
           <span class="user-stat-dot dot-operator" style="background:#3b82f6;"></span>
-          <span class="user-stat-label">Role Khusus:</span>
+          <span class="user-stat-label">Operator:</span>
           <strong id="statOperatorUsers" class="user-stat-val val-operator" style="color:#2563eb;">0</strong>
         </div>
         <div class="user-stat-divider"></div>
@@ -1060,6 +1060,8 @@
           <li class="on"><span>3</span>Dokumen</li>
         </ol>
       </section>
+
+      <div id="activeRevisionBanner" class="active-revision-banner no-print" style="display:none;"></div>
 
       <!-- Info Perjalanan -->
       <section class="card">
@@ -1552,9 +1554,9 @@
               <svg class="ico"><use href="#i-refresh"></use></svg>
               <span>Tarik Cloud</span>
             </button>
-            <span class="history-autosave-badge" title="Riwayat perjalanan dinas otomatis tercatat &amp; tersimpan di perangkat ini">
+            <span class="history-autosave-badge" title="Setiap penyimpanan &amp; revisi berkas terintegrasi bersih ke database Supabase tanpa duplikasi">
               <span class="history-status-dot"></span>
-              <span>Auto-Simpan Riwayat Aktif</span>
+              <span>Anti-Duplikat &amp; Log Revisi Aktif</span>
             </span>
           </div>
         </div>
@@ -2713,12 +2715,12 @@
 <script src="html2pdf.bundle.min.js"></script>
 <script src="pdf-lib.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
-<script src="js/supabase.js?v=20261125_01"></script>
+<script src="js/supabase.js?v=20261125_02"></script>
 <script src="js/data.js?v=20261124_33"></script>
 <script src="js/utils.js?v=20261124_33"></script>
 <script src="js/calc.js?v=20261124_33"></script>
 <script src="js/documents.js?v=20261124_33"></script>
-<script src="js/excel.js?v=20261124_33"></script>
-<script src="js/ui.js?v=20261124_33"></script>
+<script src="js/excel.js?v=20261125_02"></script>
+<script src="js/ui.js?v=20261125_02"></script>
 </body>
 </html>

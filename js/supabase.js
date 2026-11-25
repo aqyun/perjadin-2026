@@ -95,11 +95,14 @@ async function initSupabaseAuth() {
     return;
   }
 
+  let initialSyncedUserId = null;
+
   try {
     const { data: { session }, error } = await client.auth.getSession();
     if (session && session.user) {
       await loadUserProfile(session.user);
       unlockAuthGate();
+      initialSyncedUserId = session.user.id;
       syncTripsFromCloud(true);
     } else {
       setCurrentAuthUser(null);
@@ -130,8 +133,14 @@ async function initSupabaseAuth() {
     if (session && session.user) {
       await loadUserProfile(session.user);
       unlockAuthGate();
-      syncTripsFromCloud(true);
+      // Cegah duplikasi sync pada INITIAL_SESSION / SIGNED_IN pertama kali saat boot
+      const isInitialSameUser = (event === 'INITIAL_SESSION' || initialSyncedUserId === session.user.id);
+      if (!isInitialSameUser || !initialSyncedUserId) {
+        initialSyncedUserId = session.user.id;
+        syncTripsFromCloud(true);
+      }
     } else {
+      initialSyncedUserId = null;
       setCurrentAuthUser(null);
       lockAuthGate();
     }
@@ -183,7 +192,7 @@ function isCurrentUserAdmin() {
   return currentAuthUser && currentAuthUser.role === 'admin';
 }
 
-// Cek apakah user adalah Role Khusus (Operator / Verifikator)
+// Cek apakah user adalah Operator (Operator / Verifikator)
 function isCurrentUserRoleKhusus() {
   return currentAuthUser && (currentAuthUser.role === 'operator' || currentAuthUser.role === 'editor');
 }
@@ -226,7 +235,7 @@ function renderAuthWidget() {
     roleLabel = 'ADMIN';
     roleClass = 'badge-role-admin';
   } else if (currentAuthUser.role === 'operator' || currentAuthUser.role === 'editor') {
-    roleLabel = 'ROLE KHUSUS';
+    roleLabel = 'OPERATOR';
     roleClass = 'badge-role-operator';
   }
   const initials = currentAuthUser.nama.split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase() || 'U';
@@ -291,7 +300,7 @@ document.addEventListener('click', (e) => {
   }
 });
 
-// Terapkan pembatasan hak akses (Admin vs Role Khusus vs Viewer) pada UI
+// Terapkan pembatasan hak akses (Admin vs Operator vs Viewer) pada UI
 function applyRolePermissions() {
   const isAdm = isCurrentUserAdmin();
   const isKhusus = isCurrentUserRoleKhusus();
@@ -299,7 +308,7 @@ function applyRolePermissions() {
   const isLogged = !!currentAuthUser;
   const isViewer = isLogged && !canEdit;
 
-  // Toggle Input Perjalanan tab button di sidebar (hanya Admin & Role Khusus yang melihat form buat berkas)
+  // Toggle Input Perjalanan tab button di sidebar (hanya Admin & Operator yang melihat form buat berkas)
   const inputTabBtn = document.querySelector('.tab-btn[data-tab="input"]');
   if (inputTabBtn) {
     inputTabBtn.style.display = isViewer ? 'none' : 'flex';
@@ -356,7 +365,7 @@ function applyRolePermissions() {
       banner.innerHTML = `
         <svg class="ico"><use href="#i-edit"></use></svg>
         <div class="banner-text">
-          <strong>Akses Role Khusus (${currentAuthUser.email}):</strong> Anda berhak menyusun berkas perjalanan dinas baru, mengedit isian, menyimpan otomatis ke Cloud Database Publik, dan memperbarui progres berkas ke Satker / Pencairan.
+          <strong>Akses Opeator (${currentAuthUser.email}):</strong> Anda berhak menyusun berkas perjalanan dinas baru, mengedit isian, menyimpan otomatis ke Cloud Database Publik, dan memperbarui progres berkas ke Satker / Pencairan.
         </div>
       `;
     } else {
@@ -872,93 +881,206 @@ async function handleGateForgotPassword(e) {
 // SINKRONISASI DATA RIWAYAT CLOUD (riwayat_perjadin)
 // =====================================================================
 
-// Tarik data riwayat dari Supabase Cloud (Sinkronisasi Dua Arah: Dorong Lokal Terlebih Dahulu, Lalu Ambil Data Terbaru)
+function normalizeStKey(noST) {
+  const s = String(noST || '').trim();
+  if (!s) return '';
+  const low = s.toLowerCase();
+  if (low === 'tanpa nomor st' || low === 'tanpa no st' || low === '-') return '';
+  return low;
+}
+
+function mergeRevisionLogs(logA, logB) {
+  const listA = Array.isArray(logA) ? logA : [];
+  const listB = Array.isArray(logB) ? logB : [];
+  if (listA.length === 0 && listB.length === 0) return [];
+  const seen = new Set();
+  const combined = [];
+  [...listA, ...listB].forEach(entry => {
+    if (!entry || !entry.at) return;
+    const key = entry.id || `${entry.at}|${entry.actorEmail || entry.actorName || ''}|${entry.note || ''}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    combined.push(entry);
+  });
+  return combined.sort((a, b) => new Date(b.at || 0).getTime() - new Date(a.at || 0).getTime());
+}
+
+function mergeTripItemsCleanly(existing, incoming) {
+  if (!existing) return incoming;
+  if (!incoming) return existing;
+  const tExisting = new Date(existing.savedAt || 0).getTime();
+  const tIncoming = new Date(incoming.savedAt || 0).getTime();
+  const newer = tIncoming >= tExisting ? incoming : existing;
+  const older = tIncoming >= tExisting ? existing : incoming;
+  return {
+    ...older,
+    ...newer,
+    id: existing.id || incoming.id,
+    cloudId: newer.cloudId || older.cloudId || null,
+    isCloud: Boolean(newer.isCloud || older.isCloud),
+    csv_data: newer.csv_data || older.csv_data || '',
+    createdBy: older.createdBy || newer.createdBy || null,
+    createdAt: older.createdAt || newer.createdAt || older.savedAt || newer.savedAt,
+    revision_log: mergeRevisionLogs(older.revision_log, newer.revision_log)
+  };
+}
+
+// Tarik data riwayat dari Supabase Cloud (Pull dulu agar tidak pernah generate duplikat saat refresh)
 async function syncTripsFromCloud(silent = false) {
+  if (window._syncCloudPromise) {
+    return window._syncCloudPromise;
+  }
+
   const client = getSupabaseClient();
   if (!client) {
     if (!silent) alert('Database Supabase belum terhubung.');
     return;
   }
 
-  const btn = document.getElementById('btnCloudSync');
-  if (btn) {
-    btn.disabled = true;
-    btn.classList.add('is-loading');
-  }
-
-  try {
-    // 1. Dorong dulu semua riwayat lokal ke database Supabase agar otomatis terintegrasi
-    await autoSyncLocalTripsToCloud();
-
-    // 2. Tarik seluruh baris data dari tabel riwayat_perjadin
-    const { data, error } = await client
-      .from('riwayat_perjadin')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-
-    if (!data || data.length === 0) {
-      if (!silent && typeof showRefreshToast === 'function') {
-        showRefreshToast('Database Cloud Terhubung', 'Belum ada data perjalanan dinas di Cloud database.');
-      }
-      return;
-    }
-
-    // Gabungkan dengan riwayat lokal
-    const localList = (typeof getTripHistoryList === 'function') ? getTripHistoryList() : [];
-    const localMap = new Map();
-    localList.forEach(item => localMap.set(item.id, item));
-
-    data.forEach(cloudRow => {
-      const payload = cloudRow.payload_json || {};
-      const tripId = payload.id || ('trip_cloud_' + cloudRow.id);
-      const mergedItem = {
-        ...payload,
-        id: tripId,
-        cloudId: cloudRow.id,
-        isCloud: true,
-        status_berkas: cloudRow.status_berkas || payload.status_berkas || 'diproses',
-        noST: cloudRow.nomor_st || payload.noST || 'Tanpa Nomor ST',
-        agenda: cloudRow.agenda || payload.agenda || 'Tanpa Agenda',
-        kotaTujuan: cloudRow.tujuan || payload.kotaTujuan || '',
-        totalBiaya: Number(cloudRow.total_biaya) || Number(payload.totalBiaya) || 0,
-        savedAt: cloudRow.updated_at || cloudRow.created_at || payload.savedAt,
-        csv_data: cloudRow.csv_data || payload.csv_data || ''
-      };
-      localMap.set(tripId, mergedItem);
-    });
-
-    const combined = Array.from(localMap.values()).sort((a, b) => {
-      const tA = new Date(a.savedAt || 0).getTime();
-      const tB = new Date(b.savedAt || 0).getTime();
-      return tB - tA;
-    });
-
-    if (typeof saveTripHistoryList === 'function') {
-      saveTripHistoryList(combined);
-    }
-    if (typeof renderTripHistory === 'function') {
-      renderTripHistory();
-    }
-
-    if (!silent && typeof showRefreshToast === 'function') {
-      showRefreshToast(
-        'Sinkronisasi Database Berhasil',
-        `Berhasil menyinkronkan ${combined.length} berkas perjalanan dinas dengan database Cloud Supabase.`
-      );
-    }
-  } catch (err) {
-    console.error('Sync Cloud error:', err);
-    if (!silent) {
-      alert('Gagal menyinkronkan data dari Cloud: ' + (err.message || 'Periksa koneksi database.'));
-    }
-  } finally {
+  const run = (async () => {
+    const btn = document.getElementById('btnCloudSync');
     if (btn) {
-      btn.disabled = false;
-      btn.classList.remove('is-loading');
+      btn.disabled = true;
+      btn.classList.add('is-loading');
     }
-  }
+
+    try {
+      // 1. Tarik seluruh baris data terbaru dari tabel riwayat_perjadin terlebih dahulu
+      const { data, error } = await client
+        .from('riwayat_perjadin')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const cloudRows = Array.isArray(data) ? data : [];
+      const cloudMap = new Map();
+      const cloudStToKey = new Map();
+
+      cloudRows.forEach(cloudRow => {
+        const payload = cloudRow.payload_json || {};
+        const tripId = payload.id || ('trip_cloud_' + cloudRow.id);
+        const noST = cloudRow.nomor_st || payload.noST || 'Tanpa Nomor ST';
+        const stKey = normalizeStKey(noST);
+
+        const cloudItem = {
+          ...payload,
+          id: tripId,
+          cloudId: cloudRow.id,
+          isCloud: true,
+          status_berkas: cloudRow.status_berkas || payload.status_berkas || 'diproses',
+          noST,
+          agenda: cloudRow.agenda || payload.agenda || 'Tanpa Agenda',
+          kotaTujuan: cloudRow.tujuan || payload.kotaTujuan || '',
+          totalBiaya: Number(cloudRow.total_biaya) || Number(payload.totalBiaya) || 0,
+          savedAt: cloudRow.updated_at || cloudRow.created_at || payload.savedAt,
+          createdAt: payload.createdAt || cloudRow.created_at || payload.savedAt,
+          csv_data: cloudRow.csv_data || payload.csv_data || '',
+          revision_log: mergeRevisionLogs(payload.revision_log, [])
+        };
+
+        // Deduplikasi bila sebelumnya pernah ada baris ganda di Supabase dengan nomor_st / tripId sama
+        const canonicalKey = cloudMap.has(tripId)
+          ? tripId
+          : (stKey && cloudStToKey.has(stKey) ? cloudStToKey.get(stKey) : tripId);
+
+        const merged = mergeTripItemsCleanly(cloudMap.get(canonicalKey), cloudItem);
+        cloudMap.set(canonicalKey, merged);
+        if (stKey && !cloudStToKey.has(stKey)) {
+          cloudStToKey.set(stKey, canonicalKey);
+        }
+      });
+
+      // 2. Cocokkan dengan data lokal dan cegah duplikasi
+      const localList = (typeof getTripHistoryList === 'function') ? getTripHistoryList() : [];
+      const localOnlyUnsynced = [];
+
+      localList.forEach(localItem => {
+        if (!localItem) return;
+        const stKey = normalizeStKey(localItem.noST);
+        let matchedKey = null;
+
+        if (localItem.cloudId) {
+          for (const [k, v] of cloudMap.entries()) {
+            if (v.cloudId === localItem.cloudId) {
+              matchedKey = k;
+              break;
+            }
+          }
+        }
+        if (!matchedKey && localItem.id && cloudMap.has(localItem.id)) {
+          matchedKey = localItem.id;
+        }
+        if (!matchedKey && stKey && cloudStToKey.has(stKey)) {
+          matchedKey = cloudStToKey.get(stKey);
+        }
+
+        if (matchedKey) {
+          cloudMap.set(matchedKey, mergeTripItemsCleanly(cloudMap.get(matchedKey), localItem));
+        } else {
+          // Hanya pertahankan berkas lokal yang valid (bukan sisa auto-save draft kosong tanpa ST)
+          const hasMeaningfulContent = Boolean(stKey) || (localItem.agenda && localItem.agenda !== 'Tanpa Agenda Perjalanan' && (localItem.empCount > 0 || (localItem.employees || []).length > 0));
+          if (hasMeaningfulContent && !localItem.cloudId) {
+            const key = localItem.id || ('trip_loc_' + Date.now());
+            cloudMap.set(key, localItem);
+            if (stKey) cloudStToKey.set(stKey, key);
+            localOnlyUnsynced.push(localItem);
+          }
+        }
+      });
+
+      // 3. Hanya dorong berkas lokal yang belum ada di Cloud jika user menekan sinkronisasi manual (!silent) & punya hak edit
+      if (!silent && localOnlyUnsynced.length > 0 && canCurrentUserEdit()) {
+        for (const item of localOnlyUnsynced) {
+          try {
+            const cloudId = await uploadTripToCloud(item);
+            if (cloudId) {
+              item.cloudId = cloudId;
+              item.isCloud = true;
+            }
+          } catch (e) {
+            console.warn('Manual sync push warning:', item.noST, e);
+          }
+        }
+      }
+
+      const combined = Array.from(cloudMap.values()).sort((a, b) => {
+        const tA = new Date(a.savedAt || 0).getTime();
+        const tB = new Date(b.savedAt || 0).getTime();
+        return tB - tA;
+      });
+
+      if (typeof saveTripHistoryList === 'function') {
+        saveTripHistoryList(combined);
+      }
+      if (typeof renderTripHistory === 'function') {
+        renderTripHistory();
+      }
+
+      if (!silent && typeof showRefreshToast === 'function') {
+        showRefreshToast(
+          'Sinkronisasi Database Berhasil',
+          cloudRows.length === 0 && combined.length === 0
+            ? 'Database Cloud terhubung. Belum ada berkas perjalanan tersimpan.'
+            : `Berhasil menyinkronkan ${combined.length} berkas perjalanan dinas tanpa duplikasi.`
+        );
+      }
+    } catch (err) {
+      console.error('Sync Cloud error:', err);
+      if (!silent) {
+        alert('Gagal menyinkronkan data dari Cloud: ' + (err.message || 'Periksa koneksi database.'));
+      }
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.classList.remove('is-loading');
+      }
+      window._syncCloudPromise = null;
+    }
+  })();
+
+  window._syncCloudPromise = run;
+  return run;
 }
 
 // Eksekusi operasi Supabase dengan penanganan otomatis jika kolom tertentu belum dibuat di skema database Supabase
@@ -990,115 +1112,166 @@ async function executeSupabaseOperationWithFallback(operationFn, initialPayload)
   return await operationFn(curPayload);
 }
 
-// Simpan data perjalanan saat ini langsung ke Cloud Supabase Publik (Tabel riwayat_perjadin)
+// Simpan data perjalanan saat ini langsung ke Cloud Supabase Publik (Anti-Duplikat & Thread-Safe)
 async function uploadTripToCloud(tripItem) {
   const client = getSupabaseClient();
   if (!client || !tripItem) return null;
 
-  try {
-    const noST = (tripItem.noST || '').trim();
+  window._inFlightCloudUploads = window._inFlightCloudUploads || new Map();
+  const stKey = normalizeStKey(tripItem.noST);
+  const lockKey = tripItem.cloudId
+    ? `cid:${tripItem.cloudId}`
+    : (stKey ? `st:${stKey}` : `tid:${tripItem.id || Date.now()}`);
 
-    // Pastikan csv_data selalu terisi jika belum ada
-    let csvData = tripItem.csv_data || '';
-    if (!csvData && typeof generatePerjadinCsvString === 'function') {
-      try {
-        csvData = generatePerjadinCsvString(null, tripItem);
-        tripItem.csv_data = csvData;
-      } catch (e) {}
-    }
-
-    const payload = {
-      nomor_st: noST || 'Tanpa Nomor ST',
-      tujuan: tripItem.kotaTujuan || tripItem.provinsiTujuan || '',
-      agenda: tripItem.agenda || '',
-      tgl_berangkat: tripItem.tglBerangkat || null,
-      tgl_kembali: tripItem.tglKembali || null,
-      total_biaya: Number(tripItem.totalBiaya) || 0,
-      status_berkas: tripItem.status_berkas || 'diproses',
-      csv_data: csvData || '',
-      payload_json: tripItem,
-      updated_at: new Date().toISOString()
-    };
-
-    if (currentAuthUser && currentAuthUser.id) {
-      payload.created_by = currentAuthUser.id;
-    }
-
-    // 1. Jika sudah ada cloudId, perbarui baris yang ada di database
-    if (tripItem.cloudId) {
-      const updRes = await executeSupabaseOperationWithFallback(p => {
-        return client.from('riwayat_perjadin').update(p).eq('id', tripItem.cloudId).select('id');
-      }, payload);
-
-      if (updRes && !updRes.error && Array.isArray(updRes.data) && updRes.data.length > 0) {
-        return updRes.data[0].id;
+  // Jika proses upload untuk berkas yang sama sedang berjalan, tunggu hingga selesai lalu gunakan cloudId hasil-nya agar tidak double-insert
+  const existingPromise = window._inFlightCloudUploads.get(lockKey);
+  if (existingPromise) {
+    try {
+      const prevCloudId = await existingPromise;
+      if (prevCloudId && !tripItem.cloudId) {
+        tripItem.cloudId = prevCloudId;
       }
-    }
+    } catch (e) {}
+  }
 
-    // 2. Jika belum ada cloudId atau update by cloudId tidak menemukan baris, cari berdasarkan nomor_st
-    if (noST && noST !== 'Tanpa Nomor ST' && noST !== 'Tanpa No ST') {
-      const { data: existingRows } = await client
-        .from('riwayat_perjadin')
-        .select('id')
-        .eq('nomor_st', noST);
+  const uploadPromise = (async () => {
+    try {
+      const noST = (tripItem.noST || '').trim();
+      const hasValidNoST = Boolean(normalizeStKey(noST));
 
-      if (existingRows && existingRows.length > 0) {
-        const existingId = existingRows[0].id;
+      // Pastikan csv_data selalu terisi jika belum ada
+      let csvData = tripItem.csv_data || '';
+      if (!csvData && typeof generatePerjadinCsvString === 'function') {
+        try {
+          csvData = generatePerjadinCsvString(null, tripItem);
+          tripItem.csv_data = csvData;
+        } catch (e) {}
+      }
+
+      const payload = {
+        nomor_st: noST || 'Tanpa Nomor ST',
+        tujuan: tripItem.kotaTujuan || tripItem.provinsiTujuan || '',
+        agenda: tripItem.agenda || '',
+        tgl_berangkat: tripItem.tglBerangkat || null,
+        tgl_kembali: tripItem.tglKembali || null,
+        total_biaya: Number(tripItem.totalBiaya) || 0,
+        status_berkas: tripItem.status_berkas || 'diproses',
+        csv_data: csvData || '',
+        payload_json: tripItem,
+        updated_at: new Date().toISOString()
+      };
+
+      if (currentAuthUser && currentAuthUser.id) {
+        payload.created_by = currentAuthUser.id;
+      }
+
+      // 1. Jika sudah ada cloudId, update baris yang sama di database
+      if (tripItem.cloudId) {
         const updRes = await executeSupabaseOperationWithFallback(p => {
-          return client.from('riwayat_perjadin').update(p).eq('id', existingId).select('id');
+          return client.from('riwayat_perjadin').update(p).eq('id', tripItem.cloudId).select('id');
         }, payload);
 
         if (updRes && !updRes.error && Array.isArray(updRes.data) && updRes.data.length > 0) {
           return updRes.data[0].id;
         }
       }
-    }
 
-    // 3. Masukkan sebagai baris baru ke tabel riwayat_perjadin
-    const insertRes = await executeSupabaseOperationWithFallback(p => {
-      return client.from('riwayat_perjadin').insert(p).select('id');
-    }, payload);
+      // 2. Cek berdasarkan nomor_st agar tidak terjadi baris duplikat
+      if (hasValidNoST) {
+        const { data: existingRows } = await client
+          .from('riwayat_perjadin')
+          .select('id')
+          .eq('nomor_st', noST)
+          .order('created_at', { ascending: true })
+          .limit(1);
 
-    if (insertRes && !insertRes.error && Array.isArray(insertRes.data) && insertRes.data.length > 0) {
-      return insertRes.data[0].id;
-    }
+        if (existingRows && existingRows.length > 0) {
+          const existingId = existingRows[0].id;
+          const updRes = await executeSupabaseOperationWithFallback(p => {
+            return client.from('riwayat_perjadin').update(p).eq('id', existingId).select('id');
+          }, payload);
 
-    if (insertRes && insertRes.error) {
-      console.error('Gagal simpan ke tabel riwayat_perjadin Supabase:', insertRes.error);
+          if (updRes && !updRes.error && Array.isArray(updRes.data) && updRes.data.length > 0) {
+            return updRes.data[0].id;
+          }
+        }
+      }
+
+      // 3. Cek berdasarkan payload_json.id (misal saat nomor_st direvisi atau belum diisi)
+      if (tripItem.id) {
+        try {
+          const { data: idRows } = await client
+            .from('riwayat_perjadin')
+            .select('id')
+            .contains('payload_json', { id: tripItem.id })
+            .limit(1);
+
+          if (idRows && idRows.length > 0) {
+            const existingId = idRows[0].id;
+            const updRes = await executeSupabaseOperationWithFallback(p => {
+              return client.from('riwayat_perjadin').update(p).eq('id', existingId).select('id');
+            }, payload);
+
+            if (updRes && !updRes.error && Array.isArray(updRes.data) && updRes.data.length > 0) {
+              return updRes.data[0].id;
+            }
+          }
+        } catch (containsErr) {
+          // Abaikan jika index/filter JSON tidak didukung dan lanjut insert
+        }
+      }
+
+      // 4. Belum ada sama sekali di Cloud -> Insert 1 baris baru saja
+      const insertRes = await executeSupabaseOperationWithFallback(p => {
+        return client.from('riwayat_perjadin').insert(p).select('id');
+      }, payload);
+
+      if (insertRes && !insertRes.error && Array.isArray(insertRes.data) && insertRes.data.length > 0) {
+        return insertRes.data[0].id;
+      }
+
+      if (insertRes && insertRes.error) {
+        console.error('Gagal simpan ke tabel riwayat_perjadin Supabase:', insertRes.error);
+        return null;
+      }
+
       return null;
+    } catch (e) {
+      console.error('Gagal simpan ke Cloud Supabase:', e);
+      return null;
+    } finally {
+      window._inFlightCloudUploads.delete(lockKey);
     }
+  })();
 
-    return null;
-  } catch (e) {
-    console.error('Gagal simpan ke Cloud Supabase:', e);
-    return null;
-  }
+  window._inFlightCloudUploads.set(lockKey, uploadPromise);
+  return uploadPromise;
 }
 
-// Sinkronkan seluruh riwayat lokal ke database Supabase (Auto Integrasi Cloud)
+// Sinkronkan berkas lokal yang benar-benar belum memiliki cloudId (khusus pemanggil manual, bukan refresh halaman)
 async function autoSyncLocalTripsToCloud() {
   if (window._isSyncingLocalToCloud) return;
-  window._isSyncingLocalToCloud = true;
   const client = getSupabaseClient();
-  if (!client) {
-    window._isSyncingLocalToCloud = false;
-    return;
-  }
+  if (!client || (currentAuthUser && !canCurrentUserEdit())) return;
 
+  window._isSyncingLocalToCloud = true;
   try {
     const localList = (typeof getTripHistoryList === 'function') ? getTripHistoryList() : [];
-    if (!localList || localList.length === 0) return;
+    const unsynced = localList.filter(item => {
+      if (!item || item.cloudId) return false;
+      const stKey = normalizeStKey(item.noST);
+      return Boolean(stKey) || (item.agenda && item.agenda !== 'Tanpa Agenda Perjalanan' && (item.empCount > 0 || (item.employees || []).length > 0));
+    });
+    if (unsynced.length === 0) return;
 
     let hasChanges = false;
-    for (const item of localList) {
+    for (const item of unsynced) {
       try {
         const cloudId = await uploadTripToCloud(item);
         if (cloudId) {
-          if (!item.cloudId || item.cloudId !== cloudId || !item.isCloud) {
-            item.cloudId = cloudId;
-            item.isCloud = true;
-            hasChanges = true;
-          }
+          item.cloudId = cloudId;
+          item.isCloud = true;
+          hasChanges = true;
         }
       } catch (e) {
         console.warn('Auto-sync item ke cloud warning:', item.noST, e);
@@ -1353,7 +1526,7 @@ GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
 GRANT ALL ON ALL ROUTINES IN SCHEMA public TO anon, authenticated;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated;
 
--- Pastikan kolom & constraint role pada tabel profiles mendukung admin, operator (Role Khusus), viewer
+-- Pastikan kolom & constraint role pada tabel profiles mendukung admin, operator, viewer
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
 DO $$
 DECLARE r RECORD;
@@ -1560,8 +1733,8 @@ function getRoleMeta(rawRole) {
   if (r === 'operator' || r === 'editor') {
     return {
       key: 'operator',
-      label: 'ROLE KHUSUS',
-      fullName: 'ROLE KHUSUS (Buat & Update Progres)',
+      label: 'OPERATOR',
+      fullName: 'OPERATOR (Buat & Update Progres)',
       badgeClass: 'badge-role-operator',
       selectClass: 'select-role-operator'
     };
@@ -1647,7 +1820,7 @@ function generateUserRowsHtml(users) {
                 onchange="updateUserRole(this.dataset.userId, this.dataset.userEmail, this.value, this)"
                 title="Ubah peran pengguna">
           <option value="viewer" ${role === 'viewer' ? 'selected' : ''}>Viewer (Hanya Dashboard)</option>
-          <option value="operator" ${isOperator ? 'selected' : ''}>Role Khusus (Buat &amp; Update Progres)</option>
+          <option value="operator" ${isOperator ? 'selected' : ''}>Operator (Buat &amp; Update Progres)</option>
           <option value="admin" ${isAdm ? 'selected' : ''}>Admin (Akses Penuh)</option>
         </select>
       `;
