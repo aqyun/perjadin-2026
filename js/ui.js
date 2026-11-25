@@ -1654,12 +1654,46 @@ function normalizeTripNoStKey(noST) {
   return low;
 }
 
+// Composite Key Anti-Duplikat: Nomor ST boleh sama asalkan beda berkas LS/KKP atau beda MAK
+function getTripCompositeDedupeKey(itemOrNoST, makParam, metodeParam) {
+  let noST = '';
+  let mak = '';
+  let metode = 'LS';
+
+  if (itemOrNoST && typeof itemOrNoST === 'object') {
+    noST = itemOrNoST.noST || (itemOrNoST.draft && itemOrNoST.draft.fields && (itemOrNoST.draft.fields.noST || itemOrNoST.draft.fields.noSTNum)) || '';
+    mak = (itemOrNoST.mak != null && itemOrNoST.mak !== '')
+      ? itemOrNoST.mak
+      : ((itemOrNoST.draft && itemOrNoST.draft.fields && itemOrNoST.draft.fields.mak) || '');
+    metode = itemOrNoST.metodePembayaran
+      || (itemOrNoST.draft && itemOrNoST.draft.fields && (itemOrNoST.draft.fields.metodePembayaran || itemOrNoST.draft.fields.lk_metodePembayaran))
+      || 'LS';
+  } else {
+    noST = itemOrNoST || '';
+    mak = makParam || '';
+    metode = metodeParam || 'LS';
+  }
+
+  const sST = String(noST || '').trim();
+  if (!sST) return '';
+  const lowST = sST.toLowerCase();
+  if (lowST === 'tanpa nomor st' || lowST === 'tanpa no st' || lowST === '-') return '';
+
+  const cleanMak = String(mak || '').replace(/[^0-9a-zA-Z]/g, '').toLowerCase();
+  const cleanMetode = String(metode || 'LS').trim().toUpperCase() === 'KKP' ? 'KKP' : 'LS';
+
+  return `${lowST}__${cleanMetode}__${cleanMak}`;
+}
+window.getTripCompositeDedupeKey = getTripCompositeDedupeKey;
+
 function computeTripDraftSignature(item) {
   if (!item) return '';
   const d = item.draft || {};
   try {
     return JSON.stringify({
       noST: item.noST || '',
+      mak: item.mak || d.fields?.mak || '',
+      metodePembayaran: item.metodePembayaran || d.fields?.metodePembayaran || 'LS',
       agenda: item.agenda || '',
       prov: item.provinsiTujuan || '',
       kota: item.kotaTujuan || '',
@@ -1678,7 +1712,7 @@ function computeTripDraftSignature(item) {
       manualMeals: d.manualMeals || []
     });
   } catch (e) {
-    return `${item.noST}|${item.totalBiaya}|${item.empCount}`;
+    return `${item.noST}|${item.mak}|${item.metodePembayaran}|${item.totalBiaya}|${item.empCount}`;
   }
 }
 
@@ -1687,6 +1721,16 @@ function buildRevisionSummaryNote(oldItem, newItem) {
   const diffs = [];
   if (normalizeTripNoStKey(oldItem.noST) !== normalizeTripNoStKey(newItem.noST)) {
     diffs.push(`No. ST (${oldItem.noST} → ${newItem.noST})`);
+  }
+  const oldMetode = String(oldItem.metodePembayaran || oldItem.draft?.fields?.metodePembayaran || 'LS').toUpperCase();
+  const newMetode = String(newItem.metodePembayaran || newItem.draft?.fields?.metodePembayaran || 'LS').toUpperCase();
+  if (oldMetode !== newMetode) {
+    diffs.push(`Metode (${oldMetode} → ${newMetode})`);
+  }
+  const oldMak = String(oldItem.mak || oldItem.draft?.fields?.mak || '').trim();
+  const newMak = String(newItem.mak || newItem.draft?.fields?.mak || '').trim();
+  if (oldMak !== newMak) {
+    diffs.push(`MAK (${oldMak || '-'} → ${newMak || '-'})`);
   }
   if ((oldItem.agenda || '').trim() !== (newItem.agenda || '').trim()) {
     diffs.push('Agenda');
@@ -1717,11 +1761,13 @@ function updateRevisionBanner(editTrip) {
     return;
   }
   const safeNo = (typeof escapeHtml === 'function') ? escapeHtml(editTrip.origNoST || editTrip.noST || 'Berkas Terpilih') : (editTrip.origNoST || 'Berkas Terpilih');
+  const safeMetode = editTrip.origMetode ? ` [${editTrip.origMetode}]` : '';
+  const safeMak = editTrip.origMak ? ` [MAK: ${editTrip.origMak}]` : '';
   banner.style.display = 'flex';
   banner.innerHTML = `
     <div class="rev-banner-left">
       <span class="rev-banner-pill">MODE REVISI</span>
-      <span class="rev-banner-text">Sedang merevisi berkas <strong>${safeNo}</strong> &bull; Perubahan akan memperbarui data yang sudah ada dan tercatat di <strong>Log Revisi</strong> (tidak membuat data ganda).</span>
+      <span class="rev-banner-text">Sedang merevisi berkas <strong>${safeNo}</strong>${safeMetode}${safeMak} &bull; Perubahan akan memperbarui data yang sudah ada dan tercatat di <strong>Log Revisi</strong> (tidak membuat data ganda).</span>
     </div>
     <button type="button" class="btn btn-secondary btn-sm rev-banner-cancel" onclick="cancelActiveRevision()" title="Batalkan revisi dan mulai form baru">
       <span>Batal / Buat Baru</span>
@@ -1784,10 +1830,18 @@ function saveCurrentTripToHistory(isManual = false, customCsvData = null) {
   });
 
   const activeEdit = window._activeEditingTrip || null;
-  const stKey = normalizeTripNoStKey(noST);
+  const rawMetode = draft.fields.metodePembayaran
+    || (document.getElementById('metodePembayaran')?.value)
+    || (document.getElementById('lk_metodePembayaran')?.value)
+    || 'LS';
+  const metodePembayaran = String(rawMetode).trim().toUpperCase() === 'KKP' ? 'KKP' : 'LS';
+  const mak = String(draft.fields.mak || document.getElementById('mak')?.value || '').trim();
+
+  // Composite Key: Nomor ST boleh sama asal beda metode (LS/KKP) atau beda MAK
+  const compKey = getTripCompositeDedupeKey(noST, mak, metodePembayaran);
   const tripId = (activeEdit && activeEdit.id)
     ? activeEdit.id
-    : ('trip_' + (stKey ? noST.replace(/[^a-zA-Z0-9]/g, '_') : Date.now()));
+    : ('trip_' + (compKey ? compKey.replace(/[^a-zA-Z0-9]/g, '_') : Date.now()));
 
   let provTeks = '';
   if (draft.fields.cbMultiProvinsi) {
@@ -1806,7 +1860,7 @@ function saveCurrentTripToHistory(isManual = false, customCsvData = null) {
         noST, agenda, tglST: draft.fields.tglST,
         tglBerangkat: draft.fields.tglBerangkat, tglKembali: draft.fields.tglKembali,
         lamaTugas: draft.fields.lamaTugas, provinsiTujuan: provTeks,
-        kotaTujuan: draft.fields.kotaTujuan, mak: draft.fields.mak,
+        kotaTujuan: draft.fields.kotaTujuan, mak: mak,
         employees: empList, totalBiaya, draft
       });
     } catch (csvGenErr) {
@@ -1820,6 +1874,8 @@ function saveCurrentTripToHistory(isManual = false, customCsvData = null) {
   const historyItem = {
     id: tripId,
     noST: noST || 'Tanpa Nomor ST',
+    mak: mak,
+    metodePembayaran: metodePembayaran,
     agenda: agenda || 'Tanpa Agenda Perjalanan',
     tglST: draft.fields.tglST || '',
     tglBerangkat: draft.fields.tglBerangkat || '',
@@ -1827,7 +1883,6 @@ function saveCurrentTripToHistory(isManual = false, customCsvData = null) {
     lamaTugas: draft.fields.lamaTugas || '',
     provinsiTujuan: provTeks || '',
     kotaTujuan: draft.fields.kotaTujuan || '',
-    mak: draft.fields.mak || '',
     empCount: empIds.length,
     employees: empList,
     totalBiaya: totalBiaya,
@@ -1841,7 +1896,7 @@ function saveCurrentTripToHistory(isManual = false, customCsvData = null) {
   };
 
   let list = getTripHistoryList();
-  // Cari entri yang sudah ada berdasarkan context revisi aktif, cloudId, id, atau nomor ST (anti-duplikat)
+  // Cari entri yang sudah ada berdasarkan context revisi aktif, cloudId, id, atau composite key (No ST + Metode + MAK)
   const existingIdx = list.findIndex(item => {
     if (!item) return false;
     if (activeEdit) {
@@ -1849,7 +1904,7 @@ function saveCurrentTripToHistory(isManual = false, customCsvData = null) {
       if (activeEdit.cloudId && item.cloudId && item.cloudId === activeEdit.cloudId) return true;
     }
     if (item.id === historyItem.id) return true;
-    if (stKey && normalizeTripNoStKey(item.noST) === stKey) return true;
+    if (compKey && getTripCompositeDedupeKey(item) === compKey) return true;
     return false;
   });
 
@@ -1920,13 +1975,13 @@ function saveCurrentTripToHistory(isManual = false, customCsvData = null) {
     historyItem.revision_log = prevLogs;
     list[existingIdx] = historyItem;
 
-    // Bersihkan jika sempat ada baris duplikat lain di lokal untuk noST/id/cloudId ini
+    // Bersihkan jika sempat ada baris duplikat lain di lokal untuk composite key / id / cloudId ini
     list = list.filter((it, idx) => {
       if (idx === existingIdx) return true;
       if (!it) return false;
       if (it.id === historyItem.id) return false;
       if (historyItem.cloudId && it.cloudId === historyItem.cloudId) return false;
-      if (stKey && normalizeTripNoStKey(it.noST) === stKey) return false;
+      if (compKey && getTripCompositeDedupeKey(it) === compKey) return false;
       return true;
     });
   } else {
@@ -1958,7 +2013,7 @@ function saveCurrentTripToHistory(isManual = false, customCsvData = null) {
         historyItem.cloudId = cloudId;
         historyItem.isCloud = true;
         const curList = getTripHistoryList();
-        const curIdx = curList.findIndex(x => x.id === historyItem.id || (stKey && normalizeTripNoStKey(x.noST) === stKey));
+        const curIdx = curList.findIndex(x => x.id === historyItem.id || (compKey && getTripCompositeDedupeKey(x) === compKey));
         if (curIdx >= 0) {
           curList[curIdx] = { ...curList[curIdx], ...historyItem, cloudId, isCloud: true };
         }
@@ -1968,14 +2023,14 @@ function saveCurrentTripToHistory(isManual = false, customCsvData = null) {
           showRefreshToast(
             isRevisionRecorded ? 'Revisi Tersimpan & Dicatat di Log' : 'Tersimpan & Terintegrasi ke Database',
             isRevisionRecorded
-              ? `Revisi "${historyItem.noST}" oleh ${actor.nama} (${actor.roleLabel}) berhasil diperbarui ke database.`
-              : `Data perjalanan "${historyItem.noST}" telah tersimpan dan masuk ke database cloud Supabase.`
+              ? `Revisi "${historyItem.noST}" (${historyItem.metodePembayaran}) oleh ${actor.nama} (${actor.roleLabel}) berhasil diperbarui ke database.`
+              : `Data perjalanan "${historyItem.noST}" (${historyItem.metodePembayaran}) telah tersimpan dan masuk ke database cloud Supabase.`
           );
         }
       } else if (isManual && typeof showRefreshToast === 'function') {
         showRefreshToast(
           isRevisionRecorded ? 'Revisi Tersimpan ke Riwayat' : 'Perjalanan Tersimpan ke Riwayat',
-          `Data perjalanan "${historyItem.noST}" berhasil dicatat ke riwayat.`
+          `Data perjalanan "${historyItem.noST}" (${historyItem.metodePembayaran}) berhasil dicatat ke riwayat.`
         );
       }
     }).catch(err => {
@@ -1983,14 +2038,14 @@ function saveCurrentTripToHistory(isManual = false, customCsvData = null) {
       if (isManual && typeof showRefreshToast === 'function') {
         showRefreshToast(
           'Perjalanan Tersimpan ke Riwayat',
-          `Data perjalanan "${historyItem.noST}" berhasil dicatat ke riwayat.`
+          `Data perjalanan "${historyItem.noST}" (${historyItem.metodePembayaran}) berhasil dicatat ke riwayat.`
         );
       }
     });
   } else if (isManual && typeof showRefreshToast === 'function') {
     showRefreshToast(
       'Perjalanan Tersimpan ke Riwayat',
-      `Data perjalanan "${historyItem.noST}" berhasil dicatat ke riwayat.`
+      `Data perjalanan "${historyItem.noST}" (${historyItem.metodePembayaran}) berhasil dicatat ke riwayat.`
     );
   }
 
@@ -2014,17 +2069,28 @@ function loadTripFromHistory(id, event = null) {
     return;
   }
 
+  const rawMetode = item.metodePembayaran || item.draft?.fields?.metodePembayaran || item.draft?.fields?.lk_metodePembayaran || 'LS';
+  const itemMetode = String(rawMetode).trim().toUpperCase() === 'KKP' ? 'KKP' : 'LS';
+  const itemMak = item.mak || item.draft?.fields?.mak || '';
+
   window._activeEditingTrip = {
     id: item.id,
     cloudId: item.cloudId || null,
     isCloud: !!item.isCloud,
     origNoST: item.noST || '',
+    origMak: itemMak,
+    origMetode: itemMetode,
     status_berkas: item.status_berkas || 'diproses',
     revision_log: Array.isArray(item.revision_log) ? [...item.revision_log] : []
   };
 
   if (typeof restorePerjadinDraftData === 'function') {
     restorePerjadinDraftData(item.draft);
+  }
+
+  // Pastikan metode pembayaran terupdate di seluruh kontrol input & tabs
+  if (typeof onMetodePembayaranChange === 'function') {
+    onMetodePembayaranChange(itemMetode);
   }
 
   // Jangan simpan PERJADIN_DRAFT_KEY ke localStorage agar refresh/tutup web tetap auto-clear form
@@ -2035,7 +2101,7 @@ function loadTripFromHistory(id, event = null) {
     if (typeof showRefreshToast === 'function') {
       showRefreshToast(
         'Perjalanan Dimuat untuk Revisi',
-        `Data "${item.noST}" siap direvisi. Saat disimpan nanti akan memperbarui data yang ada dan tercatat di Log Revisi.`
+        `Data "${item.noST}" [${itemMetode}] siap direvisi. Saat disimpan nanti akan memperbarui data berkas ini dan tercatat di Log Revisi.`
       );
     }
   }, 250);
@@ -2051,11 +2117,14 @@ function duplicateTripFromHistory(id, event = null) {
   updateRevisionBanner(null);
 
   const clonedDraft = JSON.parse(JSON.stringify(item.draft));
-  clonedDraft.fields.noST = '';
-  clonedDraft.fields.noSTNum = '';
 
   if (typeof restorePerjadinDraftData === 'function') {
     restorePerjadinDraftData(clonedDraft);
+  }
+
+  const rawMetode = item.metodePembayaran || item.draft?.fields?.metodePembayaran || 'LS';
+  if (typeof onMetodePembayaranChange === 'function') {
+    onMetodePembayaranChange(rawMetode);
   }
 
   showTab('input');
@@ -2063,8 +2132,8 @@ function duplicateTripFromHistory(id, event = null) {
   setTimeout(() => {
     if (typeof showRefreshToast === 'function') {
       showRefreshToast(
-        'Perjalanan Berhasil Diduplikasi',
-        `Isian pegawai dan rute telah dimuat. Silakan masukkan Nomor Surat Tugas baru untuk perjalanan ini.`
+        'Perjalanan Diduplikasi',
+        `Isian berkas telah dimuat. Anda dapat mengubah Metode Pembayaran (LS/KKP), MAK, atau No. ST sebelum menyimpan berkas baru.`
       );
     }
   }, 250);
@@ -2262,16 +2331,19 @@ function renderDashboardModule(passedList = null) {
 
 function renderRevisionLogHtml(item) {
   let revs = Array.isArray(item.revision_log) ? [...item.revision_log] : [];
-  // Jika belum ada entri 'buat_baru' tapi ada informasi pembuat (createdBy), tampilkan di log
-  if (!revs.some(r => r && r.action === 'buat_baru') && item.createdBy) {
+  // Pastikan entri 'buat_baru' selalu ada di log agar tercatat siapa pembuatnya
+  if (!revs.some(r => r && r.action === 'buat_baru')) {
+    const creator = item.createdBy || {};
+    const actorRole = creator.role || 'operator';
+    const actorRoleLabel = creator.roleLabel || (actorRole === 'admin' ? 'Admin' : 'Role Khusus');
     revs.push({
       id: 'rev_creator_synth',
-      at: item.createdAt || item.savedAt,
-      actorId: item.createdBy.id || null,
-      actorName: item.createdBy.nama || 'Pengguna',
-      actorEmail: item.createdBy.email || '-',
-      actorRole: item.createdBy.role || 'admin',
-      actorRoleLabel: item.createdBy.roleLabel || 'Admin',
+      at: item.createdAt || item.savedAt || new Date().toISOString(),
+      actorId: creator.id || null,
+      actorName: creator.nama || (creator.email && creator.email !== '-' ? creator.email.split('@')[0] : 'Pembuat Berkas'),
+      actorEmail: creator.email || '-',
+      actorRole,
+      actorRoleLabel,
       action: 'buat_baru',
       note: 'Membuat berkas perjalanan dinas baru'
     });
@@ -2371,8 +2443,10 @@ function renderTripHistory(filterText = '') {
     const provDisplay = (typeof getProvinsiDisplayName === 'function')
       ? getProvinsiDisplayName(item.provinsiTujuan)
       : (item.provinsiTujuan || '');
+    const itemMetode = String(item.metodePembayaran || item.draft?.fields?.metodePembayaran || item.draft?.fields?.lk_metodePembayaran || 'LS').trim().toUpperCase() === 'KKP' ? 'KKP' : 'LS';
     const searchTarget = [
       item.noST,
+      itemMetode,
       item.agenda,
       provDisplay,
       item.kotaTujuan,
@@ -2534,12 +2608,17 @@ function renderTripHistory(filterText = '') {
       </div>
     `;
 
+    const rawMetode = item.metodePembayaran || (item.draft && item.draft.fields && (item.draft.fields.metodePembayaran || item.draft.fields.lk_metodePembayaran)) || 'LS';
+    const isKKP = String(rawMetode).trim().toUpperCase() === 'KKP';
+    const metodeLabel = isKKP ? 'KKP' : 'LS';
+
     return `
       <div class="history-card" data-trip-id="${item.id}" onclick="handleTripCardClick(event, '${item.id}')" title="Klik untuk membuka dokumen PDF lengkap perjalanan ini">
         <div class="history-card-top">
           <div class="history-card-st">
             <span class="history-st-badge">${safeNoST}</span>
-            ${safeMak ? `<span class="history-mak-pill" title="Mata Anggaran Kegiatan (MAK)">${safeMak}</span>` : ''}
+            <span class="history-metode-pill ${isKKP ? 'is-kkp' : 'is-ls'}" title="Metode Pembayaran: ${isKKP ? 'Kartu Kredit Pemerintah (KKP)' : 'Pembayaran Langsung (LS)'}">${metodeLabel}</span>
+            ${safeMak ? `<span class="history-mak-pill" title="Mata Anggaran Kegiatan (MAK)">MAK: ${safeMak}</span>` : ''}
             ${statusBadge}
             ${storagePill}
           </div>

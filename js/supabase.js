@@ -899,6 +899,40 @@ function normalizeStKey(noST) {
   return low;
 }
 
+// Composite Key Anti-Duplikat: Nomor ST boleh sama asalkan beda metode (LS/KKP) atau beda MAK
+function getTripCompositeDedupeKey(itemOrNoST, makParam, metodeParam) {
+  if (typeof window !== 'undefined' && typeof window.getTripCompositeDedupeKey === 'function') {
+    return window.getTripCompositeDedupeKey(itemOrNoST, makParam, metodeParam);
+  }
+  let noST = '';
+  let mak = '';
+  let metode = 'LS';
+
+  if (itemOrNoST && typeof itemOrNoST === 'object') {
+    noST = itemOrNoST.noST || (itemOrNoST.draft && itemOrNoST.draft.fields && (itemOrNoST.draft.fields.noST || itemOrNoST.draft.fields.noSTNum)) || '';
+    mak = (itemOrNoST.mak != null && itemOrNoST.mak !== '')
+      ? itemOrNoST.mak
+      : ((itemOrNoST.draft && itemOrNoST.draft.fields && itemOrNoST.draft.fields.mak) || '');
+    metode = itemOrNoST.metodePembayaran
+      || (itemOrNoST.draft && itemOrNoST.draft.fields && (itemOrNoST.draft.fields.metodePembayaran || itemOrNoST.draft.fields.lk_metodePembayaran))
+      || 'LS';
+  } else {
+    noST = itemOrNoST || '';
+    mak = makParam || '';
+    metode = metodeParam || 'LS';
+  }
+
+  const sST = String(noST || '').trim();
+  if (!sST) return '';
+  const lowST = sST.toLowerCase();
+  if (lowST === 'tanpa nomor st' || lowST === 'tanpa no st' || lowST === '-') return '';
+
+  const cleanMak = String(mak || '').replace(/[^0-9a-zA-Z]/g, '').toLowerCase();
+  const cleanMetode = String(metode || 'LS').trim().toUpperCase() === 'KKP' ? 'KKP' : 'LS';
+
+  return `${lowST}__${cleanMetode}__${cleanMak}`;
+}
+
 function mergeRevisionLogs(logA, logB) {
   const listA = Array.isArray(logA) ? logA : [];
   const listB = Array.isArray(logB) ? logB : [];
@@ -965,13 +999,15 @@ async function syncTripsFromCloud(silent = false) {
 
       const cloudRows = Array.isArray(data) ? data : [];
       const cloudMap = new Map();
-      const cloudStToKey = new Map();
+      const cloudCompToKey = new Map();
 
       cloudRows.forEach(cloudRow => {
         const payload = cloudRow.payload_json || {};
         const tripId = payload.id || ('trip_cloud_' + cloudRow.id);
         const noST = cloudRow.nomor_st || payload.noST || 'Tanpa Nomor ST';
-        const stKey = normalizeStKey(noST);
+        const mak = (payload.mak != null && payload.mak !== '') ? payload.mak : (payload.draft?.fields?.mak || '');
+        const rawMetode = payload.metodePembayaran || payload.draft?.fields?.metodePembayaran || payload.draft?.fields?.lk_metodePembayaran || 'LS';
+        const metodePembayaran = String(rawMetode).trim().toUpperCase() === 'KKP' ? 'KKP' : 'LS';
 
         const cloudItem = {
           ...payload,
@@ -980,24 +1016,29 @@ async function syncTripsFromCloud(silent = false) {
           isCloud: true,
           status_berkas: cloudRow.status_berkas || payload.status_berkas || 'diproses',
           noST,
+          mak,
+          metodePembayaran,
           agenda: cloudRow.agenda || payload.agenda || 'Tanpa Agenda',
           kotaTujuan: cloudRow.tujuan || payload.kotaTujuan || '',
           totalBiaya: Number(cloudRow.total_biaya) || Number(payload.totalBiaya) || 0,
           savedAt: cloudRow.updated_at || cloudRow.created_at || payload.savedAt,
           createdAt: payload.createdAt || cloudRow.created_at || payload.savedAt,
           csv_data: cloudRow.csv_data || payload.csv_data || '',
+          createdBy: payload.createdBy || null,
           revision_log: mergeRevisionLogs(payload.revision_log, [])
         };
 
-        // Deduplikasi bila sebelumnya pernah ada baris ganda di Supabase dengan nomor_st / tripId sama
+        const compKey = getTripCompositeDedupeKey(cloudItem);
+
+        // Deduplikasi hanya jika baris di Supabase benar-benar memiliki composite key yang identik (No ST + Metode + MAK)
         const canonicalKey = cloudMap.has(tripId)
           ? tripId
-          : (stKey && cloudStToKey.has(stKey) ? cloudStToKey.get(stKey) : tripId);
+          : (compKey && cloudCompToKey.has(compKey) ? cloudCompToKey.get(compKey) : tripId);
 
         const merged = mergeTripItemsCleanly(cloudMap.get(canonicalKey), cloudItem);
         cloudMap.set(canonicalKey, merged);
-        if (stKey && !cloudStToKey.has(stKey)) {
-          cloudStToKey.set(stKey, canonicalKey);
+        if (compKey && !cloudCompToKey.has(compKey)) {
+          cloudCompToKey.set(compKey, canonicalKey);
         }
       });
 
@@ -1007,7 +1048,7 @@ async function syncTripsFromCloud(silent = false) {
 
       localList.forEach(localItem => {
         if (!localItem) return;
-        const stKey = normalizeStKey(localItem.noST);
+        const compKey = getTripCompositeDedupeKey(localItem);
         let matchedKey = null;
 
         if (localItem.cloudId) {
@@ -1021,19 +1062,19 @@ async function syncTripsFromCloud(silent = false) {
         if (!matchedKey && localItem.id && cloudMap.has(localItem.id)) {
           matchedKey = localItem.id;
         }
-        if (!matchedKey && stKey && cloudStToKey.has(stKey)) {
-          matchedKey = cloudStToKey.get(stKey);
+        if (!matchedKey && compKey && cloudCompToKey.has(compKey)) {
+          matchedKey = cloudCompToKey.get(compKey);
         }
 
         if (matchedKey) {
           cloudMap.set(matchedKey, mergeTripItemsCleanly(cloudMap.get(matchedKey), localItem));
         } else {
           // Hanya pertahankan berkas lokal yang valid (bukan sisa auto-save draft kosong tanpa ST)
-          const hasMeaningfulContent = Boolean(stKey) || (localItem.agenda && localItem.agenda !== 'Tanpa Agenda Perjalanan' && (localItem.empCount > 0 || (localItem.employees || []).length > 0));
+          const hasMeaningfulContent = Boolean(compKey) || (localItem.agenda && localItem.agenda !== 'Tanpa Agenda Perjalanan' && (localItem.empCount > 0 || (localItem.employees || []).length > 0));
           if (hasMeaningfulContent && !localItem.cloudId) {
             const key = localItem.id || ('trip_loc_' + Date.now());
             cloudMap.set(key, localItem);
-            if (stKey) cloudStToKey.set(stKey, key);
+            if (compKey) cloudCompToKey.set(compKey, key);
             localOnlyUnsynced.push(localItem);
           }
         }
@@ -1128,10 +1169,10 @@ async function uploadTripToCloud(tripItem) {
   if (!client || !tripItem) return null;
 
   window._inFlightCloudUploads = window._inFlightCloudUploads || new Map();
-  const stKey = normalizeStKey(tripItem.noST);
+  const compKey = getTripCompositeDedupeKey(tripItem);
   const lockKey = tripItem.cloudId
     ? `cid:${tripItem.cloudId}`
-    : (stKey ? `st:${stKey}` : `tid:${tripItem.id || Date.now()}`);
+    : (compKey ? `comp:${compKey}` : `tid:${tripItem.id || Date.now()}`);
 
   // Jika proses upload untuk berkas yang sama sedang berjalan, tunggu hingga selesai lalu gunakan cloudId hasil-nya agar tidak double-insert
   const existingPromise = window._inFlightCloudUploads.get(lockKey);
@@ -1186,23 +1227,31 @@ async function uploadTripToCloud(tripItem) {
         }
       }
 
-      // 2. Cek berdasarkan nomor_st agar tidak terjadi baris duplikat
+      // 2. Cek berdasarkan nomor_st DAN kecocokan MAK + Metode Pembayaran (agar berkas LS/KKP atau beda MAK tidak saling menimpa)
       if (hasValidNoST) {
         const { data: existingRows } = await client
           .from('riwayat_perjadin')
-          .select('id')
+          .select('id, payload_json')
           .eq('nomor_st', noST)
-          .order('created_at', { ascending: true })
-          .limit(1);
+          .order('created_at', { ascending: true });
 
-        if (existingRows && existingRows.length > 0) {
-          const existingId = existingRows[0].id;
-          const updRes = await executeSupabaseOperationWithFallback(p => {
-            return client.from('riwayat_perjadin').update(p).eq('id', existingId).select('id');
-          }, payload);
+        if (Array.isArray(existingRows) && existingRows.length > 0) {
+          const targetKey = getTripCompositeDedupeKey(tripItem);
+          const matchedRow = existingRows.find(row => {
+            const rowPayload = row.payload_json || {};
+            const rKey = getTripCompositeDedupeKey(rowPayload);
+            return rKey && targetKey && rKey === targetKey;
+          });
 
-          if (updRes && !updRes.error && Array.isArray(updRes.data) && updRes.data.length > 0) {
-            return updRes.data[0].id;
+          if (matchedRow) {
+            const existingId = matchedRow.id;
+            const updRes = await executeSupabaseOperationWithFallback(p => {
+              return client.from('riwayat_perjadin').update(p).eq('id', existingId).select('id');
+            }, payload);
+
+            if (updRes && !updRes.error && Array.isArray(updRes.data) && updRes.data.length > 0) {
+              return updRes.data[0].id;
+            }
           }
         }
       }
@@ -1684,7 +1733,7 @@ async function loadUserManagementList() {
     const fallbackUsers = currentUser ? [{
       id: currentUser.id,
       email: currentUser.email,
-      nama_lengkap: currentUser.nama || 'Aqyun Maulidin',
+      nama_lengkap: currentUser.nama || 'Aqyun Rista Maulidin',
       role: currentUser.role || 'admin'
     }] : [];
 
