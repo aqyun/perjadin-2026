@@ -83,14 +83,17 @@ selalu kosong sampai admin memberi peran lewat **Kelola Pengguna Tim** di aplika
 
 ## Verifikasi email (saklar)
 
-Verifikasi email untuk akun baru **dimatikan** secara bawaan karena server belum punya SMTP: email verifikasi
-tidak akan terkirim, dan akun yang belum `verified` akan tertolak login (termasuk akun yang sudah ada).
+Pengiriman email verifikasi saat pendaftaran **dimatikan** secara bawaan karena server belum punya SMTP.
+Akun yang baru mendaftar **tidak langsung login** ke aplikasi (diarahkan dulu ke tab masuk/login),
+dan statusnya otomatis ditandai `verified = 1` di PocketBase lewat migrasi
+`pb_migrations/1795610000_auto_verify_users.js` (trigger SQLite `users_auto_verify_insert`).
 
-Sebelum menghidupkannya:
+Sebelum menghidupkan verifikasi email suatu saat nanti:
 
 1. Atur SMTP di dashboard PocketBase (Settings, Mail) dan tes kirim email.
-2. Tandai akun yang sudah ada sebagai `verified` (koleksi `users`), terutama akun admin.
-3. Taruh di `index.html`, sebelum `<script src="js/pb-shim.js...">`:
+2. Buat migrasi baru untuk menghapus trigger auto-verifikasi (`DROP TRIGGER IF EXISTS users_auto_verify_insert;`).
+3. Tandai akun yang sudah ada sebagai `verified` (koleksi `users`), terutama akun admin.
+4. Taruh di `index.html`, sebelum `<script src="js/pb-shim.js...">`:
    `<script>window.PERDINKU_REQUIRE_EMAIL_VERIFICATION = true;</script>`
 
 Bagian 7 di `tests/run-test.js` menguji mode ini. Penolakan login untuk akun belum terverifikasi

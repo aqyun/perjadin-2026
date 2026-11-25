@@ -49,16 +49,19 @@ async function setRole(userId, role) {
 
   console.log('1. Daftar dan login');
   let r = await c.auth.signUp({ email, password: pw, options: { data: { full_name: 'Budi Uji', role: 'admin' } } });
-  check('signUp berhasil dan langsung dapat sesi', !r.error && r.data.session && r.data.user, r.error);
+  check('signUp berhasil tanpa auto-login (session = null)', !r.error && r.data.session === null && r.data.user, r.error);
+  check('belum ada sesi aktif setelah signUp', (await c.auth.getSession()).data.session === null);
   check('peran awal = viewer (role admin dari klien diabaikan)', r.data && r.data.user && r.data.user.user_metadata.role === 'viewer', r.data && r.data.user);
   const uid = r.data.user.id;
+  const t1 = await suToken();
+  const createdUser = await (await fetch(BASE + '/api/collections/users/records/' + uid, { headers: { Authorization: t1 } })).json();
+  check('akun baru otomatis berstatus verified di server', createdUser && createdUser.verified === true, createdUser);
   r = await c.auth.signUp({ email, password: pw, options: { data: { full_name: 'Dobel' } } });
   check('daftar email yang sama ditolak (pesan memuat "already")', r.error && /already/i.test(r.error.message), r.error);
-  await c.auth.signOut();
   r = await c.auth.signInWithPassword({ email, password: 'salah-salah' });
   check('login sandi salah -> "Invalid login credentials"', r.error && r.error.message === 'Invalid login credentials', r.error);
   r = await c.auth.signInWithPassword({ email, password: pw });
-  check('login benar', !r.error && r.data.session, r.error);
+  check('login benar setelah daftar', !r.error && r.data.session, r.error);
 
   console.log('2. Peran viewer');
   let g = await c.auth.getSession();
@@ -136,8 +139,10 @@ async function setRole(userId, role) {
   check('(server) siapkan 1 berkas contoh', seed.ok);
   const c2 = window.supabase.createClient(BASE, 'x');
   r = await c2.auth.signUp({ email: 'pending@example.com', password: 'rahasia1', options: { data: { full_name: 'Calon Pengguna' } } });
-  check('daftar baru berhasil dan dapat sesi', !r.error && r.data.session, r.error);
+  check('daftar baru berhasil tanpa auto-login', !r.error && r.data.session === null && r.data.user, r.error);
   const uid2 = r.data.user.id;
+  r = await c2.auth.signInWithPassword({ email: 'pending@example.com', password: 'rahasia1' });
+  check('login akun baru berhasil dan dapat sesi', !r.error && r.data.session, r.error);
   r = await c2.from('riwayat_perjadin').select('*');
   check('akun menunggu TIDAK melihat berkas satu pun', !r.error && r.data.length === 0, r);
   r = await c2.from('profiles').select('*');
@@ -158,12 +163,17 @@ async function setRole(userId, role) {
   const c3 = window.supabase.createClient(BASE, 'x');
   r = await c3.auth.signUp({ email: 'verif@example.com', password: 'rahasia1', options: { data: { full_name: 'Perlu Verifikasi' } } });
   check('daftar tidak auto-login (tanpa sesi, tanpa error)', !r.error && r.data.session === null, r);
-  r = await c3.auth.signInWithPassword({ email: 'verif@example.com', password: 'rahasia1' });
-  check('login akun belum terverifikasi ditolak (isUnverified)', r.error && r.error.isUnverified === true, r);
-  check('tidak ada sesi tersisa setelah ditolak', (await c3.auth.getSession()).data.session === null);
   const t3 = await suToken();
   const found = await (await fetch(BASE + "/api/collections/users/records?filter=" + encodeURIComponent("email='verif@example.com'"), { headers: { Authorization: t3 } })).json();
   const vid = found.items && found.items[0] && found.items[0].id;
+  // Trigger auto-verify aktif selama SMTP belum dipakai; simulasi akun belum terverifikasi
+  const unvr = await fetch(BASE + '/api/collections/users/records/' + vid, {
+    method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: t3 }, body: JSON.stringify({ verified: false })
+  });
+  check('(server) setel verified=false untuk uji verifikasi', unvr.ok);
+  r = await c3.auth.signInWithPassword({ email: 'verif@example.com', password: 'rahasia1' });
+  check('login akun belum terverifikasi ditolak (isUnverified)', r.error && r.error.isUnverified === true, r);
+  check('tidak ada sesi tersisa setelah ditolak', (await c3.auth.getSession()).data.session === null);
   const vr = await fetch(BASE + '/api/collections/users/records/' + vid, {
     method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: t3 }, body: JSON.stringify({ verified: true })
   });

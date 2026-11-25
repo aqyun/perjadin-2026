@@ -80,9 +80,10 @@
     let recoveryToken = null;
 
     // Verifikasi email baru berfungsi bila server punya SMTP (PocketBase: Settings > Mail).
-    // Selama SMTP belum diatur, biarkan MATI supaya tak ada yang terkunci (email verifikasi tidak
-    // pernah terkirim). Hidupkan dengan menaruh <script>window.PERDINKU_REQUIRE_EMAIL_VERIFICATION = true;</script>
-    // di index.html sebelum pb-shim.js, setelah SMTP dites.
+    // Selama SMTP belum diatur, biarkan MATI supaya email verifikasi tidak dikirim; akun baru
+    // otomatis bertanda verified di server dan diarahkan ke halaman login setelah daftar.
+    // Hidupkan dengan menaruh <script>window.PERDINKU_REQUIRE_EMAIL_VERIFICATION = true;</script>
+    // di index.html sebelum pb-shim.js, setelah SMTP dites dan trigger auto-verify dicabut.
     const requireVerify = () => window.PERDINKU_REQUIRE_EMAIL_VERIFICATION === true;
 
     function userOut(r) {
@@ -208,12 +209,13 @@
       },
       async signUp({ email, password, options }) {
         const full = (options && options.data && options.data.full_name) || '';
+        let rec = null;
         try {
           // role sengaja tidak dikirim: akun baru menunggu admin memberi peran
-          await pb.collection('users').create({
+          rec = await pb.collection('users').create({
             email, password, passwordConfirm: password, name: full, emailVisibility: true
           });
-          // Kirim email verifikasi ke pengguna untuk keamanan (hanya bila verifikasi dihidupkan)
+          // Kirim email verifikasi ke pengguna hanya bila verifikasi email dihidupkan
           if (requireVerify()) {
             try {
               await pb.collection('users').requestVerification(email);
@@ -228,13 +230,8 @@
           }
           return { data: { user: null, session: null }, error: errOut(e) };
         }
-        if (requireVerify()) {
-          // Jangan auto-login. Kembalikan session null agar user diarahkan verifikasi email dulu
-          return { data: { user: null, session: null }, error: null };
-        }
-        const res = await auth.signInWithPassword({ email, password });
-        if (res.error) return { data: { user: null, session: null }, error: res.error };
-        return { data: res.data, error: null };
+        // Jangan auto-login setelah pendaftaran: kembalikan session null agar diarahkan ke halaman login dulu
+        return { data: { user: userOut(rec), session: null }, error: null };
       },
       async resendVerificationEmail(email) {
         try {

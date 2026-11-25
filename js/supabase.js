@@ -484,6 +484,55 @@ async function handleAuthLogin(e) {
   }
 }
 
+function redirectAfterSignUp({
+  email,
+  signupAlertEl,
+  signupFieldIds,
+  switchTabFn,
+  loginEmailId,
+  loginPasswordId,
+  loginAlertId
+}) {
+  const safeEmail = (typeof escapeAttrSafe === 'function') ? escapeAttrSafe(email) : email;
+  const requireEmailVerify = window.PERDINKU_REQUIRE_EMAIL_VERIFICATION === true;
+
+  if (requireEmailVerify) {
+    showAuthAlert(signupAlertEl, 'success', `Pendaftaran berhasil! Tautan verifikasi telah dikirim ke <strong>${safeEmail}</strong>.<br>Silakan periksa <strong>kotak masuk</strong> (atau folder Spam) pada email Anda sebelum masuk.`);
+  } else {
+    showAuthAlert(signupAlertEl, 'success', `Pendaftaran berhasil! Akun <strong>${safeEmail}</strong> sudah terverifikasi. Mengalihkan ke halaman masuk...`);
+    if (typeof showRefreshToast === 'function') {
+      showRefreshToast('Pendaftaran Berhasil', 'Akun Anda sudah terverifikasi. Silakan masuk melalui halaman login.');
+    }
+  }
+
+  (signupFieldIds || []).forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+
+  setTimeout(() => {
+    if (signupAlertEl) signupAlertEl.style.display = 'none';
+    if (typeof switchTabFn === 'function') switchTabFn('login');
+
+    const loginEmail = document.getElementById(loginEmailId);
+    if (loginEmail) loginEmail.value = email;
+
+    const loginPassword = document.getElementById(loginPasswordId);
+    if (loginPassword) {
+      loginPassword.value = '';
+      loginPassword.focus();
+    }
+
+    const loginAlert = document.getElementById(loginAlertId);
+    if (loginAlert) {
+      const loginMsg = requireEmailVerify
+        ? `Akun berhasil dibuat untuk <strong>${safeEmail}</strong>. Silakan periksa <strong>kotak masuk</strong> (atau folder Spam) email Anda untuk konfirmasi sebelum masuk.`
+        : `Akun <strong>${safeEmail}</strong> berhasil dibuat dan sudah berstatus <strong>Terverifikasi</strong>. Silakan masuk menggunakan kata sandi Anda.`;
+      showAuthAlert(loginAlert, 'success', loginMsg);
+    }
+  }, requireEmailVerify ? 2200 : 1200);
+}
+
 async function handleAuthSignUp(e) {
   if (e) e.preventDefault();
   const fullName = (document.getElementById('authSignupName')?.value || '').trim();
@@ -577,17 +626,15 @@ async function handleAuthSignUp(e) {
         }
       }, 1000);
     } else {
-      const safeEmail = (typeof escapeAttrSafe === 'function') ? escapeAttrSafe(email) : email;
-      showAuthAlert(alertEl, 'success', `Pendaftaran berhasil! Tautan verifikasi telah dikirim ke <strong>${safeEmail}</strong>.<br>Silakan periksa <strong>kotak masuk</strong> (atau folder Spam) pada email Anda sebelum masuk.`);
-      setTimeout(() => {
-        switchAuthTab('login');
-        const loginEmail = document.getElementById('authLoginEmail');
-        if (loginEmail) loginEmail.value = email;
-        const loginAlert = document.getElementById('authLoginAlert');
-        if (loginAlert) {
-          showAuthAlert(loginAlert, 'success', `Akun berhasil dibuat untuk <strong>${safeEmail}</strong>. Silakan periksa <strong>kotak masuk</strong> (atau folder Spam) email Anda untuk konfirmasi sebelum masuk.`);
-        }
-      }, 2200);
+      redirectAfterSignUp({
+        email,
+        signupAlertEl: alertEl,
+        signupFieldIds: ['authSignupName', 'authSignupEmail', 'authSignupPassword'],
+        switchTabFn: switchAuthTab,
+        loginEmailId: 'authLoginEmail',
+        loginPasswordId: 'authLoginPassword',
+        loginAlertId: 'authLoginAlert'
+      });
     }
   } catch (err) {
     console.error('Sign up error:', err);
@@ -701,6 +748,7 @@ async function handleGateLogin(e) {
 
     if (error) throw error;
 
+    if (alertEl) alertEl.style.display = 'none';
     await loadUserProfile(data.user);
     unlockAuthGate();
     renderAuthWidget();
@@ -824,17 +872,15 @@ async function handleGateSignUp(e) {
         }
       }, 900);
     } else {
-      const safeEmail = (typeof escapeAttrSafe === 'function') ? escapeAttrSafe(email) : email;
-      showAuthAlert(alertEl, 'success', `Pendaftaran berhasil! Tautan verifikasi telah dikirim ke <strong>${safeEmail}</strong>.<br>Silakan periksa <strong>kotak masuk</strong> (atau folder Spam) pada email Anda sebelum masuk.`);
-      setTimeout(() => {
-        switchGateTab('login');
-        const loginEmail = document.getElementById('gateLoginEmail');
-        if (loginEmail) loginEmail.value = email;
-        const loginAlert = document.getElementById('gateLoginAlert');
-        if (loginAlert) {
-          showAuthAlert(loginAlert, 'success', `Akun berhasil dibuat untuk <strong>${safeEmail}</strong>. Silakan periksa <strong>kotak masuk</strong> (atau folder Spam) email Anda untuk konfirmasi sebelum masuk.`);
-        }
-      }, 2200);
+      redirectAfterSignUp({
+        email,
+        signupAlertEl: alertEl,
+        signupFieldIds: ['gateSignupName', 'gateSignupEmail', 'gateSignupPassword'],
+        switchTabFn: switchGateTab,
+        loginEmailId: 'gateLoginEmail',
+        loginPasswordId: 'gateLoginPassword',
+        loginAlertId: 'gateLoginAlert'
+      });
     }
   } catch (err) {
     console.error('Sign up error:', err);
@@ -842,7 +888,7 @@ async function handleGateSignUp(e) {
   } finally {
     if (btn) {
       btn.disabled = false;
-      btn.innerHTML = '<svg class="ico"><use href="#i-plus"></use></svg><span>Daftar Akun</span>';
+      btn.innerHTML = '<span>Daftar Akun Sekarang</span><svg class="ico"><use href="#i-plus"></use></svg>';
     }
   }
 }
