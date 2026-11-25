@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20261125_02">
+  <link rel="stylesheet" href="style.css?v=20261125_04">
 </head>
 <body class="auth-locked">
 
@@ -2686,6 +2686,30 @@
   </main>
 </div>
 
+<!-- Navigasi Cepat Mobile (Hanya tampil di layar HP) -->
+<nav class="bottom-nav-mobile no-print" aria-label="Navigasi Cepat Mobile">
+  <button type="button" class="bottom-nav-btn" data-tab="dashboard" onclick="showTab('dashboard')">
+    <svg class="ico"><use href="#i-chart"></use></svg>
+    <span>Dashboard</span>
+  </button>
+  <button type="button" class="bottom-nav-btn active" data-tab="input" onclick="showTab('input')">
+    <svg class="ico"><use href="#i-edit"></use></svg>
+    <span>Input</span>
+  </button>
+  <button type="button" class="bottom-nav-btn" data-tab="riwayat" onclick="showTab('riwayat')">
+    <svg class="ico"><use href="#i-clipboard"></use></svg>
+    <span>Riwayat</span>
+  </button>
+  <button type="button" class="bottom-nav-btn" data-tab="sbm" onclick="showTab('sbm')">
+    <svg class="ico"><use href="#i-wallet"></use></svg>
+    <span>SBM 2026</span>
+  </button>
+  <button type="button" class="bottom-nav-btn" onclick="toggleSidebar()">
+    <svg class="ico"><use href="#i-menu"></use></svg>
+    <span>Menu</span>
+  </button>
+</nav>
+
 <!-- Floating Validation Toast -->
 <div id="valToast" class="val-toast no-print" role="alert" aria-live="assertive">
   <div class="val-toast-icon">!</div>
@@ -2721,6 +2745,6 @@
 <script src="js/calc.js?v=20261124_33"></script>
 <script src="js/documents.js?v=20261124_33"></script>
 <script src="js/excel.js?v=20261125_02"></script>
-<script src="js/ui.js?v=20261125_02"></script>
+<script src="js/ui.js?v=20261125_04"></script>
 </body>
 </html>

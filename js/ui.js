@@ -795,10 +795,9 @@ function switchTabPanel(name) {
   const panel = document.getElementById('tab-' + name);
   if (!panel) return;
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-btn, .bottom-nav-btn[data-tab]').forEach(b => b.classList.remove('active'));
   panel.classList.add('active');
-  const activeBtn = document.querySelector(`.tab-btn[data-tab="${name}"]`);
-  if (activeBtn) activeBtn.classList.add('active');
+  document.querySelectorAll(`.tab-btn[data-tab="${name}"], .bottom-nav-btn[data-tab="${name}"]`).forEach(btn => btn.classList.add('active'));
   const meta = tabMeta[name] || ['Perjalanan Dinas', 'Menu'];
   const titleEl = document.getElementById('pageTitle');
   const eyebrowEl = document.getElementById('pageEyebrow');
@@ -1876,6 +1875,21 @@ function saveCurrentTripToHistory(isManual = false, customCsvData = null) {
     historyItem.createdBy = existing.createdBy || actor;
 
     const prevLogs = Array.isArray(existing.revision_log) ? [...existing.revision_log] : [];
+    // Pastikan catatan pembuat awal selalu ada dalam riwayat log jika belum tercatat
+    if (!prevLogs.some(r => r && r.action === 'buat_baru')) {
+      const creatorInfo = existing.createdBy || actor;
+      prevLogs.push({
+        id: 'rev_' + Date.now() + '_init',
+        at: existing.createdAt || existing.savedAt || nowIso,
+        actorId: creatorInfo.id || null,
+        actorName: creatorInfo.nama || 'Pengguna',
+        actorEmail: creatorInfo.email || '-',
+        actorRole: creatorInfo.role || 'admin',
+        actorRoleLabel: creatorInfo.roleLabel || 'Admin',
+        action: 'buat_baru',
+        note: 'Membuat berkas perjalanan dinas baru'
+      });
+    }
     const oldSig = computeTripDraftSignature(existing);
     const newSig = computeTripDraftSignature(historyItem);
 
@@ -1916,6 +1930,18 @@ function saveCurrentTripToHistory(isManual = false, customCsvData = null) {
       return true;
     });
   } else {
+    // Saat pertama kali membuat berkas baru, langsung catat di log siapa pembuatnya dan waktunya
+    historyItem.revision_log = [{
+      id: 'rev_' + Date.now() + '_init',
+      at: nowIso,
+      actorId: actor.id,
+      actorName: actor.nama,
+      actorEmail: actor.email,
+      actorRole: actor.role,
+      actorRoleLabel: actor.roleLabel,
+      action: 'buat_baru',
+      note: 'Membuat berkas perjalanan dinas baru'
+    }];
     list.unshift(historyItem);
   }
 
@@ -2235,28 +2261,50 @@ function renderDashboardModule(passedList = null) {
 }
 
 function renderRevisionLogHtml(item) {
-  const revs = Array.isArray(item.revision_log) ? item.revision_log : [];
+  let revs = Array.isArray(item.revision_log) ? [...item.revision_log] : [];
+  // Jika belum ada entri 'buat_baru' tapi ada informasi pembuat (createdBy), tampilkan di log
+  if (!revs.some(r => r && r.action === 'buat_baru') && item.createdBy) {
+    revs.push({
+      id: 'rev_creator_synth',
+      at: item.createdAt || item.savedAt,
+      actorId: item.createdBy.id || null,
+      actorName: item.createdBy.nama || 'Pengguna',
+      actorEmail: item.createdBy.email || '-',
+      actorRole: item.createdBy.role || 'admin',
+      actorRoleLabel: item.createdBy.roleLabel || 'Admin',
+      action: 'buat_baru',
+      note: 'Membuat berkas perjalanan dinas baru'
+    });
+  }
   if (revs.length === 0) return '';
 
   const esc = (s) => (typeof escapeHtml === 'function') ? escapeHtml(s) : String(s == null ? '' : s);
+  const actualRevs = revs.filter(r => r && r.action !== 'buat_baru');
   const latest = revs[0];
   const latestName = esc(latest.actorName || latest.actorEmail || 'Pengguna');
   const latestRoleKey = (latest.actorRole === 'admin') ? 'admin' : ((latest.actorRole === 'operator' || latest.actorRole === 'editor') ? 'operator' : 'viewer');
   const latestRoleLabel = esc(latest.actorRoleLabel || (latestRoleKey === 'admin' ? 'Admin' : (latestRoleKey === 'operator' ? 'Role Khusus' : 'Pengguna')));
   const latestTime = esc(formatHistoryDate(latest.at));
 
-  const timelineRows = revs.map((rev, idx) => {
-    const revNum = revs.length - idx;
+  const badgeHtml = actualRevs.length > 0
+    ? `<span class="rev-badge-count">🕒 ${actualRevs.length}x Revisi</span>`
+    : `<span class="rev-badge-count rev-badge-created">📝 Dibuat</span>`;
+  const summaryPrefix = actualRevs.length > 0 ? 'Terakhir:' : 'Oleh:';
+
+  let revCounter = actualRevs.length;
+  const timelineRows = revs.map((rev) => {
+    const isCreatorEntry = rev.action === 'buat_baru';
+    const revNum = isCreatorEntry ? 0 : revCounter--;
     const roleKey = (rev.actorRole === 'admin') ? 'admin' : ((rev.actorRole === 'operator' || rev.actorRole === 'editor') ? 'operator' : 'viewer');
     const roleLbl = esc(rev.actorRoleLabel || (roleKey === 'admin' ? 'Admin' : (roleKey === 'operator' ? 'Role Khusus' : 'Pengguna')));
     const actorName = esc(rev.actorName || rev.actorEmail || 'Pengguna');
     const actorEmail = (rev.actorEmail && rev.actorEmail !== '-') ? ` (${esc(rev.actorEmail)})` : '';
-    const note = esc(rev.note || 'Revisi data berkas');
+    const note = esc(rev.note || (isCreatorEntry ? 'Membuat berkas perjalanan dinas baru' : 'Revisi data berkas'));
     const timeStr = esc(formatHistoryDate(rev.at));
 
     return `
       <div class="rev-log-entry">
-        <div class="rev-log-marker">#${revNum}</div>
+        <div class="rev-log-marker ${isCreatorEntry ? 'is-creator' : ''}">${isCreatorEntry ? 'BARU' : `#${revNum}`}</div>
         <div class="rev-log-content">
           <div class="rev-log-meta">
             <strong class="rev-log-actor">${actorName}</strong><span class="rev-log-email">${actorEmail}</span>
@@ -2272,10 +2320,10 @@ function renderRevisionLogHtml(item) {
   const safeTripId = esc(item.id);
   return `
     <div class="history-revision-box" onclick="event.stopPropagation()">
-      <button type="button" class="history-revision-toggle" onclick="toggleTripRevisionLog('${safeTripId}', event)" title="Klik untuk melihat riwayat log revisi lengkap">
-        <span class="rev-badge-count">🕒 ${revs.length}x Revisi</span>
+      <button type="button" class="history-revision-toggle" onclick="toggleTripRevisionLog('${safeTripId}', event)" title="Klik untuk melihat riwayat pembuatan &amp; log revisi lengkap">
+        ${badgeHtml}
         <span class="rev-latest-summary">
-          Terakhir: <strong>${latestName}</strong>
+          ${summaryPrefix} <strong>${latestName}</strong>
           <span class="rev-role-tag rev-role-${latestRoleKey}">${latestRoleLabel}</span>
           <span class="rev-latest-time">&bull; ${latestTime}</span>
         </span>

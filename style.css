@@ -15837,3 +15837,888 @@ html[data-theme="dark"] .rev-log-marker {
   border-color: #475569;
   color: #cbd5e1;
 }
+
+.rev-badge-count.rev-badge-created {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.rev-log-marker.is-creator {
+  background: #ecfdf5;
+  border-color: #6ee7b7;
+  color: #047857;
+}
+
+html[data-theme="dark"] .rev-badge-count.rev-badge-created,
+html[data-theme="dark"] .rev-log-marker.is-creator {
+  background: rgba(16, 185, 129, 0.18);
+  border-color: rgba(52, 211, 153, 0.35);
+  color: #6ee7b7;
+}
+
+/* =====================================================================
+   MOBILE QUICK BOTTOM NAVIGATION & RESPONSIVE POLISH (HP / SMARTPHONE)
+   ===================================================================== */
+.bottom-nav-mobile {
+  display: none;
+}
+
+body.role-viewer .bottom-nav-btn[data-tab="input"] {
+  display: none !important;
+}
+
+@media screen and (max-width: 768px) {
+  html,
+  body {
+    overflow-x: hidden;
+    max-width: 100%;
+  }
+
+  .app-main,
+  .workspace,
+  .tab-content,
+  .card {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .workspace {
+    padding: 14px 12px 92px;
+  }
+
+  .bottom-nav-mobile {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 60;
+    display: flex;
+    align-items: stretch;
+    justify-content: space-around;
+    height: 62px;
+    padding: 4px 6px calc(4px + env(safe-area-inset-bottom, 0px));
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-top: 1px solid #e2e8f0;
+    box-shadow: 0 -6px 24px -8px rgba(15, 23, 42, 0.12);
+  }
+
+  html[data-theme="dark"] .bottom-nav-mobile {
+    background: rgba(15, 23, 42, 0.96);
+    border-top-color: #334155;
+    box-shadow: 0 -6px 24px -8px rgba(0, 0, 0, 0.45);
+  }
+
+  .bottom-nav-btn {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 4px 2px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .bottom-nav-btn .ico {
+    width: 19px;
+    height: 19px;
+  }
+
+  .bottom-nav-btn span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  .bottom-nav-btn.active {
+    color: #2563eb;
+    background: #eff6ff;
+    font-weight: 700;
+  }
+
+  html[data-theme="dark"] .bottom-nav-btn {
+    color: #94a3b8;
+  }
+
+  html[data-theme="dark"] .bottom-nav-btn.active {
+    color: #60a5fa;
+    background: rgba(59, 130, 246, 0.15);
+  }
+
+  /* Posisi Toast agar berada tepat di atas bottom nav mobile */
+  .val-toast {
+    left: 12px;
+    right: 12px;
+    bottom: 74px;
+    max-width: none;
+  }
+
+  /* Jangan jadikan toolbar cetak sticky menumpuk di layar HP yang sempit */
+  .btn-row {
+    position: static;
+    margin-bottom: 12px;
+    padding: 8px 10px;
+  }
+
+  /* Dashboard Hero & KPI Cards di HP */
+  .dashboard-hero-card {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 20px 18px;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .dashboard-hero-title {
+    font-size: 18px;
+  }
+
+  .dashboard-hero-sub {
+    font-size: 12.5px;
+  }
+
+  .dashboard-hero-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .dashboard-hero-actions .btn {
+    width: 100%;
+    justify-content: center;
+    height: auto;
+    min-height: 40px;
+    padding: 8px 10px;
+    white-space: normal;
+    text-align: center;
+    font-size: 12px;
+  }
+
+  .dashboard-kpi-grid {
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .kpi-card {
+    padding: 14px 16px;
+    gap: 12px;
+    border-radius: 14px;
+  }
+
+  .kpi-icon-wrap {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+  }
+
+  .kpi-number {
+    font-size: 24px;
+  }
+
+  .kpi-hint {
+    white-space: normal;
+    font-size: 11.5px;
+  }
+
+  .progress-labels-row {
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    font-size: 12px;
+  }
+
+  .dashboard-recent-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+
+  /* Kamus SBM 2026 di HP */
+  .sbm-viewer-head {
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .sbm-viewer-heading-group {
+    width: 100%;
+    min-width: 0;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .sbm-viewer-heading-group .card-heading {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .sbm-viewer-ico {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+  }
+
+  .sbm-viewer-badge-tag {
+    font-size: 9.5px;
+    white-space: normal;
+    line-height: 1.35;
+    max-width: 100%;
+  }
+
+  .sbm-viewer-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .sbm-viewer-actions button {
+    width: 100%;
+    justify-content: center;
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .sbm-viewer-body {
+    padding: 14px 12px 20px;
+  }
+
+  .sbm-console-wrapper {
+    padding: 14px 12px;
+    border-radius: 14px;
+    gap: 12px;
+  }
+
+  .sbm-search-input {
+    font-size: 13.5px;
+    padding: 10px 36px 10px 38px;
+  }
+
+  .sbm-select-col,
+  .sbm-filter-select {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .sbm-filter-select {
+    font-size: 13px;
+    padding: 9px 30px 9px 12px;
+  }
+
+  .sbm-location-hero-card {
+    padding: 16px 14px;
+    gap: 14px;
+    border-radius: 14px;
+  }
+
+  .sbm-location-hero-note {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .sbm-hero-title {
+    font-size: 17px;
+  }
+
+  .sbm-card-item {
+    padding: 14px;
+    min-height: auto;
+  }
+
+  .sbm-card-val {
+    font-size: 18px;
+  }
+
+  .sbm-search-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+}
+
+@media screen and (max-width: 640px) {
+  /* Topbar kompak & judul tidak terpotong di layar HP */
+  .topbar {
+    padding: 8px 10px;
+    gap: 6px;
+    min-height: 54px;
+  }
+
+  .burger {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+  }
+
+  .topbar-title {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .topbar-meta {
+    display: none;
+  }
+
+  .topbar h1 {
+    font-size: 13.5px;
+    line-height: 1.2;
+  }
+
+  .topbar-tools {
+    gap: 3px;
+    flex-shrink: 0;
+  }
+
+  .topbar-group-actions,
+  .topbar-group-utils {
+    gap: 3px;
+  }
+
+  .btn-tool {
+    height: 32px;
+    padding: 0 6px;
+  }
+
+  .btn-tool.btn-tool-save {
+    padding: 0 7px;
+  }
+
+  .btn-tool-save-arrow {
+    padding: 0 3px !important;
+    min-width: 21px;
+  }
+
+  .btn-tool-icon.info-btn {
+    width: 30px;
+    height: 30px;
+  }
+
+  .user-profile-pill {
+    padding: 2px 5px 2px 2px;
+    gap: 2px;
+  }
+
+  .user-pill-info {
+    display: none;
+  }
+
+  .user-avatar-circle {
+    width: 28px;
+    height: 28px;
+    font-size: 10.5px;
+  }
+
+  .user-profile-dropdown {
+    position: fixed;
+    top: 58px;
+    left: 10px;
+    right: 10px;
+    width: auto;
+    max-width: 340px;
+    margin-left: auto;
+  }
+
+  /* Split dropdown menu Save Excel/ZIP/CSV agar tidak keluar layar */
+  .split-dropdown-menu {
+    right: -40px;
+    max-width: calc(100vw - 24px);
+    min-width: 250px;
+  }
+
+  /* Auth Gate Screen (Login / Register di HP) */
+  .auth-gate-screen {
+    padding: 14px 12px;
+    align-items: flex-start;
+  }
+
+  .auth-gate-wrapper {
+    border-radius: 18px;
+    min-height: 0;
+  }
+
+  .auth-gate-hero {
+    padding: 18px 16px 14px;
+  }
+
+  .gov-official-badge {
+    font-size: 9.5px;
+    padding: 4px 10px;
+    margin-bottom: 12px;
+    max-width: 100%;
+  }
+
+  .gate-hero-brand {
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+
+  .gate-hero-logo-box {
+    width: 48px;
+    height: 48px;
+  }
+
+  .gate-hero-logo {
+    width: 34px;
+    height: 34px;
+  }
+
+  .gate-hero-title {
+    font-size: 22px;
+  }
+
+  .gate-hero-lead {
+    font-size: 12px;
+    white-space: normal;
+  }
+
+  .auth-gate-form-panel {
+    padding: 20px 16px;
+  }
+
+  .gate-form-title {
+    font-size: 21px;
+  }
+
+  .gate-tab-btn {
+    font-size: 12px;
+    padding: 8px 6px;
+  }
+
+  /* Mencegah auto-zoom di Safari iOS saat mengetik */
+  .auth-gate-screen input,
+  .field-control input,
+  .field-control select,
+  .field-control textarea,
+  .history-search-wrap input,
+  .user-mgmt-search-wrap input,
+  .sbm-search-input {
+    font-size: 16px !important;
+  }
+
+  /* Form Input Perjalanan & Banner Revisi */
+  .flow-hero {
+    padding: 18px 16px;
+    gap: 14px;
+    border-radius: 18px;
+  }
+
+  .flow-hero h2 {
+    font-size: 18px;
+  }
+
+  .st-prefix-wrap {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .st-number-input {
+    flex: 0 0 60px !important;
+    width: 60px !important;
+    min-width: 54px !important;
+  }
+
+  .st-suffix-dropdown-wrap {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .st-suffix-select {
+    font-size: 13px !important;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .active-revision-banner {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .rev-banner-cancel {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Riwayat Perjalanan & Log Revisi di HP */
+  .history-page-head {
+    padding: 14px;
+  }
+
+  .history-head-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .history-autosave-badge {
+    font-size: 11px;
+    padding: 5px 10px;
+    white-space: normal;
+    line-height: 1.3;
+  }
+
+  .history-filter-pill-row {
+    gap: 6px;
+  }
+
+  .btn-filter-pill {
+    padding: 6px 11px;
+    font-size: 12px;
+  }
+
+  .history-toolbar {
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .history-search-wrap {
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .history-card {
+    padding: 14px;
+    border-radius: 14px;
+  }
+
+  .history-st-badge {
+    font-size: 12.5px;
+    word-break: break-word;
+  }
+
+  .history-card-agenda {
+    font-size: 14px;
+  }
+
+  .history-meta-grid {
+    grid-template-columns: 1fr 1fr;
+    padding: 10px 12px;
+    gap: 10px 12px;
+  }
+
+  .history-card-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .history-card-actions .btn {
+    width: 100%;
+    justify-content: center;
+    height: 38px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+
+  .history-card-actions .btn-status-toggle,
+  .history-card-actions .trip-pdf-btn-bundle {
+    grid-column: 1 / -1;
+  }
+
+  .history-revision-toggle {
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 8px 10px;
+  }
+
+  /* Modal Umum (Welcome, Auth, PMK, Alerts) */
+  .welcome-overlay,
+  #tripPdfModalOverlay {
+    padding: 10px !important;
+    align-items: center !important;
+  }
+
+  .welcome-modal,
+  .pmk-modal,
+  .auth-modal-card,
+  .user-mgmt-modal-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 92vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 18px 14px !important;
+    border-radius: 16px !important;
+  }
+
+  .welcome-close,
+  .user-mgmt-close-btn {
+    top: 12px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+  }
+
+  .welcome-title {
+    font-size: 16.5px;
+    padding-right: 34px;
+  }
+
+  /* Modal Berkas PDF Lengkap di HP */
+  .trip-pdf-modal {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 92vh;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    border-radius: 16px;
+  }
+
+  .trip-pdf-modal-header {
+    padding: 14px 14px 12px;
+    flex-shrink: 0;
+  }
+
+  .trip-pdf-kicker-row {
+    padding-right: 40px;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+
+  .trip-pdf-modal-title {
+    font-size: 15.5px;
+    padding-right: 6px;
+    word-break: break-word;
+  }
+
+  .trip-pdf-modal-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    font-size: 12px;
+  }
+
+  .trip-pdf-modal-meta .meta-sep {
+    display: none;
+  }
+
+  .trip-pdf-info-banner {
+    margin: 10px 14px 0;
+    padding: 10px 12px;
+    font-size: 11.5px;
+    flex-shrink: 0;
+  }
+
+  .trip-pdf-emp-list {
+    padding: 12px 14px;
+    flex: none !important;
+    overflow: visible !important;
+  }
+
+  .trip-pdf-emp-card {
+    padding: 12px 14px;
+    min-width: 0;
+  }
+
+  .trip-pdf-emp-main {
+    gap: 10px;
+  }
+
+  .trip-pdf-emp-profile {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .trip-pdf-emp-details {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .trip-pdf-emp-name,
+  .trip-pdf-emp-sub {
+    word-break: break-word;
+  }
+
+  .trip-pdf-emp-sub {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  .trip-pdf-emp-sub > span:nth-child(2) {
+    display: none;
+  }
+
+  .trip-pdf-cost-badge {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 8px;
+    border-top: 1px dashed #e2e8f0;
+  }
+
+  .trip-pdf-emp-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .trip-pdf-emp-actions > div:last-child {
+    width: 100%;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .trip-pdf-emp-actions > div:last-child .btn {
+    width: 100%;
+    justify-content: center;
+    font-size: 11.5px;
+    padding: 0 8px;
+  }
+
+  .trip-pdf-modal-footer {
+    padding: 12px 14px;
+    flex-direction: column;
+    align-items: stretch;
+    flex-shrink: 0;
+  }
+
+  .trip-pdf-footer-left,
+  .trip-pdf-footer-right {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .trip-pdf-modal-footer .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Modal Manajemen Pengguna di HP */
+  .user-mgmt-modal-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden !important;
+    max-height: 90vh !important;
+  }
+
+  .user-mgmt-header,
+  .user-mgmt-stats-bar,
+  .user-mgmt-toolbar,
+  .user-mgmt-footer {
+    flex-shrink: 0;
+  }
+
+  .user-mgmt-title {
+    font-size: 17px;
+    padding-right: 36px;
+  }
+
+  .user-mgmt-stats-bar {
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    padding: 8px 12px;
+    margin: 10px 0 10px;
+  }
+
+  .user-mgmt-stats-bar .user-stat-divider {
+    display: none;
+  }
+
+  .user-mgmt-stats-bar .user-stat-item {
+    flex: 1 1 44%;
+    font-size: 11.5px;
+  }
+
+  .user-mgmt-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .user-mgmt-search-wrap {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .btn-refresh-users {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .user-mgmt-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    margin-bottom: 0;
+  }
+
+  .user-mgmt-list {
+    max-height: none;
+    overflow-y: visible;
+  }
+
+  .user-mgmt-row {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .user-mgmt-info {
+    flex: 1;
+    min-width: calc(100% - 54px);
+  }
+
+  .user-mgmt-role-wrap {
+    margin-left: 0;
+  }
+
+  .user-mgmt-action-wrap {
+    flex: 1;
+    min-width: 165px;
+    justify-content: flex-end;
+  }
+
+  .user-role-select {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .user-mgmt-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding-top: 10px;
+    margin-top: 10px;
+  }
+
+  .user-mgmt-footer .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media screen and (max-width: 420px) {
+  .history-meta-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-hero-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .rev-log-email {
+    display: none;
+  }
+}
+
+@media print {
+  .bottom-nav-mobile {
+    display: none !important;
+  }
+}
