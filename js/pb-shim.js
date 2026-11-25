@@ -79,6 +79,12 @@
     const listeners = [];
     let recoveryToken = null;
 
+    // Verifikasi email baru berfungsi bila server punya SMTP (PocketBase: Settings > Mail).
+    // Selama SMTP belum diatur, biarkan MATI supaya tak ada yang terkunci (email verifikasi tidak
+    // pernah terkirim). Hidupkan dengan menaruh <script>window.PERDINKU_REQUIRE_EMAIL_VERIFICATION = true;</script>
+    // di index.html sebelum pb-shim.js, setelah SMTP dites.
+    const requireVerify = () => window.PERDINKU_REQUIRE_EMAIL_VERIFICATION === true;
+
     function userOut(r) {
       if (!r) return null;
       return {
@@ -177,7 +183,7 @@
           const r = pb.authStore.record;
           // Pengecekan keamanan verifikasi email:
           // Jika akun belum diverifikasi, tolak login dan minta konfirmasi email
-          if (r && r.verified === false) {
+          if (requireVerify() && r && r.verified === false) {
             pb.authStore.clear();
             return {
               data: { user: null, session: null },
@@ -207,11 +213,13 @@
           await pb.collection('users').create({
             email, password, passwordConfirm: password, name: full, emailVisibility: true
           });
-          // Kirim email verifikasi ke pengguna untuk keamanan
-          try {
-            await pb.collection('users').requestVerification(email);
-          } catch (vErr) {
-            console.warn('requestVerification notice:', vErr);
+          // Kirim email verifikasi ke pengguna untuk keamanan (hanya bila verifikasi dihidupkan)
+          if (requireVerify()) {
+            try {
+              await pb.collection('users').requestVerification(email);
+            } catch (vErr) {
+              console.warn('requestVerification notice:', vErr);
+            }
           }
         } catch (e) {
           const d = e && e.response && e.response.data;
@@ -220,8 +228,13 @@
           }
           return { data: { user: null, session: null }, error: errOut(e) };
         }
-        // Jangan auto-login. Kembalikan session null agar user diarahkan verifikasi email dulu
-        return { data: { user: null, session: null }, error: null };
+        if (requireVerify()) {
+          // Jangan auto-login. Kembalikan session null agar user diarahkan verifikasi email dulu
+          return { data: { user: null, session: null }, error: null };
+        }
+        const res = await auth.signInWithPassword({ email, password });
+        if (res.error) return { data: { user: null, session: null }, error: res.error };
+        return { data: res.data, error: null };
       },
       async resendVerificationEmail(email) {
         try {
