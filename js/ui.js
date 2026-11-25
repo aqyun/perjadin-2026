@@ -2227,7 +2227,14 @@ function renderDashboardModule(passedList = null) {
   const dicairkanItems = list.filter(x => x.status_berkas === 'dicairkan');
   const totalDiproses = diprosesItems.length;
   const totalDicairkan = dicairkanItems.length;
-  const sumNominalDicairkan = dicairkanItems.reduce((acc, cur) => acc + (Number(cur.totalBiaya) || 0), 0);
+
+  // Dana yang dibayarkan/dicairkan HANYA untuk berkas LS.
+  // Berkas KKP adalah kartu kredit pemerintah (non-tunai / bukan pencairan ke pelaksana).
+  const sumNominalDicairkanLS = dicairkanItems.filter(x => {
+    const raw = x.metodePembayaran || x.draft?.fields?.metodePembayaran || x.draft?.fields?.lk_metodePembayaran || 'LS';
+    return String(raw).trim().toUpperCase() !== 'KKP';
+  }).reduce((acc, cur) => acc + (Number(cur.totalBiaya) || 0), 0);
+  const sumNominalDicairkan = sumNominalDicairkanLS;
 
   // Update KPI cards
   const elCountDiproses = document.getElementById('kpiCountDiproses');
@@ -2239,7 +2246,8 @@ function renderDashboardModule(passedList = null) {
   const elNominalDicairkan = document.getElementById('kpiNominalDicairkan');
   if (elNominalDicairkan) {
     const formattedNominal = (typeof rp === 'function') ? rp(sumNominalDicairkan) : 'Rp ' + sumNominalDicairkan.toLocaleString('id-ID');
-    elNominalDicairkan.textContent = `Total Dana: ${formattedNominal}`;
+    elNominalDicairkan.textContent = `Dana LS Dibayarkan: ${formattedNominal}`;
+    elNominalDicairkan.title = 'Hanya menghitung dana berkas LS yang dicairkan/dibayarkan. Berkas KKP bersifat non-tunai (kartu kredit satker).';
   }
 
   const elCountTotal = document.getElementById('kpiCountTotal');
@@ -2575,16 +2583,44 @@ function renderTripHistory(filterText = '') {
       ? '<span class="history-cloud-pill" title="Tersimpan di Cloud Database Supabase">☁️ Cloud</span>'
       : '<span class="history-local-pill" title="Tersimpan di Penyimpanan Lokal Browser">💾 Lokal</span>';
 
+    const rawMetode = item.metodePembayaran || (item.draft && item.draft.fields && (item.draft.fields.metodePembayaran || item.draft.fields.lk_metodePembayaran)) || 'LS';
+    const isKKP = String(rawMetode).trim().toUpperCase() === 'KKP';
+    const metodeLabel = isKKP ? 'KKP' : 'LS';
+
     const status = item.status_berkas || 'diproses';
     const isDicairkan = status === 'dicairkan';
-    const statusBadge = isDicairkan
-      ? `<span class="history-status-badge status-dicairkan" ${canEdit ? `onclick="toggleTripStatus('${item.id}', event)" style="cursor:pointer;" title="Klik untuk mengubah status kembali ke Diproses ke Satker"` : 'title="Berkas telah diverifikasi dan dana dicairkan"'}><svg class="ico" style="width:14px;height:14px;"><use href="#i-check"></use></svg>Sudah Dicairkan</span>`
-      : `<span class="history-status-badge status-diproses" ${canEdit ? `onclick="toggleTripStatus('${item.id}', event)" style="cursor:pointer;" title="Klik untuk menandai berkas Sudah Dicairkan"` : 'title="Berkas sedang dalam verifikasi &amp; pengujian Satker"'}><svg class="ico" style="width:14px;height:14px;"><use href="#i-clipboard"></use></svg>Diproses ke Satker</span>`;
+
+    let statusLabel = 'Diproses ke Satker';
+    let statusBadgeClass = 'status-diproses';
+    let statusBadgeTitle = 'Berkas sedang dalam verifikasi &amp; pengujian Satker';
+    let toggleBtnLabel = isKKP ? 'Tandai KKP Selesai' : 'Tandai Dicairkan';
+    let toggleBtnClass = isKKP ? 'is-kkp-selesai' : 'is-dicairkan';
+
+    if (isDicairkan) {
+      if (isKKP) {
+        statusLabel = 'Berkas KKP Selesai';
+        statusBadgeClass = 'status-dicairkan status-kkp-selesai';
+        statusBadgeTitle = 'Berkas pertanggungjawaban KKP telah lengkap dan selesai diverifikasi';
+      } else {
+        statusLabel = 'Sudah Dicairkan';
+        statusBadgeClass = 'status-dicairkan';
+        statusBadgeTitle = 'Berkas telah diverifikasi dan dana dicairkan (SP2D LS)';
+      }
+      toggleBtnLabel = 'Ubah ke Diproses';
+      toggleBtnClass = 'is-diproses';
+    }
+
+    const statusBadge = `
+      <span class="history-status-badge ${statusBadgeClass}" ${canEdit ? `onclick="toggleTripStatus('${item.id}', event)" style="cursor:pointer;" title="Klik untuk mengubah status berkas"` : `title="${statusBadgeTitle}"`}>
+        <svg class="ico" style="width:14px;height:14px;"><use href="${isDicairkan ? '#i-check' : '#i-clipboard'}"></use></svg>
+        <span>${statusLabel}</span>
+      </span>
+    `;
 
     const statusToggleBtn = canEdit ? `
-      <button type="button" class="btn btn-status-toggle ${isDicairkan ? 'is-diproses' : 'is-dicairkan'}" onclick="toggleTripStatus('${item.id}', event)" title="Perbarui status progres berkas ke Satker / Pencairan">
+      <button type="button" class="btn btn-status-toggle ${toggleBtnClass}" onclick="toggleTripStatus('${item.id}', event)" title="Perbarui status progres berkas">
         <svg class="ico"><use href="${isDicairkan ? '#i-refresh' : '#i-check'}"></use></svg>
-        <span>${isDicairkan ? 'Ubah ke Diproses' : 'Tandai Dicairkan'}</span>
+        <span>${toggleBtnLabel}</span>
       </button>
     ` : '';
 
@@ -2633,10 +2669,6 @@ function renderTripHistory(filterText = '') {
         </button>` : ''}
       </div>
     `;
-
-    const rawMetode = item.metodePembayaran || (item.draft && item.draft.fields && (item.draft.fields.metodePembayaran || item.draft.fields.lk_metodePembayaran)) || 'LS';
-    const isKKP = String(rawMetode).trim().toUpperCase() === 'KKP';
-    const metodeLabel = isKKP ? 'KKP' : 'LS';
 
     return `
       <div class="history-card ${isKKP ? 'card-method-kkp' : 'card-method-ls'}" data-trip-id="${item.id}" onclick="handleTripCardClick(event, '${item.id}')" title="Klik untuk membuka dokumen PDF lengkap perjalanan ini">
@@ -2703,10 +2735,13 @@ async function toggleTripStatus(tripId, e) {
   const item = list.find(x => x.id === tripId);
   if (!item) return;
 
+  const rawMetode = item.metodePembayaran || item.draft?.fields?.metodePembayaran || item.draft?.fields?.lk_metodePembayaran || 'LS';
+  const isKKP = String(rawMetode).trim().toUpperCase() === 'KKP';
+
   const currentStatus = item.status_berkas || 'diproses';
   const newStatus = (currentStatus === 'dicairkan') ? 'diproses' : 'dicairkan';
-  const oldLabel = (currentStatus === 'dicairkan') ? 'Sudah Dicairkan' : 'Diproses ke Satker';
-  const newLabel = (newStatus === 'dicairkan') ? 'Sudah Dicairkan' : 'Diproses ke Satker';
+  const oldLabel = (currentStatus === 'dicairkan') ? (isKKP ? 'Berkas KKP Selesai' : 'Sudah Dicairkan') : 'Diproses ke Satker';
+  const newLabel = (newStatus === 'dicairkan') ? (isKKP ? 'Berkas KKP Selesai' : 'Sudah Dicairkan') : 'Diproses ke Satker';
   const nowIso = new Date().toISOString();
   const actor = getCurrentRevisionActor();
 
@@ -2732,8 +2767,10 @@ async function toggleTripStatus(tripId, e) {
 
   if (typeof showRefreshToast === 'function') {
     showRefreshToast(
-      'Progres Berkas Diperbarui',
-      `Status berkas "${item.noST}" diubah ke [${newLabel}] oleh ${actor.nama} (${actor.roleLabel}).`
+      isKKP
+        ? (newStatus === 'dicairkan' ? 'Berkas KKP Selesai' : 'Status KKP Kembali Diproses')
+        : (newStatus === 'dicairkan' ? 'Berkas Telah Dicairkan' : 'Status Kembali Diproses'),
+      `Status berkas "${item.noST}" [${isKKP ? 'KKP' : 'LS'}] diubah ke [${newLabel}] oleh ${actor.nama} (${actor.roleLabel}).`
     );
   }
 
@@ -2845,21 +2882,27 @@ function openTripPdfModal(tripId, e) {
 
   const elStatus = document.getElementById('tripPdfModalStatus');
   if (elStatus) {
+    const rawMetode = item.metodePembayaran || item.draft?.fields?.metodePembayaran || 'LS';
+    const isKKP = String(rawMetode).trim().toUpperCase() === 'KKP';
     const isDicairkan = (item.status_berkas === 'dicairkan');
-    elStatus.className = `history-status-badge ${isDicairkan ? 'status-dicairkan' : 'status-diproses'}`;
-    elStatus.innerHTML = `<svg class="ico" style="width:14px;height:14px;"><use href="${isDicairkan ? '#i-check' : '#i-clipboard'}"></use></svg>${isDicairkan ? 'Sudah Dicairkan' : 'Diproses ke Satker'}`;
+    const statusText = isDicairkan ? (isKKP ? 'Berkas KKP Selesai' : 'Sudah Dicairkan') : 'Diproses ke Satker';
+    const statusClass = isDicairkan ? (isKKP ? 'status-dicairkan status-kkp-selesai' : 'status-dicairkan') : 'status-diproses';
+    elStatus.className = `history-status-badge ${statusClass}`;
+    elStatus.innerHTML = `<svg class="ico" style="width:14px;height:14px;"><use href="${isDicairkan ? '#i-check' : '#i-clipboard'}"></use></svg>${statusText}`;
     const canEdit = (typeof canCurrentUserEdit === 'function') ? canCurrentUserEdit() : (typeof isCurrentUserAdmin === 'function' && isCurrentUserAdmin());
     if (canEdit) {
       elStatus.style.cursor = 'pointer';
-      elStatus.title = 'Klik untuk memperbarui progres status berkas (Diproses / Dicairkan)';
+      elStatus.title = isKKP ? 'Klik untuk memperbarui progres status berkas (Diproses / KKP Selesai)' : 'Klik untuk memperbarui progres status berkas (Diproses / Dicairkan)';
       elStatus.onclick = (ev) => {
         if (ev && typeof ev.stopPropagation === 'function') ev.stopPropagation();
         toggleTripStatus(item.id, ev);
         const updated = getTripHistoryList().find(x => x.id === item.id);
         if (updated) {
           const updDicairkan = (updated.status_berkas === 'dicairkan');
-          elStatus.className = `history-status-badge ${updDicairkan ? 'status-dicairkan' : 'status-diproses'}`;
-          elStatus.innerHTML = `<svg class="ico" style="width:14px;height:14px;"><use href="${updDicairkan ? '#i-check' : '#i-clipboard'}"></use></svg>${updDicairkan ? 'Sudah Dicairkan' : 'Diproses ke Satker'}`;
+          const updText = updDicairkan ? (isKKP ? 'Berkas KKP Selesai' : 'Sudah Dicairkan') : 'Diproses ke Satker';
+          const updClass = updDicairkan ? (isKKP ? 'status-dicairkan status-kkp-selesai' : 'status-dicairkan') : 'status-diproses';
+          elStatus.className = `history-status-badge ${updClass}`;
+          elStatus.innerHTML = `<svg class="ico" style="width:14px;height:14px;"><use href="${updDicairkan ? '#i-check' : '#i-clipboard'}"></use></svg>${updText}`;
         }
       };
     } else {

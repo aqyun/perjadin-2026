@@ -13911,7 +13911,7 @@ html[data-theme="dark"] .gate-role-notice {
   border-color: rgba(16, 185, 129, 0.25);
 }
 
-html[data-theme="dark"] .notice-badge {
+html[data-theme="dark"] .gate-role-notice .notice-badge {
   color: #6ee7b7;
 }
 
@@ -14688,6 +14688,20 @@ html[data-theme="dark"] .sbm-prov-pill {
   color: #7dd3fc;
 }
 
+html[data-theme="dark"] .sbm-city-badge {
+  background: rgba(37, 99, 235, 0.25);
+  border: 1px solid rgba(96, 165, 250, 0.45);
+  color: #bfdbfe;
+  font-weight: 700;
+}
+
+html[data-theme="dark"] .sbm-zone-badge {
+  background: rgba(14, 165, 233, 0.25);
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  color: #bae6fd;
+  font-weight: 700;
+}
+
 html[data-theme="dark"] .sbm-hero-title {
   color: #f8fafc;
 }
@@ -14701,8 +14715,73 @@ html[data-theme="dark"] .sbm-notice-card {
   border-color: #475569;
 }
 
+html[data-theme="dark"] .sbm-notice-card.notice-dki {
+  background: rgba(15, 23, 42, 0.95);
+  border: 1.5px solid #38bdf8;
+  box-shadow: 0 4px 20px rgba(56, 189, 248, 0.15);
+}
+
+html[data-theme="dark"] .notice-dki .notice-badge {
+  background: rgba(2, 132, 199, 0.35);
+  color: #e0f2fe;
+  border: 1px solid rgba(56, 189, 248, 0.6);
+  font-weight: 800;
+}
+
+html[data-theme="dark"] .sbm-notice-card.notice-bodetabek {
+  background: rgba(30, 20, 10, 0.95);
+  border: 1.5px solid #f59e0b;
+  box-shadow: 0 4px 20px rgba(245, 158, 11, 0.15);
+}
+
+html[data-theme="dark"] .notice-bodetabek .notice-badge {
+  background: rgba(217, 119, 6, 0.35);
+  color: #fef3c7;
+  border: 1px solid rgba(245, 158, 11, 0.6);
+  font-weight: 800;
+}
+
+html[data-theme="dark"] .sbm-notice-card.notice-island {
+  background: rgba(10, 30, 30, 0.95);
+  border: 1.5px solid #14b8a6;
+  box-shadow: 0 4px 20px rgba(20, 184, 166, 0.15);
+}
+
+html[data-theme="dark"] .notice-island .notice-badge {
+  background: rgba(13, 148, 136, 0.35);
+  color: #ccfbf1;
+  border: 1px solid rgba(20, 184, 166, 0.6);
+  font-weight: 800;
+}
+
+html[data-theme="dark"] .sbm-notice-card.notice-luarkota {
+  background: rgba(10, 30, 15, 0.95);
+  border: 1.5px solid #22c55e;
+  box-shadow: 0 4px 20px rgba(34, 197, 94, 0.15);
+}
+
+html[data-theme="dark"] .notice-luarkota .notice-badge {
+  background: rgba(22, 163, 74, 0.35);
+  color: #dcfce7;
+  border: 1px solid rgba(34, 197, 94, 0.6);
+  font-weight: 800;
+}
+
 html[data-theme="dark"] .notice-headline {
-  color: #f8fafc;
+  color: #f8fafc !important;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+html[data-theme="dark"] .notice-desc {
+  color: #cbd5e1 !important;
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+html[data-theme="dark"] .notice-desc strong {
+  color: #ffffff !important;
+  font-weight: 700;
 }
 
 html[data-theme="dark"] .sbm-category-header {
@@ -14928,6 +15007,12 @@ html[data-theme="dark"] .badge-pmk {
   border: 1px solid #a7f3d0;
 }
 
+.status-kkp-selesai {
+  background: #f5f3ff;
+  color: #6d28d9;
+  border: 1px solid #ddd6fe;
+}
+
 .btn-status-toggle {
   display: inline-flex;
   align-items: center;
@@ -14958,6 +15043,68 @@ html[data-theme="dark"] .badge-pmk {
 
 .btn-status-toggle.is-diproses:hover {
   background: #dbeafe;
+}
+
+.btn-status-toggle.is-kkp-selesai {
+  background: #f5f3ff;
+  color: #6d28d9;
+  border: 1px solid #c4b5fd;
+}
+
+.btn-status-toggle.is-kkp-selesai:hover {
+  background: #ede9fe;
+}
+
+/* Dark mode for status badges and toggle buttons */
+html[data-theme="dark"] .status-diproses {
+  background: rgba(30, 58, 138, 0.35);
+  color: #93c5fd;
+  border: 1px solid rgba(96, 165, 250, 0.45);
+}
+
+html[data-theme="dark"] .status-dicairkan {
+  background: rgba(6, 78, 59, 0.35);
+  color: #6ee7b7;
+  border: 1px solid rgba(52, 211, 153, 0.45);
+}
+
+html[data-theme="dark"] .status-kkp-selesai {
+  background: rgba(109, 40, 217, 0.28);
+  color: #c4b5fd;
+  border: 1px solid rgba(167, 139, 250, 0.45);
+}
+
+html[data-theme="dark"] .btn-status-toggle.is-diproses {
+  background: rgba(30, 58, 138, 0.3);
+  color: #93c5fd;
+  border: 1px solid rgba(96, 165, 250, 0.45);
+}
+
+html[data-theme="dark"] .btn-status-toggle.is-diproses:hover {
+  background: rgba(30, 58, 138, 0.5);
+  color: #bfdbfe;
+}
+
+html[data-theme="dark"] .btn-status-toggle.is-dicairkan {
+  background: rgba(6, 78, 59, 0.3);
+  color: #6ee7b7;
+  border: 1px solid rgba(52, 211, 153, 0.45);
+}
+
+html[data-theme="dark"] .btn-status-toggle.is-dicairkan:hover {
+  background: rgba(6, 78, 59, 0.5);
+  color: #a7f3d0;
+}
+
+html[data-theme="dark"] .btn-status-toggle.is-kkp-selesai {
+  background: rgba(109, 40, 217, 0.3);
+  color: #c4b5fd;
+  border: 1px solid rgba(167, 139, 250, 0.5);
+}
+
+html[data-theme="dark"] .btn-status-toggle.is-kkp-selesai:hover {
+  background: rgba(109, 40, 217, 0.5);
+  color: #e9d5ff;
 }
 
 /* Dark mode support for KPI */
