@@ -469,9 +469,9 @@ async function handleAuthLogin(e) {
     if (msg.includes('Invalid login credentials')) {
       msg = 'Email atau kata sandi tidak cocok. Silakan coba lagi.';
     } else if (msg.includes('Email not confirmed')) {
-      msg = 'Email belum dikonfirmasi. Harap buka dashboard Supabase ➔ SQL Editor ➔ jalankan file <code>supabase_schema.sql</code> untuk mengaktifkan akun secara instan.';
+      msg = 'Email belum dikonfirmasi. Silakan periksa <strong>kotak masuk</strong> (atau folder Spam) pada email Anda terlebih dahulu.';
     } else if (msg.includes('Invalid API key')) {
-      msg = 'Koneksi API lama pada browser telah dibersihkan otomatis. Silakan klik Masuk sekali lagi.';
+      msg = 'Koneksi sesi diperbarui otomatis. Silakan klik Masuk sekali lagi.';
     }
     showAuthAlert(alertEl, 'error', msg);
   } finally {
@@ -561,10 +561,9 @@ async function handleAuthSignUp(e) {
       return;
     }
 
-    showAuthAlert(alertEl, 'success', 'Pendaftaran berhasil! Silakan masuk dengan email dan kata sandi Anda.');
-
     // Jika Supabase auto-confirm session:
     if (data.session && data.user) {
+      showAuthAlert(alertEl, 'success', 'Pendaftaran berhasil! Akun Anda telah aktif.');
       await loadUserProfile(data.user);
       setTimeout(() => {
         closeAuthModal();
@@ -576,11 +575,17 @@ async function handleAuthSignUp(e) {
         }
       }, 1000);
     } else {
+      const safeEmail = (typeof escapeAttrSafe === 'function') ? escapeAttrSafe(email) : email;
+      showAuthAlert(alertEl, 'success', `Pendaftaran berhasil! Tautan verifikasi telah dikirim ke <strong>${safeEmail}</strong>.<br>Silakan periksa <strong>kotak masuk</strong> (atau folder Spam) pada email Anda sebelum masuk.`);
       setTimeout(() => {
         switchAuthTab('login');
         const loginEmail = document.getElementById('authLoginEmail');
         if (loginEmail) loginEmail.value = email;
-      }, 1500);
+        const loginAlert = document.getElementById('authLoginAlert');
+        if (loginAlert) {
+          showAuthAlert(loginAlert, 'success', `Akun berhasil dibuat untuk <strong>${safeEmail}</strong>. Silakan periksa <strong>kotak masuk</strong> (atau folder Spam) email Anda untuk konfirmasi sebelum masuk.`);
+        }
+      }, 2200);
     }
   } catch (err) {
     console.error('Sign up error:', err);
@@ -712,9 +717,9 @@ async function handleGateLogin(e) {
     if (msg.includes('Invalid login credentials')) {
       msg = 'Email atau kata sandi tidak cocok. Silakan coba lagi.';
     } else if (msg.includes('Email not confirmed')) {
-      msg = 'Email belum dikonfirmasi. Harap buka dashboard Supabase ➔ SQL Editor ➔ jalankan file <code>supabase_schema.sql</code> untuk mengaktifkan akun secara instan.';
+      msg = 'Email belum dikonfirmasi. Silakan periksa <strong>kotak masuk</strong> (atau folder Spam) pada email Anda terlebih dahulu.';
     } else if (msg.includes('Invalid API key')) {
-      msg = 'Koneksi API lama pada browser telah dibersihkan otomatis. Silakan klik Masuk sekali lagi.';
+      msg = 'Koneksi sesi diperbarui otomatis. Silakan klik Masuk sekali lagi.';
     }
     showAuthAlert(alertEl, 'error', msg);
   } finally {
@@ -739,7 +744,7 @@ async function handleGateSignUp(e) {
     return;
   }
   if (!email) {
-    showAuthAlert(alertEl, 'error', 'Alamat Email Kedinasan wajib diisi.');
+    showAuthAlert(alertEl, 'error', 'Alamat Email wajib diisi.');
     return;
   }
   if (!password) {
@@ -805,9 +810,8 @@ async function handleGateSignUp(e) {
       return;
     }
 
-    showAuthAlert(alertEl, 'success', 'Pendaftaran berhasil! Akun Anda telah siap.');
-
     if (data.session && data.user) {
+      showAuthAlert(alertEl, 'success', 'Pendaftaran berhasil! Akun Anda telah siap.');
       await loadUserProfile(data.user);
       setTimeout(() => {
         unlockAuthGate();
@@ -818,11 +822,17 @@ async function handleGateSignUp(e) {
         }
       }, 900);
     } else {
+      const safeEmail = (typeof escapeAttrSafe === 'function') ? escapeAttrSafe(email) : email;
+      showAuthAlert(alertEl, 'success', `Pendaftaran berhasil! Tautan verifikasi telah dikirim ke <strong>${safeEmail}</strong>.<br>Silakan periksa <strong>kotak masuk</strong> (atau folder Spam) pada email Anda sebelum masuk.`);
       setTimeout(() => {
         switchGateTab('login');
         const loginEmail = document.getElementById('gateLoginEmail');
         if (loginEmail) loginEmail.value = email;
-      }, 1500);
+        const loginAlert = document.getElementById('gateLoginAlert');
+        if (loginAlert) {
+          showAuthAlert(loginAlert, 'success', `Akun berhasil dibuat untuk <strong>${safeEmail}</strong>. Silakan periksa <strong>kotak masuk</strong> (atau folder Spam) email Anda untuk konfirmasi sebelum masuk.`);
+        }
+      }, 2200);
     }
   } catch (err) {
     console.error('Sign up error:', err);
