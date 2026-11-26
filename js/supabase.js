@@ -320,10 +320,10 @@ function applyRolePermissions() {
   if (isViewer) {
     document.body.classList.add('role-viewer');
     document.body.classList.remove('role-admin', 'role-operator');
-    // Viewer memiliki modul: dashboard, riwayat, sbm
+    // Viewer memiliki modul: dashboard, riwayat, sbm, simulasi
     const activeBtn = document.querySelector('.tab-btn.active');
     const activeTab = activeBtn?.getAttribute('data-tab');
-    if (!['dashboard', 'riwayat', 'sbm'].includes(activeTab)) {
+    if (!['dashboard', 'riwayat', 'sbm', 'simulasi'].includes(activeTab)) {
       if (typeof showTab === 'function') showTab('dashboard');
     }
     const pageEyebrow = document.getElementById('pageEyebrow');
@@ -376,7 +376,7 @@ function applyRolePermissions() {
       banner.innerHTML = `
         <svg class="ico"><use href="#i-info"></use></svg>
         <div class="banner-text">
-          <strong>Dashboard Eksekutif Viewer (${currentAuthUser.email}):</strong> Anda dapat memantau status real-time berkas yang diproses ke satker &amp; telah dicairkan, mengecek Kamus SBM 2026, serta membuka dan mencetak dokumen resmi.
+          <strong>Dashboard Eksekutif Viewer (${currentAuthUser.email}):</strong> Anda dapat memantau status real-time berkas yang diproses ke satker &amp; telah dicairkan, mengecek Kamus SBM 2026, menjalankan Kalkulator Simulasi Biaya, serta membuka dan mencetak dokumen resmi.
         </div>
       `;
     }

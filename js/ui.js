@@ -748,6 +748,7 @@ const tabMeta = {
   dashboard: ['Dashboard Eksekutif', 'Portal Pemantau'],
   riwayat: ['Riwayat Perjalanan Dinas', 'Arsip & Berkas'],
   sbm: ['Kamus & Cek Tarif SBM 2026', 'Standar Biaya Masukan'],
+  simulasi: ['Simulasi Perhitungan Perdin', 'Kalkulator Estimasi SBM 2026'],
   nominatif: ['Daftar Nominatif', 'Rekapitulasi'],
   'rekap-kuitansi': ['Rekap Kuitansi', 'Rekapitulasi'],
   'kuitansi-perorangan': ['Kuitansi Perorangan', 'Dokumen'],
@@ -763,7 +764,7 @@ const tabMeta = {
 function showTab(name) {
   const canEdit = (typeof canCurrentUserEdit === 'function') ? canCurrentUserEdit() : (typeof isCurrentUserAdmin === 'function' && isCurrentUserAdmin());
   const isViewer = !canEdit && !!window.currentAuthUser;
-  const viewerAllowedTabs = ['dashboard', 'riwayat', 'sbm'];
+  const viewerAllowedTabs = ['dashboard', 'riwayat', 'sbm', 'simulasi'];
   if (isViewer && !viewerAllowedTabs.includes(name)) {
     name = 'dashboard';
   }
@@ -771,7 +772,7 @@ function showTab(name) {
   if (currentActive && currentActive.id === 'tab-' + name) {
     return;
   }
-  if (!['input', 'pengaturan', 'dashboard', 'riwayat', 'sbm'].includes(name)) {
+  if (!['input', 'pengaturan', 'dashboard', 'riwayat', 'sbm', 'simulasi'].includes(name)) {
     const val = validateTripForm();
     if (!val.valid) {
       showValidationToast(val.missing, val.dateMismatch ? 'Tanggal kembali tidak boleh sebelum tanggal berangkat!' : null);
@@ -785,6 +786,8 @@ function showTab(name) {
       renderDashboardModule();
     } else if (name === 'sbm' && typeof initViewerSbmCockpit === 'function') {
       initViewerSbmCockpit();
+    } else if (name === 'simulasi' && typeof initSimulasiKalkulator === 'function') {
+      initSimulasiKalkulator();
     } else if (name === 'riwayat' && typeof renderTripHistory === 'function') {
       renderTripHistory();
     }
@@ -813,6 +816,7 @@ function switchTabPanel(name) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
   if (name === 'dashboard' && typeof renderDashboardModule === 'function') renderDashboardModule();
   if (name === 'sbm' && typeof initViewerSbmCockpit === 'function') initViewerSbmCockpit();
+  if (name === 'simulasi' && typeof initSimulasiKalkulator === 'function') initSimulasiKalkulator();
   if (name === 'riwayat' && typeof renderTripHistory === 'function') renderTripHistory();
   if (name === 'rincian') populateRincianSelect();
   if (name === 'dpr') populateDPRSelect();

@@ -3112,43 +3112,36 @@ function hitungBiaya(emp) {
 // =====================================================================
 let currentViewerSbmCityId = 'all';
 
-function initViewerSbmCockpit() {
-  const selProv = document.getElementById('viewerSbmSelectProv');
+function populateSbmProvinceSelect(selProv, defaultProvId = 13) {
   if (!selProv || !Array.isArray(sbmData)) return;
-
-  if (selProv.options.length <= 1) {
-    selProv.innerHTML = '';
-    sbmData.forEach(s => {
-      const opt = document.createElement('option');
-      opt.value = s.id;
-      // Langsung nama provinsi saja, tanpa ibukota provinsi (cth: DKI JAKARTA)
-      opt.textContent = s.provinsi;
-      if (s.provinsi === 'DKI JAKARTA') {
-        opt.selected = true;
-      }
-      selProv.appendChild(opt);
-    });
-  }
-
-  const curProvVal = selProv.value || 13;
-  populateViewerSbmCities(curProvVal, currentViewerSbmCityId);
-  onViewerSbmProvChange(curProvVal, currentViewerSbmCityId);
+  if (selProv.options.length > 1) return;
+  selProv.innerHTML = '';
+  sbmData.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s.id;
+    opt.textContent = s.provinsi;
+    if (String(s.id) === String(defaultProvId)) {
+      opt.selected = true;
+    }
+    selProv.appendChild(opt);
+  });
 }
 
-function populateViewerSbmCities(provId, selectedCityId = null) {
-  const selCity = document.getElementById('viewerSbmSelectCity');
-  if (!selCity) return;
-
+function populateSbmCitySelect(selCity, provId, selectedCityId = null) {
+  if (!selCity || !Array.isArray(sbmData)) return;
   const sbm = sbmData.find(x => String(x.id) === String(provId)) || sbmData[0];
-  const provCities = (typeof getDaftarKotaByProvinsi === 'function') 
-    ? getDaftarKotaByProvinsi(provId) 
+  const provCities = (typeof getDaftarKotaByProvinsi === 'function')
+    ? getDaftarKotaByProvinsi(provId)
     : [];
 
   selCity.innerHTML = '';
+  selCity.dataset.provId = String(sbm.id);
 
   const optAll = document.createElement('option');
   optAll.value = 'all';
-  optAll.textContent = (sbm.provinsi === 'DKI JAKARTA') ? 'Seluruh Wilayah DKI Jakarta' : `Seluruh Kota/Kabupaten di ${sbm.provinsi}`;
+  optAll.textContent = (sbm.provinsi === 'DKI JAKARTA')
+    ? 'Seluruh Wilayah DKI Jakarta'
+    : `Seluruh Kota/Kabupaten di ${sbm.provinsi}`;
   if (!selectedCityId || selectedCityId === 'all') {
     optAll.selected = true;
   }
@@ -3174,6 +3167,21 @@ function populateViewerSbmCities(provId, selectedCityId = null) {
     optIbukota.selected = true;
     selCity.appendChild(optIbukota);
   }
+}
+
+function initViewerSbmCockpit() {
+  const selProv = document.getElementById('viewerSbmSelectProv');
+  if (!selProv || !Array.isArray(sbmData)) return;
+
+  populateSbmProvinceSelect(selProv, 13);
+
+  const curProvVal = selProv.value || 13;
+  populateViewerSbmCities(curProvVal, currentViewerSbmCityId);
+  onViewerSbmProvChange(curProvVal, currentViewerSbmCityId);
+}
+
+function populateViewerSbmCities(provId, selectedCityId = null) {
+  populateSbmCitySelect(document.getElementById('viewerSbmSelectCity'), provId, selectedCityId);
 }
 
 function onViewerSbmProvChange(provId, cityIdOrObj = null) {
@@ -3428,6 +3436,72 @@ function quickSelectSbmCity(cityId) {
   onViewerSbmProvChange(city.provId, city);
 }
 
+function buildSbmSearchResultsHtml(keyword, cityFnName, provFnName) {
+  const q = String(keyword || '').trim().toLowerCase();
+  const safeEsc = typeof escapeHtml === 'function' ? escapeHtml : (s) => String(s || '');
+  const matchedCities = (typeof cariKotaSbm === 'function') ? cariKotaSbm(q) : [];
+  const matchedProvs = Array.isArray(sbmData)
+    ? sbmData.filter(x => x.provinsi.toLowerCase().includes(q) || (x.ibukota && x.ibukota.toLowerCase().includes(q)))
+    : [];
+
+  if (matchedCities.length === 0 && matchedProvs.length === 0) {
+    return `
+      <div class="sbm-search-empty">
+        Tidak ditemukan kota atau provinsi dengan kata kunci "<strong>${safeEsc(keyword)}</strong>".
+      </div>
+    `;
+  }
+
+  const formatRp = typeof rp === 'function' ? rp : (n) => 'Rp ' + Number(n || 0).toLocaleString('id-ID');
+  let html = '';
+
+  if (matchedCities.length > 0) {
+    html += `<div class="sbm-search-section-title">Kota &amp; Kabupaten (${matchedCities.length})</div>`;
+    matchedCities.slice(0, 8).forEach(c => {
+      const sbm = sbmData.find(x => Number(x.id) === Number(c.provId)) || {};
+      const note = c.isBodetabek
+        ? `<span class="search-bodetabek-tag">Bodetabek Transport PP ${formatRp(c.transportPP)}</span>`
+        : `<span class="search-rate-tag">UH ${formatRp(sbm.uh || 0)} • Hotel IV ${formatRp(sbm.h4 || 0)}</span>`;
+      html += `
+        <div class="sbm-search-item" onclick="${cityFnName}('${c.id}')">
+          <div class="search-item-left">
+            <span class="search-item-ico">📍</span>
+            <div>
+              <strong>${safeEsc((c.tipe || 'Kota') + ' ' + c.nama)}</strong>
+              <small>${safeEsc(c.provName)}</small>
+            </div>
+          </div>
+          <div class="search-item-right">
+            ${note}
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  if (matchedProvs.length > 0) {
+    html += `<div class="sbm-search-section-title">Provinsi SBM (${matchedProvs.length})</div>`;
+    matchedProvs.slice(0, 6).forEach(p => {
+      html += `
+        <div class="sbm-search-item" onclick="${provFnName}(${p.id})">
+          <div class="search-item-left">
+            <span class="search-item-ico">🏛️</span>
+            <div>
+              <strong>${safeEsc(p.provinsi)}</strong>
+              <small>Provinsi SBM PMK 32/2025</small>
+            </div>
+          </div>
+          <div class="search-item-right">
+            <span class="search-rate-tag">UH ${formatRp(p.uh || 0)} • Tiket PP ${p.tiket ? formatRp(p.tiket) : 'Jalur Darat'}</span>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  return html;
+}
+
 function onViewerSbmSearchInput(keyword) {
   const q = String(keyword || '').trim().toLowerCase();
   const resBox = document.getElementById('viewerSbmSearchResults');
@@ -3442,72 +3516,7 @@ function onViewerSbmSearchInput(keyword) {
     return;
   }
 
-  const matchedCities = (typeof cariKotaSbm === 'function') ? cariKotaSbm(q) : [];
-  const matchedProvs = Array.isArray(sbmData) 
-    ? sbmData.filter(x => x.provinsi.toLowerCase().includes(q) || (x.ibukota && x.ibukota.toLowerCase().includes(q)))
-    : [];
-
-  if (matchedCities.length === 0 && matchedProvs.length === 0) {
-    resBox.innerHTML = `
-      <div class="sbm-search-empty">
-        Tidak ditemukan kota atau provinsi dengan kata kunci "<strong>${keyword}</strong>".
-      </div>
-    `;
-    resBox.style.display = 'block';
-    return;
-  }
-
-  const formatRp = typeof rp === 'function' ? rp : (n) => 'Rp ' + Number(n || 0).toLocaleString('id-ID');
-
-  let html = '';
-
-  // Tampilkan hasil kota
-  if (matchedCities.length > 0) {
-    html += `<div class="sbm-search-section-title">Kota &amp; Kabupaten (${matchedCities.length})</div>`;
-    matchedCities.slice(0, 8).forEach(c => {
-      const sbm = sbmData.find(x => Number(x.id) === Number(c.provId)) || {};
-      const note = c.isBodetabek 
-        ? `<span class="search-bodetabek-tag">Bodetabek Transport PP ${formatRp(c.transportPP)}</span>`
-        : `<span class="search-rate-tag">UH ${formatRp(sbm.uh || 0)} • Hotel IV ${formatRp(sbm.h4 || 0)}</span>`;
-      html += `
-        <div class="sbm-search-item" onclick="selectCityFromSearch('${c.id}')">
-          <div class="search-item-left">
-            <span class="search-item-ico">📍</span>
-            <div>
-              <strong>${c.tipe || 'Kota'} ${c.nama}</strong>
-              <small>${c.provName}</small>
-            </div>
-          </div>
-          <div class="search-item-right">
-            ${note}
-          </div>
-        </div>
-      `;
-    });
-  }
-
-  // Tampilkan hasil provinsi
-  if (matchedProvs.length > 0) {
-    html += `<div class="sbm-search-section-title">Provinsi SBM (${matchedProvs.length})</div>`;
-    matchedProvs.slice(0, 6).forEach(p => {
-      html += `
-        <div class="sbm-search-item" onclick="selectProvFromSearch(${p.id})">
-          <div class="search-item-left">
-            <span class="search-item-ico">🏛️</span>
-            <div>
-              <strong>${p.provinsi}</strong>
-              <small>Provinsi SBM PMK 32/2025</small>
-            </div>
-          </div>
-          <div class="search-item-right">
-            <span class="search-rate-tag">UH ${formatRp(p.uh || 0)} • Tiket PP ${p.tiket ? formatRp(p.tiket) : 'Jalur Darat'}</span>
-          </div>
-        </div>
-      `;
-    });
-  }
-
-  resBox.innerHTML = html;
+  resBox.innerHTML = buildSbmSearchResultsHtml(keyword, 'selectCityFromSearch', 'selectProvFromSearch');
   resBox.style.display = 'block';
 }
 
@@ -3544,12 +3553,927 @@ function resetSbmViewerToDefault() {
   quickSelectSbmCity('jkt_pusat');
 }
 
+// =====================================================================
+// KALKULATOR SIMULASI PERHITUNGAN BIAYA PERDIN (NON-SPJ / READ-ONLY ROLE)
+// Menggunakan referensi tarif resmi PMK Nomor 32 Tahun 2025 (SBM 2026)
+// =====================================================================
+const simState = {
+  initialized: false,
+  provId: 16,          // Default: JAWA TIMUR
+  cityId: 'sby_kota',  // Default: Kota Surabaya
+  wasDkiLocal: false
+};
+
+function getSimHotelPagu(sbm, gol) {
+  if (!sbm) return 0;
+  if (gol === 'I') return sbm.h1 || 0;
+  if (gol === 'II') return sbm.h2 || 0;
+  if (String(gol || '').startsWith('IV')) return sbm.h4 || 0;
+  return sbm.h3 || 0;
+}
+
+function formatSimNumber(val) {
+  const num = typeof parseNumber === 'function' ? parseNumber(val) : (Number(val) || 0);
+  return num > 0 ? num.toLocaleString('id-ID') : '';
+}
+
+function resolveSimDestination(provId, cityIdOrObj) {
+  const list = Array.isArray(sbmData) ? sbmData : [];
+  const sbm = list.find(x => String(x.id) === String(provId)) || list.find(x => x.id === 16) || list[0] || null;
+  let cityObj = null;
+  if (cityIdOrObj && typeof cityIdOrObj === 'object') {
+    cityObj = cityIdOrObj;
+  } else if (typeof cityIdOrObj === 'string' && cityIdOrObj !== 'all' && cityIdOrObj !== 'ibukota' && typeof daftarKotaSbm !== 'undefined') {
+    cityObj = daftarKotaSbm.find(x => x.id === cityIdOrObj) || null;
+  }
+  return { sbm, cityObj };
+}
+
+function initSimulasiKalkulator() {
+  const selProv = document.getElementById('simSelectProv');
+  if (!selProv || !Array.isArray(sbmData)) return;
+
+  populateSbmProvinceSelect(selProv, simState.provId || 16);
+
+  if (!simState.initialized) {
+    simState.initialized = true;
+    selProv.value = simState.provId || 16;
+    populateSbmCitySelect(document.getElementById('simSelectCity'), selProv.value, simState.cityId || 'sby_kota');
+    onSimProvChange(selProv.value, simState.cityId || 'sby_kota');
+    return;
+  }
+
+  onSimParamChange();
+}
+
+function onSimProvChange(provId, cityIdOrObj = null) {
+  if (!Array.isArray(sbmData)) return;
+  const { sbm } = resolveSimDestination(provId, null);
+  if (!sbm) return;
+
+  const selProv = document.getElementById('simSelectProv');
+  if (selProv && String(selProv.value) !== String(sbm.id)) {
+    selProv.value = sbm.id;
+  }
+  simState.provId = sbm.id;
+
+  let cityObj = null;
+  if (cityIdOrObj && typeof cityIdOrObj === 'object') {
+    cityObj = cityIdOrObj;
+  } else if (typeof cityIdOrObj === 'string' && cityIdOrObj !== 'all' && typeof daftarKotaSbm !== 'undefined') {
+    cityObj = daftarKotaSbm.find(x => x.id === cityIdOrObj && String(x.provId) === String(sbm.id)) || null;
+  }
+
+  simState.cityId = cityObj ? cityObj.id : 'all';
+
+  const selCity = document.getElementById('simSelectCity');
+  if (selCity) {
+    if (selCity.dataset.provId !== String(sbm.id) || selCity.options.length === 0) {
+      populateSbmCitySelect(selCity, sbm.id, simState.cityId);
+    } else {
+      selCity.value = simState.cityId;
+    }
+  }
+
+  syncSimDestinationRules(sbm, cityObj);
+  onSimParamChange();
+}
+
+function onSimCityChange(cityId) {
+  if (!cityId || cityId === 'all' || cityId === 'ibukota') {
+    simState.cityId = cityId || 'all';
+    const selProv = document.getElementById('simSelectProv');
+    const provId = selProv ? selProv.value : simState.provId;
+    const { sbm } = resolveSimDestination(provId, null);
+    syncSimDestinationRules(sbm, null);
+    onSimParamChange();
+    return;
+  }
+  const city = (typeof daftarKotaSbm !== 'undefined') ? daftarKotaSbm.find(x => x.id === cityId) : null;
+  if (city) {
+    onSimProvChange(city.provId, city);
+  }
+}
+
+function syncSimDestinationRules(sbm, cityObj) {
+  if (!sbm) return;
+  const isDki = sbm.provinsi === 'DKI JAKARTA';
+  const isKepSeribu = !!(cityObj && (cityObj.id === 'kep_seribu' || /seribu/i.test(cityObj.nama)));
+  const isDkiLocal = isDki && !isKepSeribu;
+  const isBodetabek = !!(cityObj && cityObj.isBodetabek);
+  const formatRp = typeof rp === 'function' ? rp : (n) => 'Rp ' + Number(n || 0).toLocaleString('id-ID');
+  const safeEsc = typeof escapeHtml === 'function' ? escapeHtml : (s) => String(s || '');
+
+  // Auto-sesuaikan jenis kegiatan saat masuk/keluar DKI Dalam Kota
+  const jenisEl = document.getElementById('simJenisKegiatan');
+  const cbHotel = document.getElementById('simCbHotel');
+  const malamEl = document.getElementById('simMalam');
+  const hotelManualEl = document.getElementById('simHotelManual');
+  const transportManualEl = document.getElementById('simTransportManual');
+  const lokalManualEl = document.getElementById('simLokalManual');
+
+  if (jenisEl) {
+    if (!simState.wasDkiLocal && isDkiLocal) {
+      if (jenisEl.value === 'biasa') jenisEl.value = 'dki_gt8';
+      if (cbHotel && (parseInt(malamEl?.value, 10) || 0) === 0) cbHotel.checked = false;
+    } else if (simState.wasDkiLocal && !isDkiLocal) {
+      if (jenisEl.value === 'dki_8' || jenisEl.value === 'dki_gt8') jenisEl.value = 'biasa';
+      if (cbHotel && (parseInt(malamEl?.value, 10) || 0) > 0) cbHotel.checked = true;
+    }
+  }
+  simState.wasDkiLocal = isDkiLocal;
+
+  // Reset prefill manual jika destinasi berganti agar tetap sinkron saat user memilih mode manual nanti
+  if (hotelManualEl && document.getElementById('simHotelMode')?.value !== 'manual') hotelManualEl.value = '';
+  if (transportManualEl && document.getElementById('simTransportMode')?.value !== 'manual') transportManualEl.value = '';
+  if (lokalManualEl && document.getElementById('simLokalMode')?.value !== 'manual') lokalManualEl.value = '';
+
+  // Render notice tujuan
+  const noticeEl = document.getElementById('simLocationNotice');
+  if (noticeEl) {
+    if (isKepSeribu) {
+      noticeEl.innerHTML = `<div class="sbm-notice-card notice-island"><div class="notice-badge">⛴️ KEPULAUAN SERIBU (PMK HAL 15 &amp; 68)</div><p class="notice-desc">Uang Harian khusus <strong>Rp 210.000/hari</strong> &amp; transport kapal laut PP resmi <strong>Rp 772.000</strong>.</p></div>`;
+    } else if (isBodetabek && cityObj.transportPP) {
+      noticeEl.innerHTML = `<div class="sbm-notice-card notice-bodetabek"><div class="notice-badge">🚗 BODETABEK (PMK HAL 68)</div><p class="notice-desc">Tujuan <strong>${safeEsc(cityObj.nama)}</strong> memakai Transport Darat PP <strong>${formatRp(cityObj.transportPP)}</strong> (one way ${formatRp(cityObj.oneWay)}), tanpa taksi bandara terpisah.</p></div>`;
+    } else if (isDkiLocal) {
+      noticeEl.innerHTML = `<div class="sbm-notice-card notice-dki"><div class="notice-badge">🏛️ DALAM KOTA DKI JAKARTA (PMK HAL 69)</div><p class="notice-desc">Dinas &le;8 jam hanya mendapat DPR <strong>Rp 170.000</strong> (tanpa Uang Harian). Penugasan &gt;8 jam berhak Uang Harian <strong>Rp 210.000/hari</strong> + DPR.</p></div>`;
+    } else {
+      noticeEl.innerHTML = `<div class="sbm-notice-card notice-luarkota"><div class="notice-badge">✈️ LUAR KOTA (${safeEsc(sbm.provinsi)})</div><p class="notice-desc">UH Penuh <strong>${formatRp(sbm.uh || 0)}</strong>/hari • Tiket PP <strong>${sbm.tiket ? formatRp(sbm.tiket) : 'Jalur Darat'}</strong> • JKT PP + Taksi <strong>${formatRp((sbm.jktPP || 0) + (sbm.taxi || 0))}</strong>.</p></div>`;
+    }
+  }
+
+  // Sync active chip
+  document.querySelectorAll('.sim-chip-btn').forEach(btn => {
+    const targetChip = btn.getAttribute('data-sim-chip');
+    const isMatch = cityObj ? targetChip === cityObj.id : (isDkiLocal && targetChip === 'all');
+    btn.classList.toggle('active', !!isMatch);
+  });
+}
+
+function quickSelectSimCity(cityId) {
+  if (cityId === 'all' || cityId === 'jkt_pusat' || cityId === 'jkt_dki') {
+    onSimProvChange(13, 'all');
+    return;
+  }
+  const city = (typeof daftarKotaSbm !== 'undefined') ? daftarKotaSbm.find(x => x.id === cityId) : null;
+  if (!city) return;
+  onSimProvChange(city.provId, city);
+}
+
+function onSimSearchInput(keyword) {
+  const q = String(keyword || '').trim().toLowerCase();
+  const resBox = document.getElementById('simSearchResults');
+  const clearBtn = document.getElementById('btnSimSearchClear');
+  if (clearBtn) clearBtn.style.display = q ? 'block' : 'none';
+
+  if (!resBox) return;
+  if (!q) {
+    resBox.style.display = 'none';
+    resBox.innerHTML = '';
+    return;
+  }
+
+  resBox.innerHTML = buildSbmSearchResultsHtml(keyword, 'selectSimCityFromSearch', 'selectSimProvFromSearch');
+  resBox.style.display = 'block';
+}
+
+function selectSimCityFromSearch(cityId) {
+  const city = (typeof daftarKotaSbm !== 'undefined') ? daftarKotaSbm.find(x => x.id === cityId) : null;
+  if (!city) return;
+  onSimProvChange(city.provId, city);
+  clearSimSearch();
+}
+
+function selectSimProvFromSearch(provId) {
+  onSimProvChange(provId, null);
+  clearSimSearch();
+}
+
+function clearSimSearch() {
+  const input = document.getElementById('simSearchInput');
+  const resBox = document.getElementById('simSearchResults');
+  const clearBtn = document.getElementById('btnSimSearchClear');
+  if (input) input.value = '';
+  if (resBox) {
+    resBox.style.display = 'none';
+    resBox.innerHTML = '';
+  }
+  if (clearBtn) clearBtn.style.display = 'none';
+}
+
+function adjustSimStepper(inputId, delta) {
+  const el = document.getElementById(inputId);
+  if (!el) return;
+  const min = parseInt(el.getAttribute('min'), 10);
+  const max = parseInt(el.getAttribute('max'), 10);
+  const current = parseInt(el.value, 10);
+  const baseVal = isNaN(current) ? (isNaN(min) ? 0 : min) : current;
+  let next = baseVal + delta;
+  if (!isNaN(min)) next = Math.max(min, next);
+  if (!isNaN(max)) next = Math.min(max, next);
+  el.value = next;
+
+  if (inputId === 'simHari') {
+    onSimHariChange();
+  } else {
+    onSimParamChange();
+  }
+}
+
+function onSimHariChange() {
+  const hariEl = document.getElementById('simHari');
+  const malamEl = document.getElementById('simMalam');
+  const cbHotel = document.getElementById('simCbHotel');
+  let hari = parseInt(hariEl?.value, 10);
+  if (isNaN(hari) || hari < 1) hari = 1;
+  if (hari > 30) hari = 30;
+  if (hariEl && String(hariEl.value) !== String(hari)) hariEl.value = hari;
+
+  const nextMalam = Math.max(0, hari - 1);
+  if (malamEl) malamEl.value = nextMalam;
+  if (cbHotel) {
+    const { sbm, cityObj } = resolveSimDestination(simState.provId, simState.cityId);
+    const isDkiLocal = sbm && sbm.provinsi === 'DKI JAKARTA' && !(cityObj && (cityObj.id === 'kep_seribu' || /seribu/i.test(cityObj.nama)));
+    if (nextMalam === 0) cbHotel.checked = false;
+    else if (!isDkiLocal) cbHotel.checked = true;
+  }
+  onSimParamChange();
+}
+
+function onSimCurrencyInput(el) {
+  if (!el) return;
+  const raw = typeof parseNumber === 'function' ? parseNumber(el.value) : Number(String(el.value || '').replace(/[^\d]/g, '')) || 0;
+  el.value = raw > 0 ? raw.toLocaleString('id-ID') : '';
+  onSimParamChange();
+}
+
+function computeSimulasiData() {
+  const formatRp = typeof rp === 'function' ? rp : (n) => 'Rp ' + Number(n || 0).toLocaleString('id-ID');
+  const { sbm, cityObj } = resolveSimDestination(simState.provId, simState.cityId);
+  if (!sbm) return null;
+
+  const isDki = sbm.provinsi === 'DKI JAKARTA';
+  const isKepSeribu = !!(cityObj && (cityObj.id === 'kep_seribu' || /seribu/i.test(cityObj.nama)));
+  const isDkiLocal = isDki && !isKepSeribu;
+  const isBodetabek = !!(cityObj && cityObj.isBodetabek);
+
+  const hari = Math.max(1, Math.min(30, parseInt(document.getElementById('simHari')?.value, 10) || 1));
+  const malam = Math.max(0, Math.min(30, parseInt(document.getElementById('simMalam')?.value, 10) || 0));
+  const peserta = Math.max(1, Math.min(100, parseInt(document.getElementById('simPeserta')?.value, 10) || 1));
+  const golongan = document.getElementById('simGolongan')?.value || 'III';
+  const jenis = document.getElementById('simJenisKegiatan')?.value || 'biasa';
+
+  // 1. Uang Harian & Potongan Konsumsi
+  const cbUh = !!document.getElementById('simCbUh')?.checked;
+  let uhPercent = parseFloat(document.getElementById('simUhPercent')?.value ?? '1');
+  if (isNaN(uhPercent) || uhPercent < 0) uhPercent = 1;
+
+  let uhRate = 0;
+  let effectivePct = 1;
+  let uhLabel = 'Uang Harian';
+
+  if (jenis === 'diklat') {
+    uhRate = sbm.diklat || 110000;
+    effectivePct = 1;
+    uhLabel = 'Uang Harian Diklat';
+  } else if (jenis === 'fullboard') {
+    uhRate = sbm.fullboard || 130000;
+    effectivePct = 1;
+    uhLabel = 'Uang Harian Fullboard';
+  } else if (isDkiLocal) {
+    if (jenis === 'dki_gt8') {
+      uhRate = 210000;
+      effectivePct = 1;
+      uhLabel = 'Uang Harian DKI (> 8 Jam)';
+    } else {
+      uhRate = 0;
+      effectivePct = 0;
+      uhLabel = 'Uang Harian Dalam Kota DKI';
+    }
+  } else if (isKepSeribu) {
+    uhRate = 210000;
+    effectivePct = uhPercent;
+    const pctText = Math.round(effectivePct * 100);
+    uhLabel = pctText === 100 ? 'Uang Harian Kep. Seribu' : `Uang Harian Kep. Seribu (${pctText}%)`;
+  } else {
+    uhRate = sbm.uh || 0;
+    effectivePct = uhPercent;
+    const pctText = Math.round(effectivePct * 100);
+    uhLabel = pctText === 100 ? 'Uang Harian Penuh' : `Uang Harian (${pctText}%)`;
+  }
+
+  const uhGrossPerPerson = cbUh ? Math.round(uhRate * hari * effectivePct) : 0;
+  const cbKonsumsi = !!document.getElementById('simCbKonsumsi')?.checked;
+  const makanKali = Math.max(0, Math.min(5, parseInt(document.getElementById('simMakanKali')?.value, 10) || 0));
+  const snackKali = Math.max(0, Math.min(5, parseInt(document.getElementById('simSnackKali')?.value, 10) || 0));
+  const makanRate = sbm.makan || 0;
+  const snackRate = sbm.snack || 0;
+  const konsumsiPerDay = (makanRate * makanKali) + (snackRate * snackKali);
+  const rawKonsumsiPerPerson = (cbUh && cbKonsumsi && uhGrossPerPerson > 0) ? konsumsiPerDay * hari : 0;
+  const konsumsiDeductPerPerson = Math.min(uhGrossPerPerson, rawKonsumsiPerPerson);
+  const uhNetPerPerson = Math.max(0, uhGrossPerPerson - konsumsiDeductPerPerson);
+  const uhTotal = uhNetPerPerson * peserta;
+
+  // 2. Penginapan / Hotel
+  const hotelPaguRate = getSimHotelPagu(sbm, golongan);
+  const cbHotel = !!document.getElementById('simCbHotel')?.checked;
+  const hotelMode = document.getElementById('simHotelMode')?.value || 'sbm';
+  const kamarMode = document.getElementById('simKamarMode')?.value || 'per_orang';
+  const kamarCount = kamarMode === 'custom'
+    ? Math.max(1, Math.min(100, parseInt(document.getElementById('simJumlahKamar')?.value, 10) || 1))
+    : peserta;
+
+  let hotelRateUsed = 0;
+  let hotelModeLabel = 'Sesuai Pagu SBM';
+  if (cbHotel && malam > 0) {
+    if (hotelMode === 'atcost_30') {
+      hotelRateUsed = Math.round(hotelPaguRate * 0.3);
+      hotelModeLabel = '30% Tanpa Bukti Hotel';
+    } else if (hotelMode === 'manual') {
+      hotelRateUsed = typeof parseNumber === 'function' ? parseNumber(document.getElementById('simHotelManual')?.value) : 0;
+      hotelModeLabel = 'Tarif Riil Hotel';
+    } else {
+      hotelRateUsed = hotelPaguRate;
+      hotelModeLabel = `Pagu SBM Gol. ${golongan}`;
+    }
+  }
+  const hotelTotal = (cbHotel && malam > 0) ? hotelRateUsed * malam * kamarCount : 0;
+  const hotelSbmCapTotal = (cbHotel && malam > 0) ? hotelPaguRate * malam * kamarCount : 0;
+  const hotelExceed = Math.max(0, hotelTotal - hotelSbmCapTotal);
+
+  // 3. Transport Utama (Tiket / Darat / Kapal PP)
+  const cbTransport = !!document.getElementById('simCbTransport')?.checked;
+  const transportMode = document.getElementById('simTransportMode')?.value || 'sbm';
+  let transportSbmCapRate = 0;
+  let transportLabel = 'Transport Utama PP';
+
+  if (isKepSeribu) {
+    transportSbmCapRate = 772000;
+    transportLabel = 'Tiket Kapal Laut Kep. Seribu PP';
+  } else if (isBodetabek && cityObj?.transportPP) {
+    transportSbmCapRate = cityObj.transportPP;
+    transportLabel = `Transport Darat PP (${cityObj.nama})`;
+  } else if (isDkiLocal) {
+    transportSbmCapRate = 0;
+    transportLabel = 'Transport Dalam Kota (Darat)';
+  } else if (sbm.tiket > 0) {
+    transportSbmCapRate = sbm.tiket;
+    transportLabel = 'Tiket Pesawat PP (SBM)';
+  } else {
+    transportSbmCapRate = 0;
+    transportLabel = 'Transport Jalur Darat / Kereta';
+  }
+
+  let transportPerPerson = 0;
+  if (cbTransport) {
+    if (transportMode === 'manual') {
+      transportPerPerson = typeof parseNumber === 'function' ? parseNumber(document.getElementById('simTransportManual')?.value) : 0;
+    } else {
+      transportPerPerson = transportSbmCapRate;
+    }
+  }
+  const transportTotal = transportPerPerson * peserta;
+  const transportSbmCapTotal = cbTransport && transportSbmCapRate > 0 ? transportSbmCapRate * peserta : 0;
+  const transportExceed = (cbTransport && transportMode === 'manual' && transportSbmCapRate > 0)
+    ? Math.max(0, transportTotal - transportSbmCapTotal)
+    : 0;
+
+  // 4. Transport Lokal / Taksi / DPR
+  const cbLokal = !!document.getElementById('simCbLokal')?.checked;
+  const lokalMode = document.getElementById('simLokalMode')?.value || 'sbm';
+  const dkiDprMode = document.getElementById('simDkiDprMode')?.value || 'per_hari';
+
+  let lokalSbmAutoPerPerson = 0;
+  let lokalLabel = 'Taksi / DPR Lokal';
+  if (isDkiLocal) {
+    lokalSbmAutoPerPerson = dkiDprMode === 'flat' ? 170000 : 170000 * hari;
+    lokalLabel = dkiDprMode === 'flat' ? 'DPR Transport Lokal DKI (Flat)' : `DPR Transport Lokal DKI (${hari} hr)`;
+  } else if (isKepSeribu || isBodetabek) {
+    lokalSbmAutoPerPerson = 0;
+    lokalLabel = 'Transport Lokal (Termasuk Paket PP)';
+  } else {
+    lokalSbmAutoPerPerson = (sbm.jktPP || 0) + (sbm.taxi || 0);
+    lokalLabel = 'DPR Transport JKT PP + Taksi Tujuan';
+  }
+
+  let lokalPerPerson = 0;
+  if (cbLokal) {
+    if (lokalMode === 'manual') {
+      lokalPerPerson = typeof parseNumber === 'function' ? parseNumber(document.getElementById('simLokalManual')?.value) : 0;
+      lokalLabel = 'Transport Lokal / DPR (Riil)';
+    } else if (lokalMode === 'taxi_only') {
+      lokalPerPerson = (isDkiLocal || isKepSeribu || isBodetabek) ? 0 : (sbm.taxi || 0);
+      lokalLabel = 'Taksi Daerah Tujuan SBM';
+    } else if (lokalMode === 'jkt_only') {
+      lokalPerPerson = (isDkiLocal || isKepSeribu || isBodetabek) ? 0 : (sbm.jktPP || 0);
+      lokalLabel = 'DPR Transport Jakarta PP';
+    } else {
+      lokalPerPerson = lokalSbmAutoPerPerson;
+    }
+  }
+  const lokalTotal = lokalPerPerson * peserta;
+  const lokalSbmCapTotal = cbLokal && lokalSbmAutoPerPerson > 0 ? lokalSbmAutoPerPerson * peserta : 0;
+  const lokalExceed = (cbLokal && lokalMode === 'manual' && lokalSbmAutoPerPerson > 0)
+    ? Math.max(0, lokalTotal - lokalSbmCapTotal)
+    : 0;
+
+  // 5. Uang Representatif & Biaya Lainnya
+  const cbRep = !!document.getElementById('simCbRep')?.checked;
+  const repRate = cbRep ? (isDki ? 75000 : 150000) : 0;
+  const repTotal = repRate * hari * peserta;
+
+  const biayaLainPerPerson = typeof parseNumber === 'function' ? parseNumber(document.getElementById('simBiayaLain')?.value) : 0;
+  const biayaLainTotal = biayaLainPerPerson * peserta;
+
+  const transCombinedTotal = transportTotal + lokalTotal;
+  const lainCombinedTotal = repTotal + biayaLainTotal;
+  const grandTotal = uhTotal + hotelTotal + transCombinedTotal + lainCombinedTotal;
+  const avgPerPerson = peserta > 0 ? Math.round(grandTotal / peserta) : 0;
+  const exceedTotal = hotelExceed + transportExceed + lokalExceed;
+  const sbmCapTotal = uhTotal + hotelSbmCapTotal + transportSbmCapTotal + lokalSbmCapTotal + repTotal;
+
+  const destLabel = cityObj
+    ? (isDki ? `DKI JAKARTA — ${cityObj.nama}` : `${cityObj.nama} (${sbm.provinsi})`)
+    : sbm.provinsi;
+
+  return {
+    sbm,
+    cityObj,
+    destLabel,
+    isDki,
+    isDkiLocal,
+    isKepSeribu,
+    isBodetabek,
+    hari,
+    malam,
+    peserta,
+    golongan,
+    jenis,
+    cbUh,
+    uhRate,
+    effectivePct,
+    uhLabel,
+    uhGrossPerPerson,
+    cbKonsumsi,
+    makanKali,
+    snackKali,
+    konsumsiPerDay,
+    konsumsiDeductPerPerson,
+    uhNetPerPerson,
+    uhTotal,
+    cbHotel,
+    hotelMode,
+    hotelModeLabel,
+    hotelPaguRate,
+    hotelRateUsed,
+    kamarCount,
+    hotelTotal,
+    hotelSbmCapTotal,
+    hotelExceed,
+    cbTransport,
+    transportMode,
+    transportLabel,
+    transportSbmCapRate,
+    transportPerPerson,
+    transportTotal,
+    transportExceed,
+    cbLokal,
+    lokalMode,
+    lokalLabel,
+    lokalSbmAutoPerPerson,
+    lokalPerPerson,
+    lokalTotal,
+    lokalExceed,
+    cbRep,
+    repRate,
+    repTotal,
+    biayaLainPerPerson,
+    biayaLainTotal,
+    transCombinedTotal,
+    lainCombinedTotal,
+    grandTotal,
+    avgPerPerson,
+    sbmCapTotal,
+    exceedTotal,
+    formatRp
+  };
+}
+
+function onSimParamChange() {
+  const { sbm, cityObj } = resolveSimDestination(simState.provId, simState.cityId);
+  if (!sbm) return;
+
+  const isDki = sbm.provinsi === 'DKI JAKARTA';
+  const isKepSeribu = !!(cityObj && (cityObj.id === 'kep_seribu' || /seribu/i.test(cityObj.nama)));
+  const isDkiLocal = isDki && !isKepSeribu;
+  const formatRp = typeof rp === 'function' ? rp : (n) => 'Rp ' + Number(n || 0).toLocaleString('id-ID');
+
+  // Toggle visibility & helper hints
+  const jenis = document.getElementById('simJenisKegiatan')?.value || 'biasa';
+  const uhPctSelect = document.getElementById('simUhPercent');
+  if (uhPctSelect) {
+    uhPctSelect.disabled = (jenis === 'diklat' || jenis === 'fullboard' || isDkiLocal);
+  }
+
+  const cbKonsumsi = !!document.getElementById('simCbKonsumsi')?.checked;
+  const cbUh = !!document.getElementById('simCbUh')?.checked;
+  const konsumsiBox = document.getElementById('simKonsumsiBox');
+  if (konsumsiBox) konsumsiBox.style.display = cbKonsumsi ? 'block' : 'none';
+
+  const cbHotel = !!document.getElementById('simCbHotel')?.checked;
+  const hotelBox = document.getElementById('simHotelBox');
+  const hotelMode = document.getElementById('simHotelMode')?.value || 'sbm';
+  const kamarMode = document.getElementById('simKamarMode')?.value || 'per_orang';
+  if (hotelBox) hotelBox.style.display = cbHotel ? 'block' : 'none';
+
+  const golongan = document.getElementById('simGolongan')?.value || 'III';
+  const hotelPagu = getSimHotelPagu(sbm, golongan);
+  const hotelCapPill = document.getElementById('simHotelCapPill');
+  if (hotelCapPill) hotelCapPill.textContent = `Pagu: ${formatRp(hotelPagu)}/mlm`;
+
+  const hotelManualEl = document.getElementById('simHotelManual');
+  if (hotelMode === 'manual' && hotelManualEl && !hotelManualEl.value) {
+    hotelManualEl.value = formatSimNumber(hotelPagu);
+  }
+  const showHotelManual = hotelMode === 'manual';
+  const showKamarCustom = kamarMode === 'custom';
+  const hotelExtraRow = document.getElementById('simHotelExtraRow');
+  const hotelManualWrap = document.getElementById('simHotelManualWrap');
+  const kamarCustomWrap = document.getElementById('simKamarCustomWrap');
+  if (hotelExtraRow) hotelExtraRow.style.display = (showHotelManual || showKamarCustom) ? 'grid' : 'none';
+  if (hotelManualWrap) hotelManualWrap.style.display = showHotelManual ? 'block' : 'none';
+  if (kamarCustomWrap) kamarCustomWrap.style.display = showKamarCustom ? 'block' : 'none';
+
+  // Transport visibility & prefill
+  const cbTransport = !!document.getElementById('simCbTransport')?.checked;
+  const transportMode = document.getElementById('simTransportMode')?.value || 'sbm';
+  const transportBox = document.getElementById('simTransportBox');
+  const transportManualWrap = document.getElementById('simTransportManualWrap');
+  const transportManualEl = document.getElementById('simTransportManual');
+  if (transportBox) transportBox.style.display = cbTransport ? 'block' : 'none';
+  if (transportManualWrap) transportManualWrap.style.display = (cbTransport && transportMode === 'manual') ? 'block' : 'none';
+
+  const isBodetabek = !!(cityObj && cityObj.isBodetabek);
+  const transSbmCap = isKepSeribu ? 772000 : ((isBodetabek && cityObj?.transportPP) ? cityObj.transportPP : (isDkiLocal ? 0 : (sbm.tiket || 0)));
+  if (transportMode === 'manual' && transportManualEl && !transportManualEl.value && transSbmCap > 0) {
+    transportManualEl.value = formatSimNumber(transSbmCap);
+  }
+  const transCapPill = document.getElementById('simTransportCapPill');
+  if (transCapPill) transCapPill.textContent = transSbmCap > 0 ? `SBM: ${formatRp(transSbmCap)}` : 'Jalur Darat';
+
+  // Lokal visibility & prefill
+  const cbLokal = !!document.getElementById('simCbLokal')?.checked;
+  const lokalMode = document.getElementById('simLokalMode')?.value || 'sbm';
+  const lokalBox = document.getElementById('simLokalBox');
+  const lokalManualWrap = document.getElementById('simLokalManualWrap');
+  const dkiDprWrap = document.getElementById('simDkiDprModeWrap');
+  const lokalManualEl = document.getElementById('simLokalManual');
+  if (lokalBox) lokalBox.style.display = cbLokal ? 'block' : 'none';
+  if (dkiDprWrap) dkiDprWrap.style.display = (cbLokal && isDkiLocal && lokalMode === 'sbm') ? 'block' : 'none';
+  if (lokalManualWrap) lokalManualWrap.style.display = (cbLokal && lokalMode === 'manual') ? 'block' : 'none';
+
+  const lokalSbmCap = isDkiLocal ? 170000 : ((isKepSeribu || isBodetabek) ? 0 : ((sbm.jktPP || 0) + (sbm.taxi || 0)));
+  if (lokalMode === 'manual' && lokalManualEl && !lokalManualEl.value && lokalSbmCap > 0) {
+    lokalManualEl.value = formatSimNumber(lokalSbmCap);
+  }
+  const lokalCapPill = document.getElementById('simLokalCapPill');
+  if (lokalCapPill) {
+    if (isDkiLocal) lokalCapPill.textContent = 'SBM: Rp 170.000';
+    else if (isKepSeribu || isBodetabek) lokalCapPill.textContent = 'Termasuk PP';
+    else lokalCapPill.textContent = `SBM: ${formatRp(lokalSbmCap)}`;
+  }
+
+  const data = computeSimulasiData();
+  if (!data) return;
+
+  // Update konsumsi hint with exact calculated numbers
+  const konsumsiHintEl = document.getElementById('simKonsumsiHint');
+  if (konsumsiHintEl) {
+    if (!cbUh || data.uhGrossPerPerson === 0) {
+      konsumsiHintEl.textContent = 'Tidak ada potongan konsumsi karena Uang Harian saat ini Rp 0.';
+    } else {
+      konsumsiHintEl.textContent = `Potongan ${formatRp(data.konsumsiPerDay)}/hari (Makan ${formatRp(sbm.makan || 0)} x ${data.makanKali}, Snack ${formatRp(sbm.snack || 0)} x ${data.snackKali}). Total dipotong: ${formatRp(data.konsumsiDeductPerPerson)}/orang.`;
+    }
+  }
+
+  renderSimulasiResult(data);
+}
+
+function renderSimulasiResult(data) {
+  const { formatRp } = data;
+  const safeEsc = typeof escapeHtml === 'function' ? escapeHtml : (s) => String(s || '');
+
+  const destBadge = document.getElementById('simResDestBadge');
+  if (destBadge) destBadge.textContent = data.destLabel;
+
+  const metaBadge = document.getElementById('simResMetaBadge');
+  if (metaBadge) metaBadge.textContent = `${data.hari} Hari • ${data.malam} Malam • ${data.peserta} Org`;
+
+  const grandTotalEl = document.getElementById('simResGrandTotal');
+  if (grandTotalEl) grandTotalEl.textContent = formatRp(data.grandTotal);
+
+  const terbilangEl = document.getElementById('simResTerbilang');
+  if (terbilangEl) {
+    if (data.grandTotal === 0) {
+      terbilangEl.textContent = 'Nol Rupiah';
+    } else if (typeof terbilang === 'function') {
+      terbilangEl.textContent = terbilang(data.grandTotal);
+    } else {
+      terbilangEl.textContent = formatRp(data.grandTotal);
+    }
+  }
+
+  const compBadge = document.getElementById('simResComplianceBadge');
+  if (compBadge) {
+    if (data.exceedTotal > 0) {
+      compBadge.className = 'sim-compliance-pill is-warn';
+      compBadge.textContent = `Melebihi Pagu SBM (+${formatRp(data.exceedTotal)})`;
+    } else {
+      compBadge.className = 'sim-compliance-pill is-ok';
+      compBadge.textContent = 'Memenuhi Pagu SBM 2026';
+    }
+  }
+
+  const perOrangEl = document.getElementById('simResPerOrang');
+  if (perOrangEl) perOrangEl.textContent = formatRp(data.avgPerPerson);
+
+  const sbmCapEl = document.getElementById('simResSbmCap');
+  if (sbmCapEl) sbmCapEl.textContent = formatRp(data.sbmCapTotal);
+
+  // Visual composition bar
+  const total = data.grandTotal;
+  const pctUh = total > 0 ? Math.round((data.uhTotal / total) * 100) : 0;
+  const pctHotel = total > 0 ? Math.round((data.hotelTotal / total) * 100) : 0;
+  const pctTrans = total > 0 ? Math.round((data.transCombinedTotal / total) * 100) : 0;
+  const pctLain = total > 0 ? Math.max(0, 100 - pctUh - pctHotel - pctTrans) : 0;
+
+  const setSeg = (id, pct) => {
+    const el = document.getElementById(id);
+    if (el) el.style.width = `${pct}%`;
+  };
+  setSeg('simSegUh', pctUh);
+  setSeg('simSegHotel', pctHotel);
+  setSeg('simSegTrans', pctTrans);
+  setSeg('simSegLain', pctLain);
+
+  const legendEl = document.getElementById('simCompLegend');
+  if (legendEl) {
+    const items = [
+      { cls: 'seg-uh', label: 'Uang Harian', pct: pctUh },
+      { cls: 'seg-hotel', label: 'Penginapan', pct: pctHotel },
+      { cls: 'seg-trans', label: 'Transport & Taksi', pct: pctTrans }
+    ];
+    if (data.lainCombinedTotal > 0) {
+      items.push({ cls: 'seg-lain', label: 'Lainnya', pct: pctLain });
+    }
+    legendEl.innerHTML = items.map(it =>
+      `<span class="sim-legend-item"><i class="sim-legend-dot ${it.cls}"></i>${it.label} <strong>${it.pct}%</strong></span>`
+    ).join('');
+  }
+
+  // Breakdown rows
+  const rows = [];
+  const uhFormulaParts = [`${formatRp(data.uhRate)} × ${data.hari} hr`];
+  if (Math.round(data.effectivePct * 100) !== 100 && data.uhRate > 0) {
+    uhFormulaParts.push(`${Math.round(data.effectivePct * 100)}%`);
+  }
+  if (data.konsumsiDeductPerPerson > 0) {
+    uhFormulaParts.push(`− konsumsi ${formatRp(data.konsumsiDeductPerPerson)}`);
+  }
+  if (data.peserta > 1) uhFormulaParts.push(`× ${data.peserta} org`);
+  rows.push({
+    title: data.uhLabel,
+    sub: data.cbUh ? uhFormulaParts.join(' ') : 'Dinonaktifkan dalam simulasi',
+    amount: data.uhTotal,
+    perOrg: data.uhNetPerPerson,
+    warn: ''
+  });
+
+  const hotelSub = !data.cbHotel
+    ? 'Dinonaktifkan dalam simulasi'
+    : (data.malam === 0
+      ? '0 malam menginap'
+      : `${data.hotelModeLabel} • ${formatRp(data.hotelRateUsed)} × ${data.malam} mlm × ${data.kamarCount} kmr`);
+  rows.push({
+    title: 'Penginapan / Hotel',
+    sub: hotelSub,
+    amount: data.hotelTotal,
+    perOrg: data.peserta > 0 ? Math.round(data.hotelTotal / data.peserta) : 0,
+    warn: data.hotelExceed > 0 ? `+${formatRp(data.hotelExceed)} di atas pagu` : ''
+  });
+
+  const transSub = !data.cbTransport
+    ? 'Dinonaktifkan dalam simulasi'
+    : (data.transportTotal === 0 && data.transportMode === 'sbm'
+      ? 'Jalur darat / tanpa tarif pesawat SBM'
+      : `${formatRp(data.transportPerPerson)}/org${data.peserta > 1 ? ` × ${data.peserta} org` : ''}`);
+  rows.push({
+    title: data.transportLabel,
+    sub: transSub,
+    amount: data.transportTotal,
+    perOrg: data.transportPerPerson,
+    warn: data.transportExceed > 0 ? `+${formatRp(data.transportExceed)} di atas pagu` : ''
+  });
+
+  const lokalSub = !data.cbLokal
+    ? 'Dinonaktifkan dalam simulasi'
+    : `${formatRp(data.lokalPerPerson)}/org${data.peserta > 1 ? ` × ${data.peserta} org` : ''}`;
+  rows.push({
+    title: data.lokalLabel,
+    sub: lokalSub,
+    amount: data.lokalTotal,
+    perOrg: data.lokalPerPerson,
+    warn: data.lokalExceed > 0 ? `+${formatRp(data.lokalExceed)} di atas pagu` : ''
+  });
+
+  if (data.repTotal > 0) {
+    rows.push({
+      title: 'Uang Representatif Pejabat',
+      sub: `${formatRp(data.repRate)}/hari × ${data.hari} hr${data.peserta > 1 ? ` × ${data.peserta} org` : ''}`,
+      amount: data.repTotal,
+      perOrg: data.repRate * data.hari,
+      warn: ''
+    });
+  }
+
+  if (data.biayaLainTotal > 0) {
+    rows.push({
+      title: 'Biaya Riil Tambahan Lainnya',
+      sub: `${formatRp(data.biayaLainPerPerson)}/org${data.peserta > 1 ? ` × ${data.peserta} org` : ''}`,
+      amount: data.biayaLainTotal,
+      perOrg: data.biayaLainPerPerson,
+      warn: ''
+    });
+  }
+
+  const listEl = document.getElementById('simBreakdownList');
+  if (listEl) {
+    listEl.innerHTML = rows.map(r => `
+      <div class="sim-breakdown-row">
+        <div class="sim-br-left">
+          <strong class="sim-br-title">${safeEsc(r.title)}</strong>
+          <span class="sim-br-sub">${safeEsc(r.sub)}</span>
+          ${r.warn ? `<span class="sim-br-warn">${safeEsc(r.warn)}</span>` : ''}
+        </div>
+        <div class="sim-br-right">
+          <strong class="sim-br-amt">${formatRp(r.amount)}</strong>
+          ${data.peserta > 1 ? `<span class="sim-br-per">${formatRp(r.perOrg)} / org</span>` : ''}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // Referensi singkat SBM
+  const refProv = document.getElementById('simRefProvName');
+  if (refProv) refProv.textContent = data.sbm.provinsi;
+
+  const refGrid = document.getElementById('simRefGrid');
+  if (refGrid) {
+    const uhRefVal = data.isKepSeribu ? 210000 : (data.isDkiLocal ? 0 : (data.sbm.uh || 0));
+    const transRefVal = data.transportSbmCapRate;
+    const dprRefVal = data.isDkiLocal ? 170000 : ((data.isKepSeribu || data.isBodetabek) ? 0 : ((data.sbm.jktPP || 0) + (data.sbm.taxi || 0)));
+    const refItems = [
+      { k: 'Uang Harian', v: data.isDkiLocal ? 'Rp 0 / Rp 210 rb (>8j)' : formatRp(uhRefVal) },
+      { k: 'Hotel Gol. III', v: formatRp(data.sbm.h3 || 0) },
+      { k: 'Hotel Gol. IV', v: formatRp(data.sbm.h4 || 0) },
+      { k: 'Tiket / Darat PP', v: transRefVal > 0 ? formatRp(transRefVal) : 'Jalur Darat' },
+      { k: data.isDkiLocal ? 'DPR DKI Lokal' : 'JKT PP + Taksi', v: dprRefVal > 0 ? formatRp(dprRefVal) : 'Termasuk PP' },
+      { k: 'Diklat / Fullboard', v: `${formatRp(data.sbm.diklat || 0)} / ${formatRp(data.sbm.fullboard || 0)}` }
+    ];
+    refGrid.innerHTML = refItems.map(it => `
+      <div class="sim-ref-item">
+        <span>${safeEsc(it.k)}</span>
+        <strong>${safeEsc(it.v)}</strong>
+      </div>
+    `).join('');
+  }
+}
+
+function copySimulasiSummary() {
+  const data = computeSimulasiData();
+  if (!data) return;
+  const { formatRp } = data;
+  const lines = [
+    `SIMULASI ESTIMASI BIAYA PERJALANAN DINAS (SBM 2026)`,
+    `Tujuan: ${data.destLabel}`,
+    `Durasi & Peserta: ${data.hari} Hari / ${data.malam} Malam • ${data.peserta} Peserta (Gol. ${data.golongan})`,
+    `----------------------------------------`,
+    `- ${data.uhLabel}: ${formatRp(data.uhTotal)}`,
+    `- Penginapan (${data.hotelModeLabel}, ${data.malam} mlm x ${data.kamarCount} kmr): ${formatRp(data.hotelTotal)}`,
+    `- ${data.transportLabel}: ${formatRp(data.transportTotal)}`,
+    `- ${data.lokalLabel}: ${formatRp(data.lokalTotal)}`
+  ];
+  if (data.repTotal > 0) lines.push(`- Uang Representatif: ${formatRp(data.repTotal)}`);
+  if (data.biayaLainTotal > 0) lines.push(`- Biaya Tambahan Lainnya: ${formatRp(data.biayaLainTotal)}`);
+  lines.push(`----------------------------------------`);
+  lines.push(`TOTAL ESTIMASI: ${formatRp(data.grandTotal)}`);
+  if (data.peserta > 1) lines.push(`Rata-rata per Orang: ${formatRp(data.avgPerPerson)}`);
+  lines.push(`Status Pagu SBM: ${data.exceedTotal > 0 ? 'Melebihi Pagu SBM (+' + formatRp(data.exceedTotal) + ')' : 'Memenuhi Pagu SBM 2026'}`);
+
+  const text = lines.join('\n');
+  const notifyOk = () => {
+    if (typeof showRefreshToast === 'function') {
+      showRefreshToast('Ringkasan Estimasi Disalin', 'Hasil simulasi biaya berhasil disalin ke clipboard.');
+    }
+  };
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(notifyOk).catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); notifyOk(); } catch (_) {}
+      document.body.removeChild(ta);
+    });
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); notifyOk(); } catch (_) {}
+    document.body.removeChild(ta);
+  }
+}
+
+function resetSimulasiKalkulator() {
+  clearSimSearch();
+  simState.wasDkiLocal = false;
+  const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+  const setChk = (id, v) => { const el = document.getElementById(id); if (el) el.checked = v; };
+
+  setVal('simJenisKegiatan', 'biasa');
+  setVal('simHari', 3);
+  setVal('simMalam', 2);
+  setVal('simPeserta', 1);
+  setVal('simGolongan', 'III');
+  setVal('simUhPercent', '1');
+  setVal('simMakanKali', 1);
+  setVal('simSnackKali', 0);
+  setVal('simHotelMode', 'sbm');
+  setVal('simKamarMode', 'per_orang');
+  setVal('simJumlahKamar', 1);
+  setVal('simHotelManual', '');
+  setVal('simTransportMode', 'sbm');
+  setVal('simTransportManual', '');
+  setVal('simLokalMode', 'sbm');
+  setVal('simDkiDprMode', 'per_hari');
+  setVal('simLokalManual', '');
+  setVal('simBiayaLain', '');
+
+  setChk('simCbUh', true);
+  setChk('simCbKonsumsi', false);
+  setChk('simCbHotel', true);
+  setChk('simCbTransport', true);
+  setChk('simCbLokal', true);
+  setChk('simCbRep', false);
+
+  onSimProvChange(16, 'sby_kota');
+}
+
+function openSimulasiFromSbmViewer() {
+  const selProv = document.getElementById('viewerSbmSelectProv');
+  const selCity = document.getElementById('viewerSbmSelectCity');
+  const provId = selProv ? (parseInt(selProv.value, 10) || 16) : 16;
+  const cityId = selCity ? (selCity.value || 'all') : 'all';
+
+  const simProv = document.getElementById('simSelectProv');
+  if (simProv) populateSbmProvinceSelect(simProv, provId);
+  simState.initialized = true;
+  onSimProvChange(provId, cityId);
+
+  if (typeof showTab === 'function') showTab('simulasi');
+}
+
+function openSbmFromSimulasi() {
+  const provId = simState.provId || 13;
+  const cityId = simState.cityId || 'all';
+
+  const viewerProv = document.getElementById('viewerSbmSelectProv');
+  if (viewerProv) populateSbmProvinceSelect(viewerProv, provId);
+  currentViewerSbmCityId = cityId || 'all';
+  if (typeof onViewerSbmProvChange === 'function') {
+    onViewerSbmProvChange(provId, cityId);
+  }
+
+  if (typeof showTab === 'function') showTab('sbm');
+}
+
 // Tutup dropdown hasil pencarian jika klik di luar
 document.addEventListener('click', function(e) {
-  const searchBox = document.querySelector('.sbm-search-city-box');
+  const searchBox = document.querySelector('.sbm-search-city-box:not(.sim-search-city-box)');
   const resBox = document.getElementById('viewerSbmSearchResults');
   if (resBox && searchBox && !searchBox.contains(e.target)) {
     resBox.style.display = 'none';
+  }
+  const simSearchBox = document.querySelector('.sim-search-city-box');
+  const simResBox = document.getElementById('simSearchResults');
+  if (simResBox && simSearchBox && !simSearchBox.contains(e.target)) {
+    simResBox.style.display = 'none';
   }
 });
 
@@ -3575,4 +4499,21 @@ if (typeof window !== 'undefined') {
   window.selectProvFromSearch = selectProvFromSearch;
   window.clearViewerSbmSearch = clearViewerSbmSearch;
   window.resetSbmViewerToDefault = resetSbmViewerToDefault;
+  window.initSimulasiKalkulator = initSimulasiKalkulator;
+  window.onSimProvChange = onSimProvChange;
+  window.onSimCityChange = onSimCityChange;
+  window.quickSelectSimCity = quickSelectSimCity;
+  window.onSimSearchInput = onSimSearchInput;
+  window.selectSimCityFromSearch = selectSimCityFromSearch;
+  window.selectSimProvFromSearch = selectSimProvFromSearch;
+  window.clearSimSearch = clearSimSearch;
+  window.adjustSimStepper = adjustSimStepper;
+  window.onSimHariChange = onSimHariChange;
+  window.onSimCurrencyInput = onSimCurrencyInput;
+  window.onSimParamChange = onSimParamChange;
+  window.computeSimulasiData = computeSimulasiData;
+  window.copySimulasiSummary = copySimulasiSummary;
+  window.resetSimulasiKalkulator = resetSimulasiKalkulator;
+  window.openSimulasiFromSbmViewer = openSimulasiFromSbmViewer;
+  window.openSbmFromSimulasi = openSbmFromSimulasi;
 }
