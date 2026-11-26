@@ -798,6 +798,15 @@ html[data-theme="dark"] .topbar-meta-date .ico {
   gap: 14px 16px;
 }
 
+.form-grid.form-grid-emp-spd {
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
+  align-items: end;
+}
+
+.form-grid.form-grid-emp-spd .form-group:first-child select {
+  text-overflow: ellipsis;
+}
+
 .form-group {
   display: flex;
   flex-direction: column;
@@ -5850,7 +5859,8 @@ Responsive UI (screen only) — tidak menyentuh aturan cetak
     font-size: 13.5px;
   }
 
-  .form-grid {
+  .form-grid,
+  .form-grid.form-grid-emp-spd {
     grid-template-columns: 1fr;
     gap: 12px;
   }

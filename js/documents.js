@@ -94,25 +94,47 @@ function printRekapKuitansi() {
   window.print();
 }
 
-function populateKuitansiPeroranganSelect() {
-  const select = document.getElementById('kuitansiPeroranganPegawai');
+function syncEmpSelectTitle(selectOrId) {
+  const select = typeof selectOrId === 'string' ? document.getElementById(selectOrId) : selectOrId;
+  if (!select) return;
+  const opt = select.options && select.selectedIndex >= 0 ? select.options[select.selectedIndex] : null;
+  select.title = (opt && select.value !== '') ? opt.textContent : '';
+}
+
+function populateEmpDocSelect(selectId, emptyOutId, emptyHtml) {
+  const select = document.getElementById(selectId);
+  if (!select) return false;
   const previousValue = select.value;
   select.innerHTML = '<option value="">-- Pilih Pegawai --</option>';
   [...selectedEmpIds].forEach(id => {
     const emp = employees.find(employee => employee.id === id);
+    if (!emp) return;
     const option = document.createElement('option');
     option.value = id;
     option.textContent = emp.nama;
+    option.title = emp.nama;
     select.appendChild(option);
   });
 
   if (selectedEmpIds.size === 0) {
-    document.getElementById('kuitansiPeroranganOut').innerHTML = '<div class="alert-warn no-print">Belum ada pegawai yang dipilih. Kembali ke tab Input Perjalanan.</div>';
-    return;
+    const out = emptyOutId ? document.getElementById(emptyOutId) : null;
+    if (out) out.innerHTML = emptyHtml;
+    syncEmpSelectTitle(select);
+    return false;
   }
 
   const previousId = Number(previousValue);
   select.value = previousValue !== '' && selectedEmpIds.has(previousId) ? previousValue : String([...selectedEmpIds][0]);
+  syncEmpSelectTitle(select);
+  return true;
+}
+
+function populateKuitansiPeroranganSelect() {
+  if (!populateEmpDocSelect(
+    'kuitansiPeroranganPegawai',
+    'kuitansiPeroranganOut',
+    '<div class="alert-warn no-print">Belum ada pegawai yang dipilih. Kembali ke tab Input Perjalanan.</div>'
+  )) return;
   loadKuitansiPeroranganSPD();
   renderKuitansiPerorangan();
 }
@@ -166,6 +188,7 @@ function updateAllSpdSuffixLabels() {
 function loadKuitansiPeroranganSPD() {
   const select = document.getElementById('kuitansiPeroranganPegawai');
   if (!select || select.value === '') return;
+  syncEmpSelectTitle(select);
   const fullVal = spdPerEmployee[Number(select.value)] || '';
   const input = document.getElementById('kuitansiPeroranganNoSPD');
   if (input) input.value = getSpdNumberPrefix(fullVal);
@@ -373,25 +396,11 @@ function printKuitansiPerorangan() {
 }
 
 function populateSPPDSelect() {
-  const select = document.getElementById('sppdPegawai');
-  const previousValue = select.value;
-  select.innerHTML = '<option value="">-- Pilih Pegawai --</option>';
-  [...selectedEmpIds].forEach(id => {
-    const emp = employees.find(employee => employee.id === id);
-    if (!emp) return;
-    const option = document.createElement('option');
-    option.value = id;
-    option.textContent = emp.nama;
-    select.appendChild(option);
-  });
-
-  if (selectedEmpIds.size === 0) {
-    document.getElementById('sppdOut').innerHTML = '<div class="alert-warn no-print">Belum ada pegawai yang dipilih. Kembali ke tab Input Perjalanan.</div>';
-    return;
-  }
-
-  const previousId = Number(previousValue);
-  select.value = previousValue !== '' && selectedEmpIds.has(previousId) ? previousValue : String([...selectedEmpIds][0]);
+  if (!populateEmpDocSelect(
+    'sppdPegawai',
+    'sppdOut',
+    '<div class="alert-warn no-print">Belum ada pegawai yang dipilih. Kembali ke tab Input Perjalanan.</div>'
+  )) return;
   loadSPPDNo();
   renderSPPDPerorangan();
 }
@@ -399,6 +408,7 @@ function populateSPPDSelect() {
 function loadSPPDNo() {
   const select = document.getElementById('sppdPegawai');
   if (!select || select.value === '') return;
+  syncEmpSelectTitle(select);
   const fullVal = spdPerEmployee[Number(select.value)] || '';
   const input = document.getElementById('sppdNoSPD');
   if (input) input.value = getSpdNumberPrefix(fullVal);
@@ -1219,22 +1229,11 @@ function printNominatif() {
 // RENDER RINCIAN PER ORANG
 // =====================================================================
 function populateRincianSelect() {
-  const sel = document.getElementById('rincianPegawai');
-  const previousValue = sel.value;
-  sel.innerHTML = '<option value="">-- Pilih Pegawai --</option>';
-  [...selectedEmpIds].forEach(id => {
-    const e = employees.find(x => x.id === id);
-    const opt = document.createElement('option');
-    opt.value = id;
-    opt.textContent = e.nama;
-    sel.appendChild(opt);
-  });
-  if (selectedEmpIds.size === 0) {
-    document.getElementById('rincianOut').innerHTML = '<div class="alert-warn">⚠️ Belum ada pegawai dipilih. Kembali ke Input Perjalanan.</div>';
-    return;
-  }
-  const previousId = Number(previousValue);
-  sel.value = previousValue !== '' && selectedEmpIds.has(previousId) ? previousValue : String([...selectedEmpIds][0]);
+  if (!populateEmpDocSelect(
+    'rincianPegawai',
+    'rincianOut',
+    '<div class="alert-warn">⚠️ Belum ada pegawai dipilih. Kembali ke Input Perjalanan.</div>'
+  )) return;
   loadRincianSPD();
   if (typeof renderRincianEmpPills === 'function') renderRincianEmpPills();
   if (typeof renderRincianCockpit === 'function') renderRincianCockpit();
@@ -1245,6 +1244,7 @@ function populateRincianSelect() {
 function loadRincianSPD() {
   const select = document.getElementById('rincianPegawai');
   if (!select || select.value === '') return;
+  syncEmpSelectTitle(select);
   const fullVal = spdPerEmployee[Number(select.value)] || '';
   const input = document.getElementById('rincianNoSPD');
   if (input) input.value = getSpdNumberPrefix(fullVal);
@@ -1803,25 +1803,11 @@ function printRincian() {
 // DAFTAR PENGELUARAN RIIL (DPR) PER ORANG
 // =====================================================================
 function populateDPRSelect() {
-  const select = document.getElementById('dprPegawai');
-  const previousValue = select.value;
-  select.innerHTML = '<option value="">-- Pilih Pegawai --</option>';
-  [...selectedEmpIds].forEach(id => {
-    const emp = employees.find(employee => employee.id === id);
-    if (!emp) return;
-    const option = document.createElement('option');
-    option.value = id;
-    option.textContent = emp.nama;
-    select.appendChild(option);
-  });
-
-  if (selectedEmpIds.size === 0) {
-    document.getElementById('dprOut').innerHTML = '<div class="alert-warn">⚠️ Belum ada pegawai yang dipilih. Kembali ke tab Input Perjalanan.</div>';
-    return;
-  }
-
-  const previousId = Number(previousValue);
-  select.value = previousValue !== '' && selectedEmpIds.has(previousId) ? previousValue : String([...selectedEmpIds][0]);
+  if (!populateEmpDocSelect(
+    'dprPegawai',
+    'dprOut',
+    '<div class="alert-warn">⚠️ Belum ada pegawai yang dipilih. Kembali ke tab Input Perjalanan.</div>'
+  )) return;
   loadDPRNo();
   renderDPR();
 }
@@ -1829,6 +1815,7 @@ function populateDPRSelect() {
 function loadDPRNo() {
   const select = document.getElementById('dprPegawai');
   if (!select || select.value === '') return;
+  syncEmpSelectTitle(select);
   const fullVal = spdPerEmployee[Number(select.value)] || '';
   const input = document.getElementById('dprNoSPD');
   if (input) input.value = getSpdNumberPrefix(fullVal);
