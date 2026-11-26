@@ -1079,7 +1079,7 @@
         <div class="card-body">
           <div class="form-grid">
             <div class="form-group" data-field="noST">
-              <label for="noSTNum">Nomor Surat Tugas (ST) <span class="req-star" title="Wajib diisi">*</span></label>
+              <label for="noSTNum">Nomor Surat Tugas (ST) <span class="req-star">*</span></label>
               <div class="field-control st-prefix-wrap">
                 <input type="text" id="noSTNum" class="st-number-input" placeholder="375" oninput="syncNoSTFromInputs()" autocomplete="off">
                 <div class="st-suffix-dropdown-wrap">
@@ -1093,7 +1093,7 @@
               <span class="field-error-msg">Nomor Surat Tugas wajib diisi</span>
             </div>
             <div class="form-group" data-field="tglST">
-              <label for="tglST">Tanggal Surat Tugas <span class="req-star" title="Wajib diisi">*</span></label>
+              <label for="tglST">Tanggal Surat Tugas <span class="req-star">*</span></label>
               <div class="field-control is-date">
                 <input type="date" id="tglST" onchange="syncTglSPD(); if (typeof updateStSuffixOptions === 'function') { updateStSuffixOptions(); syncNoSTFromInputs(); }">
                 <span class="field-inner-icon" title="Wajib diisi">!</span>
