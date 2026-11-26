@@ -484,7 +484,9 @@ async function handleAuthLogin(e) {
   }
 }
 
-function redirectAfterSignUp({
+async function redirectAfterSignUp({
+  client,
+  session,
   email,
   signupAlertEl,
   signupFieldIds,
@@ -493,6 +495,10 @@ function redirectAfterSignUp({
   loginPasswordId,
   loginAlertId
 }) {
+  // Pastikan tidak ada sesi aktif setelah pendaftaran: selalu arahkan ke halaman login dulu
+  if (session && client && client.auth && typeof client.auth.signOut === 'function') {
+    await client.auth.signOut();
+  }
   const safeEmail = (typeof escapeAttrSafe === 'function') ? escapeAttrSafe(email) : email;
   const requireEmailVerify = window.PERDINKU_REQUIRE_EMAIL_VERIFICATION === true;
 
@@ -612,30 +618,17 @@ async function handleAuthSignUp(e) {
       return;
     }
 
-    // Jika Supabase auto-confirm session:
-    if (data.session && data.user) {
-      showAuthAlert(alertEl, 'success', 'Pendaftaran berhasil! Akun Anda telah aktif.');
-      await loadUserProfile(data.user);
-      setTimeout(() => {
-        closeAuthModal();
-        unlockAuthGate();
-        renderAuthWidget();
-        applyRolePermissions();
-        if (typeof showRefreshToast === 'function') {
-          showRefreshToast('Pendaftaran Berhasil', `Akun Anda (${currentAuthUser.role.toUpperCase()}) telah aktif.`);
-        }
-      }, 1000);
-    } else {
-      redirectAfterSignUp({
-        email,
-        signupAlertEl: alertEl,
-        signupFieldIds: ['authSignupName', 'authSignupEmail', 'authSignupPassword'],
-        switchTabFn: switchAuthTab,
-        loginEmailId: 'authLoginEmail',
-        loginPasswordId: 'authLoginPassword',
-        loginAlertId: 'authLoginAlert'
-      });
-    }
+    await redirectAfterSignUp({
+      client,
+      session: data?.session,
+      email,
+      signupAlertEl: alertEl,
+      signupFieldIds: ['authSignupName', 'authSignupEmail', 'authSignupPassword'],
+      switchTabFn: switchAuthTab,
+      loginEmailId: 'authLoginEmail',
+      loginPasswordId: 'authLoginPassword',
+      loginAlertId: 'authLoginAlert'
+    });
   } catch (err) {
     console.error('Sign up error:', err);
     showAuthAlert(alertEl, 'error', err.message || 'Gagal mendaftar akun.');
@@ -860,28 +853,17 @@ async function handleGateSignUp(e) {
       return;
     }
 
-    if (data.session && data.user) {
-      showAuthAlert(alertEl, 'success', 'Pendaftaran berhasil! Akun Anda telah siap.');
-      await loadUserProfile(data.user);
-      setTimeout(() => {
-        unlockAuthGate();
-        renderAuthWidget();
-        applyRolePermissions();
-        if (typeof showRefreshToast === 'function') {
-          showRefreshToast('Pendaftaran Berhasil', `Selamat datang, ${currentAuthUser.nama} [${currentAuthUser.role.toUpperCase()}].`);
-        }
-      }, 900);
-    } else {
-      redirectAfterSignUp({
-        email,
-        signupAlertEl: alertEl,
-        signupFieldIds: ['gateSignupName', 'gateSignupEmail', 'gateSignupPassword'],
-        switchTabFn: switchGateTab,
-        loginEmailId: 'gateLoginEmail',
-        loginPasswordId: 'gateLoginPassword',
-        loginAlertId: 'gateLoginAlert'
-      });
-    }
+    await redirectAfterSignUp({
+      client,
+      session: data?.session,
+      email,
+      signupAlertEl: alertEl,
+      signupFieldIds: ['gateSignupName', 'gateSignupEmail', 'gateSignupPassword'],
+      switchTabFn: switchGateTab,
+      loginEmailId: 'gateLoginEmail',
+      loginPasswordId: 'gateLoginPassword',
+      loginAlertId: 'gateLoginAlert'
+    });
   } catch (err) {
     console.error('Sign up error:', err);
     showAuthAlert(alertEl, 'error', err.message || 'Gagal mendaftar akun.');

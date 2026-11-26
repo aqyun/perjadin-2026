@@ -230,7 +230,8 @@
           }
           return { data: { user: null, session: null }, error: errOut(e) };
         }
-        // Jangan auto-login setelah pendaftaran: kembalikan session null agar diarahkan ke halaman login dulu
+        // Jangan auto-login setelah pendaftaran: bersihkan sesi dan arahkan ke halaman login dulu
+        pb.authStore.clear();
         return { data: { user: userOut(rec), session: null }, error: null };
       },
       async resendVerificationEmail(email) {
