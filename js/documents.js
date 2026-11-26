@@ -1040,8 +1040,8 @@ function renderRekapSPT() {
 
       <table class="rekap-spt-table">
         <colgroup>
-          <col style="width:4%"><col style="width:7%"><col style="width:39%">
-          <col style="width:10%"><col style="width:17%"><col style="width:10%"><col style="width:13%">
+          <col style="width:4%"><col style="width:7%"><col style="width:35%">
+          <col style="width:9%"><col style="width:13%"><col style="width:15%"><col style="width:17%">
         </colgroup>
         <thead>
           <tr>
@@ -1056,8 +1056,8 @@ function renderRekapSPT() {
         <tbody>
           ${selectedEmps.map((emp, index) => `
             <tr>
-              <td class="rekap-spt-center">${index + 1}</td>
-              <td class="rekap-spt-center">${mak}</td>
+              <td class="rekap-spt-center rekap-spt-nowrap">${index + 1}</td>
+              <td class="rekap-spt-center rekap-spt-nowrap">${mak}</td>
               <td class="rekap-spt-emp-cell">
                 <div class="rekap-spt-emp-box">
                   <div class="rekap-spt-emp-nama">${emp.nama}</div>
@@ -1066,8 +1066,8 @@ function renderRekapSPT() {
               </td>
               <td>Perjalanan Dinas ke</td>
               <td class="rekap-spt-center">${kotaTujuan}</td>
-              <td class="rekap-spt-center">${tanggalSPT}</td>
-              <td class="rekap-spt-center">${nomorSPT}</td>
+              <td class="rekap-spt-center rekap-spt-nowrap">${tanggalSPT}</td>
+              <td class="rekap-spt-center rekap-spt-nowrap">${nomorSPT}</td>
             </tr>
           `).join('')}
         </tbody>

@@ -4503,7 +4503,7 @@ html[data-theme="dark"] .st-suffix-dropdown-wrap::after {
   border: 1px solid #222;
   padding: 7px 5px;
   vertical-align: middle;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 .rekap-spt-table th {
@@ -4520,23 +4520,23 @@ html[data-theme="dark"] .st-suffix-dropdown-wrap::after {
 }
 
 .rekap-spt-table col:nth-child(3) {
-  width: 39%;
+  width: 35%;
 }
 
 .rekap-spt-table col:nth-child(4) {
-  width: 10%;
+  width: 9%;
 }
 
 .rekap-spt-table col:nth-child(5) {
-  width: 17%;
+  width: 13%;
 }
 
 .rekap-spt-table col:nth-child(6) {
-  width: 10%;
+  width: 15%;
 }
 
 .rekap-spt-table col:nth-child(7) {
-  width: 13%;
+  width: 17%;
 }
 
 .rekap-spt-table td span {
@@ -4580,6 +4580,13 @@ html[data-theme="dark"] .st-suffix-dropdown-wrap::after {
 
 .rekap-spt-center {
   text-align: center;
+}
+
+.rekap-spt-nowrap {
+  white-space: nowrap;
+  overflow-wrap: normal !important;
+  padding-left: 3px !important;
+  padding-right: 3px !important;
 }
 
 .rekap-spt-signature {
@@ -7876,6 +7883,12 @@ MODE GELAP — layar saja; kertas dokumen & cetak tetap putih
   body.print-rekap-spt .rekap-spt-table td {
     padding: 6px 4px !important;
     font-size: 12px !important;
+  }
+  body.print-rekap-spt .rekap-spt-table td.rekap-spt-nowrap {
+    white-space: nowrap !important;
+    overflow-wrap: normal !important;
+    padding-left: 3px !important;
+    padding-right: 3px !important;
   }
   body.print-rekap-spt .rekap-spt-table td.rekap-spt-emp-cell {
     padding: 0 !important;
