@@ -171,6 +171,7 @@ function onViewerSbmProvChange(provId, cityIdOrObj = null) {
 
   const isDki = sbm.provinsi === 'DKI JAKARTA';
   const isKepSeribu = cityObj && (cityObj.id === 'kep_seribu' || /seribu/i.test(cityObj.nama));
+  const isDkiNoUh = isDki && !isKepSeribu;
   const isBodetabek = cityObj && cityObj.isBodetabek;
   const formatRp = typeof rp === 'function' ? rp : (n) => 'Rp ' + Number(n || 0).toLocaleString('id-ID');
 
@@ -182,9 +183,9 @@ function onViewerSbmProvChange(provId, cityIdOrObj = null) {
     if (isKepSeribu) {
       elUh.textContent = formatRp(210000);
       if (elUhUnit) elUhUnit.textContent = '/ Orang / Hari (Kep. Seribu PMK Hal 15)';
-    } else if (isDki) {
-      elUh.textContent = `${formatRp(0)} (dalam kota)`;
-      if (elUhUnit) elUhUnit.textContent = 'Dinas biasa (Rp 210.000 jika >8 jam)';
+    } else if (isDkiNoUh) {
+      elUh.textContent = `${formatRp(0)} (tidak dibayarkan)`;
+      if (elUhUnit) elUhUnit.textContent = 'Dalam kota: Tanpa Uang Harian (Flat Rp 170.000)';
     } else {
       elUh.textContent = formatRp(sbm.uh || 0);
       if (elUhUnit) elUhUnit.textContent = '/ Orang / Hari (OH) Penuh 100%';
@@ -194,13 +195,13 @@ function onViewerSbmProvChange(provId, cityIdOrObj = null) {
   // 2. Uang Harian Diklat
   const elDiklat = document.getElementById('vsbm_diklat');
   if (elDiklat) {
-    elDiklat.textContent = formatRp(sbm.diklat || 110000);
+    elDiklat.textContent = isDkiNoUh ? `${formatRp(0)} (tidak dibayarkan)` : formatRp(sbm.diklat || 110000);
   }
 
   // 3. Uang Harian Fullboard
   const elFullboard = document.getElementById('vsbm_fullboard');
   if (elFullboard) {
-    elFullboard.textContent = formatRp(sbm.fullboard || 130000);
+    elFullboard.textContent = isDkiNoUh ? `${formatRp(0)} (tidak dibayarkan)` : formatRp(sbm.fullboard || 130000);
   }
 
   // 4. Makan Rapat SBM
@@ -218,13 +219,13 @@ function onViewerSbmProvChange(provId, cityIdOrObj = null) {
   // 6. Penginapan Gol IV
   const elH4 = document.getElementById('vsbm_h4');
   if (elH4) {
-    elH4.textContent = formatRp(sbm.h4 || 0);
+    elH4.textContent = isDkiNoUh ? `${formatRp(0)} (dalam kota)` : formatRp(sbm.h4 || 0);
   }
 
   // 7. Penginapan Gol III
   const elH3 = document.getElementById('vsbm_h3');
   if (elH3) {
-    elH3.textContent = formatRp(sbm.h3 || 0);
+    elH3.textContent = isDkiNoUh ? `${formatRp(0)} (dalam kota)` : formatRp(sbm.h3 || 0);
   }
 
   // 8. DPR Jakarta PP / Transport Darat
@@ -242,7 +243,7 @@ function onViewerSbmProvChange(provId, cityIdOrObj = null) {
   // 9. Taxi Lokal
   const elTaxi = document.getElementById('vsbm_taxi');
   if (elTaxi) {
-    elTaxi.textContent = sbm.taxi ? formatRp(sbm.taxi) : '-';
+    elTaxi.textContent = isDkiNoUh ? '- (dalam kota)' : (sbm.taxi ? formatRp(sbm.taxi) : '-');
   }
 
   // 10. DPR dibayarkan
@@ -284,8 +285,8 @@ function onViewerSbmProvChange(provId, cityIdOrObj = null) {
       noticeBox.innerHTML = `
         <div class="sbm-notice-card notice-dki">
           <div class="notice-badge">🏛️ KETENTUAN PERJALANAN DALAM KOTA DKI JAKARTA (PMK HAL 69)</div>
-          <strong class="notice-headline">Uang Harian Rp 0 (Biasa) | DPR Lokal Dibayarkan Rp 170.000</strong>
-          <p class="notice-desc">Sesuai ketentuan, perjalanan dinas dalam kota tidak diberikan uang harian (diberikan Rp 210.000 jika surat tugas menyatakan penugasan melebihi 8 jam). Uang transport lokal (DPR) dibayarkan sebesar <strong>Rp 170.000 / hari</strong>.</p>
+          <strong class="notice-headline">Uang Harian Rp 0 | Hotel Rp 0 | DPR Lokal Flat Rp 170.000</strong>
+          <p class="notice-desc">Sesuai ketentuan, penugasan di wilayah DKI Jakarta tidak diberikan uang harian (biasa/diklat/fullboard) dan tanpa penginapan/hotel. Flat dibayarkan uang transport lokal (DPR) sebesar <strong>Rp 170.000</strong>.</p>
         </div>
       `;
     } else {

@@ -606,7 +606,11 @@ function computeSimulasiData() {
   let effectivePct = 1;
   let uhLabel = 'Uang Harian';
 
-  if (jenis === 'diklat') {
+  if (isDkiLocal) {
+    uhRate = 0;
+    effectivePct = 0;
+    uhLabel = 'Uang Harian DKI (Tanpa Uang Harian)';
+  } else if (jenis === 'diklat') {
     uhRate = sbm.diklat || 110000;
     effectivePct = 1;
     uhLabel = 'Uang Harian Diklat';
@@ -614,10 +618,6 @@ function computeSimulasiData() {
     uhRate = sbm.fullboard || 130000;
     effectivePct = 1;
     uhLabel = 'Uang Harian Fullboard';
-  } else if (isDkiLocal) {
-    uhRate = 210000;
-    effectivePct = uhPercent;
-    uhLabel = effectivePct === 0.6 ? 'Uang Harian DKI (60% Kendaraan Dinas)' : 'Uang Harian DKI (> 8 Jam)';
   } else if (isKepSeribu) {
     uhRate = 210000;
     effectivePct = uhPercent;
@@ -1210,7 +1210,7 @@ function renderSimulasiResult(data) {
       { k: 'Hotel Gol. IV', v: data.isDkiLocal ? 'Rp 0 (DKI)' : formatRp(data.sbm.h4 || 0) },
       { k: 'Tiket Antarkota PP', v: (data.sbm.tiket && data.sbm.tiket > 0) ? formatRp(data.sbm.tiket) : (data.isKepSeribu ? 'Rp 772.000 (Laut)' : (data.isDkiLocal ? 'Rp 170.000 (DPR)' : 'Jalur Darat')) },
       { k: 'Taksi / Bandara PP', v: (data.isDkiLocal || data.isKepSeribu || data.isBodetabek) ? 'Termasuk Flat' : formatRp((data.sbm.jktPP || 0) + (data.sbm.taxi || 0)) },
-      { k: 'Diklat / Pelatihan', v: data.isDkiLocal ? 'Rp 170.000 (Flat)' : formatRp(data.sbm.diklat || 0) }
+      { k: 'Diklat / Pelatihan', v: data.isDkiLocal ? 'Rp 0 (Tanpa UH)' : formatRp(data.sbm.diklat || 0) }
     ];
     refGrid.innerHTML = refItems.map(it => `
       <div class="sim-ref-item">

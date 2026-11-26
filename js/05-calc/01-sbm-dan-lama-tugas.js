@@ -246,9 +246,18 @@ function changeProvince() {
   const elDpr = document.getElementById('dprManual');
   if (elDpr) elDpr.value = '';
   const isDki = sbm && sbm.provinsi === 'DKI JAKARTA';
+  const isKepSeribu = typeof isKepulauanSeribuTarget === 'function' ? isKepulauanSeribuTarget(sbm) : false;
+  const isDkiNoUh = isDki && !isKepSeribu;
   const cbDPR = document.getElementById('cbDPR');
   if (cbDPR) cbDPR.checked = isDki;
   dprAutoCheckedForDki = isDki;
+  if (isDkiNoUh) {
+    const cbHotel = document.getElementById('cbHotel');
+    if (cbHotel && cbHotel.checked) {
+      cbHotel.checked = false;
+      if (typeof toggleHotelFields === 'function') toggleHotelFields();
+    }
+  }
   const noteJkt = document.getElementById('noteJakartaDPR');
   if (noteJkt) noteJkt.style.display = isDki ? 'block' : 'none';
   updateDPRInput();
@@ -1165,7 +1174,9 @@ function updateSBMPreview() {
 
   const elUH = document.getElementById('sbm_uh');
   if (elUH) {
-    if (!isUHActive) {
+    if (isDkiNoUh) {
+      elUH.textContent = `${rp(0)} (tidak dibayarkan)`;
+    } else if (!isUHActive) {
       elUH.textContent = `${rp(0)} (tidak dipilih)`;
     } else if (multi) {
       const p1 = getProvShortName(multi.sbm1.provinsi);
@@ -1174,13 +1185,13 @@ function updateSBMPreview() {
     } else if (isKepSeribu) {
       elUH.textContent = rp(210000);
     } else {
-      elUH.textContent = isDkiNoUh ? `${rp(0)} (tidak dibayarkan)` : rp(sbm.uh);
+      elUH.textContent = rp(sbm.uh);
     }
   }
   const elDiklat = document.getElementById('sbm_diklat');
-  if (elDiklat) elDiklat.textContent = !isUHActive ? `${rp(0)} (tidak dipilih)` : (isDkiNoUh ? `${rp(0)} (tidak dibayarkan)` : rp(sbm.diklat || 110000));
+  if (elDiklat) elDiklat.textContent = isDkiNoUh ? `${rp(0)} (tidak dibayarkan)` : (!isUHActive ? `${rp(0)} (tidak dipilih)` : rp(sbm.diklat || 110000));
   const elFullboard = document.getElementById('sbm_fullboard');
-  if (elFullboard) elFullboard.textContent = !isUHActive ? `${rp(0)} (tidak dipilih)` : (isDkiNoUh ? `${rp(0)} (tidak dibayarkan)` : rp(sbm.fullboard || 130000));
+  if (elFullboard) elFullboard.textContent = isDkiNoUh ? `${rp(0)} (tidak dibayarkan)` : (!isUHActive ? `${rp(0)} (tidak dipilih)` : rp(sbm.fullboard || 130000));
   const isManualMakan = !!document.getElementById('cbTarifMakanManual')?.checked;
   const wrapDetail = document.getElementById('manualMealDetailWrap');
   const isDetailOpen = wrapDetail && wrapDetail.style.display !== 'none';
@@ -1204,8 +1215,10 @@ function updateSBMPreview() {
   }
   const elSnack = document.getElementById('sbm_snack');
   if (elSnack) elSnack.textContent = rp(sbm.snack || 0);
-  document.getElementById('sbm_h4').textContent = rp(sbm.h4);
-  document.getElementById('sbm_h3').textContent = rp(sbm.h3);
+  const elH4 = document.getElementById('sbm_h4');
+  if (elH4) elH4.textContent = isDkiNoUh ? `${rp(0)} (tidak ada/dalam kota)` : rp(sbm.h4);
+  const elH3 = document.getElementById('sbm_h3');
+  if (elH3) elH3.textContent = isDkiNoUh ? `${rp(0)} (tidak ada/dalam kota)` : rp(sbm.h3);
 
   if (sbm.isSekitarJakarta && sbm.sekitarJakarta) {
     document.getElementById('sbm_jkt').textContent = `${rp(sbm.jktPP)} (PP)`;
@@ -1213,7 +1226,7 @@ function updateSBMPreview() {
     document.getElementById('sbm_dpr').textContent = `${rp(sbm.dpr)} (PP: ${rp(sbm.dprOneWay)} x 2)`;
   } else {
     document.getElementById('sbm_jkt').textContent = sbm.jktPP ? rp(sbm.jktPP) : '(tidak ada/dalam kota)';
-    document.getElementById('sbm_taxi').textContent = sbm.taxi ? rp(sbm.taxi) : '-';
+    document.getElementById('sbm_taxi').textContent = isDkiNoUh ? '- (dalam kota)' : (sbm.taxi ? rp(sbm.taxi) : '-');
     document.getElementById('sbm_dpr').textContent = isDkiJakarta ? `${rp(170000)} (otomatis)` : '- (hanya DKI Jakarta)';
   }
   document.getElementById('sbm_tiket').textContent = sbm.tiket ? rp(sbm.tiket) : '(tidak ada tiket pesawat)';

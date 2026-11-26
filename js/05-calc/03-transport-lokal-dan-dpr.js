@@ -504,7 +504,11 @@ function hitungBiaya(emp) {
   let uhTitle = '';
   let effectivePercent = 1;
 
-  if (jenisKeg === 'diklat') {
+  if (isDkiNoUh) {
+    uhBaseRate = 0;
+    uhTitle = 'Uang Harian DKI (Tidak Dibayarkan)';
+    effectivePercent = 0;
+  } else if (jenisKeg === 'diklat') {
     uhBaseRate = sbm.diklat || 110000;
     uhTitle = 'Uang Harian Diklat';
     effectivePercent = 1;
@@ -531,18 +535,21 @@ function hitungBiaya(emp) {
     days1 = multiProv.days1;
     days2 = multiProv.days2;
 
+    const isDki1 = sbm1 && sbm1.provinsi === 'DKI JAKARTA' && !(typeof isKepulauanSeribuTarget === 'function' ? isKepulauanSeribuTarget(sbm1) : false);
+    const isDki2 = sbm2 && sbm2.provinsi === 'DKI JAKARTA' && !(typeof isKepulauanSeribuTarget === 'function' ? isKepulauanSeribuTarget(sbm2) : false);
+
     if (jenisKeg === 'diklat') {
-      uhRate1 = sbm1.diklat || 110000;
-      uhRate2 = sbm2.diklat || 110000;
+      uhRate1 = isDki1 ? 0 : (sbm1.diklat || 110000);
+      uhRate2 = isDki2 ? 0 : (sbm2.diklat || 110000);
     } else if (jenisKeg === 'fullboard') {
-      uhRate1 = sbm1.fullboard || 130000;
-      uhRate2 = sbm2.fullboard || 130000;
+      uhRate1 = isDki1 ? 0 : (sbm1.fullboard || 130000);
+      uhRate2 = isDki2 ? 0 : (sbm2.fullboard || 130000);
     } else {
-      uhRate1 = sbm1.uh || 0;
-      uhRate2 = sbm2.uh || 0;
+      uhRate1 = isDki1 ? 0 : (sbm1.uh || 0);
+      uhRate2 = isDki2 ? 0 : (sbm2.uh || 0);
     }
-    uhGross1 = cbUH ? Math.round(uhRate1 * days1 * effectivePercent) : 0;
-    uhGross2 = cbUH ? Math.round(uhRate2 * days2 * effectivePercent) : 0;
+    uhGross1 = (cbUH && !isDki1) ? Math.round(uhRate1 * days1 * effectivePercent) : 0;
+    uhGross2 = (cbUH && !isDki2) ? Math.round(uhRate2 * days2 * effectivePercent) : 0;
   }
 
   const uhGross = isMultiProv
@@ -586,7 +593,7 @@ function hitungBiaya(emp) {
   // Hotel
   let hotel = 0;
   const hotelDetails = [];
-  if (cbHotel) {
+  if (cbHotel && !isDkiNoUh) {
     if (cfg.hotelMode === 'manual') {
       const hNights = (cfg.hotelNights > 0) ? cfg.hotelNights : nights;
       const hPrice = cfg.hotelPrice || 0;
