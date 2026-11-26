@@ -1,0 +1,333 @@
+/* ---------- Sidebar (Modern Clean & Aesthetic Gradient Senada Aplikasi) ---------- */
+
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 70;
+  width: 288px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: linear-gradient(176deg, #eaf1fa 0%, #f1f6fc 32%, #f8fafd 68%, #ffffff 100%);
+  color: #1e293b;
+  border-right: 1px solid #dce5f1;
+  box-shadow: 4px 0 24px -10px rgba(12, 26, 44, 0.07);
+  transition: transform 0.28s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.sidebar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(420px 300px at 0% 0%, rgba(31, 111, 242, 0.09), transparent 70%),
+              radial-gradient(360px 240px at 100% 20%, rgba(0, 183, 166, 0.05), transparent 70%);
+}
+
+.sidebar-brand {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 18px 18px;
+  border-bottom: 1px solid #e2eaf4;
+}
+
+.brand-logo-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: transparent;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+.brand-logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 11px;
+  object-fit: contain;
+  display: block;
+}
+
+.brand-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-copy strong {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #0c1a2c;
+  letter-spacing: -.01em;
+  white-space: nowrap;
+}
+
+.brand-copy span {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #66788f;
+  letter-spacing: .02em;
+  margin-top: 2px;
+  white-space: nowrap;
+}
+
+.sidebar-nav {
+  position: relative;
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 14px 16px;
+}
+
+.nav-label {
+  margin: 18px 10px 6px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.nav-label:first-child {
+  margin-top: 4px;
+}
+
+.tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  padding: 8px 10px;
+  margin: 3px 0;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: transparent;
+  color: #24374f;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: left;
+  cursor: pointer;
+  transition: all .18s ease;
+}
+
+.tab-btn:hover {
+  background: rgba(255, 255, 255, 0.85);
+  color: #1f6ff2;
+  border-color: #dce5f1;
+}
+
+.tab-btn .nav-ico {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  background: #ffffff;
+  border: 1px solid #dce5f1;
+  color: #475569;
+  box-shadow: 0 1px 2px rgba(12, 26, 44, 0.04);
+  transition: all .18s ease;
+}
+
+.tab-btn:hover .nav-ico {
+  background: #ffffff;
+  border-color: #bfdbfe;
+  color: #1f6ff2;
+  transform: scale(1.04);
+}
+
+.tab-btn .nav-ico .ico {
+  width: 16px;
+  height: 16px;
+}
+
+.nav-text {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* State Aktif: Soft Royal Blue Capsule Pill (Senada dengan Brand Aplikasi) */
+.tab-btn.active {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+  font-weight: 700;
+  box-shadow: 0 2px 8px -2px rgba(31, 111, 242, 0.18);
+}
+
+.tab-btn.active .nav-ico {
+  background: linear-gradient(135deg, #3b82f6 0%, #1f6ff2 100%);
+  border-color: transparent;
+  color: #ffffff;
+  box-shadow: 0 4px 12px -2px rgba(31, 111, 242, 0.4);
+  transform: none;
+}
+
+.sidebar-foot {
+  position: relative;
+  padding: 14px;
+  border-top: 1px solid #e2eaf4;
+  display: grid;
+  gap: 10px;
+}
+
+.side-note {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 11px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid #dce5f1;
+  backdrop-filter: blur(6px);
+}
+
+.side-note-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.18);
+  flex: none;
+}
+
+.side-note div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.side-note strong {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #0c1a2c;
+}
+
+.side-note span {
+  font-size: 10px;
+  color: #66788f;
+  margin-top: 1px;
+}
+
+.side-credit {
+  font-size: 9.5px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: #93a4ba;
+  text-align: center;
+}
+
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 65;
+  background: rgba(4,12,24,.55);
+  backdrop-filter: blur(3px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .28s ease;
+}
+
+body.sidebar-open .scrim {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* =====================================================================
+   DARK THEME OVERRIDES FOR SIDEBAR (Bila Mode Gelap Diaktifkan)
+   ===================================================================== */
+html[data-theme="dark"] .sidebar {
+  background: linear-gradient(172deg, #0d1527 0%, #111d38 50%, #0a1122 100%);
+  color: #d7e2f2;
+  border-right: 1px solid rgba(140, 170, 220, 0.14);
+  box-shadow: 24px 0 60px -40px rgba(4, 12, 32, 0.95);
+}
+
+html[data-theme="dark"] .sidebar::before {
+  background: radial-gradient(560px 400px at 8% -8%, rgba(94, 140, 255, 0.22), transparent 60%),
+              radial-gradient(460px 380px at 114% 10%, rgba(0, 183, 166, 0.12), transparent 60%),
+              radial-gradient(440px 360px at 106% 98%, rgba(37, 99, 235, 0.15), transparent 60%);
+}
+
+html[data-theme="dark"] .sidebar-brand {
+  border-bottom-color: rgba(140, 170, 220, 0.12);
+}
+
+html[data-theme="dark"] .brand-copy strong {
+  color: #ffffff;
+}
+
+html[data-theme="dark"] .brand-copy span {
+  color: #8fa5c4;
+}
+
+html[data-theme="dark"] .nav-label {
+  color: #5f7492;
+}
+
+html[data-theme="dark"] .tab-btn {
+  color: #a9bcd6;
+}
+
+html[data-theme="dark"] .tab-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  border-color: transparent;
+}
+
+html[data-theme="dark"] .tab-btn .nav-ico {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(140, 170, 220, 0.14);
+  color: #93a9c9;
+  box-shadow: none;
+}
+
+html[data-theme="dark"] .tab-btn:hover .nav-ico {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(140, 170, 220, 0.25);
+  color: #60a5fa;
+  transform: none;
+}
+
+html[data-theme="dark"] .tab-btn.active {
+  background: rgba(37, 99, 235, 0.2);
+  border-color: rgba(96, 165, 250, 0.35);
+  color: #93c5fd;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 8px 20px -8px rgba(37, 99, 235, 0.5);
+}
+
+html[data-theme="dark"] .tab-btn.active .nav-ico {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border-color: transparent;
+  color: #ffffff;
+  box-shadow: 0 4px 12px -2px rgba(37, 99, 235, 0.4);
+}
+
+html[data-theme="dark"] .sidebar-foot {
+  border-top-color: rgba(140, 170, 220, 0.12);
+}
+
+html[data-theme="dark"] .side-note {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(140, 170, 220, 0.14);
+}
+
+html[data-theme="dark"] .side-note strong {
+  color: #e8eef8;
+}
+
+html[data-theme="dark"] .side-note span {
+  color: #8ba1bf;
+}
+
+html[data-theme="dark"] .side-credit {
+  color: #546a88;
+}

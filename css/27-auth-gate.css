@@ -1,0 +1,637 @@
+/* =====================================================================
+   AUTH GATE SCREEN (SPLIT-SCREEN EXECUTIVE LOGIN PORTAL)
+   ===================================================================== */
+body.auth-locked #sidebar,
+body.auth-locked .app-main,
+body.auth-locked .bottom-nav-mobile,
+body.auth-locked .app-footer,
+body.auth-locked #appLoader,
+body.auth-locked #welcomeOverlay {
+  display: none !important;
+}
+
+.auth-gate-screen {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 99998;
+  background: radial-gradient(circle at 10% 20%, #0f1d3a 0%, #080f1e 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  padding: 30px 16px;
+  box-sizing: border-box;
+}
+
+.auth-gate-wrapper {
+  display: flex;
+  width: 100%;
+  max-width: 1060px;
+  min-height: 620px;
+  margin: auto;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 30px 80px -15px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  background: #ffffff;
+  position: relative;
+  z-index: 1;
+}
+
+/* SISI KIRI: BRANDING HERO */
+.auth-gate-hero {
+  flex: 1.15;
+  position: relative;
+  background: linear-gradient(150deg, #091329 0%, #0d1e3d 50%, #070e1d 100%);
+  color: #ffffff;
+  padding: 44px 38px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+}
+
+.gate-hero-decorations {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hero-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.35;
+}
+
+.hero-orb.orb-1 {
+  width: 380px;
+  height: 380px;
+  background: #2563eb;
+  top: -80px;
+  left: -80px;
+}
+
+.hero-orb.orb-2 {
+  width: 320px;
+  height: 320px;
+  background: #0284c7;
+  bottom: -60px;
+  right: -60px;
+}
+
+.hero-grid-pattern {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+  opacity: 0.5;
+}
+
+.gate-hero-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: space-between;
+}
+
+.gov-official-badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #93c5fd;
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(147, 197, 253, 0.25);
+  border-radius: 999px;
+  padding: 5px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  margin-bottom: 22px;
+}
+
+.gov-badge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #38bdf8;
+  box-shadow: 0 0 8px #38bdf8;
+}
+
+.gate-hero-brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.gate-hero-logo-box {
+  width: 58px;
+  height: 58px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+  flex-shrink: 0;
+}
+
+.gate-hero-logo {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+}
+
+.gate-hero-title {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+  line-height: 1.1;
+  margin: 0 0 4px 0;
+}
+
+.title-year {
+  color: #38bdf8;
+  font-weight: 700;
+}
+
+.gate-hero-lead {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #94a3b8;
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
+.gate-hero-sub {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #cbd5e1;
+  margin: 14px 0 22px 0;
+}
+
+.gate-features-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.gate-feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  backdrop-filter: blur(6px);
+  transition: background 0.2s, transform 0.2s;
+}
+
+.gate-feature-item:hover {
+  background: rgba(255, 255, 255, 0.09);
+  transform: translateX(3px);
+}
+
+.feat-icon-box {
+  font-size: 17px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(59, 130, 246, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.feat-icon-box .ico {
+  width: 17px;
+  height: 17px;
+  color: #93c5fd;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
+}
+
+.feat-text-box {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.feat-text-box strong {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.feat-text-box span {
+  font-size: 11px;
+  line-height: 1.45;
+  color: #94a3b8;
+}
+
+.gate-hero-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  color: #94a3b8;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.gate-hero-footer .ico {
+  width: 14px;
+  height: 14px;
+  color: #10b981;
+}
+
+/* SISI KANAN: FORM PANEL */
+.auth-gate-form-panel {
+  flex: 1;
+  padding: 44px 38px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-gate-form-box {
+  width: 100%;
+  max-width: 370px;
+}
+
+.gate-kicker {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: #2563eb;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+.gate-form-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 5px 0;
+  letter-spacing: -0.02em;
+}
+
+.gate-form-sub {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0 0 18px 0;
+  line-height: 1.45;
+}
+
+/* Tab Selector Modern */
+.gate-tab-switcher {
+  display: flex;
+  background: #f1f5f9;
+  border-radius: 10px;
+  padding: 4px;
+  gap: 4px;
+  margin-bottom: 20px;
+}
+
+.gate-tab-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 7px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: center;
+}
+
+.gate-tab-btn.active {
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  font-weight: 700;
+}
+
+/* Modern Form & Inputs */
+.gate-modern-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.gate-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.gate-input-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.gate-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.gate-forgot-link {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #2563eb;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.gate-forgot-link:hover {
+  text-decoration: underline;
+  color: #1d4ed8;
+}
+
+.input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 12px;
+  width: 17px;
+  height: 17px;
+  color: #94a3b8;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+.input-with-icon input {
+  width: 100%;
+  padding: 10px 12px 10px 38px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 9px;
+  font-size: 13.5px;
+  color: #0f172a;
+  background: #ffffff;
+  outline: none;
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
+
+.input-with-icon input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.input-with-icon.has-toggle input {
+  padding-right: 38px;
+}
+
+.btn-toggle-pw {
+  position: absolute;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.btn-toggle-pw:hover {
+  color: #334155;
+}
+
+.btn-toggle-pw.is-visible {
+  color: #2563eb;
+}
+
+.btn-toggle-pw .ico {
+  width: 16px;
+  height: 16px;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Primary CTA Button */
+.btn-gate-primary {
+  width: 100%;
+  padding: 11px 18px;
+  border: none;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+  color: #ffffff;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+  transition: all 0.2s;
+  margin-top: 4px;
+}
+
+.btn-gate-primary:hover {
+  background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45);
+}
+
+.btn-gate-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+}
+
+.btn-gate-primary .ico {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.2s;
+}
+
+.btn-gate-primary:hover .ico {
+  transform: translateX(3px);
+}
+
+/* Role Notice in Signup */
+.gate-role-notice {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 9px;
+  padding: 10px 12px;
+}
+
+.notice-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: #15803d;
+  margin-bottom: 3px;
+}
+
+.gate-role-notice p {
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: #166534;
+  margin: 0;
+}
+
+.gate-pane-desc {
+  font-size: 12.5px;
+  color: #64748b;
+  margin: 0 0 14px 0;
+  line-height: 1.45;
+}
+
+.gate-footer-hint {
+  text-align: center;
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 16px;
+}
+
+.gate-footer-hint a {
+  color: #2563eb;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.gate-footer-hint a:hover {
+  text-decoration: underline;
+}
+
+.gate-copyright-tag {
+  text-align: center;
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 22px;
+}
+
+/* =====================================================================
+   RESPONSIVE & DARK MODE UNTUK AUTH GATE
+   ===================================================================== */
+@media (max-width: 860px) {
+  .auth-gate-wrapper {
+    flex-direction: column;
+    max-width: 460px;
+    min-height: auto;
+    border-radius: 20px;
+  }
+
+  .auth-gate-hero {
+    padding: 28px 24px 20px 24px;
+  }
+
+  .gate-features-list,
+  .gate-hero-sub,
+  .gate-hero-footer {
+    display: none;
+  }
+
+  .auth-gate-form-panel {
+    padding: 28px 24px;
+  }
+}
+
+html[data-theme="dark"] .auth-gate-wrapper {
+  background: #0f172a;
+  border-color: #334155;
+  box-shadow: 0 30px 80px -15px rgba(0, 0, 0, 0.7);
+}
+
+html[data-theme="dark"] .auth-gate-form-panel {
+  background: #0f172a;
+}
+
+html[data-theme="dark"] .gate-form-title {
+  color: #f8fafc;
+}
+
+html[data-theme="dark"] .gate-form-sub {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .gate-tab-switcher {
+  background: #1e293b;
+}
+
+html[data-theme="dark"] .gate-tab-btn {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .gate-tab-btn.active {
+  background: #334155;
+  color: #ffffff;
+}
+
+html[data-theme="dark"] .gate-input-group label {
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .input-with-icon input {
+  background: #1e293b;
+  border-color: #334155;
+  color: #f8fafc;
+}
+
+html[data-theme="dark"] .input-with-icon input:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15);
+}
+
+html[data-theme="dark"] .gate-role-notice {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.25);
+}
+
+html[data-theme="dark"] .gate-role-notice .notice-badge {
+  color: #6ee7b7;
+}
+
+html[data-theme="dark"] .gate-role-notice p {
+  color: #a7f3d0;
+}
+
+html[data-theme="dark"] .gate-footer-hint {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .gate-copyright-tag {
+  color: #64748b;
+}
+
+
+
+
+
+
+

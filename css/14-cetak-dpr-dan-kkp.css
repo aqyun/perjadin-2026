@@ -1,0 +1,503 @@
+/* Daftar Pengeluaran Riil (DPR) per orang */
+
+#tab-dpr {
+  page: dpr;
+}
+
+@page dpr {
+  size: portrait;
+  margin: 10mm 10mm 10mm 10mm;
+}
+
+.dpr-area {
+  max-width: 650px;
+  margin: 0 auto;
+  padding: 10px;
+  background: #fff;
+  color: #111;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.dpr-area * {
+  font-family: Arial, sans-serif;
+}
+
+.dpr-area h2 {
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin: 14px 0 16px;
+}
+
+.dpr-area .lembar-kendali-ministry {
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+}
+
+.dpr-meta {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 14px;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+}
+
+.dpr-meta td {
+  padding: 2px 4px;
+  vertical-align: top;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+}
+
+.dpr-meta td:first-child {
+  width: 80px;
+}
+
+.dpr-meta td:nth-child(2) {
+  width: 14px;
+}
+
+.dpr-text {
+  margin: 0 0 8px;
+  line-height: 1.45;
+  text-align: justify;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+}
+
+.dpr-list {
+  margin: 0;
+  padding-left: 20px;
+  line-height: 1.45;
+  text-align: justify;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+}
+
+.dpr-list>li {
+  margin-bottom: 8px;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+}
+
+.dpr-tbl {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 6px 0 0;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  table-layout: fixed;
+  text-align: left;
+}
+
+.dpr-tbl th, .dpr-tbl td {
+  border: 1px solid #111;
+  padding: 4px 6px;
+  vertical-align: middle;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+}
+
+.dpr-tbl th {
+  text-align: center;
+  font-weight: 700;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+}
+
+.dpr-uraian-title {
+  font-weight: 700;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+}
+
+.dpr-tbl .tc {
+  text-align: center;
+}
+
+.dpr-jumlah {
+  text-align: center;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+}
+
+.dpr-total-label {
+  text-align: right;
+  font-weight: 700;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+}
+
+.dpr-closing {
+  margin: 10px 0 0;
+  line-height: 1.45;
+  text-align: justify;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+}
+
+.dpr-signatures {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin-top: 28px;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+}
+
+.dpr-signatures>div {
+  display: flex;
+  flex-direction: column;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+}
+
+.dpr-sig-space {
+  flex: 1;
+  min-height: 80px;
+}
+
+/* ==========================================================================
+   DPR KKP (Daftar Pengeluaran Riil KKP)
+   ========================================================================== */
+.dpr-kkp-area {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 14px;
+  background: #fff;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #000;
+}
+
+.dpr-kkp-area * {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.dpr-kkp-title {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.35;
+  margin: 15px 0 12px 0;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.dpr-kkp-meta {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 8px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12px;
+}
+
+.dpr-kkp-meta td {
+  padding: 2px 3px;
+  vertical-align: top;
+  border: none;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12px;
+}
+
+.dpr-kkp-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12px;
+}
+
+.dpr-kkp-table th,
+.dpr-kkp-table td {
+  border: 1px solid #000;
+  padding: 4px 5px;
+  vertical-align: middle;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12px;
+}
+
+.dpr-kkp-table th {
+  background: #fff;
+  font-weight: 700;
+  text-align: center;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12px;
+}
+
+.dpr-kkp-table .tc {
+  text-align: center;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12px;
+}
+
+.dpr-kkp-table .tr {
+  text-align: right;
+  white-space: nowrap;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12px;
+}
+
+.dpr-kkp-signatures {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12px;
+}
+
+.dpr-kkp-signatures td {
+  border: none;
+  vertical-align: top;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12px;
+}
+
+@media print {
+  /* 1. Global Reset & Layout Un-offsetting */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 10mm 10mm 10mm 10mm;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    width: 100% !important;
+    overflow: visible !important;
+  }
+
+  /* KUNCI UTAMA: Reset margin-left sidebar (288px) dan padding workspace agar dokumen berada di tengah dan tidak terpotong */
+  .app-main {
+    margin: 0 !important;
+    margin-left: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 0 !important;
+    height: auto !important;
+    display: block !important;
+    float: none !important;
+  }
+
+  .workspace {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 0 !important;
+    height: auto !important;
+    display: block !important;
+    float: none !important;
+  }
+
+  /* 2. Sembunyikan elemen non-cetak (navigasi, sidebar, topbar, modal, dialog, kontrol cetak) */
+  .no-print,
+  .sidebar,
+  .topbar,
+  .scrim,
+  .tabs-nav,
+  .app-header,
+  .btn-row,
+  .welcome-overlay,
+  .pmk-overlay,
+  .modal-backdrop,
+  .toast-container,
+  #tab-riwayat,
+  #tab-input,
+  #tab-pengaturan {
+    display: none !important;
+  }
+
+  .card {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+  }
+
+  /* 3. Manajemen Tab saat Cetak */
+  .tab-content {
+    display: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+  }
+
+  /* Jika pengguna menekan Ctrl+P saat melihat dokumen */
+  .tab-content.active {
+    display: block !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Mode khusus saat tombol cetak ditekan (body berkelas .print-...) */
+  body[class*="print-"] .tab-content {
+    display: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  body.print-nominatif #tab-nominatif.tab-content,
+  body.print-rekap-spt #tab-rekap-spt.tab-content,
+  body.print-rekap-rincian #tab-rekap-rincian.tab-content,
+  body.print-kuitansi #tab-rekap-kuitansi.tab-content,
+  body.print-kuitansi-perorangan #tab-kuitansi-perorangan.tab-content,
+  body.print-rincian #tab-rincian.tab-content,
+  body.print-lembar-kendali #tab-lembar-kendali.tab-content,
+  body.print-sppd #tab-sppd-perorangan.tab-content,
+  body.print-dpr #tab-dpr.tab-content {
+    display: block !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+  }
+
+  /* 4. Standarisasi Kontainer Dokumen Cetak */
+  .nominatif-area,
+  .rekap-spt-area,
+  .rekap-rincian-area,
+  .kuitansi-area,
+  .kuitansi-perorangan-area,
+  .rincian-doc,
+  .lembar-kendali-area,
+  .sppd-area,
+  .dpr-area,
+  .dpr-kkp-area {
+    background: #fff !important;
+    color: #000 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Dokumen tunggal pas 1 halaman: cegah pemisahan di tengah dan rapikan ukuran */
+  .kuitansi-area,
+  .kuitansi-perorangan-area {
+    max-width: 680px !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  .kuitansi-frame {
+    min-height: 0 !important;
+  }
+
+  .sppd-area {
+    max-width: 690px !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .lembar-kendali-area {
+    max-width: 700px !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .dpr-area,
+  .dpr-kkp-area {
+    max-width: 680px !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    font-family: Arial, Helvetica, sans-serif !important;
+    font-size: 12px !important;
+  }
+
+  .dpr-area:not(.page-break),
+  .dpr-kkp-area:not(.page-break) {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Dokumen Multi-Halaman: ijinkan page-break mengalir secara alami */
+  .nominatif-area,
+  .rekap-spt-area,
+  .rekap-rincian-area,
+  .rincian-doc {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+    page-break-after: auto !important;
+    break-after: auto !important;
+    overflow: visible !important;
+  }
+
+  .rincian-doc {
+    max-width: 680px !important;
+  }
+
+  /* Baris tabel & blok tanda tangan agar tidak terbelah di perbatasan halaman */
+  table {
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+
+  tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  thead {
+    display: table-header-group !important;
+  }
+
+  tfoot {
+    display: table-footer-group !important;
+  }
+
+  .sig-row,
+  .sig-box,
+  .rincian-sign-row,
+  .sppd-signature,
+  .lembar-kendali-signatures,
+  .dpr-signatures,
+  .dpr-kkp-signatures {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Pemisah Halaman Tegas (misal Cetak Semua DPR / Dokumen Multi Pegawai) */
+  .page-break,
+  .html2pdf__page-break {
+    page-break-after: always !important;
+    break-after: page !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+  }
+}
+

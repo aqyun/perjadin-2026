@@ -1,0 +1,148 @@
+/* ==========================================================================
+   Input Validation & Required Indicators (Inside Fields)
+   ========================================================================== */
+
+/* Clean label asterisk */
+.req-star {
+  color: #ef4444;
+  font-weight: 800;
+  margin-left: 2px;
+}
+
+/* Field Control Container */
+.field-control {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.field-control input,
+.field-control select,
+.field-control textarea {
+  width: 100%;
+  padding-right: 36px;
+  transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
+}
+
+.field-control.is-date input {
+  padding-right: 64px;
+}
+
+.field-control.is-select select {
+  padding-right: 64px;
+}
+
+.field-control.is-textarea textarea {
+  padding-right: 38px;
+}
+
+/* Inside Indicator */
+.field-inner-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+  pointer-events: none;
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+  color: #dc2626;
+  opacity: 0.85;
+  transition: all .22s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.field-control.is-date .field-inner-icon {
+  right: 38px;
+}
+
+.field-control.is-select .field-inner-icon {
+  right: 38px;
+}
+
+.field-control.is-textarea .field-inner-icon {
+  top: 13px;
+  transform: none;
+}
+
+/* Filled / Valid state - turns into a sleek green check */
+.field-control.is-filled .field-inner-icon {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+.form-group.has-error input,
+.form-group.has-error select,
+.form-group.has-error textarea {
+  border-color: #ef4444 !important;
+  background-color: #fff8f8 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
+}
+
+.form-group.has-error label {
+  color: #b91c1c;
+}
+
+.form-group.has-error .field-inner-icon {
+  opacity: 1;
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.25);
+  animation: pulseExcl .3s ease-out;
+}
+
+@keyframes pulseExcl {
+  0% { transform: translateY(-50%) scale(0.8); }
+  50% { transform: translateY(-50%) scale(1.22); }
+  100% { transform: translateY(-50%) scale(1); }
+}
+
+.field-control.is-textarea.form-group.has-error .field-inner-icon,
+.form-group.has-error .field-control.is-textarea .field-inner-icon {
+  animation: pulseExclTextarea .3s ease-out;
+}
+@keyframes pulseExclTextarea {
+  0% { transform: scale(0.8); }
+  50% { transform: scale(1.22); }
+  100% { transform: scale(1); }
+}
+
+.field-error-msg {
+  display: none;
+  align-items: center;
+  gap: 5px;
+  margin-top: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #dc2626;
+}
+
+.form-group.has-error .field-error-msg {
+  display: inline-flex;
+  animation: errFadeIn .2s ease-out;
+}
+
+.selected-box.has-error {
+  border-color: #ef4444 !important;
+  background-color: #fff8f8 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
+}
+
+.field-error-msg.emp-error-msg.is-visible {
+  display: inline-flex;
+  margin-top: 6px;
+  margin-bottom: 8px;
+  animation: errFadeIn .2s ease-out;
+}
+

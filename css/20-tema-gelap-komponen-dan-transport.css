@@ -1,0 +1,497 @@
+/* Dark mode for emp-spd-block */
+html[data-theme="dark"] .emp-spd-block {
+  background: #101c31;
+  border-color: #223752;
+}
+
+html[data-theme="dark"] .emp-spd-row {
+  background: var(--surface-2);
+  border-color: #26395a;
+}
+
+html[data-theme="dark"] .emp-spd-name {
+  color: #dbe7f7;
+}
+
+html[data-theme="dark"] .emp-spd-sub {
+  color: #7489a8;
+}
+
+html[data-theme="dark"] .emp-spd-input-wrap label {
+  color: #9db1cf;
+}
+
+html[data-theme="dark"] .emp-spd-input {
+  background: var(--surface);
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+
+html[data-theme="dark"] .emp-spd-input:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+}
+
+html[data-theme="dark"] .emp-spd-input.has-error {
+  border-color: #f87171 !important;
+  background-color: rgba(239, 68, 68, 0.12) !important;
+}
+
+/* Dark mode for Manual Meal UI */
+html[data-theme="dark"] .manual-meal-mode-toggle {
+  background: #14213d;
+  border-color: #2a3e5c;
+}
+
+html[data-theme="dark"] .meal-mode-btn {
+  color: #9db1cf;
+}
+
+html[data-theme="dark"] .meal-mode-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+html[data-theme="dark"] .meal-mode-btn.is-active {
+  background: #3b82f6;
+  color: #fff;
+}
+
+html[data-theme="dark"] .manual-meal-detail-wrap {
+  background: #0f172a;
+  border-color: #1e293b;
+}
+
+html[data-theme="dark"] .manual-meal-table-container {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .manual-meal-table thead th {
+  background: #14213d;
+  color: #94a3b8;
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .manual-meal-table tbody tr {
+  border-color: #243447;
+}
+
+html[data-theme="dark"] .manual-meal-table tbody tr:hover {
+  background: #243447;
+}
+
+html[data-theme="dark"] .manual-meal-table select,
+html[data-theme="dark"] .manual-meal-table input {
+  background: #0f172a;
+  border-color: #334155;
+  color: #f1f5f9;
+}
+
+html[data-theme="dark"] .manual-meal-btn-del {
+  border-color: #334155;
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .manual-meal-btn-del:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  border-color: #ef4444;
+}
+
+html[data-theme="dark"] .manual-meal-summary {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: #3b82f6;
+  color: #93c5fd;
+}
+
+
+/* =====================================================================
+   TRANSPORT LOKAL / DPR PERORANGAN & BIAYA NOTICE
+   ===================================================================== */
+.transport-rincian-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(37, 99, 235, 0.06);
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  border-radius: 10px;
+  margin: 10px 0 14px 0;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: #1e3a8a;
+}
+
+.transport-rincian-notice .notice-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.transport-rincian-notice .notice-content {
+  flex: 1;
+}
+
+.rincian-transport-card {
+  margin-top: 18px;
+  padding: 16px;
+  background: rgba(248, 250, 252, 0.95);
+  border: 1px solid rgba(226, 232, 240, 1);
+  border-radius: 12px;
+}
+
+.rincian-transport-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.rincian-transport-titles {
+  flex: 1 1 280px;
+}
+
+.rincian-transport-title {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--text-heading, #1e293b);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 4px 0;
+}
+
+.rincian-transport-title .ico {
+  width: 17px;
+  height: 17px;
+  color: var(--primary, #2563eb);
+}
+
+.rincian-transport-sub {
+  font-size: 0.82rem;
+  color: var(--text-muted, #64748b);
+  margin: 0;
+}
+
+.rincian-transport-quick-btns {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.quick-btn-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted, #64748b);
+  margin-right: 2px;
+}
+
+.btn-quick-transport {
+  height: 28px;
+  padding: 0 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+  border-radius: 999px;
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  background: rgba(37, 99, 235, 0.07);
+  color: #1d4ed8;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-quick-transport:hover {
+  background: var(--brand-600, #2563eb);
+  color: #ffffff !important;
+  border-color: var(--brand-600, #2563eb);
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+}
+
+.emp-trans-empty {
+  padding: 16px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-muted, #64748b);
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px dashed rgba(203, 213, 225, 0.9);
+  border-radius: 9px;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.emp-trans-row {
+  display: grid;
+  grid-template-columns: 140px 1.2fr 1.4fr 1.4fr 1.1fr auto;
+  gap: 10px;
+  align-items: flex-end;
+  padding: 10px 12px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.emp-trans-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.emp-trans-label {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text-muted, #64748b);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.emp-trans-row input,
+.emp-trans-row select {
+  width: 100%;
+  height: 42px;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--line, #cbd5e1);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-main, #0f172a);
+  background: var(--surface-0, #ffffff);
+  box-sizing: border-box;
+}
+
+.emp-trans-row input:focus,
+.emp-trans-row select:focus {
+  border-color: var(--primary, #2563eb);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.emp-trans-del-btn {
+  height: 42px !important;
+  min-height: 42px !important;
+  padding: 0 14px;
+  font-weight: 600;
+  font-size: 12.5px;
+  border-radius: 8px;
+}
+
+.rincian-transport-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.rincian-transport-summary {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--primary, #2563eb);
+}
+
+/* Dark mode adjustments */
+html[data-theme="dark"] .transport-rincian-notice {
+  background: rgba(30, 58, 138, 0.22);
+  border-color: rgba(96, 165, 250, 0.25);
+  color: #bfdbfe;
+}
+
+html[data-theme="dark"] .rincian-transport-card {
+  background: rgba(30, 41, 59, 0.65);
+  border-color: rgba(51, 65, 85, 0.8);
+}
+
+html[data-theme="dark"] .rincian-transport-title {
+  color: #f1f5f9;
+}
+
+html[data-theme="dark"] .rincian-transport-sub,
+html[data-theme="dark"] .quick-btn-label {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .btn-quick-transport {
+  background: rgba(59, 130, 246, 0.16);
+  border-color: rgba(96, 165, 250, 0.35);
+  color: #93c5fd;
+}
+
+html[data-theme="dark"] .btn-quick-transport:hover {
+  background: #3b82f6;
+  color: #ffffff !important;
+  border-color: #3b82f6;
+}
+
+html[data-theme="dark"] .emp-trans-empty {
+  background: rgba(15, 23, 42, 0.4);
+  border-color: rgba(51, 65, 85, 0.6);
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .emp-trans-row {
+  background: rgba(15, 23, 42, 0.65);
+  border-color: rgba(51, 65, 85, 0.8);
+  box-shadow: none;
+}
+
+html[data-theme="dark"] .emp-trans-label {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .emp-trans-row input,
+html[data-theme="dark"] .emp-trans-row select {
+  background: rgba(15, 23, 42, 0.9);
+  border-color: rgba(51, 65, 85, 0.9);
+  color: #f8fafc;
+}
+
+html[data-theme="dark"] .emp-trans-row input:focus,
+html[data-theme="dark"] .emp-trans-row select:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+}
+
+html[data-theme="dark"] .rincian-transport-summary {
+  color: #60a5fa;
+}
+
+@media (max-width: 768px) {
+  .emp-trans-row {
+    grid-template-columns: 1fr 1fr;
+  }
+  .emp-trans-col:nth-child(6) {
+    grid-column: span 2;
+  }
+  .emp-trans-del-btn {
+    width: 100%;
+  }
+}
+
+.transport-toolbar-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+
+.transport-color-picker-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.trans-toolbar-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.trans-color-presets {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.trans-color-swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.trans-color-swatch:hover {
+  transform: scale(1.15);
+}
+
+.trans-color-swatch.active {
+  border-color: #2563eb;
+  transform: scale(1.1);
+}
+
+.trans-color-custom-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 7px;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #475569;
+  cursor: pointer;
+}
+
+.trans-color-custom-btn input[type="color"] {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+html[data-theme="dark"] .transport-toolbar-row {
+  background: #131f33;
+  border-color: #26395a;
+}
+
+html[data-theme="dark"] .trans-toolbar-label {
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .trans-color-custom-btn {
+  background: #1e293b;
+  border-color: #334155;
+  color: #cbd5e1;
+}
+
+.rincian-tbl tr.rincian-date-group-row td {
+  padding: 4px 6px;
+  font-weight: 700;
+  color: #000;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.dpr-tbl tr.dpr-date-group-row td {
+  padding: 4px 6px;
+  font-weight: 700;
+  color: #000;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.date-color-picker {
+  display: inline-block;
+  vertical-align: middle;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  margin-left: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  border-radius: 3px;
+  cursor: pointer;
+  background: transparent;
+}
+

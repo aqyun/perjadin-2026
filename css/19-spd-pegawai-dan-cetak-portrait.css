@@ -1,0 +1,299 @@
+/* ---------- Nomor SPD per pegawai (Wajib) ---------- */
+
+.emp-spd-block {
+  margin-top: 14px;
+  padding: 11px;
+  border: 1px solid #e4edf9;
+  border-radius: 14px;
+  background: #fbfdff;
+}
+
+.emp-spd-block .selected-head {
+  margin: 0 0 9px;
+}
+
+.emp-spd-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.emp-spd-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 8px 12px;
+  border: 1px solid #e9f1fb;
+  border-radius: 11px;
+  background: #fff;
+}
+
+.emp-spd-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+  flex: 1;
+}
+
+.emp-spd-name {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #28405f;
+}
+
+.emp-spd-sub {
+  font-size: 10px;
+  color: #8b9cb3;
+}
+
+.emp-spd-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1.5;
+  min-width: 230px;
+}
+
+.emp-spd-input-wrap label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #556987;
+  white-space: nowrap;
+}
+
+.emp-spd-input {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid #d7e3f2;
+  border-radius: 8px;
+  font-size: 11.5px;
+  color: #28405f;
+  background: #fff;
+  transition: border-color .15s, box-shadow .15s;
+}
+
+.emp-spd-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.emp-spd-input.has-error {
+  border-color: #ef4444 !important;
+  background-color: #fef2f2 !important;
+}
+
+.spd-missing-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-weight: 700;
+  font-size: 11px;
+  border: 1px solid #fecaca;
+}
+
+/* Print optimizations for Portrait Nominatif & Rekap SPT */
+@media print {
+  body.print-nominatif .nominatif-area,
+  body.print-nominatif .nominatif-area * {
+    color: #000 !important;
+  }
+  /* Judul: 16px */
+  body.print-nominatif .nominatif-area .doc-title h2 {
+    font-size: 16px !important;
+    color: #000 !important;
+  }
+  /* Selain isi tabel dan judul: 12px */
+  body.print-nominatif .nominatif-area .meta-tbl td,
+  body.print-nominatif .nominatif-terbilang,
+  body.print-nominatif .nominatif-terbilang *,
+  body.print-nominatif .nominatif-area .rekap-rincian-date-note,
+  body.print-nominatif .nominatif-area .sig-row,
+  body.print-nominatif .nominatif-area .sig-box,
+  body.print-nominatif .nominatif-area .sig-box div,
+  body.print-nominatif .nominatif-area .sig-nip {
+    font-size: 12px !important;
+    color: #000 !important;
+  }
+  body.print-nominatif .nominatif-area .meta-tbl {
+    margin: 0 0 20px !important;
+    border-collapse: collapse !important;
+  }
+  body.print-nominatif .nominatif-area .meta-tbl td {
+    padding: 2px 3px !important;
+    font-size: 12px !important;
+    color: #000 !important;
+  }
+  body.print-nominatif .nominatif-area .meta-tbl td:first-child {
+    width: 260px !important;
+  }
+  body.print-nominatif .nominatif-area .meta-tbl td:nth-child(2) {
+    width: 14px !important;
+    text-align: center !important;
+  }
+  /* Isi yang dalam tabel: 11px */
+  body.print-nominatif .nominatif-table {
+    font-size: 11px !important;
+    color: #000 !important;
+  }
+  body.print-nominatif .nominatif-table th,
+  body.print-nominatif .nominatif-table td {
+    padding: 5px 3px !important;
+    font-size: 11px !important;
+    color: #000 !important;
+    border: 1px solid #000 !important;
+  }
+  body.print-nominatif .nominatif-table td * {
+    border: none !important;
+    font-size: 11px !important;
+  }
+  body.print-nominatif .nominatif-table td.nominatif-nip {
+    padding: 5px 2px !important;
+    white-space: nowrap !important;
+    letter-spacing: -0.25px !important;
+    font-size: 11px !important;
+    text-align: center !important;
+  }
+  body.print-nominatif .nominatif-table td.nominatif-date-cell {
+    padding: 5px 2px !important;
+    white-space: nowrap !important;
+    text-align: center !important;
+    font-size: 11px !important;
+  }
+  body.print-nominatif .nominatif-terbilang {
+    padding: 6px 8px !important;
+    border-color: #000 !important;
+  }
+  body.print-nominatif .nominatif-area .sig-row {
+    margin-top: 18px !important;
+  }
+  body.print-rekap-spt .rekap-spt-area {
+    font-size: 12px !important;
+  }
+  body.print-rekap-spt .rekap-spt-area h2 {
+    font-size: 16px !important;
+    margin-bottom: 18px !important;
+  }
+  body.print-rekap-spt .rekap-spt-meta {
+    margin-bottom: 20px !important;
+  }
+  body.print-rekap-spt .rekap-spt-meta td {
+    padding: 2px 3px !important;
+    font-size: 12px !important;
+  }
+  body.print-rekap-spt .rekap-spt-table {
+    font-size: 12px !important;
+  }
+  body.print-rekap-spt .rekap-spt-table th,
+  body.print-rekap-spt .rekap-spt-table td {
+    padding: 6px 4px !important;
+    font-size: 12px !important;
+  }
+  body.print-rekap-spt .rekap-spt-table td.rekap-spt-cell-fit,
+  body.print-rekap-spt .rekap-spt-table td.rekap-spt-uraian-lbl {
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+    padding-left: 3px !important;
+    padding-right: 3px !important;
+  }
+  body.print-rekap-spt .rekap-spt-table td.rekap-spt-emp-cell {
+    padding: 0 !important;
+    vertical-align: top !important;
+    height: 1px !important;
+  }
+  body.print-rekap-spt .rekap-spt-emp-box {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    min-height: 100% !important;
+    box-sizing: border-box !important;
+  }
+  body.print-rekap-spt .rekap-spt-emp-nama {
+    flex: 1 1 auto !important;
+    display: flex !important;
+    align-items: center !important;
+    padding: 5px 6px !important;
+    border-bottom: 1px solid #222 !important;
+    font-size: 12px !important;
+    line-height: 1.3 !important;
+    box-sizing: border-box !important;
+  }
+  body.print-rekap-spt .rekap-spt-emp-nip {
+    flex: 0 0 auto !important;
+    display: flex !important;
+    align-items: center !important;
+    padding: 4px 6px !important;
+    font-size: 12px !important;
+    line-height: 1.3 !important;
+    box-sizing: border-box !important;
+  }
+  body.print-rekap-spt .rekap-spt-signature {
+    margin-top: 16px !important;
+    font-size: 12px !important;
+  }
+  body.print-rekap-spt .rekap-spt-signature div {
+    font-size: 12px !important;
+  }
+  body.print-rekap-spt .rekap-spt-signature-space {
+    height: 80px !important;
+  }
+  body.print-lembar-kendali .lembar-kendali-meta-label {
+    white-space: normal !important;
+  }
+  body.print-lembar-kendali .lembar-kendali-meta-value {
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+  }
+  /* Print optimizations for Rincian Perorangan */
+  body.print-rincian .rincian-tbl col.col-rincian-no {
+    width: 36px !important;
+  }
+  body.print-rincian .rincian-tbl col.col-rincian-jumlah,
+  body.print-rincian .rincian-subtbl col.col-rincian-jumlah {
+    width: 125px !important;
+  }
+  body.print-rincian .rincian-tbl col.col-rincian-ket,
+  body.print-rincian .rincian-subtbl col.col-rincian-ket {
+    width: 250px !important;
+  }
+  body.print-rincian .rincian-tbl td[colspan="3"],
+  body.print-rincian .rincian-tbl td.rincian-subtbl-cell {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  body.print-rincian .rincian-tbl th,
+  body.print-rincian .rincian-tbl td:not([colspan="3"]):not(.rincian-subtbl-cell) {
+    padding: 4px 6px !important;
+    font-size: 12px !important;
+  }
+  body.print-rincian .rincian-tbl .rincian-subtbl td {
+    padding: 2px 6px !important;
+    font-size: 12px !important;
+  }
+  body.print-rincian .rincian-tbl tr.rincian-item-main.has-sub td:not(.rincian-no-cell) {
+    border-bottom: none !important;
+  }
+  body.print-rincian .rincian-tbl tr.rincian-item-sub td {
+    border-top: none !important;
+    border-bottom: none !important;
+    padding: 2px 6px !important;
+    font-size: 12px !important;
+  }
+  body.print-rincian .rincian-tbl tr.rincian-item-sub.rincian-item-last td {
+    border-bottom: 1px solid #000000 !important;
+  }
+  .date-color-picker {
+    display: none !important;
+  }
+  .rincian-tbl tr.rincian-date-group-row,
+  .rincian-tbl tr.rincian-date-group-row td,
+  .dpr-tbl tr.dpr-date-group-row,
+  .dpr-tbl tr.dpr-date-group-row td {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+

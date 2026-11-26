@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8">
@@ -11,8 +11,42 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20261126_12">
-  <link rel="stylesheet" href="ui-refresh.css?v=20261126_12">
+  <!-- ===== MODUL CSS =====
+       Urutan di bawah WAJIB sama dengan urutan css/01..33 (hasilnya identik dengan style.css lama).
+       Naikkan ?v= setiap kali isi file CSS diubah supaya cache peramban ikut diperbarui. -->
+  <link rel="stylesheet" href="css/01-tokens-dan-reset.css?v=20261126_13">
+  <link rel="stylesheet" href="css/02-sidebar.css?v=20261126_21">
+  <link rel="stylesheet" href="css/03-topbar-dan-workspace.css?v=20261126_13">
+  <link rel="stylesheet" href="css/04-hero-kartu-dan-form.css?v=20261126_13">
+  <link rel="stylesheet" href="css/05-validasi-input.css?v=20261126_13">
+  <link rel="stylesheet" href="css/06-loader-dan-toast.css?v=20261126_13">
+  <link rel="stylesheet" href="css/07-form-komponen-biaya.css?v=20261126_13">
+  <link rel="stylesheet" href="css/08-form-nomor-surat.css?v=20261126_13">
+  <link rel="stylesheet" href="css/09-tema-gelap-dasar.css?v=20261126_13">
+  <link rel="stylesheet" href="css/10-panel-sbm-dan-pegawai.css?v=20261126_13">
+  <link rel="stylesheet" href="css/11-aksi-dokumen-dan-tombol.css?v=20261126_13">
+  <link rel="stylesheet" href="css/12-cetak-nominatif.css?v=20261126_13">
+  <link rel="stylesheet" href="css/13-cetak-rincian-dan-sppd.css?v=20261126_13">
+  <link rel="stylesheet" href="css/14-cetak-dpr-dan-kkp.css?v=20261126_13">
+  <link rel="stylesheet" href="css/15-responsif-layar.css?v=20261126_13">
+  <link rel="stylesheet" href="css/16-toggle-tema-dan-welcome.css?v=20261126_21">
+  <link rel="stylesheet" href="css/17-modal-pmk.css?v=20261126_13">
+  <link rel="stylesheet" href="css/18-tema-gelap-layar.css?v=20261126_13">
+  <link rel="stylesheet" href="css/19-spd-pegawai-dan-cetak-portrait.css?v=20261126_13">
+  <link rel="stylesheet" href="css/20-tema-gelap-komponen-dan-transport.css?v=20261126_13">
+  <link rel="stylesheet" href="css/21-cockpit-rincian.css?v=20261126_13">
+  <link rel="stylesheet" href="css/22-cockpit-form-dan-hotel.css?v=20261126_13">
+  <link rel="stylesheet" href="css/23-cockpit-pegawai-dan-polish.css?v=20261126_13">
+  <link rel="stylesheet" href="css/24-modal-ekspor-dan-topbar-modern.css?v=20261126_13">
+  <link rel="stylesheet" href="css/25-animasi-refresh-dan-riwayat.css?v=20261126_13">
+  <link rel="stylesheet" href="css/26-auth-supabase.css?v=20261126_13">
+  <link rel="stylesheet" href="css/27-auth-gate.css?v=20261126_13">
+  <link rel="stylesheet" href="css/28-sbm-viewer-cockpit.css?v=20261126_13">
+  <link rel="stylesheet" href="css/29-dashboard-kpi-dan-viewer.css?v=20261126_13">
+  <link rel="stylesheet" href="css/30-modal-dokumen-pdf.css?v=20261126_13">
+  <link rel="stylesheet" href="css/31-dashboard-modular-dan-filter.css?v=20261126_13">
+  <link rel="stylesheet" href="css/32-revisi-dan-mobile-nav.css?v=20261126_13">
+  <link rel="stylesheet" href="css/33-kalkulator-simulasi.css?v=20261126_21">
 </head>
 <body class="auth-locked">
 
@@ -52,6 +86,7 @@
   <symbol id="i-mail" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>
   <symbol id="i-zap" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
   <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></symbol>
+  <symbol id="i-briefcase" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></symbol>
 </svg>
 
 <!-- App Splash Loader (3 detik) -->
@@ -341,7 +376,7 @@
       <span class="nav-ico"><svg class="ico"><use href="#i-wallet"></use></svg></span>
       <span class="nav-text">Kamus Tarif SBM</span>
     </button>
-    <button type="button" class="tab-btn" data-tab="simulasi" onclick="showTab('simulasi')">
+    <button type="button" class="tab-btn" data-tab="simulasi" onclick="showTab('simulasi')" style="display:none;">
       <span class="nav-ico"><svg class="ico"><use href="#i-sliders"></use></svg></span>
       <span class="nav-text">Simulasi Biaya</span>
     </button>
@@ -1080,7 +1115,7 @@
         <div class="card-body">
           <div class="form-grid">
             <div class="form-group" data-field="noST">
-              <label for="noSTNum">Nomor Surat Tugas (ST) <span class="req-star" title="Wajib diisi">*</span></label>
+              <label for="noSTNum">Nomor Surat Tugas (ST) <span class="req-star">*</span></label>
               <div class="field-control st-prefix-wrap">
                 <input type="text" id="noSTNum" class="st-number-input" placeholder="375" oninput="syncNoSTFromInputs()" autocomplete="off">
                 <div class="st-suffix-dropdown-wrap">
@@ -1094,7 +1129,7 @@
               <span class="field-error-msg">Nomor Surat Tugas wajib diisi</span>
             </div>
             <div class="form-group" data-field="tglST">
-              <label for="tglST">Tanggal Surat Tugas <span class="req-star" title="Wajib diisi">*</span></label>
+              <label for="tglST">Tanggal Surat Tugas <span class="req-star">*</span></label>
               <div class="field-control is-date">
                 <input type="date" id="tglST" onchange="syncTglSPD(); if (typeof updateStSuffixOptions === 'function') { updateStSuffixOptions(); syncNoSTFromInputs(); }">
                 <span class="field-inner-icon" title="Wajib diisi">!</span>
@@ -1454,7 +1489,7 @@
             <svg class="ico"><use href="#i-wallet"></use></svg>
             <span>Kamus Tarif SBM</span>
           </button>
-          <button type="button" class="btn btn-primary btn-hero-simulasi" onclick="showTab('simulasi')">
+          <button type="button" class="btn btn-primary btn-hero-simulasi" onclick="showTab('simulasi')" style="display:none;">
             <svg class="ico"><use href="#i-sliders"></use></svg>
             <span>Simulasi Biaya Perdin</span>
           </button>
@@ -1612,7 +1647,7 @@
             </div>
           </div>
           <div class="sbm-viewer-actions">
-            <button type="button" class="btn btn-primary btn-sm" onclick="openSimulasiFromSbmViewer()" title="Hitung simulasi biaya untuk kota/provinsi terpilih">
+            <button type="button" class="btn btn-primary btn-sm sbm-btn-to-simulasi" onclick="openSimulasiFromSbmViewer()" title="Hitung simulasi biaya untuk kota/provinsi terpilih" style="display:none;">
               <svg class="ico"><use href="#i-sliders"></use></svg>
               <span>Simulasikan Kota Ini</span>
             </button>
@@ -1865,410 +1900,544 @@
 
     <!-- ============================================================ TAB SIMULASI BIAYA PERDIN -->
     <div id="tab-simulasi" class="tab-content">
-      <section class="sim-personal-container no-print">
-        <!-- HEADER SIMULATOR -->
-        <div class="sim-page-header">
-          <div class="sim-header-info">
-            <span class="sim-badge-pill">KALKULATOR PERSONAL • SBM TA 2026 (PMK 32/2025)</span>
-            <h2 class="sim-page-title">Simulasi Biaya Perjalanan Dinas</h2>
-            <p class="sim-page-desc">Kalkulator estimasi hak biaya perjalanan dinas mandiri. Hitung hak Uang Harian, Penginapan, Tiket PP, dan Transport Lokal Anda secara instan.</p>
+      <section class="sbm-viewer-cockpit-card sim-cockpit-card no-print">
+        <!-- HEADER COCKPIT -->
+        <div class="card-head sbm-viewer-head sim-head-wrapper">
+          <div class="sbm-viewer-heading-group">
+            <span class="card-ico sbm-viewer-ico sim-head-ico">
+              <svg class="ico"><use href="#i-sliders"></use></svg>
+            </span>
+            <div class="card-heading">
+              <div class="sim-header-badge-row">
+                <span class="sbm-viewer-badge-tag sim-badge-pmk">SIMULATOR ESTIMASI SBM 2026 • PMK NO. 32/2025</span>
+                <span class="sim-badge-mode">Estimasi Non-SPJ (Draft Cepat)</span>
+              </div>
+              <h2 class="card-title">Kalkulator Simulasi Biaya Perdin</h2>
+              <p class="card-sub">Hitung cepat estimasi kebutuhan anggaran perjalanan dinas sesuai plafon resmi SBM 2026 maupun simulasi biaya riil sebelum pengajuan Surat Tugas.</p>
+            </div>
           </div>
-          <div class="sim-header-actions">
-            <button type="button" class="btn btn-secondary btn-sm" onclick="openSbmFromSimulasi()" title="Buka Kamus Pagu SBM Resmi">
-              <svg class="ico"><use href="#i-wallet"></use></svg>
-              <span>Kamus Tarif SBM</span>
+          <div class="sbm-viewer-actions sim-head-actions">
+            <button type="button" class="btn-sbm-pmk sbm-viewer-btn-pmk" onclick="openPmkModal()" title="Cek Dokumen Resmi PMK No. 32 Tahun 2025">
+              <svg class="ico"><use href="#i-file-lines"></use></svg>
+              <span>PMK 32/2025</span>
             </button>
-            <button type="button" class="btn btn-secondary btn-sm" onclick="resetSimulasiKalkulator()" title="Kembalikan simulasi ke pengaturan standar">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="openSbmFromSimulasi()" title="Lihat seluruh tabel pagu tarif SBM untuk kota terpilih">
+              <svg class="ico"><use href="#i-wallet"></use></svg>
+              <span>Kamus SBM</span>
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="resetSimulasiKalkulator()" title="Kembalikan simulasi ke parameter default (Surabaya, 3 hari, 1 org)">
               <svg class="ico"><use href="#i-refresh"></use></svg>
-              <span>Reset Standar</span>
+              <span>Reset</span>
             </button>
           </div>
         </div>
 
-        <div class="sim-layout-grid">
-          <!-- KOLOM KIRI: FORM PERSONAL -->
-          <div class="sim-form-column">
-            <!-- KARTU 1: TUJUAN PENUGASAN -->
-            <div class="sim-card">
-              <div class="sim-card-title-row">
-                <div class="sim-card-icon-wrap"><svg class="ico"><use href="#i-search"></use></svg></div>
-                <div>
-                  <h3 class="sim-card-heading">Tujuan Penugasan</h3>
-                  <p class="sim-card-sub">Pilih kota atau provinsi tempat Anda ditugaskan</p>
+        <div class="card-body sbm-viewer-body sim-cockpit-body">
+          <div class="sim-workspace-grid">
+            <!-- KOLOM KIRI: PARAMETER INPUT -->
+            <div class="sim-inputs-panel">
+              <!-- ALERT NOTIFIKASI BATAS MAKSIMAL SBM -->
+              <div id="simLimitAlert" class="sim-limit-alert" style="display:none;" role="alert">
+                <span class="sim-limit-alert-ico">⚠️</span>
+                <div class="sim-limit-alert-body">
+                  <strong class="sim-limit-alert-title">Batas Maksimal Plafon SBM Diterapkan</strong>
+                  <div class="sim-limit-alert-text" id="simLimitAlertText"></div>
                 </div>
+                <button type="button" class="sim-limit-alert-close" onclick="closeSimLimitAlert()" aria-label="Tutup notifikasi">×</button>
               </div>
 
-              <!-- Quick Search Input -->
-              <div class="sbm-search-city-box sim-search-city-box">
-                <div class="sbm-search-input-wrap">
-                  <svg class="ico sbm-search-icon"><use href="#i-search"></use></svg>
-                  <input type="text" id="simSearchInput" class="sbm-search-input" placeholder="Cari cepat nama kota atau provinsi tujuan Anda..." autocomplete="off" oninput="onSimSearchInput(this.value)">
-                  <button type="button" id="btnSimSearchClear" class="sbm-search-clear-btn" onclick="clearSimSearch()" style="display:none;" title="Bersihkan">×</button>
-                </div>
-                <div id="simSearchResults" class="sbm-search-results-floating" style="display:none;"></div>
-              </div>
-
-              <!-- Popular Chips -->
-              <div class="sim-quick-chips">
-                <button type="button" class="sim-chip-btn active" data-sim-chip="sby_kota" onclick="quickSelectSimCity('sby_kota')">📍 Surabaya</button>
-                <button type="button" class="sim-chip-btn" data-sim-chip="bdg_kota" onclick="quickSelectSimCity('bdg_kota')">📍 Bandung</button>
-                <button type="button" class="sim-chip-btn" data-sim-chip="jog_kota" onclick="quickSelectSimCity('jog_kota')">📍 Yogyakarta</button>
-                <button type="button" class="sim-chip-btn" data-sim-chip="smg_kota" onclick="quickSelectSimCity('smg_kota')">📍 Semarang</button>
-                <button type="button" class="sim-chip-btn" data-sim-chip="dps_kota" onclick="quickSelectSimCity('dps_kota')">📍 Denpasar</button>
-                <button type="button" class="sim-chip-btn" data-sim-chip="bgr_kota" onclick="quickSelectSimCity('bgr_kota')">🚗 Kota Bogor</button>
-                <button type="button" class="sim-chip-btn" data-sim-chip="kep_seribu" onclick="quickSelectSimCity('kep_seribu')">⛴️ Kep. Seribu</button>
-                <button type="button" class="sim-chip-btn" data-sim-chip="all" onclick="quickSelectSimCity('all')">🏛️ DKI Jakarta</button>
-                <button type="button" class="sim-chip-btn" data-sim-chip="ikn_ppu" onclick="quickSelectSimCity('ikn_ppu')">📍 IKN / Balikpapan</button>
-                <button type="button" class="sim-chip-btn" data-sim-chip="mdn_sumut" onclick="quickSelectSimCity('mdn_sumut')">📍 Medan</button>
-              </div>
-
-              <!-- Dual Select Row -->
-              <div class="sim-grid-2 sim-mt-12">
-                <div>
-                  <label for="simSelectProv" class="sim-label">Provinsi Tujuan</label>
-                  <div class="field-control is-select">
-                    <select id="simSelectProv" class="sim-select" onchange="onSimProvChange(this.value)"></select>
-                  </div>
-                </div>
-                <div>
-                  <label for="simSelectCity" class="sim-label">Kota / Kabupaten Tujuan</label>
-                  <div class="field-control is-select">
-                    <select id="simSelectCity" class="sim-select" onchange="onSimCityChange(this.value)"></select>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Dynamic Location Banner -->
-              <div id="simLocationNotice" class="sim-location-notice"></div>
-            </div>
-
-            <!-- KARTU 2: PROFIL ANDA & DURASI -->
-            <div class="sim-card">
-              <div class="sim-card-title-row">
-                <div class="sim-card-icon-wrap"><svg class="ico"><use href="#i-user"></use></svg></div>
-                <div>
-                  <h3 class="sim-card-heading">Profil Pegawai &amp; Durasi Penugasan</h3>
-                  <p class="sim-card-sub">Sesuaikan golongan Anda dan berapa lama Anda melaksanakan dinas</p>
-                </div>
-              </div>
-
-              <div class="sim-grid-2">
-                <div>
-                  <label for="simGolongan" class="sim-label">Golongan / Jabatan Anda</label>
-                  <div class="field-control is-select">
-                    <select id="simGolongan" class="sim-select" onchange="onSimParamChange()">
-                      <option value="III" selected>Gol. III / Pelaksana / PPPK</option>
-                      <option value="IV">Gol. IV / Eselon III</option>
-                      <option value="II">Eselon II (+ Representatif 150rb/hr)</option>
-                      <option value="I">Eselon I (+ Representatif 250rb/hr)</option>
-                    </select>
+              <!-- SECTION 1: DESTINASI & JENIS PERJALANAN -->
+              <div class="sim-section-card">
+                <div class="sim-section-head">
+                  <span class="sim-section-ico ico-dest">
+                    <svg class="ico"><use href="#i-search"></use></svg>
+                  </span>
+                  <div class="sim-section-title-wrap">
+                    <h3 class="sim-section-title">Destinasi &amp; Kategori Penugasan</h3>
+                    <p class="sim-section-sub">Pilih kota/provinsi tujuan serta jenis skema kegiatan sesuai rencana Surat Tugas.</p>
                   </div>
                 </div>
 
-                <div>
-                  <label for="simJenisKegiatan" class="sim-label">Skema / Jenis Kegiatan</label>
-                  <div class="field-control is-select">
-                    <select id="simJenisKegiatan" class="sim-select" onchange="onSimParamChange()">
-                      <option value="biasa" selected>Perjalanan Luar Kota (UH Penuh)</option>
-                      <option value="dki_kota" hidden>Dinas Dalam Kota DKI (tanpa UH/Hotel/Tiket)</option>
-                      <option value="fullboard">Rapat Fullboard di Hotel</option>
-                      <option value="diklat">Diklat / Pelatihan Resmi</option>
-                    </select>
+                <!-- PENCARIAN KOTA CEPAT -->
+                <div class="sbm-search-city-box sim-search-city-box">
+                  <div class="sbm-search-input-wrap">
+                    <svg class="ico sbm-search-icon"><use href="#i-search"></use></svg>
+                    <input type="text" id="simSearchInput" class="sbm-search-input sim-search-styled" placeholder="Ketik nama kota, kabupaten, atau provinsi (contoh: Surabaya, Bandung, IKN, Makassar...)" autocomplete="off" oninput="onSimSearchInput(this.value)">
+                    <button type="button" id="btnSimSearchClear" class="sbm-search-clear-btn" onclick="clearSimSearch()" style="display:none;" title="Bersihkan pencarian">×</button>
                   </div>
-                </div>
-              </div>
-
-              <!-- Durasi Section with Quick Duration Chips -->
-              <div class="sim-duration-block sim-mt-14">
-                <div class="sim-duration-label-row">
-                  <span class="sim-label">Pilihan Cepat Durasi:</span>
-                  <div class="sim-duration-chips">
-                    <button type="button" class="sim-dur-chip" data-dur="1-0" onclick="setSimDuration(1, 0)">1 Hari (PP)</button>
-                    <button type="button" class="sim-dur-chip" data-dur="2-1" onclick="setSimDuration(2, 1)">2 Hari 1 Malam</button>
-                    <button type="button" class="sim-dur-chip active" data-dur="3-2" onclick="setSimDuration(3, 2)">3 Hari 2 Malam</button>
-                    <button type="button" class="sim-dur-chip" data-dur="4-3" onclick="setSimDuration(4, 3)">4 Hari 3 Malam</button>
-                    <button type="button" class="sim-dur-chip" data-dur="5-4" onclick="setSimDuration(5, 4)">5 Hari 4 Malam</button>
-                  </div>
+                  <div id="simSearchResults" class="sbm-search-results-floating" style="display:none;"></div>
                 </div>
 
-                <div class="sim-grid-2 sim-mt-10">
-                  <div class="sim-counter-box">
-                    <span class="sim-counter-title">Lama Tugas (Hari)</span>
-                    <div class="sim-counter-control">
-                      <button type="button" class="sim-count-btn" onclick="adjustSimStepper('simHari', -1)" aria-label="Kurangi hari">&minus;</button>
-                      <input type="number" id="simHari" class="sim-count-input" min="1" max="30" value="3" oninput="onSimHariChange()">
-                      <button type="button" class="sim-count-btn" onclick="adjustSimStepper('simHari', 1)" aria-label="Tambah hari">+</button>
+                <!-- SELECT DROPDOWN DUAL -->
+                <div class="sbm-dual-select-row sim-dual-row">
+                  <div class="sbm-select-col">
+                    <label for="simSelectProv" class="sim-field-label">Provinsi Tujuan</label>
+                    <div class="field-control is-select sbm-select-control sim-select-wrap">
+                      <select id="simSelectProv" class="sbm-filter-select" onchange="onSimProvChange(this.value)"></select>
                     </div>
                   </div>
-
-                  <div class="sim-counter-box">
-                    <span class="sim-counter-title">Menginap (Malam)</span>
-                    <div class="sim-counter-control">
-                      <button type="button" class="sim-count-btn" onclick="adjustSimStepper('simMalam', -1)" aria-label="Kurangi malam">&minus;</button>
-                      <input type="number" id="simMalam" class="sim-count-input" min="0" max="30" value="2" oninput="onSimParamChange()">
-                      <button type="button" class="sim-count-btn" onclick="adjustSimStepper('simMalam', 1)" aria-label="Tambah malam">+</button>
+                  <div class="sbm-select-col">
+                    <label for="simSelectCity" class="sim-field-label">Kota / Kabupaten Spesifik</label>
+                    <div class="field-control is-select sbm-select-control sim-select-wrap">
+                      <select id="simSelectCity" class="sbm-filter-select" onchange="onSimCityChange(this.value)"></select>
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
 
-            <!-- KARTU 3: PENGATURAN FASILITAS -->
-            <div class="sim-card">
-              <div class="sim-card-title-row">
-                <div class="sim-card-icon-wrap"><svg class="ico"><use href="#i-sliders"></use></svg></div>
-                <div>
-                  <h3 class="sim-card-heading">Pengaturan Fasilitas &amp; Transportasi</h3>
-                  <p class="sim-card-sub">Sesuaikan fasilitas tiket, hotel, atau konsumsi panitia jika diperlukan</p>
-                </div>
-              </div>
-
-              <div id="simDkiFacilityNote" class="sim-dki-note" style="display:none;">
-                <strong>Dinas dalam kota DKI Jakarta</strong>
-                <p>Uang harian, penginapan, diklat/fullboard, dan tiket pesawat <strong>tidak dibayarkan</strong>. Hak yang dihitung hanya <strong>DPR transport lokal</strong>. Jika memakai kendaraan dinas, pilih mode &ldquo;Kendaraan dinas operasional&rdquo; (UH DKI tetap Rp 0).</p>
-              </div>
-
-              <!-- Skema Penginapan -->
-              <div class="sim-facility-row" id="simHotelRow">
-                <div class="sim-facility-header">
-                  <div class="sim-facility-title">
-                    <span class="sim-fac-ico">🏨</span>
-                    <span>Penginapan / Hotel</span>
+                <!-- CHIPS TUJUAN POPULER -->
+                <div class="sim-chips-container">
+                  <span class="sim-chips-heading">Destinasi Populer:</span>
+                  <div class="sim-chips-flex">
+                    <button type="button" class="sim-chip-btn active" data-sim-chip="sby_kota" onclick="quickSelectSimCity('sby_kota')">
+                      <span class="chip-dot"></span>Surabaya
+                    </button>
+                    <button type="button" class="sim-chip-btn" data-sim-chip="bdg_kota" onclick="quickSelectSimCity('bdg_kota')">
+                      <span class="chip-dot"></span>Bandung
+                    </button>
+                    <button type="button" class="sim-chip-btn" data-sim-chip="jog_kota" onclick="quickSelectSimCity('jog_kota')">
+                      <span class="chip-dot"></span>Yogyakarta
+                    </button>
+                    <button type="button" class="sim-chip-btn" data-sim-chip="smg_kota" onclick="quickSelectSimCity('smg_kota')">
+                      <span class="chip-dot"></span>Semarang
+                    </button>
+                    <button type="button" class="sim-chip-btn" data-sim-chip="dps_kota" onclick="quickSelectSimCity('dps_kota')">
+                      <span class="chip-dot"></span>Denpasar (Bali)
+                    </button>
+                    <button type="button" class="sim-chip-btn" data-sim-chip="bgr_kota" onclick="quickSelectSimCity('bgr_kota')">
+                      <span class="chip-dot"></span>Kota Bogor
+                    </button>
+                    <button type="button" class="sim-chip-btn" data-sim-chip="kep_seribu" onclick="quickSelectSimCity('kep_seribu')">
+                      <span class="chip-dot"></span>Kep. Seribu
+                    </button>
+                    <button type="button" class="sim-chip-btn" data-sim-chip="all" onclick="quickSelectSimCity('all')">
+                      <span class="chip-dot"></span>DKI Jakarta
+                    </button>
+                    <button type="button" class="sim-chip-btn" data-sim-chip="ikn_ppu" onclick="quickSelectSimCity('ikn_ppu')">
+                      <span class="chip-dot"></span>IKN / Balikpapan
+                    </button>
+                    <button type="button" class="sim-chip-btn" data-sim-chip="mdn_sumut" onclick="quickSelectSimCity('mdn_sumut')">
+                      <span class="chip-dot"></span>Medan
+                    </button>
                   </div>
-                  <span class="sim-cap-badge" id="simHotelCapPill">Pagu SBM: -</span>
                 </div>
-                <div class="sim-mt-6">
-                  <div class="field-control is-select">
-                    <select id="simHotelMode" class="sim-select" onchange="onSimParamChange()">
-                      <option value="sbm" selected>Sesuai Pagu SBM (disarankan)</option>
-                      <option value="atcost_30">30% tanpa bukti hotel</option>
-                      <option value="manual">Tarif riil hotel / malam</option>
-                      <option value="none">Tidak menginap (Rp 0)</option>
+
+                <!-- JENIS PENUGASAN -->
+                <div class="sim-field-row sim-mt-14">
+                  <label for="simJenisKegiatan" class="sim-field-label">Jenis Penugasan &amp; Skema Kegiatan</label>
+                  <div class="field-control is-select sim-select-wrap">
+                    <select id="simJenisKegiatan" onchange="onSimParamChange()">
+                      <option value="biasa" selected>Perjalanan Dinas Biasa</option>
+                      <option value="rapat">Rapat Biasa</option>
+                      <option value="diklat">Diklat/Pelatihan</option>
+                      <option value="fullboard">Fullboard</option>
                     </select>
                   </div>
-                  <div id="simHotelManualWrap" class="sim-inline-field" style="display:none;">
-                    <input type="text" id="simHotelManual" class="sim-input" inputmode="numeric" placeholder="Tarif hotel riil / malam (Rp)" oninput="onSimCurrencyInput(this)">
-                  </div>
                 </div>
+
+                <!-- PREVIEW PAGU DESTINASI (AUTO-UPDATED) -->
+                <div id="simLocationNotice" class="sim-location-notice"></div>
               </div>
 
-              <!-- Skema Transport Utama -->
-              <div class="sim-facility-row" id="simTransportRow">
-                <div class="sim-facility-header">
-                  <div class="sim-facility-title">
-                    <span class="sim-fac-ico">✈️</span>
-                    <span>Transportasi Utama (Tiket PP)</span>
-                  </div>
-                  <span class="sim-cap-badge" id="simTransportCapPill">Pagu SBM: -</span>
-                </div>
-                <div class="sim-mt-6">
-                  <div class="field-control is-select">
-                    <select id="simTransportMode" class="sim-select" onchange="onSimParamChange()">
-                      <option value="sbm" selected>Sesuai pagu SBM PP (pesawat / darat)</option>
-                      <option value="manual">Harga tiket PP riil</option>
-                      <option value="none">Tanpa tiket / kendaraan dinas (Rp 0)</option>
-                    </select>
-                  </div>
-                  <div id="simTransportManualWrap" class="sim-inline-field" style="display:none;">
-                    <input type="text" id="simTransportManual" class="sim-input" inputmode="numeric" placeholder="Biaya tiket PP riil (Rp)" oninput="onSimCurrencyInput(this)">
+              <!-- SECTION 2: DURASI, PESERTA & GOLONGAN -->
+              <div class="sim-section-card">
+                <div class="sim-section-head">
+                  <span class="sim-section-ico ico-duration">
+                    <svg class="ico"><use href="#i-calendar"></use></svg>
+                  </span>
+                  <div class="sim-section-title-wrap">
+                    <h3 class="sim-section-title">Durasi &amp; Golongan Pegawai (Perorangan)</h3>
+                    <p class="sim-section-sub">Tentukan masa tugas, malam menginap, dan standar golongan hotel untuk perhitungan mandiri 1 orang pegawai.</p>
                   </div>
                 </div>
-              </div>
 
-              <!-- Skema Transport Lokal -->
-              <div class="sim-facility-row">
-                <div class="sim-facility-header">
-                  <div class="sim-facility-title">
-                    <span class="sim-fac-ico">🚕</span>
-                    <span>Transport Lokal (Taksi &amp; Bandara)</span>
+                <div class="sim-controls-grid">
+                  <div class="sim-control-box">
+                    <label for="simHari" class="sim-field-label">Lama Tugas (Hari)</label>
+                    <div class="sim-stepper">
+                      <button type="button" class="sim-stepper-btn" onclick="adjustSimStepper('simHari', -1)" aria-label="Kurangi hari">&minus;</button>
+                      <input type="number" id="simHari" min="1" max="30" value="1" oninput="onSimHariChange()">
+                      <button type="button" class="sim-stepper-btn" onclick="adjustSimStepper('simHari', 1)" aria-label="Tambah hari">+</button>
+                    </div>
                   </div>
-                  <span class="sim-cap-badge" id="simLokalCapPill">Standar SBM: -</span>
-                </div>
-                <div class="sim-mt-6">
-                  <div class="field-control is-select">
-                    <select id="simLokalMode" class="sim-select" onchange="onSimParamChange()">
-                      <option value="sbm" selected>Otomatis SBM (transport bandara + taksi kota)</option>
-                      <option value="taxi_only">Hanya taksi dalam kota tujuan</option>
-                      <option value="jkt_only">Hanya transport Jakarta PP (bandara)</option>
-                      <option value="manual">Taksi / sewa mobil riil (dengan bukti)</option>
-                      <option value="dinas">Kendaraan dinas operasional (UH 60%, tanpa taksi)</option>
-                      <option value="none">Tidak klaim transport lokal (Rp 0)</option>
-                    </select>
+
+                  <div class="sim-control-box">
+                    <div class="sim-label-with-helper">
+                      <label for="simMalam" class="sim-field-label">Malam Hotel</label>
+                      <span class="sim-label-helper" id="simMalamHelper">(Hari &minus; 1)</span>
+                    </div>
+                    <div class="sim-stepper">
+                      <button type="button" class="sim-stepper-btn" id="btnSimMalamMinus" onclick="adjustSimStepper('simMalam', -1)" aria-label="Kurangi malam">&minus;</button>
+                      <input type="number" id="simMalam" min="0" max="30" value="0" oninput="onSimMalamChange()">
+                      <button type="button" class="sim-stepper-btn" id="btnSimMalamPlus" onclick="adjustSimStepper('simMalam', 1)" aria-label="Tambah malam">+</button>
+                    </div>
                   </div>
-                  <div id="simLokalManualWrap" class="sim-inline-field" style="display:none;">
-                    <input type="text" id="simLokalManual" class="sim-input" inputmode="numeric" placeholder="Nominal taksi / sewa mobil riil (Rp)" oninput="onSimCurrencyInput(this)">
+
+                  <div class="sim-control-box">
+                    <label class="sim-field-label">Subjek Perhitungan</label>
+                    <div class="sim-fixed-badge-box">
+                      <div class="sim-badge-user-left">
+                        <span class="sim-badge-user-ico">
+                          <svg class="ico"><use href="#i-user"></use></svg>
+                        </span>
+                        <div class="sim-fixed-badge-text">
+                          <strong>Perorangan (1 Pegawai)</strong>
+                          <small>Simulasi mandiri perorangan</small>
+                        </div>
+                      </div>
+                      <span class="sim-badge-pill-lock">Mandiri</span>
+                    </div>
+                    <input type="hidden" id="simPeserta" value="1">
                   </div>
-                  <div id="simDkiDprModeWrap" class="sim-inline-field" style="display:none;">
-                    <label for="simDkiDprMode" class="sim-mini-label">Acuan DPR Transport DKI</label>
-                    <div class="field-control is-select">
-                      <select id="simDkiDprMode" class="sim-select" onchange="onSimParamChange()">
-                        <option value="per_hari" selected>DPR Rp 170.000 × jumlah hari</option>
-                        <option value="flat">DPR flat Rp 170.000 per penugasan</option>
+
+                  <div class="sim-control-box">
+                    <label for="simGolongan" class="sim-field-label">Standar Golongan / Jabatan</label>
+                    <div class="field-control is-select sim-select-wrap sim-select-gol">
+                      <select id="simGolongan" onchange="onSimParamChange()">
+                        <option value="III" selected>Gol. III / Pelaksana / PPPK</option>
+                        <option value="IV">Eselon III / Gol. IV</option>
+                        <option value="II">Pejabat Eselon II</option>
+                        <option value="I">Pejabat Eselon I</option>
                       </select>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <!-- Potongan Konsumsi Panitia -->
-              <div class="sim-facility-row sim-facility-last">
-                <label class="sim-checkbox-label">
-                  <input type="checkbox" id="simCbKonsumsi" onchange="onSimParamChange()">
-                  <span class="sim-chk-text">Panitia kegiatan menyediakan konsumsi makan / snack gratis</span>
-                </label>
-                <div id="simKonsumsiBox" class="sim-sub-box sim-mt-8" style="display:none;">
-                  <div class="sim-grid-2">
-                    <div>
-                      <label for="simMakanKali" class="sim-mini-label">Makan Disediakan / Hari</label>
-                      <select id="simMakanKali" class="sim-select" onchange="onSimParamChange()">
-                        <option value="1" selected>1 Kali Makan / Hari</option>
-                        <option value="2">2 Kali Makan / Hari</option>
-                        <option value="3">3 Kali Makan (Penuh) / Hari</option>
-                      </select>
+              <!-- SECTION 3: KOMPONEN BIAYA & PENYESUAIAN RIIL -->
+              <div class="sim-section-card">
+                <div class="sim-section-head">
+                  <span class="sim-section-ico ico-cost">
+                    <svg class="ico"><use href="#i-sliders"></use></svg>
+                  </span>
+                  <div class="sim-section-title-wrap">
+                    <h3 class="sim-section-title">Komponen Biaya &amp; Skema Riil</h3>
+                    <p class="sim-section-sub">Aktifkan atau sesuaikan komponen biaya berdasarkan skenario riil penugasan.</p>
+                  </div>
+                </div>
+
+                <div class="sim-components-stack">
+                  <!-- A. UANG HARIAN -->
+                  <div class="sim-comp-block">
+                    <div class="sim-toggle-row">
+                      <label class="sim-switch-pill">
+                        <input type="checkbox" id="simCbUh" checked onchange="onSimParamChange()">
+                        <span class="sim-slider-track"></span>
+                        <span class="sim-switch-name">Uang Harian (OH)</span>
+                      </label>
+                      <div class="sim-inline-select" id="simUhPercentWrap">
+                        <select id="simUhPercent" onchange="onSimParamChange()">
+                          <option value="1" selected>100% Penuh</option>
+                          <option value="0.6">60% (Kendaraan Dinas Operasional)</option>
+                        </select>
+                      </div>
                     </div>
-                    <div>
-                      <label for="simSnackKali" class="sim-mini-label">Snack Rapat / Hari</label>
-                      <select id="simSnackKali" class="sim-select" onchange="onSimParamChange()">
-                        <option value="0" selected>Tidak ada snack</option>
-                        <option value="1">1 Kali Snack / Hari</option>
-                        <option value="2">2 Kali Snack / Hari</option>
-                      </select>
+
+                    <!-- SUB-KONSUMSI -->
+                    <div class="sim-sub-toggle-row">
+                      <label class="sim-sub-switch">
+                        <input type="checkbox" id="simCbKonsumsi" onchange="onSimParamChange()">
+                        <span class="sim-sub-slider"></span>
+                        <span class="sim-sub-switch-title">Potong Konsumsi Rapat (Makan &amp; Snack SBM)</span>
+                      </label>
+                    </div>
+                    <div id="simKonsumsiBox" class="sim-subpanel" style="display:none;">
+                      <div class="sim-subgrid-2">
+                        <div>
+                          <label for="simMakanKali" class="sim-mini-label">Makan Disediakan / Hari</label>
+                          <input type="number" id="simMakanKali" class="sim-mini-input" min="0" max="3" value="1" oninput="onSimParamChange()">
+                        </div>
+                        <div>
+                          <label for="simSnackKali" class="sim-mini-label">Snack Disediakan / Hari</label>
+                          <input type="number" id="simSnackKali" class="sim-mini-input" min="0" max="3" value="0" oninput="onSimParamChange()">
+                        </div>
+                      </div>
+                      <p id="simKonsumsiHint" class="sim-mini-hint">Potongan mengikuti standar Makan &amp; Snack SBM provinsi tujuan.</p>
                     </div>
                   </div>
-                  <p id="simKonsumsiHint" class="sim-mini-hint"></p>
+
+                  <!-- B. HOTEL / PENGINAPAN -->
+                  <div class="sim-comp-block">
+                    <div class="sim-toggle-row">
+                      <label class="sim-switch-pill">
+                        <input type="checkbox" id="simCbHotel" onchange="onSimParamChange()">
+                        <span class="sim-slider-track"></span>
+                        <span class="sim-switch-name">Penginapan / Hotel</span>
+                      </label>
+                      <span class="sim-cap-pill" id="simHotelCapPill">Pagu: -</span>
+                    </div>
+                    <div id="simHotelBox" class="sim-subpanel" style="display:none;">
+                      <div class="sim-subgrid-2">
+                        <div>
+                          <label for="simHotelMode" class="sim-mini-label">Skema Tarif Hotel</label>
+                          <select id="simHotelMode" class="sim-mini-select" onchange="onSimParamChange()">
+                            <option value="sbm" selected>100% Pagu SBM</option>
+                            <option value="atcost_30">30% Tanpa Bukti Hotel</option>
+                            <option value="manual">Input Tarif Riil / Malam</option>
+                          </select>
+                        </div>
+                        <div id="simHotelManualWrap" style="display:none;">
+                          <label for="simHotelManual" class="sim-mini-label">Tarif Hotel Riil / Malam (Rp)</label>
+                          <input type="text" id="simHotelManual" class="sim-mini-input" inputmode="numeric" placeholder="0" oninput="onSimCurrencyInput(this)">
+                        </div>
+                      </div>
+                      <input type="hidden" id="simKamarMode" value="per_orang">
+                      <input type="hidden" id="simJumlahKamar" value="1">
+                    </div>
+                  </div>
+
+                  <!-- C. TRANSPORTASI (BERANGKAT & PULANG) -->
+                  <div class="sim-comp-block sim-comp-last">
+                    <div class="sim-toggle-row">
+                      <label class="sim-switch-pill">
+                        <input type="checkbox" id="simCbTransport" checked onchange="onSimParamChange()">
+                        <span class="sim-slider-track"></span>
+                        <span class="sim-switch-name">Transportasi (Berangkat &amp; Pulang)</span>
+                      </label>
+                      <span class="sim-cap-pill" id="simTransportCapPill">SBM: -</span>
+                    </div>
+                    <div id="simTransportBox" class="sim-subpanel">
+                      <div class="sim-subgrid-2">
+                        <div>
+                          <label for="simTransportArah" class="sim-mini-label">Arah Perjalanan</label>
+                          <select id="simTransportArah" class="sim-mini-select" onchange="onSimParamChange()">
+                            <option value="pp" selected>Pergi &minus; Pulang (PP Lengkap)</option>
+                            <option value="berangkat">Hanya Berangkat (50% Plafon)</option>
+                            <option value="pulang">Hanya Pulang (50% Plafon)</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label for="simTransportMode" class="sim-mini-label">Skema Biaya Transport</label>
+                          <select id="simTransportMode" class="sim-mini-select" onchange="onSimParamChange()">
+                            <option value="sbm" selected>Otomatis SBM (Tiket PP + Taksi PP)</option>
+                            <option value="tiket_only">Hanya Tiket Antarkota (Tanpa Taksi)</option>
+                            <option value="taksi_only">Hanya Taksi Bandara &amp; Lokal PP</option>
+                            <option value="manual">Input Nominal Riil Transport</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div id="simTransportManualWrap" class="sim-mt-8" style="display:none;">
+                        <label for="simTransportManual" class="sim-mini-label">Nominal Riil Transportasi (Rp)</label>
+                        <input type="text" id="simTransportManual" class="sim-mini-input" inputmode="numeric" placeholder="0" oninput="onSimCurrencyInput(this)">
+                      </div>
+
+                      <!-- Hidden backward-compat elements -->
+                      <input type="hidden" id="simCbLokal" value="on">
+                      <input type="hidden" id="simLokalMode" value="sbm">
+                      <input type="hidden" id="simDkiDprMode" value="flat">
+                      <input type="hidden" id="simLokalManual" value="">
+                      <span id="simLokalCapPill" style="display:none;"></span>
+                      <div id="simLokalBox" style="display:none;"></div>
+                      <div id="simDkiDprModeWrap" style="display:none;"></div>
+                      <div id="simLokalManualWrap" style="display:none;"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- SECTION 4: UANG REPRESENTASI PEJABAT (OPSIONAL) -->
+              <div class="sim-section-card sim-section-rep-card">
+                <div class="sim-section-head">
+                  <span class="sim-section-ico ico-rep">
+                    <svg class="ico"><use href="#i-briefcase"></use></svg>
+                  </span>
+                  <div class="sim-section-title-wrap">
+                    <h3 class="sim-section-title">Uang Representasi Pejabat (Opsional)</h3>
+                    <p class="sim-section-sub">Komponen penunjang khusus pejabat (Eselon I / II / Karo) sesuai standar PMK 32/2025.</p>
+                  </div>
+                </div>
+
+                <div class="sim-comp-block sim-comp-last">
+                  <div class="sim-toggle-row">
+                    <label class="sim-switch-pill">
+                      <input type="checkbox" id="simCbRep" onchange="onSimParamChange()">
+                      <span class="sim-slider-track"></span>
+                      <span class="sim-switch-name">Uang Representatif Pejabat</span>
+                    </label>
+                    <span class="sim-cap-pill" id="simRepCapPill">Eselon I / II / Karo</span>
+                  </div>
+                  <p class="sim-mini-hint sim-mt-6">Uang representasi per hari tugas sesuai standar PMK 32/2025 bagi pejabat yang berhak.</p>
                 </div>
               </div>
             </div>
+
+            <!-- KOLOM KANAN (STICKY): HASIL EKSEKUTIF -->
+            <aside class="sim-results-panel">
+              <!-- EXECUTIVE CARD HERO -->
+              <div class="sim-result-hero">
+                <div class="sim-hero-glow"></div>
+                <div class="sim-res-badges">
+                  <span class="sim-res-dest-badge" id="simResDestBadge">JAWA TIMUR — Kota Surabaya</span>
+                  <span class="sim-res-meta-badge" id="simResMetaBadge">3 Hari • 2 Malam • 1 Org</span>
+                </div>
+
+                <div class="sim-res-total-block">
+                  <span class="sim-res-eyebrow">ESTIMASI TOTAL ANGGARAN PERORANGAN</span>
+                  <div class="sim-grand-total-wrap">
+                    <strong class="sim-grand-total" id="simResGrandTotal">Rp 0</strong>
+                  </div>
+                  <div class="sim-terbilang-bubble">
+                    <span class="sim-terbilang-quote">&ldquo;</span>
+                    <span id="simResTerbilang">Nol Rupiah</span>
+                    <span class="sim-terbilang-quote">&rdquo;</span>
+                  </div>
+                </div>
+
+                <div class="sim-res-compliance" id="simResCompliance">
+                  <span class="sim-compliance-pill is-ok" id="simResComplianceBadge">
+                    <svg class="ico-badge"><use href="#i-check"></use></svg>
+                    <span>Memenuhi Pagu SBM 2026</span>
+                  </span>
+                </div>
+
+                <div class="sim-res-kpi-strip">
+                  <div class="sim-res-kpi-tile">
+                    <span class="kpi-label">Pagu Plafon SBM</span>
+                    <strong class="kpi-val" id="simResSbmCap">Rp 0</strong>
+                  </div>
+                  <div class="sim-res-kpi-tile">
+                    <span class="kpi-label">Plafon Hotel SBM</span>
+                    <strong class="kpi-val" id="simResHotelCap">Rp 0</strong>
+                  </div>
+                </div>
+
+                <!-- KOMPOSISI PERSENTASE -->
+                <div class="sim-comp-wrap">
+                  <div class="sim-comp-header">
+                    <span>Komposisi Alokasi Anggaran:</span>
+                  </div>
+                  <div class="sim-comp-bar" role="img" aria-label="Komposisi persentase biaya perjalanan dinas">
+                    <div class="sim-comp-seg seg-uh" id="simSegUh" style="width:0%"></div>
+                    <div class="sim-comp-seg seg-hotel" id="simSegHotel" style="width:0%"></div>
+                    <div class="sim-comp-seg seg-trans" id="simSegTrans" style="width:0%"></div>
+                    <div class="sim-comp-seg seg-lain" id="simSegLain" style="width:0%"></div>
+                  </div>
+                  <div class="sim-comp-legend" id="simCompLegend"></div>
+                </div>
+              </div>
+
+              <!-- RINCIAN DETAIL PER KOMPONEN -->
+              <div class="sim-breakdown-card">
+                <div class="sim-breakdown-head">
+                  <div class="sim-breakdown-title-group">
+                    <h4>Rincian Komponen Perhitungan</h4>
+                    <span class="sim-breakdown-tag">Estimasi Non-SPJ</span>
+                  </div>
+                </div>
+                <div id="simBreakdownList" class="sim-breakdown-list"></div>
+              </div>
+
+              <!-- REFERENSI RINGKAS SBM RESMI -->
+              <div class="sim-ref-card">
+                <div class="sim-ref-head">
+                  <div class="sim-ref-title">
+                    <svg class="ico"><use href="#i-wallet"></use></svg>
+                    <span>Pagu Resmi SBM:</span>
+                  </div>
+                  <span id="simRefProvName" class="sim-ref-prov">JAWA TIMUR</span>
+                </div>
+                <div class="sim-ref-grid" id="simRefGrid"></div>
+              </div>
+
+              <!-- AKSI EKSEKUTIF -->
+              <div class="sim-result-actions">
+                <button type="button" class="btn btn-primary sim-btn-copy" onclick="copySimulasiSummary()" title="Salin rincian ringkasan ke clipboard">
+                  <svg class="ico"><use href="#i-clipboard"></use></svg>
+                  <span>Salin Ringkasan Estimasi</span>
+                </button>
+              </div>
+              <!-- KARTU KETENTUAN SBM PMK 32/2025 -->
+              <div class="sim-info-ketentuan-card">
+                <div class="sim-info-k-head">
+                  <div class="sim-info-k-title">
+                    <svg class="ico"><use href="#i-info"></use></svg>
+                    <span>Ketentuan Komponen Uang Harian &amp; Transport</span>
+                  </div>
+                  <span class="sim-info-k-badge">PMK No. 32/2025</span>
+                </div>
+
+                <div class="sim-info-k-body">
+                  <!-- Section 1: 3 Komponen Utama -->
+                  <div class="sim-info-k-block">
+                    <div class="sim-info-k-sec-header">
+                      <svg class="ico"><use href="#i-wallet"></use></svg>
+                      <strong>3 Komponen Utama Uang Harian (UH)</strong>
+                    </div>
+                    <p class="sim-info-k-lead">Sesuai standar PMK SBM, uang harian merupakan satu kesatuan tarif lumpsum yang mencakup 3 unsur kebutuhan pegawai:</p>
+                    <div class="sim-info-k-list">
+                      <div class="sim-info-k-item">
+                        <div class="sim-info-k-icon sim-ico-food">
+                          <svg class="ico"><use href="#i-receipt"></use></svg>
+                        </div>
+                        <div class="sim-info-k-item-body">
+                          <strong>Uang Makan Pegawai</strong>
+                          <span>Kebutuhan konsumsi harian pegawai. Dipotong otomatis bila penugasan berupa Rapat / Fullboard yang menyajikan konsumsi dari penyelenggara.</span>
+                        </div>
+                      </div>
+                      <div class="sim-info-k-item">
+                        <div class="sim-info-k-icon sim-ico-pocket">
+                          <svg class="ico"><use href="#i-wallet"></use></svg>
+                        </div>
+                        <div class="sim-info-k-item-body">
+                          <strong>Uang Saku / Harian Murni</strong>
+                          <span>Keperluan saku dan biaya operasional mandiri pegawai selama menjalankan penugasan dinas di wilayah tujuan.</span>
+                        </div>
+                      </div>
+                      <div class="sim-info-k-item">
+                        <div class="sim-info-k-icon sim-ico-transport">
+                          <svg class="ico"><use href="#i-briefcase"></use></svg>
+                        </div>
+                        <div class="sim-info-k-item-body">
+                          <strong>Transportasi Lokal Setempat</strong>
+                          <span>Biaya transportasi pergerakan harian di dalam kota/daerah penugasan (dari penginapan menuju lokasi acara/kantor dinas/lapangan).</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Section 2: Skema 100% vs 60% KDO / Sewa -->
+                  <div class="sim-info-k-block sim-info-k-block-accent">
+                    <div class="sim-info-k-sec-header">
+                      <svg class="ico"><use href="#i-sliders"></use></svg>
+                      <strong>Ketentuan Uang Harian 60% vs 100%</strong>
+                    </div>
+                    <div class="sim-info-k-grid-split">
+                      <div class="sim-info-k-pill-box is-100">
+                        <div class="sim-k-pill-head">
+                          <span class="sim-k-pill-tag">100% Penuh</span>
+                          <strong>Dinas Mandiri</strong>
+                        </div>
+                        <p>Diberikan penuh jika pegawai berangkat mandiri tanpa fasilitas kendaraan dinas/sewa oleh instansi.</p>
+                      </div>
+                      <div class="sim-info-k-pill-box is-60">
+                        <div class="sim-k-pill-head">
+                          <span class="sim-k-pill-tag">60% Pagu SBM</span>
+                          <strong>KDO / Sewa Kendaraan</strong>
+                        </div>
+                        <p>Jika difasilitasi <strong>Kendaraan Dinas Operasional (KDO)</strong> atau <strong>Sewa Kendaraan</strong>, unsur <em>Transport Lokal ditiadakan</em>, sehingga uang harian dibayarkan <strong>60% dari Pagu SBM</strong>.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Section 3: Rapat Dinas & DKI Jakarta -->
+                  <div class="sim-info-k-block sim-info-k-block-compact">
+                    <div class="sim-info-k-note-row">
+                      <span class="sim-k-note-dot dot-rapat"></span>
+                      <div>
+                        <strong>Kegiatan Rapat Dinas:</strong> Uang harian dipotong otomatis sesuai pagu biaya konsumsi (1x makan dan 1x snack SBM per hari).
+                      </div>
+                    </div>
+                    <div class="sim-info-k-note-row">
+                      <span class="sim-k-note-dot dot-dki"></span>
+                      <div>
+                        <strong>Ketentuan DKI Jakarta:</strong> Tidak ada uang harian sama sekali (meskipun &gt; 8 jam tetap Rp 0) dan tanpa biaya penginapan/hotel. Seluruh penugasan di wilayah DKI Jakarta flat hanya memperoleh <strong>Rp 170.000</strong> (DPR Transport Lokal).
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </aside>
           </div>
-
-          <!-- KOLOM KANAN: OUTPUT HASIL SIMULASI PRIBADI -->
-          <aside class="sim-output-column">
-            <!-- KARTU UTAMA ESTIMASI -->
-            <div class="sim-result-card">
-              <div class="sim-res-top-tags">
-                <span class="sim-tag-dest" id="simResDestBadge">Kota Surabaya, JAWA TIMUR</span>
-                <span class="sim-tag-dur" id="simResMetaBadge">3 Hari • 2 Malam • Gol. III</span>
-              </div>
-
-              <div class="sim-total-box">
-                <span class="sim-total-caption">ESTIMASI TOTAL DITERIMA (1 ORANG)</span>
-                <strong class="sim-total-number" id="simResGrandTotal">Rp 6.482.000</strong>
-                <p class="sim-total-spell" id="simResTerbilang">Enam Juta Empat Ratus Delapan Puluh Dua Ribu Rupiah</p>
-              </div>
-
-              <div class="sim-compliance-row" id="simResCompliance">
-                <span class="sim-compliance-pill is-ok" id="simResComplianceBadge">
-                  <svg class="ico" style="width:14px;height:14px;"><use href="#i-check"></use></svg>
-                  <span>Sesuai Pagu Resmi SBM 2026 (PMK 32/2025)</span>
-                </span>
-              </div>
-
-              <!-- Komposisi Visual Bar -->
-              <div class="sim-composition-block">
-                <div class="sim-comp-bar" role="img" aria-label="Proporsi biaya perjalanan dinas">
-                  <div class="sim-comp-seg seg-uh" id="simSegUh" style="width:19%"></div>
-                  <div class="sim-comp-seg seg-hotel" id="simSegHotel" style="width:25%"></div>
-                  <div class="sim-comp-seg seg-trans" id="simSegTrans" style="width:41%"></div>
-                  <div class="sim-comp-seg seg-lain" id="simSegLain" style="width:15%"></div>
-                </div>
-                <div class="sim-comp-legend" id="simCompLegend"></div>
-              </div>
-            </div>
-
-            <!-- RINCIAN KOMPONEN HAK BIAYA -->
-            <div class="sim-breakdown-card">
-              <div class="sim-breakdown-header">
-                <h4 class="sim-breakdown-title">Rincian Hak Biaya Anda</h4>
-                <span class="sim-badge-mandiri">Simulasi Mandiri</span>
-              </div>
-              <div id="simBreakdownList" class="sim-breakdown-list"></div>
-            </div>
-
-            <!-- REFERENSI TARIF KOTA TERPILIH -->
-            <div class="sim-reference-card">
-              <div class="sim-ref-title-row">
-                <span>Standar Pagu SBM Tujuan</span>
-                <strong id="simRefProvName">JAWA TIMUR</strong>
-              </div>
-              <div class="sim-ref-pills-grid" id="simRefGrid"></div>
-            </div>
-
-            <!-- PANDUAN KOMPONEN BIAYA -->
-            <div class="sim-guide-card">
-              <div class="sim-card-title-row">
-                <div class="sim-card-icon-wrap"><svg class="ico"><use href="#i-info"></use></svg></div>
-                <div>
-                  <h4 class="sim-breakdown-title">Panduan Komponen Biaya</h4>
-                  <p class="sim-card-sub">Isi uang harian, cakupan transport lokal, dan aturan sewa kendaraan</p>
-                </div>
-              </div>
-
-              <details class="sim-guide-item" open>
-                <summary>
-                  <span>Uang harian dipakai untuk apa saja?</span>
-                  <svg class="ico sim-guide-chev" aria-hidden="true"><use href="#i-chevron-down"></use></svg>
-                </summary>
-                <div class="sim-guide-body">
-                  <p>Uang Harian (UH) dibayarkan sekaligus per hari dan <strong>tidak perlu bukti</strong>. UH menutup:</p>
-                  <ul>
-                    <li><strong>Makan dan minum</strong> selama penugasan (acuan SBM makan <span id="simGuideMakan">-</span> per kali).</li>
-                    <li><strong>Snack / kudapan</strong> rapat (acuan SBM snack <span id="simGuideSnack">-</span> per kali).</li>
-                    <li><strong>Transport lokal singkat</strong> dalam kota tujuan, misalnya angkot atau ojek jarak dekat.</li>
-                    <li><strong>Tip, porter, dan pengeluaran rutin kecil</strong> lain yang sulit dibuktikan.</li>
-                    <li><strong>Menggunakan kendaraan dinas operasional</strong>: UH dibayar <strong>60%</strong> dari tarif penuh.</li>
-                  </ul>
-                  <p class="sim-guide-note">Jika panitia menyediakan makan/snack, UH dipotong sebesar SBM makan/snack sesuai jumlah yang disediakan (centang opsi konsumsi panitia).</p>
-                  <p class="sim-guide-note" id="simGuideUhDki">Dinas dalam kota DKI Jakarta: UH Rp 0 — hanya DPR transport lokal yang dibayarkan.</p>
-                </div>
-              </details>
-
-              <details class="sim-guide-item">
-                <summary>
-                  <span>Transport lokal itu yang mana?</span>
-                  <svg class="ico sim-guide-chev" aria-hidden="true"><use href="#i-chevron-down"></use></svg>
-                </summary>
-                <div class="sim-guide-body">
-                  <ul>
-                    <li>Perjalanan <strong>bandara / stasiun &rarr; hotel &rarr; lokasi kegiatan</strong> pulang-pergi.</li>
-                    <li><strong>Taksi, ojek online, atau angkutan kota</strong> selama penugasan di kota tujuan.</li>
-                    <li>Luar kota: <strong>transport JKT PP</strong> (dari/ke bandara Jakarta) + <strong>taksi kota tujuan</strong> sesuai SBM provinsi (total <span id="simGuideLokalSbm">-</span>).</li>
-                    <li>DKI Jakarta dalam kota: <strong>DPR Rp 170.000</strong> per penugasan (bisa per hari atau flat).</li>
-                    <li>Bodetabek dan Kepulauan Seribu: tarif transport PP sudah termasuk, tanpa taksi bandara terpisah.</li>
-                  </ul>
-                  <p class="sim-guide-note">DPR berarti pengeluaran riil: wajib bukti (struk/kuitansi) dan dibayar paling banyak sesuai pagu SBM. Jika nominal riil yang diisi melebihi pagu, klaim otomatis <strong>dibatasi sebesar SBM</strong> dan rincian memberi keterangan &ldquo;Melebihi SBM&rdquo;. Untuk Bodetabek batasnya mengikuti pagu transport darat PP (aturan one way), sehingga tidak ada taksi terpisah.</p>
-                </div>
-              </details>
-
-              <details class="sim-guide-item">
-                <summary>
-                  <span>Aturan sewa mobil &amp; kendaraan dinas</span>
-                  <svg class="ico sim-guide-chev" aria-hidden="true"><use href="#i-chevron-down"></use></svg>
-                </summary>
-                <div class="sim-guide-body">
-                  <ul>
-                    <li><strong>Sewa mobil</strong> hanya untuk penugasan yang tidak tersedia angkutan umum memadai dan tidak ada kendaraan dinas.</li>
-                    <li>Biaya sewa dibayar riil dengan bukti, maksimal tarif SBM sewa kendaraan (PMK Hal 30).</li>
-                    <li>Tarif sewa sudah mencakup BBM, tol, dan parkir, jadi <strong>tidak boleh klaim taksi/DPR transport lokal lagi</strong>.</li>
-                    <li><strong>Pakai kendaraan dinas</strong>: pilih transport lokal &ldquo;Kendaraan dinas operasional&rdquo; — tidak ada biaya sewa/taksi dan <strong>UH dihitung 60%</strong>. Hanya transport lokal yang dianggap tercakup UH; <strong>tiket/transport antar kota tetap dapat diklaim</strong>. Jika kendaraan dinas dipakai sampai kota tujuan, pilih juga transport utama &ldquo;Tanpa tiket / kendaraan dinas&rdquo;.</li>
-                    <li>Klaim tiket atau transport riil yang melebihi SBM <strong>dibatasi maksimal SBM</strong> (untuk Bodetabek mengikuti pagu PP/one way); rincian menampilkan keterangan &ldquo;Melebihi SBM&rdquo;.</li>
-                    <li>BBM/tol/parkir kendaraan dinas hanya diklaim dengan bukti dan sesuai ketentuan.</li>
-                  </ul>
-                </div>
-              </details>
-            </div>
-
-            <!-- TOMBOL AKSI -->
-            <div class="sim-actions-grid">
-              <button type="button" class="btn btn-primary sim-btn-copy" onclick="copySimulasiSummary()">
-                <svg class="ico"><use href="#i-clipboard"></use></svg>
-                <span>Salin Rincian Estimasi</span>
-              </button>
-              <button type="button" class="btn btn-secondary" onclick="openSbmFromSimulasi()">
-                <svg class="ico"><use href="#i-wallet"></use></svg>
-                <span>Kamus SBM</span>
-              </button>
-            </div>
-          </aside>
         </div>
       </section>
     </div>
@@ -3110,14 +3279,6 @@
   </main>
 </div>
 
-<div class="sim-mobile-total no-print" id="simMobileTotalBar">
-  <div class="sim-mobile-total-info">
-    <span>Estimasi total (1 orang)</span>
-    <strong id="simMobileTotal" aria-live="polite">Rp 0</strong>
-  </div>
-  <button type="button" class="sim-mobile-total-btn" onclick="scrollToSimResult()">Lihat rincian</button>
-</div>
-
 <!-- Navigasi Cepat Mobile (Hanya tampil di layar HP) -->
 <nav class="bottom-nav-mobile no-print" aria-label="Navigasi Cepat Mobile">
   <button type="button" class="bottom-nav-btn" data-tab="dashboard" onclick="showTab('dashboard')">
@@ -3128,7 +3289,7 @@
     <svg class="ico"><use href="#i-edit"></use></svg>
     <span>Input</span>
   </button>
-  <button type="button" class="bottom-nav-btn" data-tab="simulasi" onclick="showTab('simulasi')">
+  <button type="button" class="bottom-nav-btn" data-tab="simulasi" onclick="showTab('simulasi')" style="display:none;">
     <svg class="ico"><use href="#i-sliders"></use></svg>
     <span>Simulasi</span>
   </button>
@@ -3170,18 +3331,51 @@
   </button>
 </div>
 
-<script src="xlsx.full.min.js"></script>
-<script src="jszip.min.js"></script>
-<script src="html2pdf.bundle.min.js"></script>
-<script src="pdf-lib.min.js"></script>
-<script src="pocketbase.umd.js?v=0.29.0"></script>
-<script src="js/pb-shim.js?v=20261126_01"></script>
-<script src="js/supabase.js?v=20261126_02"></script>
-<script src="js/data.js?v=20261124_33"></script>
-<script src="js/utils.js?v=20261124_33"></script>
-<script src="js/calc.js?v=20261126_12"></script>
-<script src="js/documents.js?v=20261126_04"></script>
-<script src="js/excel.js?v=20261126_01"></script>
-<script src="js/ui.js?v=20261126_12"></script>
+<!-- ===== PUSTAKA PIHAK KETIGA ===== -->
+<script src="vendor/xlsx.full.min.js"></script>
+<script src="vendor/jszip.min.js"></script>
+<script src="vendor/html2pdf.bundle.min.js"></script>
+<script src="vendor/pdf-lib.min.js"></script>
+<script src="vendor/pocketbase.umd.js?v=0.29.0"></script>
+
+<!-- ===== MODUL APLIKASI =====
+     Urutan WAJIB: 01-shim, 02-supabase, 03-data, 04-utils, 05-calc, 06-documents, 07-excel, 08-ui.
+     Gabungan isi tiap folder identik dengan file js/*.js lama (tidak ada logika yang diubah).
+     Naikkan ?v= setiap kali isi file JS diubah supaya cache peramban ikut diperbarui. -->
+<script src="js/01-shim/01-pocketbase-shim.js?v=20261126_13"></script>
+<script src="js/02-supabase/01-klien-dan-konfigurasi.js?v=20261126_13"></script>
+<script src="js/02-supabase/02-gerbang-login.js?v=20261126_13"></script>
+<script src="js/02-supabase/03-proses-autentikasi.js?v=20261126_13"></script>
+<script src="js/02-supabase/04-sinkron-riwayat-cloud.js?v=20261126_13"></script>
+<script src="js/02-supabase/05-modal-auth-dan-konfigurasi.js?v=20261126_13"></script>
+<script src="js/02-supabase/06-kelola-pengguna.js?v=20261126_13"></script>
+<script src="js/03-data/01-data-pegawai.js?v=20261126_13"></script>
+<script src="js/03-data/02-data-sbm.js?v=20261126_13"></script>
+<script src="js/03-data/03-transport-sekitar-jakarta.js?v=20261126_13"></script>
+<script src="js/03-data/04-master-kota.js?v=20261126_13"></script>
+<script src="js/03-data/05-state-global.js?v=20261126_19"></script>
+<script src="js/03-data/06-riwayat-arsip-awal.js?v=20261126_19"></script>
+<script src="js/04-utils/01-format-helper.js?v=20261126_13"></script>
+<script src="js/05-calc/01-sbm-dan-lama-tugas.js?v=20261126_13"></script>
+<script src="js/05-calc/02-konfigurasi-biaya-perorangan.js?v=20261126_13"></script>
+<script src="js/05-calc/03-transport-lokal-dan-dpr.js?v=20261126_13"></script>
+<script src="js/05-calc/04-viewer-sbm-cockpit.js?v=20261126_14"></script>
+<script src="js/05-calc/05-kalkulator-simulasi.js?v=20261126_22"></script>
+<script src="js/06-documents/01-render-nominatif-dan-rekap.js?v=20261126_13"></script>
+<script src="js/06-documents/02-render-rincian-per-orang.js?v=20261126_13"></script>
+<script src="js/06-documents/03-render-dpr-per-orang.js?v=20261126_13"></script>
+<script src="js/07-excel/01-ekspor-impor-excel.js?v=20261126_13"></script>
+<script src="js/08-ui/01-mode-tampilan.js?v=20261126_13"></script>
+<script src="js/08-ui/02-init-aplikasi.js?v=20261126_13"></script>
+<script src="js/08-ui/03-validasi-form.js?v=20261126_13"></script>
+<script src="js/08-ui/04-nomor-surat-tugas.js?v=20261126_13"></script>
+<script src="js/08-ui/05-loader-aplikasi.js?v=20261126_13"></script>
+<script src="js/08-ui/06-navigasi-tab.js?v=20261126_13"></script>
+<script src="js/08-ui/07-modal-selamat-datang.js?v=20261126_13"></script>
+<script src="js/08-ui/08-modal-pmk.js?v=20261126_13"></script>
+<script src="js/08-ui/09-daftar-pegawai.js?v=20261126_13"></script>
+<script src="js/08-ui/10-autosave-draft.js?v=20261126_13"></script>
+<script src="js/08-ui/11-riwayat-perjalanan.js?v=20261126_13"></script>
+<script src="js/08-ui/12-modal-dokumen-pdf.js?v=20261126_13"></script>
 </body>
 </html>

@@ -1,0 +1,802 @@
+/* ==========================================================================
+   ENHANCED EMPLOYEE BAR, SPOTLIGHT PROFILE & BATCH SPD TABLE
+   ========================================================================== */
+
+.rincian-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-auto-spd {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(37,99,235,0.3) !important;
+}
+
+.btn-auto-spd:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37,99,235,0.4) !important;
+}
+
+.btn-toggle-spd-table {
+  background: var(--bg-main) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-main) !important;
+  font-weight: 600 !important;
+}
+
+.btn-toggle-spd-table:hover {
+  border-color: var(--brand-500) !important;
+  color: var(--brand-600) !important;
+}
+
+/* Hide raw Windows scrollbar */
+.rincian-emp-scroll-wrap {
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  padding: 4px 0 12px 0;
+  margin-bottom: 8px;
+}
+
+.rincian-emp-scroll-wrap::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+.rincian-emp-pills {
+  display: flex;
+  gap: 12px;
+  flex-wrap: nowrap;
+  width: max-content;
+  min-width: 100%;
+}
+
+.rincian-emp-chip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--bg-main);
+  border: 1.5px solid var(--border-color);
+  border-radius: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.rincian-emp-chip:hover {
+  border-color: var(--brand-400);
+  background: var(--bg-card);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.rincian-emp-chip.active {
+  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%) !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35) !important;
+  transform: translateY(-2px);
+}
+
+.emp-chip-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(37,99,235,0.12);
+  color: var(--brand-600);
+  font-size: 12px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.rincian-emp-chip.active .emp-chip-avatar {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+.emp-chip-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: left;
+}
+
+.emp-chip-row-top,
+.emp-chip-row-bottom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.emp-chip-name {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.rincian-emp-chip.active .emp-chip-name {
+  color: #ffffff;
+}
+
+.chip-spd-tag {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+}
+
+.chip-spd-tag.is-set {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.chip-spd-tag.is-empty {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.rincian-emp-chip.active .chip-spd-tag.is-set {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.rincian-emp-chip.active .chip-spd-tag.is-empty {
+  background: rgba(254, 226, 226, 0.9);
+  color: #b91c1c;
+  border-color: transparent;
+}
+
+.emp-chip-sub {
+  font-size: 11.5px;
+  color: var(--text-sub);
+}
+
+.rincian-emp-chip.active .emp-chip-sub {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.emp-chip-total {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-main);
+  background: rgba(0, 0, 0, 0.04);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.rincian-emp-chip.active .emp-chip-total {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+/* Spotlight Profile & SPD Card */
+.rincian-active-emp-card {
+  display: grid;
+  grid-template-columns: 1.1fr 1.3fr;
+  align-items: center;
+  gap: 20px;
+  padding: 18px 22px;
+  background: linear-gradient(135deg, rgba(239, 246, 255, 0.8) 0%, rgba(248, 250, 252, 0.95) 100%);
+  border: 1.5px solid rgba(191, 219, 254, 0.8);
+  border-radius: 14px;
+  margin-top: 10px;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.06);
+}
+
+.active-emp-profile {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.active-emp-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(37,99,235,0.3);
+  flex-shrink: 0;
+}
+
+.active-emp-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.active-emp-badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--brand-600);
+  letter-spacing: 0.04em;
+  margin-bottom: 2px;
+}
+
+.active-emp-name {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.active-emp-meta {
+  font-size: 12.5px;
+  color: var(--text-sub);
+  margin-top: 2px;
+}
+
+.active-emp-spd-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.active-spd-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.active-spd-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.active-spd-icon {
+  font-size: 15px;
+}
+
+.active-spd-tip {
+  font-size: 11.5px;
+  color: var(--text-sub);
+}
+
+.spd-prefix-wrap-spotlight {
+  display: flex !important;
+  align-items: stretch !important;
+  height: 44px !important;
+  border: 1.5px solid var(--brand-500) !important;
+  border-radius: 10px !important;
+  overflow: hidden !important;
+  background: var(--bg-card) !important;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.12) !important;
+}
+
+.spd-input-box {
+  display: flex;
+  align-items: center;
+  background: var(--bg-card);
+  padding-left: 10px;
+  border-right: 1.5px solid rgba(0, 0, 0, 0.08);
+}
+
+.spd-input-hash {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--brand-600);
+  user-select: none;
+}
+
+.spd-prefix-wrap-spotlight .spd-number-input {
+  border: none !important;
+  background: transparent !important;
+  padding: 0 8px !important;
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  color: var(--brand-600) !important;
+  width: 75px !important;
+  text-align: center !important;
+  height: 100% !important;
+}
+
+.spd-prefix-wrap-spotlight .spd-number-input:focus {
+  outline: none !important;
+}
+
+.spd-prefix-wrap-spotlight .spd-suffix-label {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  padding: 0 12px;
+  background: rgba(241, 245, 249, 0.8);
+  color: var(--text-main);
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Batch SPD Table */
+.rincian-spd-table-wrap {
+  margin-top: 12px;
+  margin-bottom: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 16px;
+  animation: rincianFadeIn 0.2s ease-in-out;
+}
+
+.spd-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.spd-table-title strong {
+  font-size: 14px;
+  color: var(--text-main);
+  display: block;
+}
+
+.spd-table-sub {
+  font-size: 12px;
+  color: var(--text-sub);
+}
+
+.spd-table-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.spd-batch-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.spd-batch-table th {
+  background: var(--bg-main);
+  padding: 8px 12px;
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--text-sub);
+  border-bottom: 2px solid var(--border-color);
+  text-align: left;
+}
+
+.spd-batch-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+}
+
+.spd-table-prefix-input {
+  width: 80px;
+  text-align: center;
+  font-weight: 700;
+  color: var(--brand-600);
+}
+
+.spd-full-preview {
+  font-family: monospace;
+  font-size: 12.5px;
+  color: var(--text-main);
+  background: var(--bg-main);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.spd-status-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.spd-status-badge.is-ok {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+}
+
+.spd-status-badge.is-empty {
+  background: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
+}
+
+.badge-gol {
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 2px 6px;
+  background: var(--bg-main);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-sub);
+}
+
+/* Dark Mode Additions */
+html[data-theme="dark"] .rincian-active-emp-card {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+  border-color: rgba(59, 130, 246, 0.35);
+}
+
+html[data-theme="dark"] .active-emp-name {
+  color: #f8fafc;
+}
+
+html[data-theme="dark"] .spd-prefix-wrap-spotlight {
+  background: #0f172a !important;
+  border-color: #3b82f6 !important;
+}
+
+html[data-theme="dark"] .spd-input-box {
+  background: #0f172a;
+  border-right-color: rgba(255, 255, 255, 0.1);
+}
+
+html[data-theme="dark"] .spd-prefix-wrap-spotlight .spd-number-input {
+  color: #60a5fa !important;
+}
+
+html[data-theme="dark"] .spd-prefix-wrap-spotlight .spd-suffix-label {
+  background: rgba(255, 255, 255, 0.05);
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .rincian-emp-chip {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .rincian-emp-chip.active {
+  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%) !important;
+  border-color: #3b82f6 !important;
+}
+
+html[data-theme="dark"] .rincian-emp-chip:hover:not(.active) {
+  background: #273549;
+  border-color: #475569;
+}
+
+html[data-theme="dark"] .emp-chip-name {
+  color: #f8fafc;
+}
+
+html[data-theme="dark"] .emp-chip-total {
+  background: rgba(255, 255, 255, 0.08);
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .rincian-spd-table-wrap {
+  background: #0f172a;
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .spd-batch-table th {
+  background: #1e293b;
+  color: #94a3b8;
+  border-bottom-color: #334155;
+}
+
+html[data-theme="dark"] .spd-batch-table td {
+  border-bottom-color: #334155;
+}
+
+html[data-theme="dark"] .spd-full-preview {
+  background: #1e293b;
+  color: #cbd5e1;
+}
+
+@media (max-width: 860px) {
+  .rincian-active-emp-card {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* ============================================================ */
+/* POLISH: HOTEL & CUSTOM COST BUTTON PIXEL ALIGNMENT */
+/* ============================================================ */
+.hotel-row .btn,
+.hotel-row button.btn-warn,
+.hotel-row button {
+  height: 34px !important;
+  min-height: 34px !important;
+  max-height: 34px !important;
+  border-radius: 9px !important;
+  padding: 0 14px !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  align-self: end !important;
+  margin-bottom: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* ============================================================ */
+/* POLISH: HIGH-CONTRAST DARK MODE READABILITY */
+/* ============================================================ */
+html[data-theme="dark"] .spd-prefix-wrap-spotlight .spd-number-input {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 16px !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+}
+
+html[data-theme="dark"] .spd-prefix-wrap-spotlight .spd-suffix-label {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #e2e8f0 !important;
+  font-weight: 600 !important;
+  border-left-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+html[data-theme="dark"] .active-emp-name {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="dark"] .active-emp-meta {
+  color: #cbd5e1 !important;
+}
+
+html[data-theme="dark"] .active-spd-label {
+  color: #f1f5f9 !important;
+}
+
+html[data-theme="dark"] .active-spd-tip {
+  color: #94a3b8 !important;
+}
+
+html[data-theme="dark"] .custom-kind-btn.active,
+html[data-theme="dark"] .custom-kind-btn[aria-pressed="true"] {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4) !important;
+}
+
+html[data-theme="dark"] .custom-kind-btn:not(.active):not([aria-pressed="true"]) {
+  color: #cbd5e1 !important;
+}
+
+html[data-theme="dark"] .badge-gol {
+  background: #1e293b !important;
+  color: #e2e8f0 !important;
+  border-color: #334155 !important;
+}
+
+html[data-theme="dark"] .spd-status-badge.is-ok {
+  background: rgba(16, 185, 129, 0.25) !important;
+  color: #34d399 !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="dark"] .spd-status-badge.is-empty {
+  background: rgba(239, 68, 68, 0.25) !important;
+  color: #f87171 !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="dark"] .rincian-emp-chip .emp-chip-name {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .rincian-emp-chip.active .emp-chip-name {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="dark"] .rincian-emp-chip.active .emp-chip-total {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.22) !important;
+}
+
+html[data-theme="dark"] .spd-batch-table th {
+  background: #1e293b !important;
+  color: #f8fafc !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="dark"] .spd-batch-table td {
+  color: #f1f5f9 !important;
+}
+
+html[data-theme="dark"] .spd-row-input {
+  background: #0f172a !important;
+  color: #ffffff !important;
+  border-color: #3b82f6 !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="dark"] .spd-full-preview {
+  background: #1e293b !important;
+  color: #f8fafc !important;
+}
+
+/* ============================================================ */
+/* COCKPIT FOOTER BAR (TERAPKAN BIAYA KE SEMUA) */
+/* ============================================================ */
+.cockpit-footer-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 20px;
+  padding: 14px 18px;
+  background: var(--surface-2, #f8fafc);
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: 12px;
+  flex-wrap: wrap;
+}
+
+.cockpit-footer-hint {
+  font-size: 13px;
+  color: var(--text-sub, #64748b);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+html[data-theme="dark"] .cockpit-footer-bar {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .cockpit-footer-hint {
+  color: #94a3b8;
+}
+
+/* ============================================================ */
+/* BANNER TRANSPORT SEKITAR JAKARTA (LIGHT & DARK MODE) */
+/* ============================================================ */
+.emp-trans-sekitar-banner {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(5, 150, 105, 0.18));
+  border: 1.5px solid #6ee7b7;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.emp-trans-sekitar-text {
+  font-size: 12.5px;
+  color: #064e3b;
+  line-height: 1.5;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.emp-trans-sekitar-text .sekitar-label {
+  font-weight: 700;
+  color: #064e3b;
+}
+
+.emp-trans-sekitar-text .sekitar-detail strong {
+  color: #022c22;
+  font-weight: 700;
+}
+
+.emp-trans-sekitar-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.btn-isi-sbm-pp {
+  background: #10b981;
+  color: #ffffff !important;
+  border: 1px solid #059669;
+  padding: 5px 12px;
+  border-radius: 7px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.btn-isi-sbm-pp:hover {
+  background: #059669;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(16, 185, 129, 0.35);
+}
+
+.btn-pmk-hal-link {
+  background: #ffffff !important;
+  color: #065f46 !important;
+  border: 1.5px solid #059669 !important;
+  padding: 4.5px 12px;
+  border-radius: 7px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.10);
+  transition: all 0.15s ease;
+}
+
+.btn-pmk-hal-link:hover {
+  background: #ecfdf5 !important;
+  color: #047857 !important;
+  border-color: #047857 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(5, 150, 105, 0.25);
+}
+
+/* Dark Mode Overrides for Sekitar Banner */
+html[data-theme="dark"] .emp-trans-sekitar-banner {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.16), rgba(6, 78, 59, 0.38)) !important;
+  border: 1.5px solid rgba(52, 211, 153, 0.5) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35) !important;
+}
+
+html[data-theme="dark"] .emp-trans-sekitar-text {
+  color: #a7f3d0 !important;
+}
+
+html[data-theme="dark"] .emp-trans-sekitar-text .sekitar-label {
+  color: #34d399 !important;
+}
+
+html[data-theme="dark"] .emp-trans-sekitar-text .sekitar-detail strong {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .btn-isi-sbm-pp {
+  background: #059669;
+  border-color: #34d399;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+}
+
+html[data-theme="dark"] .btn-isi-sbm-pp:hover {
+  background: #10b981;
+}
+
+html[data-theme="dark"] .btn-pmk-hal-link {
+  background: #1e293b !important;
+  color: #34d399 !important;
+  border: 1.5px solid #34d399 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4) !important;
+}
+
+html[data-theme="dark"] .btn-pmk-hal-link:hover {
+  background: rgba(16, 185, 129, 0.25) !important;
+  color: #ffffff !important;
+  border-color: #6ee7b7 !important;
+}
+

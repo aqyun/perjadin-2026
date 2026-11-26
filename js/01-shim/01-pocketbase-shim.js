@@ -1,8 +1,8 @@
 // =====================================================================
 // PERDINKU 2026 - LAPISAN PENGHUBUNG POCKETBASE
 // Meniru bagian kecil dari antarmuka supabase-js (auth + from() + rpc())
-// di atas PocketBase, supaya js/supabase.js tidak perlu ditulis ulang.
-// Dimuat setelah pocketbase.umd.js dan sebelum js/supabase.js.
+// di atas PocketBase, supaya js/02-supabase/ tidak perlu ditulis ulang.
+// Dimuat setelah vendor/pocketbase.umd.js dan sebelum js/02-supabase/.
 // =====================================================================
 (function () {
   'use strict';
@@ -31,18 +31,19 @@
     },
     riwayat_perjadin: {
       collection: 'riwayat_perjadin',
-      colIn: {},
+      colIn: { created_at: 'created_at', updated_at: 'updated_at' },
       rowOut: (r) => {
         const o = { ...r };
         delete o.collectionId; delete o.collectionName;
-        o.created_at = fixDate(o.created_at);
-        o.updated_at = fixDate(o.updated_at);
+        o.created_at = fixDate(o.created_at || o.created);
+        o.updated_at = fixDate(o.updated_at || o.updated);
         return o;
       },
       dataIn: (d) => {
         const o = { ...d };
         // diisi otomatis oleh server
         delete o.updated_at; delete o.created_at; delete o.id;
+        delete o.created; delete o.updated;
         // relasi harus berupa id pengguna yang valid atau kosong
         if (!o.created_by) delete o.created_by;
         return o;
@@ -88,10 +89,11 @@
 
     function userOut(r) {
       if (!r) return null;
+      const defaultRole = (r.email === 'aqyunmaulidin@gmail.com') ? 'admin' : 'viewer';
       return {
         id: r.id,
         email: r.email,
-        user_metadata: { full_name: r.name || '', role: r.role || 'viewer' },
+        user_metadata: { full_name: r.name || '', role: r.role || defaultRole },
         identities: [{}]
       };
     }
@@ -391,7 +393,7 @@
     };
   }
 
-  // js/supabase.js memanggil window.supabase.createClient(url, key, opts)
+  // js/02-supabase/ memanggil window.supabase.createClient(url, key, opts)
   window.supabase = {
     createClient(url) { return makeClient(url || window.location.origin); }
   };

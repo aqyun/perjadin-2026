@@ -13,8 +13,8 @@ browser ─► Cloudflare ─► tunnel ─► container perjadin-pb (PocketBase
                                      └─ /_/    : dashboard admin (hanya superuser kantor)
 ```
 
-- `js/pb-shim.js` meniru bagian kecil antarmuka `supabase-js` (auth, `from()`, `rpc()`) di atas
-  PocketBase, jadi `js/supabase.js` hampir tidak perlu diubah.
+- `js/01-shim/01-pocketbase-shim.js` meniru bagian kecil antarmuka `supabase-js` (auth, `from()`, `rpc()`) di atas
+  PocketBase, jadi `js/02-supabase/` hampir tidak perlu diubah.
 - Skema database dan aturan akses ada di **`pb_migrations/`** (bukan lagi `supabase_schema.sql`).
 
 ## Branch dan deploy otomatis
@@ -78,7 +78,7 @@ selalu kosong sampai admin memberi peran lewat **Kelola Pengguna Tim** di aplika
   (PocketBase tidak memakai kunci publik seperti Supabase).
 - Dashboard `/_/` (akun superuser) memberi akses penuh ke semua data kantor, jadi tidak dibagikan.
   Kelola pengguna dan data lewat aplikasi (akun admin).
-- `pocketbase.umd.js` adalah SDK resmi v0.29.0 dari npm. Kalau diperbarui, cek isinya sama dengan paket resmi.
+- `vendor/pocketbase.umd.js` adalah SDK resmi v0.29.0 dari npm. Kalau diperbarui, cek isinya sama dengan paket resmi.
 - Reset kata sandi lewat email baru berfungsi setelah SMTP diatur di server (belum).
 
 ## Verifikasi email (saklar)
@@ -93,7 +93,7 @@ Sebelum menghidupkan verifikasi email suatu saat nanti:
 1. Atur SMTP di dashboard PocketBase (Settings, Mail) dan tes kirim email.
 2. Buat migrasi baru untuk menghapus trigger auto-verifikasi (`DROP TRIGGER IF EXISTS users_auto_verify_insert;`).
 3. Tandai akun yang sudah ada sebagai `verified` (koleksi `users`), terutama akun admin.
-4. Taruh di `index.html`, sebelum `<script src="js/pb-shim.js...">`:
+4. Taruh di `index.html`, sebelum `<script src="js/01-shim/01-pocketbase-shim.js...">`:
    `<script>window.PERDINKU_REQUIRE_EMAIL_VERIFICATION = true;</script>`
 
 Bagian 7 di `tests/run-test.js` menguji mode ini. Penolakan login untuk akun belum terverifikasi

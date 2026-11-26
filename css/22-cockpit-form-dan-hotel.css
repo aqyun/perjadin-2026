@@ -1,0 +1,747 @@
+/* =====================================================================
+   RINCIAN COCKPIT: ENHANCED PRO FORM GRIDS & HOTEL UI/UX
+   ===================================================================== */
+.rincian-uh-top-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 240px;
+  gap: 16px;
+  align-items: start;
+  margin-bottom: 20px;
+}
+@media (max-width: 900px) {
+  .rincian-uh-top-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.field-label-pro {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink, #0c1a2c);
+  margin-bottom: 7px;
+  display: block;
+}
+.field-select-pro, .field-input-pro {
+  width: 100%;
+  height: 42px;
+  padding: 9px 12px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-family: inherit;
+  background: #ffffff;
+  color: #0c1a2c;
+  box-shadow: 0 1px 2px rgba(12, 26, 44, 0.04);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+.field-select-pro:hover, .field-input-pro:hover {
+  border-color: #94a3b8;
+}
+.field-select-pro:focus, .field-input-pro:focus {
+  border-color: #1f6ff2;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(31, 111, 242, 0.16);
+  background: #ffffff;
+}
+.uh-quick-summary-card {
+  background: #f8fafc;
+  border: 1.5px solid #e2eaf4;
+  border-radius: 12px;
+  padding: 10px 16px;
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 64px;
+  box-shadow: 0 1px 3px rgba(12, 26, 44, 0.03);
+}
+.uh-quick-title {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #64748b;
+  letter-spacing: 0.5px;
+}
+.uh-quick-val {
+  font-size: 17px;
+  font-weight: 800;
+  color: #1d4ed8;
+  line-height: 1.25;
+  margin: 2px 0;
+}
+.uh-quick-sub {
+  font-size: 11px;
+  color: #64748b;
+}
+.rincian-meal-grid-pro {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+@media (max-width: 768px) {
+  .rincian-meal-grid-pro {
+    grid-template-columns: 1fr;
+  }
+}
+.meal-input-col {
+  display: flex;
+  flex-direction: column;
+}
+.meal-col-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink, #0c1a2c);
+  margin-bottom: 7px;
+}
+.rate-pill-mini {
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(31, 111, 242, 0.1);
+  color: #1d4ed8;
+  padding: 2px 7px;
+  border-radius: 6px;
+  border: 1px solid rgba(31, 111, 242, 0.18);
+}
+.meal-col-hint {
+  font-size: 11.5px;
+  color: #64748b;
+  margin-top: 5px;
+}
+.rincian-deduction-summary-pro {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  padding-top: 14px;
+  border-top: 1.5px dashed #e2eaf4;
+}
+.deduction-tag-neg {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1.5px solid rgba(239, 68, 68, 0.25);
+  color: #dc2626;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 12.5px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.deduction-tag-net {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1.5px solid rgba(16, 185, 129, 0.25);
+  color: #059669;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 12.5px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Hotel Segmented Submode Options */
+.rincian-segmented-opts {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+  background: #f1f5f9;
+  padding: 4px;
+  border-radius: 12px;
+  border: 1.5px solid #e2eaf4;
+}
+.btn-submode,
+.rincian-seg-btn {
+  flex: 1;
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+}
+.btn-submode:hover,
+.rincian-seg-btn:hover {
+  color: #0f172a;
+  background: rgba(255, 255, 255, 0.65);
+}
+.btn-submode.active,
+.rincian-seg-btn.active {
+  background: #ffffff;
+  color: #1d4ed8;
+  font-weight: 700;
+  border: 1px solid #dbeafe;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+}
+
+/* Hotel Pro Layout */
+.rincian-hotel-sbm-box, .rincian-hotel-manual-box {
+  background: #ffffff;
+  border: 1.5px solid #e2eaf4;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(12, 26, 44, 0.03);
+}
+.hotel-sbm-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.95fr);
+  gap: 20px;
+  align-items: stretch;
+}
+@media (max-width: 720px) {
+  .hotel-sbm-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+.hotel-inputs-card {
+  background: #f8fafc;
+  border: 1.5px solid #e2eaf4;
+  border-radius: 12px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  justify-content: center;
+}
+.hotel-form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0;
+}
+.hotel-form-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 7px;
+}
+.label-badge-opt {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 6px;
+  line-height: 1.2;
+}
+.hotel-input-icon-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+.hotel-input-icon {
+  position: absolute;
+  left: 12px;
+  font-size: 17px;
+  pointer-events: none;
+  line-height: 1;
+  z-index: 2;
+}
+.hotel-field-input {
+  width: 100%;
+  height: 44px;
+  padding: 10px 14px 10px 40px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-family: inherit;
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 1px 2px rgba(12, 26, 44, 0.04);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+.hotel-field-input:hover {
+  border-color: #94a3b8;
+}
+.hotel-field-input:focus {
+  outline: none;
+  border-color: #1f6ff2;
+  box-shadow: 0 0 0 3px rgba(31, 111, 242, 0.16);
+  background: #ffffff;
+}
+.hotel-field-input::placeholder {
+  color: #94a3b8;
+  font-weight: 400;
+}
+.hotel-input-hint {
+  font-size: 11.5px;
+  color: #64748b;
+  margin-top: 6px;
+  display: block;
+  line-height: 1.45;
+}
+
+/* Stepper Control */
+.hotel-stepper-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.hotel-stepper-wrap {
+  display: inline-flex;
+  align-items: center;
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(12, 26, 44, 0.05);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+.hotel-stepper-wrap:focus-within {
+  border-color: #1f6ff2;
+  box-shadow: 0 0 0 3px rgba(31, 111, 242, 0.16);
+}
+.stepper-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  border: none;
+  font-size: 19px;
+  font-weight: 700;
+  color: #1e293b;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  user-select: none;
+}
+.stepper-btn:hover {
+  background: #e2e8f0;
+  color: #1f6ff2;
+}
+.stepper-btn:active {
+  background: #cbd5e1;
+}
+.stepper-btn:first-child {
+  border-right: 1.5px solid #e2eaf4;
+}
+.stepper-btn:last-child {
+  border-left: 1.5px solid #e2eaf4;
+}
+.stepper-input {
+  width: 50px;
+  height: 40px;
+  text-align: center;
+  border: none;
+  font-size: 15px;
+  font-weight: 800;
+  font-family: inherit;
+  background: #ffffff;
+  color: #0f172a;
+  padding: 0;
+  -moz-appearance: textfield;
+}
+.stepper-input::-webkit-outer-spin-button,
+.stepper-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.stepper-input:focus {
+  outline: none;
+}
+.stepper-unit-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #475569;
+  background: #f1f5f9;
+  border: 1px solid #e2eaf4;
+  padding: 4px 10px;
+  border-radius: 8px;
+  line-height: 1.3;
+}
+
+/* Plafon SBM Summary Card */
+.hotel-summary-card {
+  background: linear-gradient(145deg, #f0f7ff 0%, #e2effe 100%);
+  border: 1.5px solid #bcd7fa;
+  border-radius: 12px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(31, 111, 242, 0.06);
+}
+.summary-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1.5px dashed rgba(31, 111, 242, 0.25);
+  margin-bottom: 12px;
+}
+.summary-badge-title {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #1e40af;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+.summary-gol-pill {
+  background: #1f6ff2;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(31, 111, 242, 0.3);
+}
+.summary-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.summary-stat-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12.5px;
+  color: #475569;
+}
+.summary-stat-line strong {
+  color: #0f172a;
+  font-weight: 700;
+}
+.stat-name-sub {
+  font-size: 11px;
+  color: #64748b;
+}
+.summary-divider {
+  height: 1px;
+  background: rgba(31, 111, 242, 0.2);
+  margin: 10px 0;
+}
+.summary-total-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-top: 10px;
+  border-top: 1.5px solid rgba(31, 111, 242, 0.25);
+}
+.total-label-sm {
+  font-size: 13px;
+  font-weight: 800;
+  color: #0f172a;
+}
+.total-badge-sub {
+  font-size: 11px;
+  color: #64748b;
+}
+.total-value-lg {
+  font-size: 19px;
+  font-weight: 800;
+  color: #1d4ed8;
+  letter-spacing: -0.3px;
+}
+.hotel-manual-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.hotel-manual-grid .full {
+  grid-column: span 2;
+}
+
+html[data-theme="dark"] .rincian-hotel-sbm-box,
+html[data-theme="dark"] .rincian-hotel-manual-box,
+html[data-theme="dark"] .hotel-inputs-card,
+html[data-theme="dark"] .uh-quick-summary-card {
+  background: #1e293b;
+  border-color: #334155;
+}
+html[data-theme="dark"] .rincian-segmented-opts {
+  background: #0f172a;
+  border-color: #334155;
+}
+html[data-theme="dark"] .rincian-seg-btn {
+  color: #94a3b8;
+}
+html[data-theme="dark"] .rincian-seg-btn.active {
+  background: #1e293b;
+  color: #60a5fa;
+  border-color: #3b82f6;
+}
+html[data-theme="dark"] .hotel-summary-card {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(37, 99, 235, 0.18) 100%);
+  border-color: rgba(59, 130, 246, 0.35);
+}
+html[data-theme="dark"] .summary-badge-title {
+  color: #93c5fd;
+}
+html[data-theme="dark"] .summary-stat-line {
+  color: #94a3b8;
+}
+html[data-theme="dark"] .summary-stat-line strong,
+html[data-theme="dark"] .total-label-sm {
+  color: #f1f5f9;
+}
+html[data-theme="dark"] .total-value-lg {
+  color: #60a5fa;
+}
+html[data-theme="dark"] .stepper-btn {
+  background: #0f172a;
+  color: #f1f5f9;
+}
+html[data-theme="dark"] .stepper-btn:first-child {
+  border-right-color: #334155;
+}
+html[data-theme="dark"] .stepper-btn:last-child {
+  border-left-color: #334155;
+}
+html[data-theme="dark"] .stepper-input {
+  background: #1e293b;
+  color: #f1f5f9;
+}
+html[data-theme="dark"] .stepper-unit-badge {
+  background: #0f172a;
+  border-color: #334155;
+  color: #94a3b8;
+}
+html[data-theme="dark"] .hotel-stepper-wrap,
+html[data-theme="dark"] .field-select-pro,
+html[data-theme="dark"] .field-input-pro,
+html[data-theme="dark"] .hotel-field-input {
+  background: #0f172a;
+  border-color: #334155;
+  color: #f1f5f9;
+}
+
+.rincian-info-card {
+  background: var(--bg-main);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 18px;
+}
+
+.info-card-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--text-sub);
+  padding: 6px 0;
+}
+
+.info-card-row strong {
+  color: var(--text-main);
+}
+
+.info-card-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 8px 0;
+}
+
+.info-card-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-main);
+  padding-top: 4px;
+}
+
+.info-card-total strong {
+  font-size: 18px;
+  color: var(--brand-600);
+}
+
+/* Pane Head & Quick Buttons */
+.rincian-pane-head-flex {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.pane-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.pane-sub {
+  font-size: 12px;
+  color: var(--text-sub);
+  margin: 2px 0 0 0;
+}
+
+.rincian-pane-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.rincian-foot-badge {
+  font-size: 13px;
+  color: var(--text-sub);
+}
+
+.rincian-foot-badge strong {
+  color: var(--brand-600);
+  font-size: 15px;
+}
+
+/* Button Aligned Sizes */
+.btn-del-cost,
+.emp-trans-del-btn {
+  height: 38px !important;
+  line-height: 38px !important;
+  padding: 0 16px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+}
+
+html[data-theme="dark"] .manual-meal-btn-del,
+html[data-theme="dark"] .btn-del-sm {
+  background: rgba(239, 68, 68, 0.15) !important;
+  border-color: rgba(239, 68, 68, 0.35) !important;
+  color: #f87171 !important;
+}
+html[data-theme="dark"] .manual-meal-btn-del:hover,
+html[data-theme="dark"] .btn-del-sm:hover {
+  background: rgba(239, 68, 68, 0.28) !important;
+  border-color: rgba(239, 68, 68, 0.6) !important;
+  color: #fca5a5 !important;
+}
+
+/* Dark Mode Overrides for Rincian Cockpit */
+html[data-theme="dark"] .rincian-cta-banner {
+  background: linear-gradient(135deg, rgba(30, 58, 138, 0.25) 0%, rgba(30, 41, 59, 0.7) 100%);
+  border-color: rgba(96, 165, 250, 0.3);
+  box-shadow: none;
+}
+
+html[data-theme="dark"] .rincian-cockpit-card {
+  background: #0f172a;
+  border-color: #334155;
+  box-shadow: none;
+}
+
+html[data-theme="dark"] .rincian-emp-chip {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .rincian-emp-chip.active {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  border-color: #3b82f6;
+  box-shadow: 0 4px 14px rgba(37,99,235,0.4);
+}
+
+html[data-theme="dark"] .emp-chip-name {
+  color: #f8fafc;
+}
+
+html[data-theme="dark"] .emp-chip-sub {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .emp-chip-total {
+  background: rgba(255, 255, 255, 0.08);
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .rincian-meta-row,
+html[data-theme="dark"] .rincian-toggle-bar,
+html[data-theme="dark"] .rincian-subbox,
+html[data-theme="dark"] .rincian-info-card {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .spd-prefix-wrap {
+  background: #0f172a;
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .spd-suffix-label {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: #334155;
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .rincian-cockpit-tabs {
+  background: #0f172a;
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .rincian-cockpit-tab {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .rincian-cockpit-tab:hover {
+  color: #60a5fa;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+html[data-theme="dark"] .rincian-cockpit-tab.active {
+  color: #60a5fa;
+  background: #1e293b;
+  border-color: #3b82f6;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+html[data-theme="dark"] .rincian-seg-btn,
+html[data-theme="dark"] .btn-submode {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .rincian-seg-btn:hover,
+html[data-theme="dark"] .btn-submode:hover {
+  color: #60a5fa;
+}
+
+html[data-theme="dark"] .rincian-seg-btn.active,
+html[data-theme="dark"] .btn-submode.active {
+  background: #1e293b;
+  border-color: #3b82f6;
+  color: #60a5fa;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+html[data-theme="dark"] .custom-kind-btn[aria-pressed="true"] {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="dark"] .custom-kind-btn[aria-pressed="false"] {
+  color: #cbd5e1 !important;
+}
+
+html[data-theme="dark"] .rincian-deduction-badge {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #fde68a;
+}
+
