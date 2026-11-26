@@ -1,0 +1,611 @@
+/* ==========================================================================
+   RINCIAN PERORANGAN COCKPIT & CTA BANNER (LANGKAH 3)
+   ========================================================================== */
+
+/* CTA Banner in Langkah 3 */
+.rincian-cta-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  background: linear-gradient(135deg, rgba(37,99,235,0.05) 0%, rgba(59,130,246,0.1) 100%);
+  border: 1.5px solid rgba(59,130,246,0.25);
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 16px rgba(37,99,235,0.06);
+  transition: all 0.2s ease;
+}
+
+.rincian-cta-visual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.rincian-cta-badge {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: var(--brand-600);
+  color: #ffffff;
+  padding: 3px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.04em;
+}
+
+.rincian-cta-body {
+  flex: 1;
+}
+
+.rincian-cta-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0 0 8px 0;
+}
+
+.rincian-cta-desc {
+  font-size: 14px;
+  color: var(--text-sub);
+  line-height: 1.6;
+  margin: 0 0 16px 0;
+}
+
+.rincian-open-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(37,99,235,0.3);
+  transition: all 0.2s ease;
+}
+
+.rincian-open-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(37,99,235,0.4);
+}
+
+/* Rincian Cockpit Card */
+.rincian-cockpit-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* Employee Bar & Chips */
+.rincian-emp-bar {
+  margin-bottom: 20px;
+}
+
+.rincian-emp-bar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.rincian-emp-bar-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.emp-bar-heading {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text-main);
+}
+
+.emp-bar-sub {
+  font-size: 12px;
+  color: var(--text-sub);
+  margin: 2px 0 0 0;
+}
+
+.btn-copy-all {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(37,99,235,0.35);
+  background: rgba(37,99,235,0.06);
+  color: var(--brand-600);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-copy-all:hover {
+  background: var(--brand-600);
+  color: #ffffff;
+  border-color: var(--brand-600);
+  box-shadow: 0 4px 12px rgba(37,99,235,0.25);
+}
+
+.rincian-emp-pills {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin-bottom: 14px;
+  scrollbar-width: thin;
+}
+
+.rincian-emp-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  background: var(--bg-main);
+  border: 1.5px solid var(--border-color);
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.rincian-emp-chip:hover {
+  border-color: var(--brand-500);
+  transform: translateY(-1px);
+}
+
+.rincian-emp-chip.active {
+  background: linear-gradient(135deg, var(--brand-600) 0%, #1d4ed8 100%);
+  border-color: var(--brand-600);
+  box-shadow: 0 4px 14px rgba(37,99,235,0.3);
+}
+
+.emp-chip-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(37,99,235,0.12);
+  color: var(--brand-600);
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rincian-emp-chip.active .emp-chip-avatar {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+.emp-chip-info {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.emp-chip-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.rincian-emp-chip.active .emp-chip-name {
+  color: #ffffff;
+}
+
+.emp-chip-sub {
+  font-size: 11px;
+  color: var(--text-sub);
+}
+
+.rincian-emp-chip.active .emp-chip-sub {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.emp-chip-total {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 8px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 999px;
+  color: var(--text-main);
+}
+
+.rincian-emp-chip.active .emp-chip-total {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+/* Meta Row (SPD) */
+.rincian-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  background: var(--bg-main);
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+}
+
+.rincian-spd-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  width: 100%;
+}
+
+.rincian-spd-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+  margin: 0;
+  white-space: nowrap;
+}
+
+.spd-prefix-wrap {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg-card);
+  max-width: 420px;
+  width: 100%;
+}
+
+.spd-number-input {
+  border: none !important;
+  background: transparent !important;
+  padding: 8px 12px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: var(--text-main) !important;
+  width: 90px !important;
+  text-align: center;
+}
+
+.spd-number-input:focus {
+  outline: none;
+}
+
+.spd-suffix-label {
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--text-sub);
+  font-size: 13px;
+  border-left: 1px solid var(--border-color);
+  white-space: nowrap;
+}
+
+/* Live KPI Overview Banner */
+.rincian-kpi-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  color: #ffffff;
+  border-radius: 14px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.15);
+}
+
+.rincian-kpi-main {
+  flex: 1;
+  min-width: 220px;
+}
+
+.rincian-kpi-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.rincian-kpi-value {
+  font-size: 30px;
+  font-weight: 800;
+  color: #38bdf8;
+  line-height: 1.2;
+  margin: 4px 0;
+}
+
+.rincian-kpi-sub {
+  font-size: 13px;
+  color: #cbd5e1;
+}
+
+.rincian-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  min-width: 340px;
+}
+
+.rincian-kpi-chip {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.kpi-chip-label {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-bottom: 2px;
+}
+
+.rincian-kpi-chip strong {
+  font-size: 14px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+/* Cockpit Navigation Tabs */
+.rincian-cockpit-tabs {
+  display: flex;
+  gap: 8px;
+  background: var(--bg-main, #f1f5f9);
+  padding: 6px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  margin-bottom: 22px;
+  overflow-x: auto;
+}
+
+.rincian-cockpit-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-sub);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+}
+
+.rincian-cockpit-tab:hover {
+  color: var(--brand-600);
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.rincian-cockpit-tab.active {
+  color: var(--brand-600);
+  background: #ffffff;
+  border-color: rgba(37, 99, 235, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  font-weight: 700;
+}
+
+.tab-ico,
+.cockpit-tab-ico {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.cockpit-tab-text {
+  font-size: 13.5px;
+  letter-spacing: -0.01em;
+}
+
+/* Cockpit Panes */
+.rincian-cockpit-pane {
+  display: none;
+  animation: rincianFadeIn 0.2s ease-in-out;
+}
+
+.rincian-cockpit-pane.active {
+  display: block;
+}
+
+@keyframes rincianFadeIn {
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.rincian-toggle-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px 18px;
+  background: var(--bg-main);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  margin-bottom: 18px;
+}
+
+.rincian-switch-label {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.rincian-switch-label input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.rincian-slider,
+.rincian-switch-slider {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background-color: #cbd5e1;
+  border-radius: 999px;
+  transition: .3s;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.rincian-slider:before,
+.rincian-switch-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  border-radius: 50%;
+  transition: .3s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.rincian-switch-label input:checked + .rincian-slider,
+.rincian-switch-label input:checked + .rincian-switch-slider {
+  background-color: var(--brand-600);
+}
+
+.rincian-switch-label input:checked + .rincian-slider:before,
+.rincian-switch-label input:checked + .rincian-switch-slider:before {
+  transform: translateX(20px);
+}
+
+.rincian-switch-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.rincian-switch-text strong {
+  font-size: 14px;
+  color: var(--text-main);
+}
+
+.rincian-switch-text small {
+  font-size: 12px;
+  color: var(--text-sub);
+}
+
+.rincian-badge-highlight,
+.rincian-rate-highlight {
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(37,99,235,0.08);
+  color: var(--brand-600);
+  border: 1px solid rgba(37,99,235,0.25);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rincian-pane-inner {
+  padding: 4px 0;
+}
+
+.rincian-subbox {
+  background: var(--bg-main);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.rincian-subbox-head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rincian-check-pill,
+.rincian-subbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-main);
+  user-select: none;
+}
+
+.subbox-tip {
+  font-size: 12px;
+  color: var(--text-sub);
+  padding-left: 24px;
+}
+
+.rincian-subbox-body {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--border-color);
+}
+
+.rincian-meal-mode-toggle,
+.rincian-segmented-opts {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+  background: var(--bg-main, #f1f5f9);
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+}
+
+.btn-submode,
+.rincian-seg-btn {
+  flex: 1;
+  padding: 9px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 7px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-sub);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.btn-submode:hover,
+.rincian-seg-btn:hover {
+  color: var(--brand-600);
+}
+
+.btn-submode.active,
+.rincian-seg-btn.active {
+  background: #ffffff;
+  color: var(--brand-600);
+  border-color: rgba(37, 99, 235, 0.2);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  font-weight: 700;
+}
+  text-align: center;
+}
+
+.rincian-seg-btn.active {
+  background: rgba(37,99,235,0.08);
+  border-color: var(--brand-600);
+  color: var(--brand-600);
+  font-weight: 700;
+}
+

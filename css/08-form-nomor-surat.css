@@ -1,0 +1,199 @@
+/* SPD Number Prefix & Suffix Group */
+.spd-prefix-wrap {
+  display: flex;
+  align-items: stretch;
+  height: 42px;
+  min-height: 42px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--surface);
+  overflow: hidden;
+  transition: border-color .18s, box-shadow .18s, background .18s;
+  width: 100%;
+}
+
+.spd-prefix-wrap:hover {
+  border-color: #bccce0;
+}
+
+.spd-prefix-wrap:focus-within {
+  border-color: #8fb8ff;
+  box-shadow: var(--ring);
+}
+
+.spd-prefix-wrap.has-error {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
+}
+
+.spd-number-input {
+  flex: 0 0 95px !important;
+  min-width: 75px !important;
+  height: 100% !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 12px !important;
+  font-weight: 700 !important;
+  color: var(--ink) !important;
+  font-family: inherit !important;
+  font-size: 13.5px !important;
+  text-align: center;
+}
+
+.spd-number-input:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.spd-suffix-label {
+  display: inline-flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 14px;
+  background: var(--surface-2);
+  border-left: 1px solid var(--line-strong);
+  color: var(--text-2, #64748b);
+  font-size: 13px;
+  font-weight: 600;
+  user-select: none;
+  white-space: nowrap;
+  flex: 1;
+}
+
+html[data-theme="dark"] .spd-prefix-wrap {
+  background: var(--surface-2) !important;
+  border-color: var(--line-strong) !important;
+}
+
+html[data-theme="dark"] .spd-prefix-wrap:hover {
+  border-color: #3f5c86 !important;
+}
+
+html[data-theme="dark"] .spd-prefix-wrap:focus-within {
+  background: #1a2c4a !important;
+  border-color: #3b82f6 !important;
+  box-shadow: var(--ring) !important;
+}
+
+html[data-theme="dark"] .spd-number-input {
+  color: var(--ink) !important;
+  background: transparent !important;
+}
+
+html[data-theme="dark"] .spd-number-input:focus {
+  background: transparent !important;
+}
+
+html[data-theme="dark"] .spd-suffix-label {
+  background: rgba(255, 255, 255, 0.04);
+  border-left-color: var(--line-strong) !important;
+  color: #9cb3d3;
+}
+
+/* ST (Surat Tugas) Unified Number & Suffix Group */
+.st-prefix-wrap {
+  display: flex;
+  align-items: stretch;
+  height: 42px;
+  min-height: 42px;
+  border: 1px solid var(--line-strong, #cbd5e1);
+  border-radius: 12px;
+  background: var(--surface, #ffffff);
+  overflow: hidden;
+  transition: border-color .18s, box-shadow .18s, background .18s;
+  padding: 0 !important;
+  width: 100%;
+}
+
+.st-prefix-wrap:hover {
+  border-color: #bccce0;
+}
+
+.st-prefix-wrap:focus-within {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18) !important;
+}
+
+.st-prefix-wrap.has-error,
+.form-group.has-error .st-prefix-wrap {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
+  background-color: #fff8f8 !important;
+}
+
+.form-group.has-error .st-prefix-wrap input,
+.form-group.has-error .st-prefix-wrap select {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.st-prefix-wrap .field-inner-icon {
+  display: none !important;
+}
+
+.st-number-input {
+  flex: 0 0 75px !important;
+  width: 75px !important;
+  min-width: 65px !important;
+  max-width: 85px !important;
+  height: 100% !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  padding: 0 8px !important;
+  font-weight: 700 !important;
+  color: var(--ink, #0f172a) !important;
+  font-size: 13.5px !important;
+  text-align: center !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.st-number-input::placeholder {
+  color: #94a3b8 !important;
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+.st-suffix-dropdown-wrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  background: var(--surface-1, #f8fafc);
+  border-left: 1px solid var(--line-strong, #cbd5e1);
+  position: relative;
+}
+
+.st-suffix-select {
+  width: 100%;
+  height: 100%;
+  border: none !important;
+  background: transparent !important;
+  padding: 0 24px 0 10px !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  color: #1d4ed8 !important;
+  cursor: pointer;
+  outline: none !important;
+  box-shadow: none !important;
+  appearance: none;
+  -webkit-appearance: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.st-suffix-dropdown-wrap::after {
+  content: '▼';
+  font-size: 8px;
+  color: #64748b;
+  position: absolute;
+  right: 10px;
+  pointer-events: none;
+}
+

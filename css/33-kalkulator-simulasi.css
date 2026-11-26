@@ -1,0 +1,2257 @@
+/* =====================================================================
+   KALKULATOR SIMULASI PERHITUNGAN PERDIN (EXECUTIVE DESIGN SYSTEM 2026)
+   Standar Biaya Masukan PMK Nomor 32 Tahun 2025
+   Modern Executive UI/UX Edition
+   ===================================================================== */
+
+/* Cockpit Head & Badges */
+.sim-cockpit-card {
+  margin-bottom: 28px;
+  border-radius: 24px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  background: var(--bg-card, #ffffff);
+  box-shadow: 0 20px 45px -10px rgba(15, 23, 42, 0.06), 0 8px 16px -6px rgba(15, 23, 42, 0.04);
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sim-head-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 24px 30px;
+  border-bottom: 1px solid #f1f5f9;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+  flex-wrap: wrap;
+}
+
+.sim-head-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.sim-head-ico {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  color: #1f6ff2;
+  flex-shrink: 0;
+  box-shadow: inset 0 0 0 1.5px rgba(31, 111, 242, 0.25), 0 6px 16px rgba(31, 111, 242, 0.14);
+}
+
+.sim-head-ico svg {
+  width: 24px;
+  height: 24px;
+}
+
+.sim-header-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.sim-badge-pmk {
+  display: inline-block;
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #1f6ff2;
+  background: rgba(31, 111, 242, 0.09);
+  border: 1px solid rgba(31, 111, 242, 0.2);
+  border-radius: 7px;
+  padding: 3px 10px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.sim-badge-mode {
+  display: inline-block;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #059669;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 7px;
+  padding: 3px 9px;
+  letter-spacing: 0.3px;
+}
+
+.sim-head-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.4px;
+}
+
+.sim-head-desc {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.45;
+}
+
+.sim-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.sim-head-actions .btn {
+  height: 40px;
+  border-radius: 11px;
+  font-weight: 700;
+  font-size: 12.5px;
+  padding: 0 14px;
+}
+
+/* Workspace Grid */
+.sim-cockpit-body {
+  padding: 26px 30px 36px;
+}
+
+.sim-workspace-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(360px, 0.95fr);
+  gap: 26px;
+  align-items: start;
+}
+
+.sim-inputs-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+/* =====================================================================
+   SECTION CARDS (LEFT FORM PANEL) - MODERN CARD ARCHITECTURE
+   ===================================================================== */
+.sim-section-card {
+  background: #ffffff;
+  border: 1.5px solid #e8edf5;
+  border-radius: 20px;
+  padding: 24px 26px;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sim-section-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 14px 34px -8px rgba(15, 23, 42, 0.08), 0 4px 12px -2px rgba(15, 23, 42, 0.03);
+  transform: translateY(-2px);
+}
+
+.sim-section-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.sim-section-ico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.sim-section-ico svg {
+  width: 19px;
+  height: 19px;
+}
+
+.sim-section-ico.ico-dest {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 1.5px solid #bfdbfe;
+  color: #2563eb;
+}
+
+.sim-section-ico.ico-duration {
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+  border: 1.5px solid #ddd6fe;
+  color: #7c3aed;
+}
+
+.sim-section-ico.ico-cost {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border: 1.5px solid #a7f3d0;
+  color: #059669;
+}
+
+.sim-section-ico.ico-rep {
+  background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+  border: 1.5px solid #c7d2fe;
+  color: #4f46e5;
+}
+
+.sim-section-title-wrap {
+  min-width: 0;
+}
+
+.sim-section-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.3px;
+}
+
+.sim-section-sub {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.45;
+}
+
+/* SECTION 1: SEARCH & DESTINATION INPUTS */
+.sim-search-city-box {
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.sim-search-styled {
+  width: 100%;
+  height: 48px;
+  box-sizing: border-box;
+  padding: 0 42px 0 44px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #0f172a;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sim-search-styled:focus {
+  background: #ffffff;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+  outline: none;
+}
+
+.sim-search-ico-left {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sim-search-ico-left svg {
+  width: 18px;
+  height: 18px;
+}
+
+.sim-search-btn-clear {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  background: #e2e8f0;
+  border: none;
+  color: #475569;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.sim-search-btn-clear:hover {
+  background: #cbd5e1;
+  color: #0f172a;
+}
+
+.sim-search-results-popup {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 14px;
+  box-shadow: 0 16px 36px -6px rgba(15, 23, 42, 0.16);
+  max-height: 280px;
+  overflow-y: auto;
+  padding: 6px;
+}
+
+/* Dual Select Row */
+.sim-dual-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.sim-field-label {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 7px;
+}
+
+.sim-select-wrap select {
+  width: 100%;
+  height: 48px;
+  min-height: 48px;
+  box-sizing: border-box;
+  padding: 0 36px 0 14px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  background: #f8fafc url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center;
+  appearance: none;
+  -webkit-appearance: none;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #0f172a;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sim-select-wrap select:focus {
+  background-color: #ffffff;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+}
+
+/* Popular Chips Container */
+.sim-chips-container {
+  margin-bottom: 16px;
+}
+
+.sim-chips-heading {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 9px;
+}
+
+.sim-chips-flex {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sim-chip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #475569;
+  padding: 7px 15px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sim-chip-btn .chip-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #94a3b8;
+  display: inline-block;
+  transition: background 0.18s ease;
+}
+
+.sim-chip-btn:hover {
+  background: #eff6ff;
+  border-color: #93c5fd;
+  color: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.1);
+}
+
+.sim-chip-btn:hover .chip-dot {
+  background: #2563eb;
+}
+
+.sim-chip-btn.active {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  border-color: #1d4ed8;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+  transform: translateY(-1px);
+}
+
+.sim-chip-btn.active .chip-dot {
+  background: #ffffff;
+}
+
+.sim-mt-14 {
+  margin-top: 14px;
+}
+
+/* Notice Card (Modern Pagu Strip) */
+.sim-location-notice {
+  margin-top: 16px;
+}
+
+.sim-pagu-strip {
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: all 0.25s ease;
+}
+
+.sim-pagu-strip-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sim-pagu-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #1e293b;
+  letter-spacing: -0.1px;
+}
+
+.sim-pagu-pill-badge {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #475569;
+  background: #e2e8f0;
+  border-radius: 6px;
+  padding: 3px 9px;
+  letter-spacing: 0.5px;
+}
+
+.sim-pagu-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px;
+}
+
+.sim-pagu-item {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.sim-pagu-item span {
+  color: #64748b;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.sim-pagu-item strong {
+  color: #0f172a;
+  font-weight: 800;
+  font-size: 13.5px;
+}
+
+/* Color accents for Pagu Strip */
+.sim-pagu-strip-dki {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-color: #cbd5e1;
+}
+.sim-pagu-strip-dki .sim-pagu-tag { color: #334155; }
+.sim-pagu-strip-dki .sim-pagu-item { border-color: #cbd5e1; }
+.sim-pagu-strip-dki .sim-pagu-item strong { color: #1e293b; }
+
+.sim-pagu-strip-green {
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  border-color: #a7f3d0;
+}
+.sim-pagu-strip-green .sim-pagu-tag { color: #065f46; }
+.sim-pagu-strip-green .sim-pagu-item { border-color: #bbf7d0; }
+.sim-pagu-strip-green .sim-pagu-item strong { color: #065f46; }
+
+.sim-pagu-strip-blue {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-color: #93c5fd;
+}
+.sim-pagu-strip-blue .sim-pagu-tag { color: #1d4ed8; }
+.sim-pagu-strip-blue .sim-pagu-item { border-color: #bfdbfe; }
+.sim-pagu-strip-blue .sim-pagu-item strong { color: #1d4ed8; }
+
+.sim-pagu-strip-yellow {
+  background: linear-gradient(135deg, #fefce8 0%, #fef9c3 100%);
+  border-color: #fde047;
+}
+.sim-pagu-strip-yellow .sim-pagu-tag { color: #854d0e; }
+.sim-pagu-strip-yellow .sim-pagu-item { border-color: #fef08a; }
+.sim-pagu-strip-yellow .sim-pagu-item strong { color: #854d0e; }
+
+/* =====================================================================
+   SECTION 2: DURASI, STEPPERS & GOLONGAN
+   ===================================================================== */
+.sim-controls-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.sim-control-box {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.sim-label-with-helper {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.sim-label-helper {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+/* Modern Pill Stepper */
+.sim-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  background: #f8fafc;
+  overflow: hidden;
+  height: 50px;
+  min-height: 50px;
+  box-sizing: border-box;
+  padding: 5px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sim-stepper:focus-within {
+  border-color: #3b82f6;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+}
+
+.sim-stepper-btn {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #1e293b;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.sim-stepper-btn:hover {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #2563eb;
+  transform: scale(1.05);
+}
+
+.sim-stepper-btn:active {
+  transform: scale(0.95);
+  background: #dbeafe;
+}
+
+.sim-stepper input[type="number"] {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 800;
+  color: #0f172a;
+  height: 100%;
+  outline: none;
+  -moz-appearance: textfield;
+}
+
+.sim-stepper input[type="number"]::-webkit-outer-spin-button,
+.sim-stepper input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Subjek Perhitungan: Fixed Modern Badge */
+.sim-fixed-badge-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  height: 50px;
+  min-height: 50px;
+  box-sizing: border-box;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.sim-badge-user-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.sim-badge-user-ico {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #2563eb;
+  flex-shrink: 0;
+}
+
+.sim-badge-user-ico .ico {
+  width: 16px;
+  height: 16px;
+}
+
+.sim-fixed-badge-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.sim-fixed-badge-text strong {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.sim-fixed-badge-text small {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.sim-badge-pill-lock {
+  font-size: 10px;
+  font-weight: 800;
+  color: #059669;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 6px;
+  padding: 2px 7px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sim-select-gol select {
+  height: 50px;
+  min-height: 50px;
+  box-sizing: border-box;
+}
+
+/* =====================================================================
+   SECTION 3: KOMPONEN BIAYA & SKEMA RIIL (SEAMLESS MODULES)
+   ===================================================================== */
+.sim-components-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sim-comp-block {
+  border: 1.5px solid #e8edf5;
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 18px 20px;
+  box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.03);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sim-comp-block:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 8px 22px -4px rgba(15, 23, 42, 0.06);
+}
+
+.sim-comp-last {
+  margin-bottom: 0;
+}
+
+.sim-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+/* Modern iOS / Web Toggle Switch */
+.sim-switch-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.sim-switch-pill input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.sim-slider-track {
+  position: relative;
+  width: 46px;
+  height: 26px;
+  background: #cbd5e1;
+  border-radius: 999px;
+  transition: background 0.22s ease;
+  flex-shrink: 0;
+}
+
+.sim-slider-track::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sim-switch-pill input[type="checkbox"]:checked + .sim-slider-track {
+  background: #2563eb;
+}
+
+.sim-switch-pill input[type="checkbox"]:checked + .sim-slider-track::after {
+  transform: translateX(20px);
+}
+
+.sim-switch-name {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* Sub-switch (Konsumsi) */
+.sim-sub-toggle-row {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed #e2e8f0;
+}
+
+.sim-sub-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.sim-sub-switch input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.sim-sub-slider {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  background: #cbd5e1;
+  border-radius: 999px;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+}
+
+.sim-sub-slider::after {
+  content: "";
+  position: absolute;
+  top: 2.5px;
+  left: 2.5px;
+  width: 15px;
+  height: 15px;
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sim-sub-switch input[type="checkbox"]:checked + .sim-sub-slider {
+  background: #059669;
+}
+
+.sim-sub-switch input[type="checkbox"]:checked + .sim-sub-slider::after {
+  transform: translateX(16px);
+}
+
+.sim-sub-switch-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.sim-inline-select select {
+  height: 38px;
+  padding: 0 28px 0 12px;
+  border-radius: 999px;
+  border: 1.5px solid #cbd5e1;
+  background: #ffffff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center;
+  appearance: none;
+  -webkit-appearance: none;
+  color: #0f172a;
+  font-size: 12.5px;
+  font-weight: 700;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sim-inline-select select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.sim-cap-pill {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #1d4ed8;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  padding: 4px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* Seamless Subpanel */
+.sim-subpanel {
+  margin-top: 14px;
+  padding: 16px 18px;
+  background: #f8fafc;
+  border: 1px solid #edf2f7;
+  border-radius: 14px;
+}
+
+.sim-subgrid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.sim-mt-8 {
+  margin-top: 10px;
+}
+
+.sim-mini-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 6px;
+}
+
+.sim-mini-input,
+.sim-mini-select {
+  width: 100%;
+  height: 44px;
+  min-height: 44px;
+  box-sizing: border-box;
+  padding: 0 14px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 11px;
+  background: #ffffff;
+  color: #0f172a;
+  font-size: 13px;
+  font-weight: 600;
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.sim-mini-select {
+  background: #ffffff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center;
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 32px;
+  cursor: pointer;
+}
+
+.sim-mini-input:focus,
+.sim-mini-select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+}
+
+.sim-mini-hint {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.45;
+}
+
+/* =====================================================================
+   SECTION 4: UANG REPRESENTASI PEJABAT (OPSIONAL)
+   ===================================================================== */
+.sim-section-rep-card {
+  background: linear-gradient(180deg, #ffffff 0%, #faf8ff 100%);
+  border: 1.5px solid #ede9fe;
+}
+
+.sim-section-rep-card .sim-switch-pill input[type="checkbox"]:checked + .sim-slider-track {
+  background: #6366f1;
+}
+
+.sim-section-rep-card .sim-cap-pill {
+  background: #f5f3ff;
+  border-color: #ddd6fe;
+  color: #6d28d9;
+}
+
+.sim-mt-6 {
+  margin-top: 8px;
+}
+
+/* =====================================================================
+   KOLOM KANAN (STICKY): HASIL EKSEKUTIF & FINANCIAL COCKPIT
+   ===================================================================== */
+.sim-results-panel {
+  position: sticky;
+  top: 84px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+
+/* EXECUTIVE RESULT HERO CARD */
+.sim-result-hero {
+  position: relative;
+  background: linear-gradient(145deg, #090e1a 0%, #0f172a 45%, #172554 100%);
+  color: #ffffff;
+  border-radius: 24px;
+  padding: 26px 28px;
+  box-shadow: 0 25px 50px -12px rgba(9, 14, 26, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  overflow: hidden;
+}
+
+.sim-hero-glow {
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.3) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.sim-res-badges {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.sim-res-dest-badge,
+.sim-res-meta-badge {
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sim-res-total-block {
+  margin-bottom: 16px;
+}
+
+.sim-res-eyebrow {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: #93c5fd;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.sim-grand-total-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.sim-grand-total {
+  font-size: clamp(34px, 3vw, 44px);
+  font-weight: 800;
+  letter-spacing: -1.2px;
+  line-height: 1.08;
+  color: #ffffff;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+}
+
+.sim-terbilang-bubble {
+  margin-top: 10px;
+  font-size: 12px;
+  font-style: italic;
+  color: #dbeafe;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 7px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  line-height: 1.4;
+  backdrop-filter: blur(6px);
+}
+
+.sim-terbilang-quote {
+  opacity: 0.6;
+  font-weight: 700;
+}
+
+/* Compliance Status Badge */
+.sim-res-compliance {
+  margin-bottom: 16px;
+}
+
+.sim-compliance-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 999px;
+  transition: all 0.2s ease;
+}
+
+.sim-compliance-pill .ico-badge {
+  width: 15px;
+  height: 15px;
+  stroke-width: 2.5;
+}
+
+.sim-compliance-pill.is-ok {
+  background: rgba(16, 185, 129, 0.18);
+  border: 1px solid rgba(52, 211, 153, 0.4);
+  color: #6ee7b7;
+}
+
+.sim-compliance-pill.is-warn {
+  background: rgba(245, 158, 11, 0.18);
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  color: #fde68a;
+}
+
+/* KPI Strip */
+.sim-res-kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.sim-res-kpi-tile {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  padding: 12px 16px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.sim-res-kpi-tile .kpi-label {
+  display: block;
+  font-size: 10.5px;
+  color: #94a3b8;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  margin-bottom: 3px;
+}
+
+.sim-res-kpi-tile .kpi-val {
+  display: block;
+  font-size: 17px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+/* Visual Composition Bar */
+.sim-comp-wrap {
+  padding-top: 6px;
+}
+
+.sim-comp-header {
+  font-size: 11px;
+  font-weight: 600;
+  color: #cbd5e1;
+  margin-bottom: 7px;
+}
+
+.sim-comp-bar {
+  display: flex;
+  height: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.15);
+  gap: 2px;
+}
+
+.sim-comp-seg {
+  height: 100%;
+  transition: width 0.28s ease;
+}
+
+.sim-comp-seg.seg-uh,
+.sim-legend-dot.seg-uh {
+  background: #10b981;
+}
+
+.sim-comp-seg.seg-hotel,
+.sim-legend-dot.seg-hotel {
+  background: #38bdf8;
+}
+
+.sim-comp-seg.seg-trans,
+.sim-legend-dot.seg-trans {
+  background: #f59e0b;
+}
+
+.sim-comp-seg.seg-lain,
+.sim-legend-dot.seg-lain {
+  background: #a855f7;
+}
+
+.sim-comp-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-top: 12px;
+}
+
+.sim-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: #e2e8f0;
+}
+
+.sim-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* =====================================================================
+   BREAKDOWN & REFERENCE CARDS
+   ===================================================================== */
+.sim-breakdown-card,
+.sim-ref-card {
+  background: #ffffff;
+  border: 1.5px solid #e8edf5;
+  border-radius: 20px;
+  padding: 22px 24px;
+  box-shadow: 0 4px 18px -4px rgba(15, 23, 42, 0.04);
+}
+
+.sim-breakdown-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #f1f5f9;
+  margin-bottom: 14px;
+}
+
+.sim-breakdown-title-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.sim-breakdown-head h4 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.sim-breakdown-tag {
+  font-size: 11px;
+  font-weight: 700;
+  color: #1f6ff2;
+  background: #eff6ff;
+  border: 1px solid #dbeafe;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.sim-breakdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sim-breakdown-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border-bottom: 1px solid #f8fafc;
+  transition: all 0.18s ease;
+}
+
+.sim-breakdown-row:last-child {
+  border-bottom: none;
+}
+
+.sim-breakdown-row:hover {
+  background: #f8fafc;
+}
+
+.sim-breakdown-row.is-zero {
+  opacity: 0.65;
+}
+
+.sim-breakdown-row.is-zero .sim-br-avatar {
+  background: #f1f5f9;
+  filter: grayscale(0.8);
+}
+
+.sim-breakdown-row.is-zero .sim-br-title {
+  color: #64748b;
+}
+
+.sim-br-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.sim-br-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.sim-br-avatar.av-uh { background: #ecfdf5; border: 1px solid #a7f3d0; }
+.sim-br-avatar.av-hotel { background: #f0f9ff; border: 1px solid #bae6fd; }
+.sim-br-avatar.av-trans { background: #fffbeb; border: 1px solid #fde68a; }
+.sim-br-avatar.av-rep { background: #faf5ff; border: 1px solid #ddd6fe; }
+
+.sim-br-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.sim-br-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.sim-br-sub {
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.35;
+}
+
+.sim-br-warn {
+  display: inline-block;
+  margin-top: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #d97706;
+}
+
+.sim-br-right {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.sim-br-amt {
+  display: block;
+  font-size: 15px;
+  font-weight: 800;
+  color: #0f172a;
+  white-space: nowrap;
+}
+
+.sim-br-amt.is-zero {
+  color: #94a3b8 !important;
+  font-weight: 600 !important;
+  font-size: 13.5px !important;
+}
+
+/* Reference Card */
+.sim-ref-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f1f5f9;
+  margin-bottom: 14px;
+}
+
+.sim-ref-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.sim-ref-title .ico {
+  width: 17px;
+  height: 17px;
+  color: #1f6ff2;
+}
+
+.sim-ref-prov {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #1f6ff2;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.sim-ref-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.sim-ref-item {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  transition: all 0.18s ease;
+}
+
+.sim-ref-item:hover {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.sim-ref-item span {
+  display: block;
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.sim-ref-item strong {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-top: 3px;
+}
+
+/* Action Button: Salin Ringkasan */
+.sim-result-actions {
+  display: flex;
+  flex-direction: column;
+  margin-top: 4px;
+}
+
+.sim-btn-copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 100%;
+  font-weight: 700;
+  font-size: 13.5px;
+  border-radius: 14px;
+  height: 46px;
+  background: linear-gradient(135deg, #1f6ff2 0%, #1657c9 100%);
+  border: 1px solid rgba(31, 111, 242, 0.4);
+  color: #ffffff;
+  box-shadow: 0 4px 14px -2px rgba(31, 111, 242, 0.35);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+
+.sim-btn-copy:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  border-color: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(31, 111, 242, 0.45);
+  color: #ffffff;
+}
+
+.sim-btn-copy:active {
+  transform: translateY(0);
+}
+
+/* =====================================================================
+   ALERT PERINGATAN BATAS MAKSIMAL SBM
+   ===================================================================== */
+.sim-limit-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 18px;
+  margin-bottom: 22px;
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border: 1.5px solid #f59e0b;
+  border-left: 6px solid #d97706;
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(217, 119, 6, 0.14);
+  animation: simAlertSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+@keyframes simAlertSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sim-limit-alert-ico {
+  font-size: 22px;
+  line-height: 1.2;
+  flex-shrink: 0;
+}
+
+.sim-limit-alert-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.sim-limit-alert-title {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #92400e;
+  margin-bottom: 3px;
+}
+
+.sim-limit-alert-text {
+  font-size: 13px;
+  line-height: 1.45;
+  color: #78350f;
+}
+
+.sim-limit-alert-close {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  line-height: 1;
+  color: #92400e;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+
+.sim-limit-alert-close:hover {
+  background: rgba(180, 83, 9, 0.15);
+  color: #78350f;
+}
+
+/* =====================================================================
+   DARK THEME - KALKULATOR SIMULASI
+   ===================================================================== */
+html[data-theme="dark"] .sim-cockpit-card {
+  background: #0f172a;
+  border-color: #1e293b;
+  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.5);
+}
+
+html[data-theme="dark"] .sim-head-wrapper {
+  background: linear-gradient(180deg, #0f172a 0%, #0b1120 100%);
+  border-bottom-color: #1e293b;
+}
+
+html[data-theme="dark"] .sim-head-ico {
+  background: rgba(31, 111, 242, 0.2);
+  color: #60a5fa;
+  box-shadow: inset 0 0 0 1.5px rgba(96, 165, 250, 0.3);
+}
+
+html[data-theme="dark"] .sim-badge-pmk {
+  background: rgba(31, 111, 242, 0.2);
+  border-color: rgba(96, 165, 250, 0.3);
+  color: #93c5fd;
+}
+
+html[data-theme="dark"] .sim-badge-mode {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: rgba(52, 211, 153, 0.3);
+  color: #6ee7b7;
+}
+
+html[data-theme="dark"] .sim-section-card,
+html[data-theme="dark"] .sim-breakdown-card,
+html[data-theme="dark"] .sim-ref-card {
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.35);
+}
+
+html[data-theme="dark"] .sim-section-card:hover {
+  border-color: #475569;
+  box-shadow: 0 14px 34px -8px rgba(0, 0, 0, 0.5);
+}
+
+html[data-theme="dark"] .sim-section-title,
+html[data-theme="dark"] .sim-head-title,
+html[data-theme="dark"] .sim-switch-name,
+html[data-theme="dark"] .sim-breakdown-head h4,
+html[data-theme="dark"] .sim-ref-title,
+html[data-theme="dark"] .sim-br-title,
+html[data-theme="dark"] .sim-br-amt,
+html[data-theme="dark"] .sim-ref-item strong,
+html[data-theme="dark"] .sim-stepper input[type="number"],
+html[data-theme="dark"] .sim-fixed-badge-text strong {
+  color: #f8fafc;
+}
+
+html[data-theme="dark"] .sim-section-sub,
+html[data-theme="dark"] .sim-head-desc,
+html[data-theme="dark"] .sim-field-label,
+html[data-theme="dark"] .sim-chips-heading,
+html[data-theme="dark"] .sim-sub-switch-title,
+html[data-theme="dark"] .sim-mini-label,
+html[data-theme="dark"] .sim-mini-hint,
+html[data-theme="dark"] .sim-br-sub,
+html[data-theme="dark"] .sim-ref-item span,
+html[data-theme="dark"] .sim-fixed-badge-text small,
+html[data-theme="dark"] .sim-label-helper {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .sim-search-styled,
+html[data-theme="dark"] .sim-select-wrap select,
+html[data-theme="dark"] .sim-stepper,
+html[data-theme="dark"] .sim-subpanel,
+html[data-theme="dark"] .sim-mini-input,
+html[data-theme="dark"] .sim-mini-select,
+html[data-theme="dark"] .sim-inline-select select,
+html[data-theme="dark"] .sim-ref-item,
+html[data-theme="dark"] .sim-fixed-badge-box {
+  background: #0f172a;
+  border-color: #334155;
+  color: #f8fafc;
+}
+
+html[data-theme="dark"] .sim-select-wrap select,
+html[data-theme="dark"] .sim-mini-select,
+html[data-theme="dark"] .sim-inline-select select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+
+html[data-theme="dark"] .sim-chip-btn {
+  background: #0f172a;
+  border-color: #334155;
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .sim-chip-btn:hover {
+  background: #334155;
+  color: #ffffff;
+}
+
+html[data-theme="dark"] .sim-chip-btn.active {
+  background: #2563eb;
+  border-color: #3b82f6;
+  color: #ffffff;
+}
+
+html[data-theme="dark"] .sim-stepper-btn {
+  background: #1e293b;
+  border-color: #334155;
+  color: #f8fafc;
+}
+
+html[data-theme="dark"] .sim-stepper-btn:hover {
+  background: #334155;
+  color: #60a5fa;
+}
+
+html[data-theme="dark"] .sim-comp-block {
+  background: #162032;
+  border-color: #27354a;
+}
+
+html[data-theme="dark"] .sim-comp-block:hover {
+  border-color: #475569;
+}
+
+html[data-theme="dark"] .sim-section-rep-card {
+  background: linear-gradient(180deg, #162032 0%, #1e1b38 100%);
+  border-color: #3b3563;
+}
+
+html[data-theme="dark"] .sim-slider-track,
+html[data-theme="dark"] .sim-sub-slider {
+  background: #475569;
+}
+
+html[data-theme="dark"] .sim-subpanel {
+  background: #0d1527;
+  border-color: #1e2d42;
+}
+
+html[data-theme="dark"] .sim-sub-toggle-row {
+  border-top-color: #27354a;
+}
+
+html[data-theme="dark"] .sim-breakdown-row {
+  border-bottom-color: #243044;
+}
+
+html[data-theme="dark"] .sim-breakdown-row:hover {
+  background: #162032;
+}
+
+html[data-theme="dark"] .sim-breakdown-head,
+html[data-theme="dark"] .sim-ref-head {
+  border-bottom-color: #334155;
+}
+
+html[data-theme="dark"] .sim-cap-pill,
+html[data-theme="dark"] .sim-breakdown-tag,
+html[data-theme="dark"] .sim-ref-prov {
+  background: rgba(37, 99, 235, 0.24);
+  border-color: rgba(96, 165, 250, 0.3);
+  color: #93c5fd;
+}
+
+html[data-theme="dark"] .sim-pagu-strip {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .sim-pagu-tag {
+  color: #f1f5f9;
+}
+
+html[data-theme="dark"] .sim-pagu-pill-badge {
+  background: #334155;
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .sim-pagu-item {
+  background: #0f172a;
+  border-color: #334155;
+  color: #f8fafc;
+}
+
+html[data-theme="dark"] .sim-pagu-item span {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .sim-pagu-item strong {
+  color: #60a5fa;
+}
+
+html[data-theme="dark"] .sim-pagu-strip-dki .sim-pagu-item strong {
+  color: #93c5fd;
+}
+
+html[data-theme="dark"] .sim-pagu-strip-green .sim-pagu-item strong {
+  color: #6ee7b7;
+}
+
+html[data-theme="dark"] .sim-section-ico.ico-rep {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: rgba(165, 180, 252, 0.3);
+  color: #a5b4fc;
+}
+
+html[data-theme="dark"] .sim-breakdown-row.is-zero {
+  opacity: 0.6;
+}
+
+html[data-theme="dark"] .sim-breakdown-row.is-zero .sim-br-avatar {
+  background: #1e293b;
+}
+
+html[data-theme="dark"] .sim-breakdown-row.is-zero .sim-br-title {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .sim-br-amt.is-zero {
+  color: #64748b !important;
+}
+
+html[data-theme="dark"] .sim-br-avatar {
+  background: #0f172a;
+  color: #f8fafc;
+}
+
+html[data-theme="dark"] .sim-btn-copy {
+  background: #1e293b;
+  border-color: #334155;
+  color: #f8fafc;
+}
+
+html[data-theme="dark"] .sim-btn-copy:hover {
+  background: #334155;
+  border-color: #475569;
+}
+
+html[data-theme="dark"] .sim-badge-user-ico {
+  background: rgba(37, 99, 235, 0.2);
+  border-color: rgba(96, 165, 250, 0.3);
+  color: #60a5fa;
+}
+
+html[data-theme="dark"] .sim-limit-alert {
+  background: linear-gradient(135deg, #3b2805 0%, #291b04 100%);
+  border-color: #d97706;
+  border-left-color: #f59e0b;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+
+html[data-theme="dark"] .sim-limit-alert-title {
+  color: #fde68a;
+}
+
+html[data-theme="dark"] .sim-limit-alert-text {
+  color: #fef3c7;
+}
+
+html[data-theme="dark"] .sim-limit-alert-close {
+  color: #fde68a;
+}
+
+html[data-theme="dark"] .sim-limit-alert-close:hover {
+  background: rgba(253, 230, 138, 0.15);
+  color: #fff;
+}
+
+/* =====================================================================
+   KARTU KETENTUAN SBM PMK 32/2025 (KOLOM KANAN SIMULASI)
+   ===================================================================== */
+.sim-info-ketentuan-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px -6px rgba(15, 23, 42, 0.05);
+  margin-top: 14px;
+  transition: all 0.22s ease;
+}
+
+.sim-info-ketentuan-card:hover {
+  box-shadow: 0 8px 26px -8px rgba(15, 23, 42, 0.09);
+  border-color: #cbd5e1;
+}
+
+.sim-info-k-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 13px 16px;
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.sim-info-k-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #0f172a;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.sim-info-k-title .ico {
+  width: 15px;
+  height: 15px;
+  color: #2563eb;
+  flex: none;
+}
+
+.sim-info-k-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2.5px 8px;
+  border-radius: 6px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.sim-info-k-body {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sim-info-k-block {
+  padding: 11px 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+}
+
+.sim-info-k-sec-header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 6px;
+  color: #0f172a;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.sim-info-k-sec-header .ico {
+  width: 14px;
+  height: 14px;
+  color: #3b82f6;
+  flex: none;
+}
+
+.sim-info-k-lead {
+  font-size: 11px;
+  color: #64748b;
+  line-height: 1.45;
+  margin: 0 0 10px;
+}
+
+.sim-info-k-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sim-info-k-item {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  padding: 8px 10px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+}
+
+.sim-info-k-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  font-size: 12px;
+}
+
+.sim-info-k-icon .ico {
+  width: 13px;
+  height: 13px;
+}
+
+.sim-ico-food {
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  color: #ea580c;
+}
+
+.sim-ico-pocket {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #059669;
+}
+
+.sim-ico-transport {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #2563eb;
+}
+
+.sim-info-k-item-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sim-info-k-item-body strong {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.25;
+}
+
+.sim-info-k-item-body span {
+  font-size: 10.5px;
+  color: #64748b;
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+/* Section 2: Skema 60% vs 100% */
+.sim-info-k-block-accent {
+  background: linear-gradient(180deg, #f8fafc 0%, #f0f7ff 100%);
+  border-color: #cbd5e1;
+}
+
+.sim-info-k-grid-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.sim-info-k-pill-box {
+  padding: 9px 10px;
+  border-radius: 11px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+}
+
+.sim-info-k-pill-box.is-100 {
+  border-left: 3px solid #10b981;
+}
+
+.sim-info-k-pill-box.is-60 {
+  border-left: 3px solid #2563eb;
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  border-left-color: #2563eb;
+}
+
+.sim-k-pill-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.sim-k-pill-tag {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 1.5px 5px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.is-100 .sim-k-pill-tag {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.is-60 .sim-k-pill-tag {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.sim-k-pill-head strong {
+  font-size: 11px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.sim-info-k-pill-box p {
+  font-size: 10px;
+  color: #475569;
+  line-height: 1.42;
+  margin: 0;
+}
+
+/* Section 3: Notes */
+.sim-info-k-block-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 9px 11px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.sim-info-k-note-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 10.5px;
+  line-height: 1.4;
+  color: #475569;
+}
+
+.sim-info-k-note-row strong {
+  color: #0f172a;
+}
+
+.sim-k-note-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-top: 5px;
+  flex: none;
+}
+
+.dot-rapat {
+  background: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+}
+
+.dot-dki {
+  background: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+/* Dark theme for Ketentuan card */
+html[data-theme="dark"] .sim-info-ketentuan-card {
+  background: #162032;
+  border-color: #27354a;
+  box-shadow: 0 4px 20px -6px rgba(0, 0, 0, 0.4);
+}
+
+html[data-theme="dark"] .sim-info-k-head {
+  background: #111a29;
+  border-bottom-color: #27354a;
+}
+
+html[data-theme="dark"] .sim-info-k-title,
+html[data-theme="dark"] .sim-info-k-sec-header,
+html[data-theme="dark"] .sim-info-k-item-body strong,
+html[data-theme="dark"] .sim-k-pill-head strong,
+html[data-theme="dark"] .sim-info-k-note-row strong {
+  color: #f8fafc;
+}
+
+html[data-theme="dark"] .sim-info-k-badge {
+  background: rgba(37, 99, 235, 0.25);
+  border-color: rgba(96, 165, 250, 0.4);
+  color: #93c5fd;
+}
+
+html[data-theme="dark"] .sim-info-k-block {
+  background: #0f172a;
+  border-color: #27354a;
+}
+
+html[data-theme="dark"] .sim-info-k-lead,
+html[data-theme="dark"] .sim-info-k-item-body span,
+html[data-theme="dark"] .sim-info-k-pill-box p,
+html[data-theme="dark"] .sim-info-k-note-row {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .sim-info-k-item {
+  background: #162032;
+  border-color: #27354a;
+}
+
+html[data-theme="dark"] .sim-ico-food {
+  background: rgba(234, 88, 12, 0.18);
+  border-color: rgba(251, 146, 60, 0.3);
+  color: #fdba74;
+}
+
+html[data-theme="dark"] .sim-ico-pocket {
+  background: rgba(5, 150, 105, 0.18);
+  border-color: rgba(52, 211, 153, 0.3);
+  color: #6ee7b7;
+}
+
+html[data-theme="dark"] .sim-ico-transport {
+  background: rgba(37, 99, 235, 0.2);
+  border-color: rgba(96, 165, 250, 0.3);
+  color: #93c5fd;
+}
+
+html[data-theme="dark"] .sim-info-k-block-accent {
+  background: linear-gradient(180deg, #0f172a 0%, #101c38 100%);
+  border-color: #1e3a8a;
+}
+
+html[data-theme="dark"] .sim-info-k-pill-box {
+  background: #162032;
+  border-color: #27354a;
+}
+
+html[data-theme="dark"] .sim-info-k-pill-box.is-60 {
+  background: #111d38;
+  border-color: #1d4ed8;
+  border-left-color: #3b82f6;
+}
+
+html[data-theme="dark"] .is-100 .sim-k-pill-tag {
+  background: rgba(16, 185, 129, 0.2);
+  color: #6ee7b7;
+}
+
+html[data-theme="dark"] .is-60 .sim-k-pill-tag {
+  background: rgba(37, 99, 235, 0.3);
+  color: #93c5fd;
+}
+
+html[data-theme="dark"] .sim-info-k-block-compact {
+  background: #0f172a;
+  border-color: #27354a;
+}
+
+/* =====================================================================
+   RESPONSIVE MEDIA QUERIES
+   ===================================================================== */
+@media screen and (max-width: 1040px) {
+  .sim-workspace-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sim-results-panel {
+    position: static;
+  }
+}
+
+@media screen and (max-width: 640px) {
+  .sim-cockpit-body {
+    padding: 16px;
+  }
+
+  .sim-section-card {
+    padding: 18px 16px;
+  }
+
+  .sim-dual-row,
+  .sim-controls-grid,
+  .sim-subgrid-2,
+  .sim-res-kpi-strip,
+  .sim-ref-grid,
+  .sim-result-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =====================================================================
+   HAK AKSES: FITUR SIMULASI BIAYA HANYA UNTUK ROLE VIEWER
+   ===================================================================== */
+body.role-admin .tab-btn[data-tab="simulasi"],
+body.role-admin .bottom-nav-btn[data-tab="simulasi"],
+body.role-admin .btn-hero-simulasi,
+body.role-admin .sbm-btn-to-simulasi,
+body.role-admin #tab-simulasi,
+body.role-operator .tab-btn[data-tab="simulasi"],
+body.role-operator .bottom-nav-btn[data-tab="simulasi"],
+body.role-operator .btn-hero-simulasi,
+body.role-operator .sbm-btn-to-simulasi,
+body.role-operator #tab-simulasi,
+body:not(.role-viewer) .tab-btn[data-tab="simulasi"],
+body:not(.role-viewer) .bottom-nav-btn[data-tab="simulasi"],
+body:not(.role-viewer) .btn-hero-simulasi,
+body:not(.role-viewer) .sbm-btn-to-simulasi,
+body:not(.role-viewer) #tab-simulasi {
+  display: none !important;
+}
+
+body.role-viewer .tab-btn[data-tab="simulasi"] {
+  display: flex !important;
+}
+body.role-viewer .bottom-nav-btn[data-tab="simulasi"],
+body.role-viewer .btn-hero-simulasi,
+body.role-viewer .sbm-btn-to-simulasi {
+  display: inline-flex !important;
+}
+body.role-viewer #tab-simulasi.active {
+  display: block !important;
+}

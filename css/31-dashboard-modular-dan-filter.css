@@ -1,0 +1,406 @@
+/* =====================================================================
+   DASHBOARD EKSEKUTIF MODULAR UI & FILTER PILLS
+   ===================================================================== */
+.dashboard-hero-card {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #1e3a8a 100%);
+  border-radius: 16px;
+  padding: 28px 32px;
+  color: #ffffff;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard-hero-card::after {
+  content: '';
+  position: absolute;
+  top: -50px;
+  right: -50px;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.25) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.dashboard-hero-content {
+  flex: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.dashboard-hero-kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #93c5fd;
+  display: inline-block;
+  margin-bottom: 6px;
+}
+
+.dashboard-hero-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 8px 0;
+  line-height: 1.3;
+}
+
+.dashboard-hero-sub {
+  font-size: 14px;
+  color: #cbd5e1;
+  margin: 0;
+  line-height: 1.5;
+  max-width: 640px;
+}
+
+.dashboard-hero-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+  flex-wrap: wrap;
+}
+
+/* Realisasi Progress Bar Card */
+.dashboard-progress-card {
+  margin-bottom: 24px;
+}
+
+.dashboard-progress-stats {
+  padding: 8px 4px;
+}
+
+.progress-bar-wrap {
+  width: 100%;
+  height: 12px;
+  border-radius: 8px;
+  background: #e2e8f0;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+html[data-theme="dark"] .progress-bar-wrap {
+  background: #334155;
+}
+
+.dashboard-progress-fill {
+  height: 100%;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #10b981, #059669);
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.progress-labels-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.progress-detail-text {
+  color: var(--text-muted, #64748b);
+  font-weight: 500;
+}
+
+.dashboard-progress-pct {
+  color: #059669;
+  font-weight: 700;
+}
+
+html[data-theme="dark"] .dashboard-progress-pct {
+  color: #34d399;
+}
+
+/* Recent activities on dashboard */
+.dashboard-recent-table-wrap {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  background: var(--bg-card, #ffffff);
+}
+
+html[data-theme="dark"] .dashboard-recent-table-wrap {
+  border-color: #24354c;
+  background: #111e33;
+}
+
+.dashboard-recent-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  table-layout: auto;
+}
+
+.dashboard-recent-table col.col-st-w { width: 18%; min-width: 155px; }
+.dashboard-recent-table col.col-agenda-w { min-width: 220px; }
+.dashboard-recent-table col.col-emp-w { width: 12%; min-width: 105px; }
+.dashboard-recent-table col.col-cost-w { width: 16%; min-width: 140px; }
+.dashboard-recent-table col.col-status-w { width: 13%; min-width: 115px; }
+.dashboard-recent-table col.col-act-w { width: 13%; min-width: 120px; }
+
+.dashboard-recent-table th {
+  background: var(--bg-subtle, #f8fafc);
+  padding: 12px 14px;
+  font-weight: 700;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted, #64748b);
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  text-align: left;
+  white-space: nowrap;
+}
+
+html[data-theme="dark"] .dashboard-recent-table th {
+  background: #16243b;
+  border-color: #24354c;
+}
+
+.dashboard-recent-table td {
+  padding: 13px 14px;
+  border-bottom: 1px solid var(--border-color, #f1f5f9);
+  color: var(--text-color, #334155);
+  vertical-align: middle !important;
+}
+
+html[data-theme="dark"] .dashboard-recent-table td {
+  border-color: #1e2c42;
+  color: #cbd5e1;
+}
+
+.dashboard-recent-table tr:last-child td {
+  border-bottom: none;
+}
+
+.dashboard-recent-table tr:hover td {
+  background: rgba(59, 130, 246, 0.04);
+}
+
+html[data-theme="dark"] .dashboard-recent-table tr:hover td {
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.recent-st-badge {
+  font-family: monospace;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #1e40af;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  padding: 4px 8px;
+  border-radius: 6px;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+html[data-theme="dark"] .recent-st-badge {
+  background: rgba(30, 58, 138, 0.35);
+  border-color: rgba(96, 165, 250, 0.3);
+  color: #93c5fd;
+}
+
+.recent-agenda-text {
+  font-size: 13px;
+  color: var(--text-color, #1e293b);
+  line-height: 1.45;
+  font-weight: 500;
+  max-width: 400px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+html[data-theme="dark"] .recent-agenda-text {
+  color: #e2e8f0;
+}
+
+.recent-pelaksana-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--text-muted, #475569);
+  white-space: nowrap;
+  font-weight: 600;
+  background: #f1f5f9;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+html[data-theme="dark"] .recent-pelaksana-badge {
+  background: #1e293b;
+  border-color: #334155;
+  color: #94a3b8;
+}
+
+.recent-cost-val {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #059669;
+  white-space: nowrap !important;
+  font-variant-numeric: tabular-nums;
+  display: inline-block;
+  background: #ecfdf5;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid #a7f3d0;
+}
+
+html[data-theme="dark"] .recent-cost-val {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: #34d399;
+}
+
+.btn-recent-pdf {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #1e293b;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.btn-recent-pdf:hover {
+  border-color: #2563eb;
+  color: #2563eb;
+  background: #eff6ff;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(37, 99, 235, 0.15);
+}
+
+html[data-theme="dark"] .btn-recent-pdf {
+  background: #1e293b;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .btn-recent-pdf:hover {
+  border-color: #60a5fa;
+  color: #93c5fd;
+  background: rgba(37, 99, 235, 0.25);
+}
+
+/* Filter pills on Riwayat */
+.history-filter-pill-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.btn-filter-pill {
+  padding: 7px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1.5px solid var(--border-color, #cbd5e1);
+  background: var(--bg-card, #ffffff);
+  color: var(--text-muted, #475569);
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-block;
+  vertical-align: middle;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+html[data-theme="dark"] .btn-filter-pill {
+  background: #18263d;
+  border-color: #2a3c58;
+  color: #94a3b8;
+  box-shadow: none;
+}
+
+.btn-filter-pill:hover {
+  border-color: #94a3b8;
+  color: #0f172a;
+  background: #f8fafc;
+  transform: translateY(-1px);
+}
+
+html[data-theme="dark"] .btn-filter-pill:hover {
+  background: #243552;
+  border-color: #38bdf8;
+  color: #ffffff;
+}
+
+.btn-filter-pill.active {
+  background: #2563eb;
+  border-color: #1d4ed8;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  transform: translateY(-1px);
+}
+
+.btn-filter-pill.filter-pill-ls.active {
+  background: #0284c7;
+  border-color: #0369a1;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+}
+
+.btn-filter-pill.filter-pill-kkp.active {
+  background: #7c3aed;
+  border-color: #6d28d9;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+}
+
+.btn-filter-pill.filter-pill-diproses.active {
+  background: #d97706;
+  border-color: #b45309;
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
+}
+
+.btn-filter-pill.filter-pill-dicairkan.active {
+  background: #059669;
+  border-color: #047857;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+}
+
+html[data-theme="dark"] .btn-filter-pill.active {
+  background: #3b82f6;
+  border-color: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35);
+}
+
+html[data-theme="dark"] .btn-filter-pill.filter-pill-ls.active {
+  background: #0284c7;
+  border-color: #0369a1;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+}
+
+html[data-theme="dark"] .btn-filter-pill.filter-pill-kkp.active {
+  background: #7c3aed;
+  border-color: #6d28d9;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
+}
+
+html[data-theme="dark"] .btn-filter-pill.filter-pill-diproses.active {
+  background: #d97706;
+  border-color: #b45309;
+  box-shadow: 0 4px 14px rgba(217, 119, 6, 0.35);
+}
+
+html[data-theme="dark"] .btn-filter-pill.filter-pill-dicairkan.active {
+  background: #059669;
+  border-color: #047857;
+  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.35);
+}
+

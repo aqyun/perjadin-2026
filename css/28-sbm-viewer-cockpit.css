@@ -1,0 +1,919 @@
+/* =====================================================================
+   SBM VIEWER COCKPIT & EXECUTIVE DASHBOARD (PMK 32/2025)
+   ===================================================================== */
+.sbm-viewer-cockpit-card {
+  margin-bottom: 24px;
+  border-radius: 20px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  background: var(--card-bg, #ffffff);
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.02);
+  overflow: hidden;
+  transition: box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.sbm-viewer-cockpit-card:hover {
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  border-color: #cbd5e1;
+}
+
+.sbm-viewer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 28px 18px;
+  border-bottom: 1px solid var(--border-subtle, #f1f5f9);
+  flex-wrap: wrap;
+  background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+}
+
+.sbm-viewer-heading-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.sbm-viewer-ico {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  color: #2563eb;
+  flex-shrink: 0;
+  box-shadow: inset 0 0 0 1.5px rgba(37, 99, 235, 0.2), 0 2px 8px rgba(37, 99, 235, 0.12);
+}
+
+.sbm-viewer-ico svg {
+  width: 24px;
+  height: 24px;
+}
+
+.sbm-viewer-badge-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 800;
+  color: #1d4ed8;
+  background: rgba(37, 99, 235, 0.1);
+  border-radius: 6px;
+  padding: 3px 9px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+.sbm-viewer-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sbm-viewer-btn-pmk {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #2563eb;
+  background: #f8fafc;
+  border: 1.5px solid #bfdbfe;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sbm-viewer-btn-pmk:hover {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+  transform: translateY(-1px);
+}
+
+.sbm-viewer-body {
+  padding: 24px 28px 32px;
+}
+
+/* =====================================================================
+   SBM CONSOLE WRAPPER (SEARCH & SELECTORS)
+   ===================================================================== */
+.sbm-console-wrapper {
+  background: var(--bg-subtle, #f8fafc);
+  border: 1.5px solid var(--border-color, #e2e8f0);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+/* Search City Box */
+.sbm-search-city-box {
+  position: relative;
+  width: 100%;
+}
+
+.sbm-search-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.sbm-search-icon {
+  position: absolute;
+  left: 14px;
+  width: 18px;
+  height: 18px;
+  fill: #64748b;
+  pointer-events: none;
+}
+
+.sbm-search-input {
+  width: 100%;
+  padding: 12px 42px 12px 42px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s ease;
+}
+
+.sbm-search-input:focus {
+  border-color: #2563eb;
+  background: #ffffff;
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+.sbm-search-clear-btn {
+  position: absolute;
+  right: 12px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: #e2e8f0;
+  color: #475569;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.sbm-search-clear-btn:hover {
+  background: #cbd5e1;
+  color: #0f172a;
+}
+
+/* Floating Search Results Dropdown */
+.sbm-search-results-floating {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  max-height: 380px;
+  overflow-y: auto;
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 14px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.15);
+  z-index: 100;
+  padding: 8px;
+}
+
+.sbm-search-section-title {
+  padding: 8px 12px 4px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.sbm-search-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sbm-search-item:hover {
+  background: #eff6ff;
+}
+
+.search-item-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.search-item-ico {
+  font-size: 18px;
+}
+
+.search-item-left strong {
+  display: block;
+  font-size: 13.5px;
+  color: #0f172a;
+}
+
+.search-item-left small {
+  display: block;
+  font-size: 11.5px;
+  color: #64748b;
+}
+
+.search-rate-tag {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #2563eb;
+  background: #dbeafe;
+  padding: 4px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.search-bodetabek-tag {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #b45309;
+  background: #fef3c7;
+  padding: 4px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.sbm-search-empty {
+  padding: 18px;
+  text-align: center;
+  font-size: 13px;
+  color: #64748b;
+}
+
+/* Dual Select Row (Provinsi & Kota) */
+.sbm-dual-select-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.sbm-select-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sbm-field-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-secondary, #475569);
+}
+
+.sbm-select-control {
+  width: 100%;
+}
+
+.sbm-filter-select {
+  width: 100%;
+  padding: 10px 36px 10px 14px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0f172a;
+  background-color: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 11px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.sbm-filter-select:focus {
+  border-color: #2563eb;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* Popular Chips */
+.sbm-popular-chips-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.sbm-chips-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.sbm-chips-scroll {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sbm-chip-btn {
+  padding: 6px 13px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #334155;
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+
+.sbm-chip-btn:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  transform: translateY(-1px);
+}
+
+.sbm-chip-btn.active {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+}
+
+/* =====================================================================
+   ACTIVE LOCATION HERO CARD & NOTICES
+   ===================================================================== */
+.sbm-location-hero-card {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 20px;
+  background: linear-gradient(135deg, #f0f7ff 0%, #e0f2fe 100%);
+  border: 1.5px solid #bae6fd;
+  border-radius: 18px;
+  padding: 22px 26px;
+  margin-bottom: 28px;
+  box-shadow: 0 4px 16px rgba(14, 165, 233, 0.08);
+}
+
+.sbm-location-hero-main {
+  flex: 1;
+}
+
+.sbm-hero-badges-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.sbm-prov-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px;
+  background: #ffffff;
+  border: 1.5px solid #93c5fd;
+  border-radius: 20px;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #1d4ed8;
+  white-space: nowrap;
+}
+
+.sbm-prov-pill-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2563eb;
+  animation: sbmPulseDot 2s infinite ease-in-out;
+}
+
+.sbm-city-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  background: rgba(37, 99, 235, 0.1);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1e40af;
+}
+
+.sbm-zone-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  background: rgba(14, 165, 233, 0.1);
+  border: 1px solid rgba(14, 165, 233, 0.2);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #0369a1;
+}
+
+.sbm-hero-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.4px;
+  margin: 0 0 6px 0;
+}
+
+.sbm-hero-sub {
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.sbm-location-hero-note {
+  min-width: 340px;
+  max-width: 440px;
+  display: flex;
+  align-items: center;
+}
+
+.sbm-notice-card {
+  width: 100%;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+}
+
+.sbm-notice-card.notice-bodetabek {
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
+.sbm-notice-card.notice-island {
+  background: #f0fdfa;
+  border-color: #99f6e4;
+}
+
+.sbm-notice-card.notice-dki {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.sbm-notice-card.notice-luarkota {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.notice-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.notice-bodetabek .notice-badge {
+  color: #92400e;
+  background: #fef3c7;
+}
+
+.notice-island .notice-badge {
+  color: #0f766e;
+  background: #ccfbf1;
+}
+
+.notice-dki .notice-badge {
+  color: #334155;
+  background: #e2e8f0;
+}
+
+.notice-luarkota .notice-badge {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.notice-headline {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+
+.notice-desc {
+  font-size: 12px;
+  color: #475569;
+  line-height: 1.45;
+  margin: 0;
+}
+
+/* =====================================================================
+   4 CATEGORY GROUPS & CARDS (11 SBM RATES)
+   ===================================================================== */
+.sbm-sections-container {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.sbm-category-group {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sbm-category-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #f1f5f9;
+}
+
+.sbm-cat-icon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.sbm-cat-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.sbm-cat-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+  letter-spacing: -0.2px;
+}
+
+.sbm-cat-sub {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.cat-header-green .sbm-cat-title { color: #047857; }
+.cat-header-purple .sbm-cat-title { color: #6d28d9; }
+.cat-header-blue .sbm-cat-title { color: #0369a1; }
+.cat-header-amber .sbm-cat-title { color: #b45309; }
+
+.sbm-category-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.grid-cols-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.grid-cols-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.grid-cols-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+/* Card Item Styling */
+.sbm-card-item {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-radius: 16px;
+  border: 1.5px solid var(--border-color, #e2e8f0);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  min-height: 110px;
+  position: relative;
+}
+
+.sbm-card-item:hover {
+  transform: translateY(-3px);
+  border-color: #93c5fd;
+  background: linear-gradient(180deg, #ffffff 0%, #eff6ff 100%);
+  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.12);
+}
+
+.sbm-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.sbm-card-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+}
+
+.badge-pmk {
+  font-size: 10px;
+  font-weight: 800;
+  color: #2563eb;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  padding: 2px 7px;
+  border-radius: 6px;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.sbm-card-val {
+  font-size: 21px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+}
+
+.sbm-val-highlight {
+  color: #059669;
+}
+
+.sbm-val-purple {
+  color: #7c3aed;
+}
+
+.sbm-val-blue {
+  color: #0284c7;
+}
+
+.sbm-val-amber {
+  color: #d97706;
+}
+
+.sbm-card-unit {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+/* =====================================================================
+   DARK MODE COMPATIBILITY
+   ===================================================================== */
+html[data-theme="dark"] .sbm-viewer-cockpit-card {
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+html[data-theme="dark"] .sbm-viewer-head {
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  border-bottom-color: #334155;
+}
+
+html[data-theme="dark"] .sbm-viewer-ico {
+  background: rgba(37, 99, 235, 0.2);
+  color: #60a5fa;
+  box-shadow: inset 0 0 0 1.5px rgba(96, 165, 250, 0.3);
+}
+
+html[data-theme="dark"] .sbm-console-wrapper {
+  background: #0f172a;
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .sbm-search-input {
+  background: #1e293b;
+  border-color: #475569;
+  color: #f8fafc;
+}
+
+html[data-theme="dark"] .sbm-search-results-floating {
+  background: #1e293b;
+  border-color: #475569;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+}
+
+html[data-theme="dark"] .sbm-search-item:hover {
+  background: #334155;
+}
+
+html[data-theme="dark"] .search-item-left strong {
+  color: #f8fafc;
+}
+
+html[data-theme="dark"] .sbm-filter-select {
+  background-color: #1e293b;
+  border-color: #475569;
+  color: #f8fafc;
+}
+
+html[data-theme="dark"] .sbm-chip-btn {
+  background: #1e293b;
+  border-color: #475569;
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .sbm-chip-btn:hover {
+  background: #334155;
+  color: #ffffff;
+}
+
+html[data-theme="dark"] .sbm-location-hero-card {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  border-color: #0284c7;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+html[data-theme="dark"] .sbm-prov-pill {
+  background: #1e293b;
+  border-color: #38bdf8;
+  color: #7dd3fc;
+}
+
+html[data-theme="dark"] .sbm-city-badge {
+  background: rgba(37, 99, 235, 0.25);
+  border: 1px solid rgba(96, 165, 250, 0.45);
+  color: #bfdbfe;
+  font-weight: 700;
+}
+
+html[data-theme="dark"] .sbm-zone-badge {
+  background: rgba(14, 165, 233, 0.25);
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  color: #bae6fd;
+  font-weight: 700;
+}
+
+html[data-theme="dark"] .sbm-hero-title {
+  color: #f8fafc;
+}
+
+html[data-theme="dark"] .sbm-hero-sub {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .sbm-notice-card {
+  background: #1e293b;
+  border-color: #475569;
+}
+
+html[data-theme="dark"] .sbm-notice-card.notice-dki {
+  background: rgba(15, 23, 42, 0.95);
+  border: 1.5px solid #38bdf8;
+  box-shadow: 0 4px 20px rgba(56, 189, 248, 0.15);
+}
+
+html[data-theme="dark"] .notice-dki .notice-badge {
+  background: rgba(2, 132, 199, 0.35);
+  color: #e0f2fe;
+  border: 1px solid rgba(56, 189, 248, 0.6);
+  font-weight: 800;
+}
+
+html[data-theme="dark"] .sbm-notice-card.notice-bodetabek {
+  background: rgba(30, 20, 10, 0.95);
+  border: 1.5px solid #f59e0b;
+  box-shadow: 0 4px 20px rgba(245, 158, 11, 0.15);
+}
+
+html[data-theme="dark"] .notice-bodetabek .notice-badge {
+  background: rgba(217, 119, 6, 0.35);
+  color: #fef3c7;
+  border: 1px solid rgba(245, 158, 11, 0.6);
+  font-weight: 800;
+}
+
+html[data-theme="dark"] .sbm-notice-card.notice-island {
+  background: rgba(10, 30, 30, 0.95);
+  border: 1.5px solid #14b8a6;
+  box-shadow: 0 4px 20px rgba(20, 184, 166, 0.15);
+}
+
+html[data-theme="dark"] .notice-island .notice-badge {
+  background: rgba(13, 148, 136, 0.35);
+  color: #ccfbf1;
+  border: 1px solid rgba(20, 184, 166, 0.6);
+  font-weight: 800;
+}
+
+html[data-theme="dark"] .sbm-notice-card.notice-luarkota {
+  background: rgba(10, 30, 15, 0.95);
+  border: 1.5px solid #22c55e;
+  box-shadow: 0 4px 20px rgba(34, 197, 94, 0.15);
+}
+
+html[data-theme="dark"] .notice-luarkota .notice-badge {
+  background: rgba(22, 163, 74, 0.35);
+  color: #dcfce7;
+  border: 1px solid rgba(34, 197, 94, 0.6);
+  font-weight: 800;
+}
+
+html[data-theme="dark"] .notice-headline {
+  color: #f8fafc !important;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+html[data-theme="dark"] .notice-desc {
+  color: #cbd5e1 !important;
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+html[data-theme="dark"] .notice-desc strong {
+  color: #ffffff !important;
+  font-weight: 700;
+}
+
+html[data-theme="dark"] .sbm-category-header {
+  border-bottom-color: #334155;
+}
+
+html[data-theme="dark"] .sbm-card-item {
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  border-color: #334155;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+html[data-theme="dark"] .sbm-card-item:hover {
+  background: linear-gradient(180deg, #1e293b 0%, #172554 100%);
+  border-color: #3b82f6;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
+}
+
+html[data-theme="dark"] .sbm-card-label {
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .sbm-card-val {
+  color: #f8fafc;
+}
+
+html[data-theme="dark"] .badge-pmk {
+  background: #1e3a8a;
+  border-color: #3b82f6;
+  color: #bfdbfe;
+}
+
+/* =====================================================================
+   RESPONSIVE DESIGN BREAKPOINTS
+   ===================================================================== */
+@media (max-width: 1024px) {
+  .sbm-location-hero-card {
+    flex-direction: column;
+  }
+  .sbm-location-hero-note {
+    min-width: 100%;
+    max-width: 100%;
+  }
+  .grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .sbm-dual-select-row {
+    grid-template-columns: 1fr;
+  }
+  .grid-cols-3 {
+    grid-template-columns: 1fr;
+  }
+  .grid-cols-2 {
+    grid-template-columns: 1fr;
+  }
+  .grid-cols-4 {
+    grid-template-columns: 1fr;
+  }
+  .sbm-viewer-head {
+    padding: 16px 20px;
+  }
+  .sbm-viewer-body {
+    padding: 16px 20px 24px;
+  }
+}
+
+

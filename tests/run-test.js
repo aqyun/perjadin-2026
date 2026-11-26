@@ -16,9 +16,9 @@ global.window = {
 global.localStorage = global.window.localStorage;
 global.document = undefined;
 // UMD SDK memasang PocketBase ke module.exports / global
-const sdk = require(path.join(REPO, 'pocketbase.umd.js'));
+const sdk = require(path.join(REPO, 'vendor', 'pocketbase.umd.js'));
 window.PocketBase = sdk.default || sdk.PocketBase || sdk;
-require(path.join(REPO, 'js', 'pb-shim.js'));
+require(path.join(REPO, 'js', '01-shim', '01-pocketbase-shim.js'));
 
 let pass = 0, fail = 0;
 function check(name, cond, extra) {

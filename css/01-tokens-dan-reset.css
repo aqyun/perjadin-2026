@@ -1,0 +1,113 @@
+/* ============================================================
+Aplikasi Perjalanan Dinas — UI shell 2026
+Catatan: seluruh gaya dokumen cetak di bawah TIDAK diubah.
+============================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+:root {
+  --ink: #0c1a2c;
+  --ink-2: #24374f;
+  --muted: #66788f;
+  --faint: #93a4ba;
+  --line: #e2eaf4;
+  --line-strong: #cfdbea;
+  --surface: #ffffff;
+  --surface-2: #f5f9fe;
+  --canvas: #eef3fa;
+  --brand: #1f6ff2;
+  --brand-600: #1657c9;
+  --brand-700: #0d3f9c;
+  --mint: #00b7a6;
+  --gold: #e5b64a;
+  --danger: #e0474f;
+  --ok: #12a05f;
+  --r-lg: 24px;
+  --r-md: 16px;
+  --r-sm: 12px;
+  --ring: 0 0 0 4px rgba(31,111,242,.14);
+  --shadow-sm: 0 1px 2px rgba(10,28,52,.05),0 1px 1px rgba(10,28,52,.03);
+  --shadow: 0 18px 40px -24px rgba(10,28,52,.28),0 2px 6px rgba(10,28,52,.04);
+  --font: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  --border-color: var(--line);
+  --border-strong: var(--line-strong);
+  --bg-main: var(--surface-2);
+  --bg-card: var(--surface);
+  --text-main: var(--ink);
+  --text-sub: var(--muted);
+}
+
+html {
+  scroll-behavior: smooth;
+  font-family: var(--font);
+}
+
+body, button, input, select, textarea, optgroup {
+  font-family: var(--font);
+}
+
+body {
+  color: var(--ink);
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  background: radial-gradient(900px 620px at 105% -8%,rgba(31,111,242,.12),transparent 62%),
+        radial-gradient(760px 520px at -8% 8%,rgba(0,183,166,.10),transparent 58%),
+        radial-gradient(700px 700px at 50% 115%,rgba(229,182,74,.10),transparent 60%),
+        var(--canvas);
+}
+
+::selection {
+  background: #cfe0ff;
+  color: #0a2a5e;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #c7d5e6 transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c7d5e6;
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a9bed6;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+:focus-visible {
+  outline: 2px solid #6da6ff;
+  outline-offset: 2px;
+}
+
+.svg-sprite {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+svg.ico {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
