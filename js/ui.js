@@ -800,6 +800,7 @@ function switchTabPanel(name) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.tab-btn, .bottom-nav-btn[data-tab]').forEach(b => b.classList.remove('active'));
   panel.classList.add('active');
+  document.body.classList.toggle('sim-tab-active', name === 'simulasi');
   document.querySelectorAll(`.tab-btn[data-tab="${name}"], .bottom-nav-btn[data-tab="${name}"]`).forEach(btn => btn.classList.add('active'));
   const meta = tabMeta[name] || ['Perjalanan Dinas', 'Menu'];
   const titleEl = document.getElementById('pageTitle');

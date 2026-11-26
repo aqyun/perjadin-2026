@@ -3151,7 +3151,10 @@ function populateSbmCitySelect(selCity, provId, selectedCityId = null) {
     provCities.forEach(c => {
       const opt = document.createElement('option');
       opt.value = c.id;
-      let label = `${c.tipe || 'Kota'} ${c.nama}`;
+      let label = String(c.nama || '').trim();
+      if (!/^(kota|kab|kabupaten)\b/i.test(label) && c.tipe && c.tipe !== '-') {
+        label = `${c.tipe} ${label}`;
+      }
       if (c.isBodetabek) label += ' (Bodetabek PMK Hal 68)';
       if (c.isKhusus) label += ' (Khusus PMK Hal 15 & 68)';
       opt.textContent = label;
@@ -3206,6 +3209,7 @@ function onViewerSbmProvChange(provId, cityIdOrObj = null) {
       cityObj = (typeof daftarKotaSbm !== 'undefined') ? daftarKotaSbm.find(x => x.id === selCity.value) : null;
     }
   }
+  if (cityObj && String(cityObj.provId) !== String(sbm.id)) cityObj = null;
 
   currentViewerSbmCityId = cityObj ? cityObj.id : 'all';
 
@@ -3289,23 +3293,25 @@ function onViewerSbmProvChange(provId, cityIdOrObj = null) {
       if (elUhUnit) elUhUnit.textContent = '/ Orang / Hari (Kep. Seribu PMK Hal 15)';
     } else if (isDki) {
       elUh.textContent = `${formatRp(0)} (dalam kota)`;
-      if (elUhUnit) elUhUnit.textContent = 'Dinas biasa (Rp 210.000 jika >8 jam)';
+      if (elUhUnit) elUhUnit.textContent = 'Tidak dibayarkan untuk dinas dalam kota';
     } else {
       elUh.textContent = formatRp(sbm.uh || 0);
       if (elUhUnit) elUhUnit.textContent = '/ Orang / Hari (OH) Penuh 100%';
     }
   }
 
+  const isDkiKota = isDki && !isKepSeribu;
+
   // 2. Uang Harian Diklat
   const elDiklat = document.getElementById('vsbm_diklat');
   if (elDiklat) {
-    elDiklat.textContent = formatRp(sbm.diklat || 110000);
+    elDiklat.textContent = isDkiKota ? '—' : formatRp(sbm.diklat || 110000);
   }
 
   // 3. Uang Harian Fullboard
   const elFullboard = document.getElementById('vsbm_fullboard');
   if (elFullboard) {
-    elFullboard.textContent = formatRp(sbm.fullboard || 130000);
+    elFullboard.textContent = isDkiKota ? '—' : formatRp(sbm.fullboard || 130000);
   }
 
   // 4. Makan Rapat SBM
@@ -3323,13 +3329,13 @@ function onViewerSbmProvChange(provId, cityIdOrObj = null) {
   // 6. Penginapan Gol IV
   const elH4 = document.getElementById('vsbm_h4');
   if (elH4) {
-    elH4.textContent = formatRp(sbm.h4 || 0);
+    elH4.textContent = isDkiKota ? '—' : formatRp(sbm.h4 || 0);
   }
 
   // 7. Penginapan Gol III
   const elH3 = document.getElementById('vsbm_h3');
   if (elH3) {
-    elH3.textContent = formatRp(sbm.h3 || 0);
+    elH3.textContent = isDkiKota ? '—' : formatRp(sbm.h3 || 0);
   }
 
   // 8. DPR Jakarta PP / Transport Darat
@@ -3347,7 +3353,8 @@ function onViewerSbmProvChange(provId, cityIdOrObj = null) {
   // 9. Taxi Lokal
   const elTaxi = document.getElementById('vsbm_taxi');
   if (elTaxi) {
-    elTaxi.textContent = sbm.taxi ? formatRp(sbm.taxi) : '-';
+    if (isDkiKota) elTaxi.textContent = '— (pakai DPR Rp 170.000)';
+    else elTaxi.textContent = sbm.taxi ? formatRp(sbm.taxi) : '-';
   }
 
   // 10. DPR dibayarkan
@@ -3363,7 +3370,7 @@ function onViewerSbmProvChange(provId, cityIdOrObj = null) {
   // 11. Tiket Pesawat PP
   const elTiket = document.getElementById('vsbm_tiket');
   if (elTiket) {
-    elTiket.textContent = sbm.tiket ? formatRp(sbm.tiket) : '- (jalur darat / tidak ada)';
+    elTiket.textContent = isDkiKota ? '— (tanpa tiket antar kota)' : (sbm.tiket ? formatRp(sbm.tiket) : '- (jalur darat / tidak ada)');
   }
 
   // RENDER SPECIAL NOTICE BANNER
@@ -3389,8 +3396,8 @@ function onViewerSbmProvChange(provId, cityIdOrObj = null) {
       noticeBox.innerHTML = `
         <div class="sbm-notice-card notice-dki">
           <div class="notice-badge">🏛️ KETENTUAN PERJALANAN DALAM KOTA DKI JAKARTA (PMK HAL 69)</div>
-          <strong class="notice-headline">Uang Harian Rp 0 (Biasa) | DPR Lokal Dibayarkan Rp 170.000</strong>
-          <p class="notice-desc">Sesuai ketentuan, perjalanan dinas dalam kota tidak diberikan uang harian (diberikan Rp 210.000 jika surat tugas menyatakan penugasan melebihi 8 jam). Uang transport lokal (DPR) dibayarkan sebesar <strong>Rp 170.000 / hari</strong>.</p>
+          <strong class="notice-headline">UH, Penginapan, Diklat/Fullboard &amp; Tiket: Tidak Dibayarkan | DPR Lokal Rp 170.000</strong>
+          <p class="notice-desc">Perjalanan dinas dalam kota DKI Jakarta tidak diberikan uang harian, penginapan, diklat/fullboard, maupun tiket pesawat. Yang dibayarkan hanya <strong>DPR transport lokal Rp 170.000</strong>. Pengecualian: Kepulauan Seribu (UH Rp 210.000/hari + tiket kapal laut Rp 772.000 PP).</p>
         </div>
       `;
     } else {
@@ -3459,9 +3466,12 @@ function buildSbmSearchResultsHtml(keyword, cityFnName, provFnName) {
     html += `<div class="sbm-search-section-title">Kota &amp; Kabupaten (${matchedCities.length})</div>`;
     matchedCities.slice(0, 8).forEach(c => {
       const sbm = sbmData.find(x => Number(x.id) === Number(c.provId)) || {};
+      const isDkiCity = Number(c.provId) === 13 && c.id !== 'kep_seribu';
       const note = c.isBodetabek
         ? `<span class="search-bodetabek-tag">Bodetabek Transport PP ${formatRp(c.transportPP)}</span>`
-        : `<span class="search-rate-tag">UH ${formatRp(sbm.uh || 0)} • Hotel IV ${formatRp(sbm.h4 || 0)}</span>`;
+        : (isDkiCity
+          ? `<span class="search-rate-tag">Dinas dalam kota • DPR ${formatRp(170000)}</span>`
+          : `<span class="search-rate-tag">UH ${formatRp(sbm.uh || 0)} • Hotel IV ${formatRp(sbm.h4 || 0)}</span>`);
       html += `
         <div class="sbm-search-item" onclick="${cityFnName}('${c.id}')">
           <div class="search-item-left">
@@ -3492,7 +3502,9 @@ function buildSbmSearchResultsHtml(keyword, cityFnName, provFnName) {
             </div>
           </div>
           <div class="search-item-right">
-            <span class="search-rate-tag">UH ${formatRp(p.uh || 0)} • Tiket PP ${p.tiket ? formatRp(p.tiket) : 'Jalur Darat'}</span>
+            ${p.provinsi === 'DKI JAKARTA'
+              ? `<span class="search-rate-tag">UH Rp 0 (dalam kota) • DPR ${formatRp(170000)}</span>`
+              : `<span class="search-rate-tag">UH ${formatRp(p.uh || 0)} • Tiket PP ${p.tiket ? formatRp(p.tiket) : 'Jalur Darat'}</span>`}
           </div>
         </div>
       `;
@@ -3673,11 +3685,25 @@ function syncSimDestinationRules(sbm, cityObj) {
   const lokalManualEl = document.getElementById('simLokalManual');
 
   if (jenisEl) {
+    // Skema khusus DKI hanya relevan ketika tujuan memang di dalam kota DKI
+    Array.from(jenisEl.options).forEach(opt => {
+      if (opt.value === 'dki_kota') {
+        opt.hidden = !isDkiLocal;
+        opt.disabled = !isDkiLocal;
+        opt.style.display = isDkiLocal ? '' : 'none';
+      }
+    });
+    if (isDkiLocal) {
+      jenisEl.value = 'dki_kota';
+      jenisEl.disabled = true;
+    } else {
+      jenisEl.disabled = false;
+      if (jenisEl.value === 'dki_kota') jenisEl.value = 'biasa';
+    }
+
     if (!simState.wasDkiLocal && isDkiLocal) {
-      if (jenisEl.value === 'biasa') jenisEl.value = 'dki_gt8';
       if (cbHotel && (parseInt(malamEl?.value, 10) || 0) === 0) cbHotel.checked = false;
     } else if (simState.wasDkiLocal && !isDkiLocal) {
-      if (jenisEl.value === 'dki_8' || jenisEl.value === 'dki_gt8') jenisEl.value = 'biasa';
       if (cbHotel && (parseInt(malamEl?.value, 10) || 0) > 0) cbHotel.checked = true;
     }
   }
@@ -3696,7 +3722,7 @@ function syncSimDestinationRules(sbm, cityObj) {
     } else if (isBodetabek && cityObj.transportPP) {
       noticeEl.innerHTML = `<div class="sbm-notice-card notice-bodetabek"><div class="notice-badge">🚗 BODETABEK (PMK HAL 68)</div><p class="notice-desc">Tujuan <strong>${safeEsc(cityObj.nama)}</strong> memakai Transport Darat PP <strong>${formatRp(cityObj.transportPP)}</strong> (one way ${formatRp(cityObj.oneWay)}), tanpa taksi bandara terpisah.</p></div>`;
     } else if (isDkiLocal) {
-      noticeEl.innerHTML = `<div class="sbm-notice-card notice-dki"><div class="notice-badge">🏛️ DALAM KOTA DKI JAKARTA (PMK HAL 69)</div><p class="notice-desc">Dinas &le;8 jam hanya mendapat DPR <strong>Rp 170.000</strong> (tanpa Uang Harian). Penugasan &gt;8 jam berhak Uang Harian <strong>Rp 210.000/hari</strong> + DPR.</p></div>`;
+      noticeEl.innerHTML = `<div class="sbm-notice-card notice-dki"><div class="notice-badge">🏛️ DALAM KOTA DKI JAKARTA (PMK HAL 69)</div><p class="notice-desc">Uang harian, penginapan, diklat/fullboard, dan tiket pesawat <strong>tidak dibayarkan</strong> untuk dinas dalam kota. Hak yang tersisa hanya <strong>DPR transport lokal Rp 170.000</strong>. Pakai kendaraan dinas &rarr; Rp 0.</p></div>`;
     } else {
       noticeEl.innerHTML = `<div class="sbm-notice-card notice-luarkota"><div class="notice-badge">✈️ LUAR KOTA (${safeEsc(sbm.provinsi)})</div><p class="notice-desc">UH Penuh <strong>${formatRp(sbm.uh || 0)}</strong>/hari • Tiket PP <strong>${sbm.tiket ? formatRp(sbm.tiket) : 'Jalur Darat'}</strong> • JKT PP + Taksi <strong>${formatRp((sbm.jktPP || 0) + (sbm.taxi || 0))}</strong>.</p></div>`;
     }
@@ -3807,6 +3833,33 @@ function onSimCurrencyInput(el) {
   onSimParamChange();
 }
 
+// Toggle yang tidak tersedia pada layout personal dianggap aktif,
+// sehingga seluruh komponen hak biaya tetap ikut terhitung untuk 1 pegawai.
+function simToggleOn(id, fallback = true) {
+  const el = document.getElementById(id);
+  return el ? !!el.checked : fallback;
+}
+
+function syncSimDurationChips() {
+  const hari = parseInt(document.getElementById('simHari')?.value, 10) || 0;
+  const malam = parseInt(document.getElementById('simMalam')?.value, 10) || 0;
+  document.querySelectorAll('.sim-dur-chip').forEach(btn => {
+    const parts = String(btn.getAttribute('data-dur') || '').split('-');
+    const h = parseInt(parts[0], 10);
+    const m = parseInt(parts[1], 10);
+    btn.classList.toggle('active', h === hari && m === malam);
+  });
+}
+
+function setSimDuration(hari, malam) {
+  const hariEl = document.getElementById('simHari');
+  const malamEl = document.getElementById('simMalam');
+  if (!hariEl || !malamEl) return;
+  hariEl.value = Math.max(1, Math.min(30, parseInt(hari, 10) || 1));
+  malamEl.value = Math.max(0, Math.min(30, parseInt(malam, 10) || 0));
+  onSimParamChange();
+}
+
 function computeSimulasiData() {
   const formatRp = typeof rp === 'function' ? rp : (n) => 'Rp ' + Number(n || 0).toLocaleString('id-ID');
   const { sbm, cityObj } = resolveSimDestination(simState.provId, simState.cityId);
@@ -3824,15 +3877,23 @@ function computeSimulasiData() {
   const jenis = document.getElementById('simJenisKegiatan')?.value || 'biasa';
 
   // 1. Uang Harian & Potongan Konsumsi
-  const cbUh = !!document.getElementById('simCbUh')?.checked;
+  const cbUh = simToggleOn('simCbUh', true);
   let uhPercent = parseFloat(document.getElementById('simUhPercent')?.value ?? '1');
   if (isNaN(uhPercent) || uhPercent < 0) uhPercent = 1;
+
+  const lokalMode = document.getElementById('simLokalMode')?.value || 'sbm';
+  const isKendaraanDinas = lokalMode === 'dinas';
 
   let uhRate = 0;
   let effectivePct = 1;
   let uhLabel = 'Uang Harian';
 
-  if (jenis === 'diklat') {
+  if (isDkiLocal) {
+    // Dinas dalam kota DKI Jakarta: tanpa UH, hanya DPR transport lokal
+    uhRate = 0;
+    effectivePct = 0;
+    uhLabel = 'Uang Harian (tidak dibayarkan di DKI)';
+  } else if (jenis === 'diklat') {
     uhRate = sbm.diklat || 110000;
     effectivePct = 1;
     uhLabel = 'Uang Harian Diklat';
@@ -3840,16 +3901,6 @@ function computeSimulasiData() {
     uhRate = sbm.fullboard || 130000;
     effectivePct = 1;
     uhLabel = 'Uang Harian Fullboard';
-  } else if (isDkiLocal) {
-    if (jenis === 'dki_gt8') {
-      uhRate = 210000;
-      effectivePct = 1;
-      uhLabel = 'Uang Harian DKI (> 8 Jam)';
-    } else {
-      uhRate = 0;
-      effectivePct = 0;
-      uhLabel = 'Uang Harian Dalam Kota DKI';
-    }
   } else if (isKepSeribu) {
     uhRate = 210000;
     effectivePct = uhPercent;
@@ -3860,6 +3911,12 @@ function computeSimulasiData() {
     effectivePct = uhPercent;
     const pctText = Math.round(effectivePct * 100);
     uhLabel = pctText === 100 ? 'Uang Harian Penuh' : `Uang Harian (${pctText}%)`;
+  }
+
+  // Kendaraan dinas operasional: UH dibayar 60% (DKI tetap Rp 0)
+  if (isKendaraanDinas && uhRate > 0) {
+    effectivePct = 0.6;
+    uhLabel = `${uhLabel.replace(/\s*\(\d+%\)$/, '').replace(/\s+Penuh$/, '')} (60% Kendaraan Dinas)`;
   }
 
   const uhGrossPerPerson = cbUh ? Math.round(uhRate * hari * effectivePct) : 0;
@@ -3874,9 +3931,9 @@ function computeSimulasiData() {
   const uhNetPerPerson = Math.max(0, uhGrossPerPerson - konsumsiDeductPerPerson);
   const uhTotal = uhNetPerPerson * peserta;
 
-  // 2. Penginapan / Hotel
-  const hotelPaguRate = getSimHotelPagu(sbm, golongan);
-  const cbHotel = !!document.getElementById('simCbHotel')?.checked;
+  // 2. Penginapan / Hotel (tidak berlaku untuk dinas dalam kota DKI)
+  const hotelPaguRate = isDkiLocal ? 0 : getSimHotelPagu(sbm, golongan);
+  const cbHotel = simToggleOn('simCbHotel', true);
   const hotelMode = document.getElementById('simHotelMode')?.value || 'sbm';
   const kamarMode = document.getElementById('simKamarMode')?.value || 'per_orang';
   const kamarCount = kamarMode === 'custom'
@@ -3885,8 +3942,13 @@ function computeSimulasiData() {
 
   let hotelRateUsed = 0;
   let hotelModeLabel = 'Sesuai Pagu SBM';
-  if (cbHotel && malam > 0) {
-    if (hotelMode === 'atcost_30') {
+  if (isDkiLocal) {
+    hotelModeLabel = 'Tidak berlaku (dinas dalam kota DKI)';
+  } else if (cbHotel && malam > 0) {
+    if (hotelMode === 'none') {
+      hotelRateUsed = 0;
+      hotelModeLabel = 'Tidak Menginap';
+    } else if (hotelMode === 'atcost_30') {
       hotelRateUsed = Math.round(hotelPaguRate * 0.3);
       hotelModeLabel = '30% Tanpa Bukti Hotel';
     } else if (hotelMode === 'manual') {
@@ -3897,25 +3959,25 @@ function computeSimulasiData() {
       hotelModeLabel = `Pagu SBM Gol. ${golongan}`;
     }
   }
-  const hotelTotal = (cbHotel && malam > 0) ? hotelRateUsed * malam * kamarCount : 0;
-  const hotelSbmCapTotal = (cbHotel && malam > 0) ? hotelPaguRate * malam * kamarCount : 0;
+  const hotelTotal = (!isDkiLocal && cbHotel && malam > 0) ? hotelRateUsed * malam * kamarCount : 0;
+  const hotelSbmCapTotal = (!isDkiLocal && cbHotel && malam > 0) ? hotelPaguRate * malam * kamarCount : 0;
   const hotelExceed = Math.max(0, hotelTotal - hotelSbmCapTotal);
 
   // 3. Transport Utama (Tiket / Darat / Kapal PP)
-  const cbTransport = !!document.getElementById('simCbTransport')?.checked;
+  const cbTransport = simToggleOn('simCbTransport', true);
   const transportMode = document.getElementById('simTransportMode')?.value || 'sbm';
   let transportSbmCapRate = 0;
   let transportLabel = 'Transport Utama PP';
 
-  if (isKepSeribu) {
+  if (isDkiLocal) {
+    transportSbmCapRate = 0;
+    transportLabel = 'Tiket Antar Kota (tidak dibayarkan di DKI)';
+  } else if (isKepSeribu) {
     transportSbmCapRate = 772000;
     transportLabel = 'Tiket Kapal Laut Kep. Seribu PP';
   } else if (isBodetabek && cityObj?.transportPP) {
     transportSbmCapRate = cityObj.transportPP;
     transportLabel = `Transport Darat PP (${cityObj.nama})`;
-  } else if (isDkiLocal) {
-    transportSbmCapRate = 0;
-    transportLabel = 'Transport Dalam Kota (Darat)';
   } else if (sbm.tiket > 0) {
     transportSbmCapRate = sbm.tiket;
     transportLabel = 'Tiket Pesawat PP (SBM)';
@@ -3925,9 +3987,16 @@ function computeSimulasiData() {
   }
 
   let transportPerPerson = 0;
-  if (cbTransport) {
-    if (transportMode === 'manual') {
-      transportPerPerson = typeof parseNumber === 'function' ? parseNumber(document.getElementById('simTransportManual')?.value) : 0;
+  let transportRawPerPerson = 0;
+  if (cbTransport && !isDkiLocal) {
+    if (transportMode === 'none') {
+      transportPerPerson = 0;
+    } else if (transportMode === 'manual') {
+      transportRawPerPerson = typeof parseNumber === 'function' ? parseNumber(document.getElementById('simTransportManual')?.value) : 0;
+      // Klaim riil di atas SBM dibatasi maksimal SBM (termasuk pagu PP one way Bodetabek)
+      transportPerPerson = transportSbmCapRate > 0
+        ? Math.min(transportRawPerPerson, transportSbmCapRate)
+        : transportRawPerPerson;
     } else {
       transportPerPerson = transportSbmCapRate;
     }
@@ -3935,12 +4004,11 @@ function computeSimulasiData() {
   const transportTotal = transportPerPerson * peserta;
   const transportSbmCapTotal = cbTransport && transportSbmCapRate > 0 ? transportSbmCapRate * peserta : 0;
   const transportExceed = (cbTransport && transportMode === 'manual' && transportSbmCapRate > 0)
-    ? Math.max(0, transportTotal - transportSbmCapTotal)
+    ? Math.max(0, transportRawPerPerson - transportSbmCapRate) * peserta
     : 0;
 
   // 4. Transport Lokal / Taksi / DPR
-  const cbLokal = !!document.getElementById('simCbLokal')?.checked;
-  const lokalMode = document.getElementById('simLokalMode')?.value || 'sbm';
+  const cbLokal = simToggleOn('simCbLokal', true);
   const dkiDprMode = document.getElementById('simDkiDprMode')?.value || 'per_hari';
 
   let lokalSbmAutoPerPerson = 0;
@@ -3957,9 +4025,17 @@ function computeSimulasiData() {
   }
 
   let lokalPerPerson = 0;
+  let lokalRawPerPerson = 0;
   if (cbLokal) {
-    if (lokalMode === 'manual') {
-      lokalPerPerson = typeof parseNumber === 'function' ? parseNumber(document.getElementById('simLokalManual')?.value) : 0;
+    if (lokalMode === 'none') {
+      lokalPerPerson = 0;
+    } else if (lokalMode === 'dinas') {
+      lokalPerPerson = 0;
+      lokalLabel = 'Kendaraan Dinas Operasional';
+    } else if (lokalMode === 'manual') {
+      lokalRawPerPerson = typeof parseNumber === 'function' ? parseNumber(document.getElementById('simLokalManual')?.value) : 0;
+      // Klaim riil dibatasi pagu SBM transport lokal; pagu 0 = sudah termasuk paket PP
+      lokalPerPerson = Math.min(lokalRawPerPerson, lokalSbmAutoPerPerson);
       lokalLabel = 'Transport Lokal / DPR (Riil)';
     } else if (lokalMode === 'taxi_only') {
       lokalPerPerson = (isDkiLocal || isKepSeribu || isBodetabek) ? 0 : (sbm.taxi || 0);
@@ -3973,13 +4049,13 @@ function computeSimulasiData() {
   }
   const lokalTotal = lokalPerPerson * peserta;
   const lokalSbmCapTotal = cbLokal && lokalSbmAutoPerPerson > 0 ? lokalSbmAutoPerPerson * peserta : 0;
-  const lokalExceed = (cbLokal && lokalMode === 'manual' && lokalSbmAutoPerPerson > 0)
-    ? Math.max(0, lokalTotal - lokalSbmCapTotal)
+  const lokalExceed = (cbLokal && lokalMode === 'manual')
+    ? Math.max(0, lokalRawPerPerson - lokalSbmAutoPerPerson) * peserta
     : 0;
 
-  // 5. Uang Representatif & Biaya Lainnya
-  const cbRep = !!document.getElementById('simCbRep')?.checked;
-  const repRate = cbRep ? (isDki ? 75000 : 150000) : 0;
+  // 5. Uang Representatif & Biaya Lainnya (representatif hanya untuk Eselon I / II)
+  const cbRep = simToggleOn('simCbRep', true);
+  const repRate = cbRep ? (golongan === 'I' ? 250000 : (golongan === 'II' ? 150000 : 0)) : 0;
   const repTotal = repRate * hari * peserta;
 
   const biayaLainPerPerson = typeof parseNumber === 'function' ? parseNumber(document.getElementById('simBiayaLain')?.value) : 0;
@@ -4010,6 +4086,7 @@ function computeSimulasiData() {
     golongan,
     jenis,
     cbUh,
+    isKendaraanDinas,
     uhRate,
     effectivePct,
     uhLabel,
@@ -4034,6 +4111,7 @@ function computeSimulasiData() {
     transportMode,
     transportLabel,
     transportSbmCapRate,
+    transportRawPerPerson,
     transportPerPerson,
     transportTotal,
     transportExceed,
@@ -4041,6 +4119,7 @@ function computeSimulasiData() {
     lokalMode,
     lokalLabel,
     lokalSbmAutoPerPerson,
+    lokalRawPerPerson,
     lokalPerPerson,
     lokalTotal,
     lokalExceed,
@@ -4076,11 +4155,19 @@ function onSimParamChange() {
   }
 
   const cbKonsumsi = !!document.getElementById('simCbKonsumsi')?.checked;
-  const cbUh = !!document.getElementById('simCbUh')?.checked;
+  const cbUh = simToggleOn('simCbUh', true);
   const konsumsiBox = document.getElementById('simKonsumsiBox');
   if (konsumsiBox) konsumsiBox.style.display = cbKonsumsi ? 'block' : 'none';
 
-  const cbHotel = !!document.getElementById('simCbHotel')?.checked;
+  // Dinas dalam kota DKI: penginapan & tiket antar kota tidak dibayarkan
+  const hotelRow = document.getElementById('simHotelRow');
+  const transportRow = document.getElementById('simTransportRow');
+  const dkiFacilityNote = document.getElementById('simDkiFacilityNote');
+  if (hotelRow) hotelRow.style.display = isDkiLocal ? 'none' : '';
+  if (transportRow) transportRow.style.display = isDkiLocal ? 'none' : '';
+  if (dkiFacilityNote) dkiFacilityNote.style.display = isDkiLocal ? 'block' : 'none';
+
+  const cbHotel = simToggleOn('simCbHotel', true);
   const hotelBox = document.getElementById('simHotelBox');
   const hotelMode = document.getElementById('simHotelMode')?.value || 'sbm';
   const kamarMode = document.getElementById('simKamarMode')?.value || 'per_orang';
@@ -4089,7 +4176,7 @@ function onSimParamChange() {
   const golongan = document.getElementById('simGolongan')?.value || 'III';
   const hotelPagu = getSimHotelPagu(sbm, golongan);
   const hotelCapPill = document.getElementById('simHotelCapPill');
-  if (hotelCapPill) hotelCapPill.textContent = `Pagu: ${formatRp(hotelPagu)}/mlm`;
+  if (hotelCapPill) hotelCapPill.textContent = isDkiLocal ? 'Tidak berlaku di DKI' : `Pagu: ${formatRp(hotelPagu)}/mlm`;
 
   const hotelManualEl = document.getElementById('simHotelManual');
   if (hotelMode === 'manual' && hotelManualEl && !hotelManualEl.value) {
@@ -4105,7 +4192,7 @@ function onSimParamChange() {
   if (kamarCustomWrap) kamarCustomWrap.style.display = showKamarCustom ? 'block' : 'none';
 
   // Transport visibility & prefill
-  const cbTransport = !!document.getElementById('simCbTransport')?.checked;
+  const cbTransport = simToggleOn('simCbTransport', true);
   const transportMode = document.getElementById('simTransportMode')?.value || 'sbm';
   const transportBox = document.getElementById('simTransportBox');
   const transportManualWrap = document.getElementById('simTransportManualWrap');
@@ -4119,11 +4206,20 @@ function onSimParamChange() {
     transportManualEl.value = formatSimNumber(transSbmCap);
   }
   const transCapPill = document.getElementById('simTransportCapPill');
-  if (transCapPill) transCapPill.textContent = transSbmCap > 0 ? `SBM: ${formatRp(transSbmCap)}` : 'Jalur Darat';
+  if (transCapPill) {
+    if (isDkiLocal) transCapPill.textContent = 'Tidak ada tiket antar kota';
+    else transCapPill.textContent = transSbmCap > 0 ? `SBM: ${formatRp(transSbmCap)}` : 'Jalur Darat';
+  }
 
   // Lokal visibility & prefill
-  const cbLokal = !!document.getElementById('simCbLokal')?.checked;
+  const cbLokal = simToggleOn('simCbLokal', true);
   const lokalMode = document.getElementById('simLokalMode')?.value || 'sbm';
+  const lokalSbmOpt = document.querySelector('#simLokalMode option[value="sbm"]');
+  if (lokalSbmOpt) {
+    lokalSbmOpt.textContent = isDkiLocal
+      ? 'Otomatis SBM (DPR transport DKI Rp 170.000)'
+      : 'Otomatis SBM (transport bandara + taksi kota)';
+  }
   const lokalBox = document.getElementById('simLokalBox');
   const lokalManualWrap = document.getElementById('simLokalManualWrap');
   const dkiDprWrap = document.getElementById('simDkiDprModeWrap');
@@ -4138,7 +4234,8 @@ function onSimParamChange() {
   }
   const lokalCapPill = document.getElementById('simLokalCapPill');
   if (lokalCapPill) {
-    if (isDkiLocal) lokalCapPill.textContent = 'SBM: Rp 170.000';
+    if (lokalMode === 'dinas') lokalCapPill.textContent = isDkiLocal ? 'Kendaraan dinas • UH Rp 0' : 'UH 60% (kendaraan dinas)';
+    else if (isDkiLocal) lokalCapPill.textContent = 'SBM: Rp 170.000';
     else if (isKepSeribu || isBodetabek) lokalCapPill.textContent = 'Termasuk PP';
     else lokalCapPill.textContent = `SBM: ${formatRp(lokalSbmCap)}`;
   }
@@ -4157,6 +4254,7 @@ function onSimParamChange() {
   }
 
   renderSimulasiResult(data);
+  syncSimDurationChips();
 }
 
 function renderSimulasiResult(data) {
@@ -4167,10 +4265,13 @@ function renderSimulasiResult(data) {
   if (destBadge) destBadge.textContent = data.destLabel;
 
   const metaBadge = document.getElementById('simResMetaBadge');
-  if (metaBadge) metaBadge.textContent = `${data.hari} Hari • ${data.malam} Malam • ${data.peserta} Org`;
+  if (metaBadge) metaBadge.textContent = `${data.hari} Hari • ${data.malam} Malam • Gol. ${data.golongan}`;
 
   const grandTotalEl = document.getElementById('simResGrandTotal');
   if (grandTotalEl) grandTotalEl.textContent = formatRp(data.grandTotal);
+
+  const mobileTotalEl = document.getElementById('simMobileTotal');
+  if (mobileTotalEl) mobileTotalEl.textContent = formatRp(data.grandTotal);
 
   const terbilangEl = document.getElementById('simResTerbilang');
   if (terbilangEl) {
@@ -4187,10 +4288,13 @@ function renderSimulasiResult(data) {
   if (compBadge) {
     if (data.exceedTotal > 0) {
       compBadge.className = 'sim-compliance-pill is-warn';
-      compBadge.textContent = `Melebihi Pagu SBM (+${formatRp(data.exceedTotal)})`;
+      const exceedLabel = data.hotelExceed > 0
+        ? `Melebihi Pagu SBM (+${formatRp(data.exceedTotal)})`
+        : 'Melebihi SBM — klaim dibatasi pagu';
+      compBadge.innerHTML = `<svg class="ico" style="width:14px;height:14px;"><use href="#i-alert"></use></svg><span>${exceedLabel}</span>`;
     } else {
       compBadge.className = 'sim-compliance-pill is-ok';
-      compBadge.textContent = 'Memenuhi Pagu SBM 2026';
+      compBadge.innerHTML = `<svg class="ico" style="width:14px;height:14px;"><use href="#i-check"></use></svg><span>Memenuhi Pagu SBM 2026</span>`;
     }
   }
 
@@ -4226,7 +4330,8 @@ function renderSimulasiResult(data) {
     if (data.lainCombinedTotal > 0) {
       items.push({ cls: 'seg-lain', label: 'Lainnya', pct: pctLain });
     }
-    legendEl.innerHTML = items.map(it =>
+    const visibleItems = items.filter(it => it.pct > 0);
+    legendEl.innerHTML = (visibleItems.length ? visibleItems : items).map(it =>
       `<span class="sim-legend-item"><i class="sim-legend-dot ${it.cls}"></i>${it.label} <strong>${it.pct}%</strong></span>`
     ).join('');
   }
@@ -4241,19 +4346,24 @@ function renderSimulasiResult(data) {
     uhFormulaParts.push(`− konsumsi ${formatRp(data.konsumsiDeductPerPerson)}`);
   }
   if (data.peserta > 1) uhFormulaParts.push(`× ${data.peserta} org`);
+  const uhSub = data.isDkiLocal
+    ? 'Dinas dalam kota DKI: tanpa uang harian (hanya DPR transport lokal)'
+    : (data.cbUh ? uhFormulaParts.join(' ') : 'Dinonaktifkan dalam simulasi');
   rows.push({
     title: data.uhLabel,
-    sub: data.cbUh ? uhFormulaParts.join(' ') : 'Dinonaktifkan dalam simulasi',
+    sub: uhSub,
     amount: data.uhTotal,
     perOrg: data.uhNetPerPerson,
     warn: ''
   });
 
-  const hotelSub = !data.cbHotel
-    ? 'Dinonaktifkan dalam simulasi'
-    : (data.malam === 0
-      ? '0 malam menginap'
-      : `${data.hotelModeLabel} • ${formatRp(data.hotelRateUsed)} × ${data.malam} mlm × ${data.kamarCount} kmr`);
+  const hotelSub = data.isDkiLocal
+    ? 'Tidak dibayarkan untuk dinas dalam kota DKI'
+    : (!data.cbHotel
+      ? 'Dinonaktifkan dalam simulasi'
+      : (data.malam === 0
+        ? '0 malam menginap'
+        : `${data.hotelModeLabel} • ${formatRp(data.hotelRateUsed)} × ${data.malam} mlm${data.kamarCount > 1 ? ` × ${data.kamarCount} kmr` : ''}`));
   rows.push({
     title: 'Penginapan / Hotel',
     sub: hotelSub,
@@ -4262,28 +4372,40 @@ function renderSimulasiResult(data) {
     warn: data.hotelExceed > 0 ? `+${formatRp(data.hotelExceed)} di atas pagu` : ''
   });
 
-  const transSub = !data.cbTransport
-    ? 'Dinonaktifkan dalam simulasi'
-    : (data.transportTotal === 0 && data.transportMode === 'sbm'
-      ? 'Jalur darat / tanpa tarif pesawat SBM'
-      : `${formatRp(data.transportPerPerson)}/org${data.peserta > 1 ? ` × ${data.peserta} org` : ''}`);
+  const transSub = data.isDkiLocal
+    ? 'Tidak ada tiket antar kota untuk dinas dalam kota DKI'
+    : (!data.cbTransport
+      ? 'Dinonaktifkan dalam simulasi'
+      : (data.transportMode === 'manual' && data.transportExceed > 0
+        ? `Input ${formatRp(data.transportRawPerPerson)} → dibatasi SBM ${formatRp(data.transportPerPerson)}`
+        : (data.transportTotal === 0 && data.transportMode === 'sbm'
+          ? 'Jalur darat / tanpa tarif pesawat SBM'
+          : `${formatRp(data.transportPerPerson)}${data.peserta > 1 ? ` × ${data.peserta} org` : ''}`)));
   rows.push({
     title: data.transportLabel,
     sub: transSub,
     amount: data.transportTotal,
     perOrg: data.transportPerPerson,
-    warn: data.transportExceed > 0 ? `+${formatRp(data.transportExceed)} di atas pagu` : ''
+    warn: data.transportExceed > 0 ? `Melebihi SBM — diklaim maks ${formatRp(data.transportPerPerson)}/org` : ''
   });
 
   const lokalSub = !data.cbLokal
     ? 'Dinonaktifkan dalam simulasi'
-    : `${formatRp(data.lokalPerPerson)}/org${data.peserta > 1 ? ` × ${data.peserta} org` : ''}`;
+    : (data.lokalMode === 'dinas'
+      ? (data.isDkiLocal
+        ? 'Dinas dalam kota DKI — tidak ada klaim transport lokal'
+        : 'Taksi/sewa tercakup UH 60% — tiket/transport antar kota tetap dibayarkan')
+      : (data.lokalMode === 'manual' && data.lokalExceed > 0
+        ? `Input ${formatRp(data.lokalRawPerPerson)} → dibatasi SBM ${formatRp(data.lokalPerPerson)}`
+        : `${formatRp(data.lokalPerPerson)}${data.peserta > 1 ? ` × ${data.peserta} org` : ''}`));
   rows.push({
     title: data.lokalLabel,
     sub: lokalSub,
     amount: data.lokalTotal,
     perOrg: data.lokalPerPerson,
-    warn: data.lokalExceed > 0 ? `+${formatRp(data.lokalExceed)} di atas pagu` : ''
+    warn: data.lokalExceed > 0 ? (data.lokalSbmAutoPerPerson > 0
+      ? `Melebihi SBM — diklaim maks ${formatRp(data.lokalSbmAutoPerPerson)}/org`
+      : 'Melebihi SBM — transport lokal sudah termasuk paket PP (tidak diklaim terpisah)') : ''
   });
 
   if (data.repTotal > 0) {
@@ -4329,17 +4451,29 @@ function renderSimulasiResult(data) {
 
   const refGrid = document.getElementById('simRefGrid');
   if (refGrid) {
-    const uhRefVal = data.isKepSeribu ? 210000 : (data.isDkiLocal ? 0 : (data.sbm.uh || 0));
-    const transRefVal = data.transportSbmCapRate;
-    const dprRefVal = data.isDkiLocal ? 170000 : ((data.isKepSeribu || data.isBodetabek) ? 0 : ((data.sbm.jktPP || 0) + (data.sbm.taxi || 0)));
-    const refItems = [
-      { k: 'Uang Harian', v: data.isDkiLocal ? 'Rp 0 / Rp 210 rb (>8j)' : formatRp(uhRefVal) },
-      { k: 'Hotel Gol. III', v: formatRp(data.sbm.h3 || 0) },
-      { k: 'Hotel Gol. IV', v: formatRp(data.sbm.h4 || 0) },
-      { k: 'Tiket / Darat PP', v: transRefVal > 0 ? formatRp(transRefVal) : 'Jalur Darat' },
-      { k: data.isDkiLocal ? 'DPR DKI Lokal' : 'JKT PP + Taksi', v: dprRefVal > 0 ? formatRp(dprRefVal) : 'Termasuk PP' },
-      { k: 'Diklat / Fullboard', v: `${formatRp(data.sbm.diklat || 0)} / ${formatRp(data.sbm.fullboard || 0)}` }
-    ];
+    let refItems;
+    if (data.isDkiLocal) {
+      refItems = [
+        { k: 'Uang Harian', v: 'Rp 0 (dalam kota)' },
+        { k: 'Penginapan / Hotel', v: 'Tidak berlaku' },
+        { k: 'Tiket Pesawat / Antar Kota', v: 'Tidak berlaku' },
+        { k: 'Diklat / Fullboard', v: 'Tidak berlaku' },
+        { k: 'DPR Transport DKI', v: `${formatRp(170000)} / hari` },
+        { k: 'SBM Makan / Snack', v: `${formatRp(data.sbm.makan || 0)} / ${formatRp(data.sbm.snack || 0)}` }
+      ];
+    } else {
+      const uhRefVal = data.isKepSeribu ? 210000 : (data.sbm.uh || 0);
+      const transRefVal = data.transportSbmCapRate;
+      const dprRefVal = (data.isKepSeribu || data.isBodetabek) ? 0 : ((data.sbm.jktPP || 0) + (data.sbm.taxi || 0));
+      refItems = [
+        { k: 'Uang Harian', v: formatRp(uhRefVal) },
+        { k: 'Hotel Gol. III', v: formatRp(data.sbm.h3 || 0) },
+        { k: 'Hotel Gol. IV', v: formatRp(data.sbm.h4 || 0) },
+        { k: 'Tiket / Darat PP', v: transRefVal > 0 ? formatRp(transRefVal) : 'Jalur Darat' },
+        { k: (data.isKepSeribu || data.isBodetabek) ? 'Transport PP' : 'JKT PP + Taksi', v: dprRefVal > 0 ? formatRp(dprRefVal) : 'Termasuk PP' },
+        { k: 'Diklat / Fullboard', v: `${formatRp(data.sbm.diklat || 0)} / ${formatRp(data.sbm.fullboard || 0)}` }
+      ];
+    }
     refGrid.innerHTML = refItems.map(it => `
       <div class="sim-ref-item">
         <span>${safeEsc(it.k)}</span>
@@ -4347,6 +4481,20 @@ function renderSimulasiResult(data) {
       </div>
     `).join('');
   }
+
+  // Panduan komponen biaya
+  const guideMakan = document.getElementById('simGuideMakan');
+  if (guideMakan) guideMakan.textContent = formatRp(data.sbm.makan || 0);
+  const guideSnack = document.getElementById('simGuideSnack');
+  if (guideSnack) guideSnack.textContent = formatRp(data.sbm.snack || 0);
+  const guideLokal = document.getElementById('simGuideLokalSbm');
+  if (guideLokal) {
+    if (data.isDkiLocal) guideLokal.textContent = 'DPR Rp 170.000';
+    else if (data.isKepSeribu || data.isBodetabek) guideLokal.textContent = 'sudah termasuk tiket PP';
+    else guideLokal.textContent = formatRp((data.sbm.jktPP || 0) + (data.sbm.taxi || 0));
+  }
+  const guideDki = document.getElementById('simGuideUhDki');
+  if (guideDki) guideDki.style.display = data.isDkiLocal ? '' : 'none';
 }
 
 function copySimulasiSummary() {
@@ -4356,8 +4504,9 @@ function copySimulasiSummary() {
   const lines = [
     `SIMULASI ESTIMASI BIAYA PERJALANAN DINAS (SBM 2026)`,
     `Tujuan: ${data.destLabel}`,
-    `Durasi & Peserta: ${data.hari} Hari / ${data.malam} Malam • ${data.peserta} Peserta (Gol. ${data.golongan})`,
+    `Durasi: ${data.hari} Hari / ${data.malam} Malam • Gol. ${data.golongan} (1 orang)`,
     `----------------------------------------`,
+    ...(data.isDkiLocal ? ['Catatan: dinas dalam kota DKI Jakarta — UH, penginapan, diklat/fullboard, dan tiket tidak dibayarkan. Hanya DPR transport lokal.'] : []),
     `- ${data.uhLabel}: ${formatRp(data.uhTotal)}`,
     `- Penginapan (${data.hotelModeLabel}, ${data.malam} mlm x ${data.kamarCount} kmr): ${formatRp(data.hotelTotal)}`,
     `- ${data.transportLabel}: ${formatRp(data.transportTotal)}`,
@@ -4365,10 +4514,16 @@ function copySimulasiSummary() {
   ];
   if (data.repTotal > 0) lines.push(`- Uang Representatif: ${formatRp(data.repTotal)}`);
   if (data.biayaLainTotal > 0) lines.push(`- Biaya Tambahan Lainnya: ${formatRp(data.biayaLainTotal)}`);
+  if (data.transportExceed > 0) lines.push(`Catatan: klaim transport riil melebihi SBM — dibatasi maks ${formatRp(data.transportPerPerson)}/org`);
+  if (data.lokalExceed > 0) {
+    lines.push(data.lokalSbmAutoPerPerson > 0
+      ? `Catatan: klaim transport lokal riil melebihi SBM — dibatasi maks ${formatRp(data.lokalPerPerson)}/org`
+      : 'Catatan: transport lokal sudah termasuk paket PP — klaim terpisah di atas SBM tidak dihitung');
+  }
   lines.push(`----------------------------------------`);
   lines.push(`TOTAL ESTIMASI: ${formatRp(data.grandTotal)}`);
   if (data.peserta > 1) lines.push(`Rata-rata per Orang: ${formatRp(data.avgPerPerson)}`);
-  lines.push(`Status Pagu SBM: ${data.exceedTotal > 0 ? 'Melebihi Pagu SBM (+' + formatRp(data.exceedTotal) + ')' : 'Memenuhi Pagu SBM 2026'}`);
+  lines.push(`Status Pagu SBM: ${data.exceedTotal > 0 ? (data.hotelExceed > 0 ? 'Melebihi Pagu SBM (+' + formatRp(data.exceedTotal) + ')' : 'Melebihi SBM — klaim dibatasi pagu') : 'Memenuhi Pagu SBM 2026'}`);
 
   const text = lines.join('\n');
   const notifyOk = () => {
@@ -4447,6 +4602,13 @@ function openSimulasiFromSbmViewer() {
   onSimProvChange(provId, cityId);
 
   if (typeof showTab === 'function') showTab('simulasi');
+}
+
+function scrollToSimResult() {
+  const el = document.querySelector('.sim-result-card');
+  if (!el) return;
+  const y = el.getBoundingClientRect().top + window.scrollY - 76;
+  window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
 }
 
 function openSbmFromSimulasi() {
