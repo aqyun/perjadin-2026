@@ -4520,15 +4520,15 @@ html[data-theme="dark"] .st-suffix-dropdown-wrap::after {
 }
 
 .rekap-spt-table col:nth-child(3) {
-  width: 35%;
+  width: 29%;
 }
 
 .rekap-spt-table col:nth-child(4) {
-  width: 9%;
+  width: 10%;
 }
 
 .rekap-spt-table col:nth-child(5) {
-  width: 13%;
+  width: 17%;
 }
 
 .rekap-spt-table col:nth-child(6) {
@@ -4536,7 +4536,7 @@ html[data-theme="dark"] .st-suffix-dropdown-wrap::after {
 }
 
 .rekap-spt-table col:nth-child(7) {
-  width: 17%;
+  width: 18%;
 }
 
 .rekap-spt-table td span {

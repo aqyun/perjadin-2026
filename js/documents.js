@@ -1040,8 +1040,8 @@ function renderRekapSPT() {
 
       <table class="rekap-spt-table">
         <colgroup>
-          <col style="width:4%"><col style="width:7%"><col style="width:35%">
-          <col style="width:9%"><col style="width:13%"><col style="width:15%"><col style="width:17%">
+          <col style="width:4%"><col style="width:7%"><col style="width:29%">
+          <col style="width:10%"><col style="width:17%"><col style="width:15%"><col style="width:18%">
         </colgroup>
         <thead>
           <tr>
