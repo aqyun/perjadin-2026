@@ -1756,6 +1756,7 @@ function updateRevisionBanner(editTrip) {
   const banner = document.getElementById('activeRevisionBanner');
   if (!banner) return;
   if (!editTrip) {
+    banner.classList.remove('is-saved');
     banner.style.display = 'none';
     banner.innerHTML = '';
     return;
@@ -1763,8 +1764,18 @@ function updateRevisionBanner(editTrip) {
   const safeNo = (typeof escapeHtml === 'function') ? escapeHtml(editTrip.origNoST || editTrip.noST || 'Berkas Terpilih') : (editTrip.origNoST || 'Berkas Terpilih');
   const safeMetode = editTrip.origMetode ? ` [${editTrip.origMetode}]` : '';
   const safeMak = editTrip.origMak ? ` [MAK: ${editTrip.origMak}]` : '';
+  const isJustSaved = !!editTrip.justSaved;
+  banner.classList.toggle('is-saved', isJustSaved);
   banner.style.display = 'flex';
-  banner.innerHTML = `
+  banner.innerHTML = isJustSaved ? `
+    <div class="rev-banner-left">
+      <span class="rev-banner-pill is-saved">TERSIMPAN DI WEB</span>
+      <span class="rev-banner-text">Berkas <strong>${safeNo}</strong>${safeMetode}${safeMak} telah tersimpan ke <strong>Riwayat &amp; Cloud Web</strong> tanpa mengunduh file ke perangkat. Anda dapat mencetak dokumen, mengunduh Excel lewat panah opsi, atau membuat input baru.</span>
+    </div>
+    <button type="button" class="btn btn-secondary btn-sm rev-banner-cancel" onclick="cancelActiveRevision()" title="Kosongkan formulir untuk mulai perjalanan dinas baru">
+      <span>Buat Input Baru</span>
+    </button>
+  ` : `
     <div class="rev-banner-left">
       <span class="rev-banner-pill">MODE REVISI</span>
       <span class="rev-banner-text">Sedang merevisi berkas <strong>${safeNo}</strong>${safeMetode}${safeMak} &bull; Perubahan akan memperbarui data yang sudah ada dan tercatat di <strong>Log Revisi</strong> (tidak membuat data ganda).</span>
@@ -2002,16 +2013,36 @@ function saveCurrentTripToHistory(isManual = false, customCsvData = null) {
 
   saveTripHistoryList(list);
 
+  // Sinkronkan konteks edit aktif agar perubahan berikutnya memperbarui berkas yang sama & user bisa buat baru kapan saja
+  window._activeEditingTrip = {
+    id: historyItem.id,
+    cloudId: historyItem.cloudId || null,
+    isCloud: !!historyItem.isCloud,
+    origNoST: historyItem.noST || '',
+    origMak: historyItem.mak || '',
+    origMetode: historyItem.metodePembayaran || 'LS',
+    status_berkas: historyItem.status_berkas || 'diproses',
+    revision_log: Array.isArray(historyItem.revision_log) ? [...historyItem.revision_log] : [],
+    justSaved: !isRevisionRecorded && (!activeEdit || !!activeEdit.justSaved)
+  };
+  if (typeof updateRevisionBanner === 'function') {
+    updateRevisionBanner(window._activeEditingTrip);
+  }
+
   if (typeof renderTripHistory === 'function') {
     renderTripHistory();
   }
 
-  // Auto-integrasi langsung 1x ke Cloud Database Supabase (tabel riwayat_perjadin)
+  // Auto-integrasi langsung 1x ke Cloud Database (tabel riwayat_perjadin)
   if (typeof uploadTripToCloud === 'function') {
     uploadTripToCloud(historyItem).then(cloudId => {
       if (cloudId) {
         historyItem.cloudId = cloudId;
         historyItem.isCloud = true;
+        if (window._activeEditingTrip && window._activeEditingTrip.id === historyItem.id) {
+          window._activeEditingTrip.cloudId = cloudId;
+          window._activeEditingTrip.isCloud = true;
+        }
         const curList = getTripHistoryList();
         const curIdx = curList.findIndex(x => x.id === historyItem.id || (compKey && getTripCompositeDedupeKey(x) === compKey));
         if (curIdx >= 0) {
@@ -2021,31 +2052,31 @@ function saveCurrentTripToHistory(isManual = false, customCsvData = null) {
         if (typeof renderTripHistory === 'function') renderTripHistory();
         if (isManual && typeof showRefreshToast === 'function') {
           showRefreshToast(
-            isRevisionRecorded ? 'Revisi Tersimpan & Dicatat di Log' : 'Tersimpan & Terintegrasi ke Database',
+            isRevisionRecorded ? 'Revisi Tersimpan & Dicatat di Log' : 'Tersimpan ke Web & Cloud',
             isRevisionRecorded
               ? `Revisi "${historyItem.noST}" (${historyItem.metodePembayaran}) oleh ${actor.nama} (${actor.roleLabel}) berhasil diperbarui ke database.`
-              : `Data perjalanan "${historyItem.noST}" (${historyItem.metodePembayaran}) telah tersimpan dan masuk ke database cloud Supabase.`
+              : `Data perjalanan "${historyItem.noST}" (${historyItem.metodePembayaran}) tersimpan di Riwayat & Cloud tanpa mengunduh file ke perangkat.`
           );
         }
       } else if (isManual && typeof showRefreshToast === 'function') {
         showRefreshToast(
-          isRevisionRecorded ? 'Revisi Tersimpan ke Riwayat' : 'Perjalanan Tersimpan ke Riwayat',
-          `Data perjalanan "${historyItem.noST}" (${historyItem.metodePembayaran}) berhasil dicatat ke riwayat.`
+          isRevisionRecorded ? 'Revisi Tersimpan ke Riwayat' : 'Perjalanan Tersimpan di Web',
+          `Data perjalanan "${historyItem.noST}" (${historyItem.metodePembayaran}) berhasil dicatat ke Riwayat Web.`
         );
       }
     }).catch(err => {
-      console.warn('Gagal auto-integrasi ke Supabase:', err);
+      console.warn('Gagal auto-integrasi ke Cloud:', err);
       if (isManual && typeof showRefreshToast === 'function') {
         showRefreshToast(
-          'Perjalanan Tersimpan ke Riwayat',
-          `Data perjalanan "${historyItem.noST}" (${historyItem.metodePembayaran}) berhasil dicatat ke riwayat.`
+          'Perjalanan Tersimpan di Web',
+          `Data perjalanan "${historyItem.noST}" (${historyItem.metodePembayaran}) berhasil dicatat ke Riwayat Web.`
         );
       }
     });
   } else if (isManual && typeof showRefreshToast === 'function') {
     showRefreshToast(
-      'Perjalanan Tersimpan ke Riwayat',
-      `Data perjalanan "${historyItem.noST}" (${historyItem.metodePembayaran}) berhasil dicatat ke riwayat.`
+      'Perjalanan Tersimpan di Web',
+      `Data perjalanan "${historyItem.noST}" (${historyItem.metodePembayaran}) berhasil dicatat ke Riwayat Web.`
     );
   }
 
@@ -2507,7 +2538,7 @@ function renderTripHistory(filterText = '') {
           <svg class="ico"><use href="#i-history"></use></svg>
         </div>
         <h3>Belum Ada Riwayat Perjalanan</h3>
-        <p>Setiap kali Anda mengklik <strong>Simpan Data</strong> (unduh Excel) atau tombol <strong>Simpan ke Riwayat</strong>, arsip perjalanan dinas akan otomatis tersimpan di sini agar dapat Anda buka dan revisi kembali kapan saja.</p>
+        <p>Setiap kali Anda mengklik tombol <strong>Simpan Data</strong>, arsip perjalanan dinas akan otomatis tersimpan ke web (Riwayat &amp; Cloud) agar dapat Anda buka, revisi, atau unduh ke Excel/PDF kapan saja.</p>
         <button type="button" class="btn btn-primary" onclick="showTab('input')">
           <svg class="ico"><use href="#i-edit"></use></svg>
           <span>Buka Formulir Input Perjalanan</span>
@@ -2580,7 +2611,7 @@ function renderTripHistory(filterText = '') {
     const isViewer = !canEdit && !!window.currentAuthUser;
     const isCloud = !!item.isCloud;
     const storagePill = isCloud
-      ? '<span class="history-cloud-pill" title="Tersimpan di Cloud Database Supabase">☁️ Cloud</span>'
+      ? '<span class="history-cloud-pill" title="Tersimpan di Cloud Database">☁️ Cloud</span>'
       : '<span class="history-local-pill" title="Tersimpan di Penyimpanan Lokal Browser">💾 Lokal</span>';
 
     const rawMetode = item.metodePembayaran || (item.draft && item.draft.fields && (item.draft.fields.metodePembayaran || item.draft.fields.lk_metodePembayaran)) || 'LS';
@@ -2830,8 +2861,14 @@ function closeSaveMenu() {
   if (btnArrow) btnArrow.setAttribute('aria-expanded', 'false');
 }
 
-function selectSaveMode(mode) {
+function selectSaveMode(mode = 'web') {
   closeSaveMenu();
+  if (mode === 'web') {
+    if (typeof saveCurrentTripToHistory === 'function') {
+      saveCurrentTripToHistory(true);
+    }
+    return;
+  }
   if (typeof exportPerjadinExcel === 'function') {
     exportPerjadinExcel(mode);
   }

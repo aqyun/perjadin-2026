@@ -11204,6 +11204,16 @@ html[data-theme="dark"] .split-dropdown-item:hover {
   height: 16px;
 }
 
+.split-dd-icon-box.icon-cloud {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+html[data-theme="dark"] .split-dd-icon-box.icon-cloud {
+  background: rgba(16, 185, 129, 0.16);
+  color: #34d399;
+}
+
 .split-dd-icon-box.icon-excel {
   background: #ecfdf5;
   color: #059669;
@@ -16003,6 +16013,19 @@ html[data-theme="dark"] .btn-filter-pill.filter-pill-dicairkan.active {
   color: #ffffff;
 }
 
+.active-revision-banner.is-saved {
+  background: linear-gradient(135deg, #ecfdf5 0%, #f8fafc 100%);
+  border-color: #6ee7b7;
+}
+
+.rev-banner-pill.is-saved {
+  background: #059669;
+}
+
+.active-revision-banner.is-saved .rev-banner-text {
+  color: #065f46;
+}
+
 .rev-banner-text {
   font-size: 13px;
   color: #1e3a8a;
@@ -16179,8 +16202,17 @@ html[data-theme="dark"] .active-revision-banner {
   border-color: #2563eb;
 }
 
+html[data-theme="dark"] .active-revision-banner.is-saved {
+  background: linear-gradient(135deg, rgba(6, 95, 70, 0.32) 0%, #0f172a 100%);
+  border-color: #10b981;
+}
+
 html[data-theme="dark"] .rev-banner-text {
   color: #bfdbfe;
+}
+
+html[data-theme="dark"] .active-revision-banner.is-saved .rev-banner-text {
+  color: #a7f3d0;
 }
 
 html[data-theme="dark"] .history-revision-box {

@@ -341,19 +341,11 @@ function exportPerjadinExcel(mode = 'excel') {
     XLSX.writeFile(wb, naming.excelFileName);
     if (typeof showRefreshToast === 'function') {
       showRefreshToast(
-        'Excel Berhasil Disimpan',
+        'Excel Berhasil Diunduh',
         fromHistoryDownload
           ? `File "${naming.excelFileName}" berhasil diunduh dari riwayat.`
-          : `File "${naming.excelFileName}" berhasil diunduh dan terintegrasi ke database Cloud Supabase.`
+          : `File "${naming.excelFileName}" berhasil diunduh ke perangkat dan tersimpan di Riwayat & Cloud Web.`
       );
-    }
-    // Auto-reset formulir setelah berhasil disimpan dari form (data telah aman di Riwayat)
-    if (!fromHistoryDownload) {
-      setTimeout(() => {
-        if (typeof resetPerjadinForm === 'function') {
-          resetPerjadinForm(false);
-        }
-      }, 450);
     }
   }
 }

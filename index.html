@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20261125_06">
+  <link rel="stylesheet" href="style.css?v=20261126_01">
 </head>
 <body class="auth-locked">
 
@@ -969,25 +969,37 @@
     <div class="topbar-tools">
       <div class="topbar-group-actions">
         <div class="split-btn-group" id="saveSplitGroup">
-          <button type="button" class="btn-tool btn-tool-save btn-topbar-save btn-split-main" onclick="exportPerjadinExcel('excel')" title="Simpan formulir ke file Excel (.xlsx) & otomatis catat ke riwayat">
+          <button type="button" class="btn-tool btn-tool-save btn-topbar-save btn-split-main" onclick="selectSaveMode('web')" title="Simpan data perjalanan ke web (Riwayat &amp; Cloud) tanpa mengunduh file ke perangkat">
             <svg class="ico"><use href="#i-save"></use></svg>
             <span>Simpan Data</span>
           </button>
-          <button type="button" class="btn-tool btn-tool-save-arrow btn-split-arrow" onclick="toggleSaveMenu(event)" title="Pilih opsi simpan (Excel atau Paket ZIP Lengkap)" aria-haspopup="true" aria-expanded="false">
+          <button type="button" class="btn-tool btn-tool-save-arrow btn-split-arrow" onclick="toggleSaveMenu(event)" title="Pilih opsi simpan (Simpan ke Web, Simpan ke Excel, atau Paket ZIP Lengkap)" aria-haspopup="true" aria-expanded="false">
             <svg class="ico"><use href="#i-chevron-down"></use></svg>
           </button>
           <div class="split-dropdown-menu" id="saveSplitMenu" style="display:none;">
-            <div class="split-dd-header">FORMAT SIMPAN</div>
+            <div class="split-dd-header">OPSI SIMPAN DATA</div>
+            <button type="button" class="split-dropdown-item" onclick="selectSaveMode('web')">
+              <div class="split-dd-icon-box icon-cloud">
+                <svg class="ico"><use href="#i-cloud"></use></svg>
+              </div>
+              <div class="dd-content">
+                <div class="dd-title-row">
+                  <span class="dd-title">Simpan ke Web (Riwayat &amp; Cloud)</span>
+                  <span class="dd-badge-default">Rekomendasi</span>
+                </div>
+                <span class="dd-sub">Simpan ke web tanpa unduh file ke perangkat</span>
+              </div>
+            </button>
+            <div class="dd-divider"></div>
             <button type="button" class="split-dropdown-item" onclick="selectSaveMode('excel')">
               <div class="split-dd-icon-box icon-excel">
                 <svg class="ico"><use href="#i-file"></use></svg>
               </div>
               <div class="dd-content">
                 <div class="dd-title-row">
-                  <span class="dd-title">File Excel (.xlsx)</span>
-                  <span class="dd-badge-default">Rekomendasi</span>
+                  <span class="dd-title">Simpan &amp; Unduh Excel (.xlsx)</span>
                 </div>
-                <span class="dd-sub">Simpan data formulir & catat ke riwayat</span>
+                <span class="dd-sub">Simpan ke web sekaligus unduh file Excel</span>
               </div>
             </button>
             <div class="dd-divider"></div>
@@ -997,22 +1009,9 @@
               </div>
               <div class="dd-content">
                 <div class="dd-title-row">
-                  <span class="dd-title">Paket Lengkap ZIP (.zip)</span>
+                  <span class="dd-title">Simpan &amp; Unduh Paket ZIP (.zip)</span>
                 </div>
                 <span class="dd-sub">Kompilasi Excel + Seluruh Dokumen Cetak PDF</span>
-              </div>
-            </button>
-            <div class="dd-divider"></div>
-            <button type="button" class="split-dropdown-item" onclick="selectSaveMode('csv')">
-              <div class="split-dd-icon-box" style="background:#ecfdf5;color:#059669;display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;">
-                <svg class="ico"><use href="#i-table"></use></svg>
-              </div>
-              <div class="dd-content">
-                <div class="dd-title-row">
-                  <span class="dd-title">File CSV Supabase (.csv)</span>
-                  <span class="dd-badge-default" style="background:#d1fae5;color:#065f46;">Upload Supabase</span>
-                </div>
-                <span class="dd-sub">Khusus untuk fitur "Upload CSV" di Supabase Table Editor</span>
               </div>
             </button>
           </div>
@@ -2747,7 +2746,7 @@
 <script src="js/utils.js?v=20261124_33"></script>
 <script src="js/calc.js?v=20261124_33"></script>
 <script src="js/documents.js?v=20261124_33"></script>
-<script src="js/excel.js?v=20261125_02"></script>
-<script src="js/ui.js?v=20261125_06"></script>
+<script src="js/excel.js?v=20261126_01"></script>
+<script src="js/ui.js?v=20261126_01"></script>
 </body>
 </html>
