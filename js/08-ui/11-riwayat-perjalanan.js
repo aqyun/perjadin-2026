@@ -3,7 +3,87 @@
 // =====================================================================
 const TRIP_HISTORY_KEY = 'perdinku_trip_history_v1';
 
+/**
+ * Pemeriksaan apakah perjalanan dinas merupakan penugasan khusus DKI Jakarta (Dalam Kota).
+ * Catatan Ketentuan: Khusus DKI Jakarta (MAK 524113 / transport lokal DPR) BUKAN Berkas BBM!
+ * Berkas BBM hanya untuk MAK 523121 (Pemeliharaan/KDO) atau perjadin luar kota yang relevan.
+ */
+function isDkiJakartaTrip(item) {
+  if (!item) return false;
+  const mak = String(item.mak || item.draft?.fields?.mak || '').trim();
+  // MAK 523121 adalah Belanja Pemeliharaan BBM Kendaraan Dinas/Operasional, bukan penugasan dalam kota biasa
+  if (mak === '523121') return false;
+
+  // MAK 524113 adalah Belanja Perjalanan Dinas Dalam Kota (khusus DKI Jakarta)
+  if (mak === '524113') return true;
+
+  const prov = String(
+    item.provinsiTujuan ||
+    item.draft?.fields?.tujuanProvinsi ||
+    item.draft?.fields?.provinsiTujuan ||
+    ''
+  ).trim().toLowerCase();
+
+  const kota = String(
+    item.kotaTujuan ||
+    item.draft?.fields?.tujuanKota ||
+    item.draft?.fields?.kotaTujuan ||
+    item.draft?.fields?.tujuanKabKota ||
+    ''
+  ).trim().toLowerCase();
+
+  const agenda = String(
+    item.agenda ||
+    item.draft?.fields?.agenda ||
+    ''
+  ).trim().toLowerCase();
+
+  // Kepulauan Seribu dengan MAK 524111 (luar kota/transport air) bukan penugasan daratan dalam kota DKI Jakarta
+  const isKepSeribu = kota.includes('seribu') || agenda.includes('seribu') || kota.includes('lancang') || kota.includes('pari');
+  if (isKepSeribu && mak === '524111') return false;
+
+  if (prov === 'dki jakarta' || prov === 'dki' || prov === 'jakarta' || prov === '13') {
+    return true;
+  }
+
+  if (
+    kota.includes('dki jakarta') ||
+    kota.includes('jakarta pusat') ||
+    kota.includes('jakarta selatan') ||
+    kota.includes('jakarta timur') ||
+    kota.includes('jakarta barat') ||
+    kota.includes('jakarta utara') ||
+    kota === 'jakarta'
+  ) {
+    return true;
+  }
+
+  return false;
+}
+window.isDkiJakartaTrip = isDkiJakartaTrip;
+
+/**
+ * Memastikan apakah sebuah berkas perjalanan valid sebagai Berkas BBM
+ */
+function isTripBbmRecord(item) {
+  if (!item) return false;
+  // Khusus penugasan dalam kota DKI Jakarta (MAK 524113) BUKAN berkas BBM!
+  if (isDkiJakartaTrip(item)) return false;
+
+  const mak = String(item.mak || item.draft?.fields?.mak || '').trim();
+  if (mak === '523121') return true;
+
+  const bbmRecord = (typeof getCachedBbmRecord === 'function') ? getCachedBbmRecord(item) : null;
+  if (bbmRecord) return true;
+
+  if (item.bbmData || (item.draft && item.draft.bbmData)) return true;
+
+  return false;
+}
+window.isTripBbmRecord = isTripBbmRecord;
+
 function cacheBbmRecord(trip, record = null) {
+  if (isDkiJakartaTrip(trip)) return null;
   const bbm = record || trip?.bbmData || trip?.draft?.bbmData;
   if (!bbm) return null;
   window._bbmCloudRecords = window._bbmCloudRecords || new Map();
@@ -24,6 +104,7 @@ function cacheBbmRecord(trip, record = null) {
 
 function getCachedBbmRecord(trip) {
   if (!trip || !window._bbmCloudTripIndex || !window._bbmCloudRecords) return null;
+  if (isDkiJakartaTrip(trip)) return null;
   return window._bbmCloudRecords.get(window._bbmCloudTripIndex.get(String(trip.id))) || null;
 }
 
@@ -55,9 +136,35 @@ function getTripHistoryList() {
       list = [...window.INITIAL_TRIPS_ARCHIVE];
       saveTripHistoryList(list);
     }
-    if (Array.isArray(list) && list.some(item => item?.bbmData || item?.draft?.bbmData)) {
-      list.forEach(item => cacheBbmRecord(item));
-      saveTripHistoryList(list);
+    if (Array.isArray(list)) {
+      let changed = false;
+      const cleaned = [];
+      list.forEach(item => {
+        if (!item) {
+          changed = true;
+          return;
+        }
+        if (typeof isNonPerdinBbmEntry === 'function' ? isNonPerdinBbmEntry(item) : (item.recordType === 'bbm' || String(item.id || '').startsWith('trip_bbm_') || String(item.mak || item.draft?.fields?.mak || '').trim() === '523121')) {
+          changed = true;
+          return;
+        }
+        if (isDkiJakartaTrip(item)) {
+          // Bersihkan data BBM yang tidak sengaja tertaut ke perjalanan dinas DKI Jakarta
+          if (item.bbmData || item.draft?.bbmData) {
+            delete item.bbmData;
+            if (item.draft) delete item.draft.bbmData;
+            changed = true;
+          }
+          clearCachedBbmRecord(item);
+        } else if (item?.bbmData || item?.draft?.bbmData) {
+          cacheBbmRecord(item);
+        }
+        cleaned.push(item);
+      });
+      list = cleaned;
+      if (changed) {
+        saveTripHistoryList(list);
+      }
     }
     return Array.isArray(list) ? list : [];
   } catch (e) {
@@ -103,6 +210,10 @@ function normalizeTripNoStKey(noST) {
 
 // Composite Key Anti-Duplikat: Nomor ST boleh sama asalkan beda berkas LS/KKP atau beda MAK
 function getTripCompositeDedupeKey(itemOrNoST, makParam, metodeParam) {
+  if (itemOrNoST && typeof itemOrNoST === 'object' && itemOrNoST.recordType === 'bbm') {
+    const bbmUid = itemOrNoST.bbmRecordId || itemOrNoST.bbmData?.id || itemOrNoST.id || '';
+    return bbmUid ? `bbm__${String(bbmUid).toLowerCase()}` : '';
+  }
   let noST = '';
   let mak = '';
   let metode = 'LS';
@@ -350,11 +461,16 @@ function saveCurrentTripToHistory(isManual = false, customCsvData = null) {
     createdBy: actor,
     revision_log: [],
     draft: draft,
-    bbmData: (draft && draft.bbmData) || (typeof collectBbmFormData === 'function' ? collectBbmFormData() : null),
+    bbmData: null,
     csv_data: csvStr
   };
 
-  cacheBbmRecord(historyItem);
+  // Mulai pemisahan berkas: Berkas BBM disimpan terpisah di koleksi riwayat_bbm (MAK 523121),
+  // tidak lagi dibundel sebagai lampiran di dalam blob Perjalanan Dinas (terutama non-BBM / DKI Jakarta 524113).
+  if (isDkiJakartaTrip(historyItem)) {
+    clearCachedBbmRecord(historyItem);
+    if (historyItem.draft) delete historyItem.draft.bbmData;
+  }
 
   let list = getTripHistoryList();
   // Cari entri yang sudah ada berdasarkan context revisi aktif, cloudId, id, atau composite key (No ST + Metode + MAK)
@@ -484,6 +600,7 @@ function saveCurrentTripToHistory(isManual = false, customCsvData = null) {
   }
 
   // Auto-integrasi langsung 1x ke Cloud Database (tabel riwayat_perjadin)
+  const prevNoStForBbmSync = activeEdit?.origNoST || '';
   if (typeof uploadTripToCloud === 'function') {
     uploadTripToCloud(historyItem).then(cloudId => {
       if (cloudId) {
@@ -500,6 +617,9 @@ function saveCurrentTripToHistory(isManual = false, customCsvData = null) {
         }
         saveTripHistoryList(curList);
         if (typeof renderTripHistory === 'function') renderTripHistory();
+        if (typeof syncLinkedBbmRecordsFromTrip === 'function') {
+          syncLinkedBbmRecordsFromTrip(historyItem, prevNoStForBbmSync);
+        }
         if (isManual && typeof showRefreshToast === 'function') {
           showRefreshToast(
             isRevisionRecorded ? 'Revisi Tersimpan & Dicatat di Log' : 'Tersimpan ke Web & Cloud',
@@ -508,11 +628,16 @@ function saveCurrentTripToHistory(isManual = false, customCsvData = null) {
               : `Data perjalanan "${historyItem.noST}" (${historyItem.metodePembayaran}) tersimpan di Riwayat & Cloud tanpa mengunduh file ke perangkat.`
           );
         }
-      } else if (isManual && typeof showRefreshToast === 'function') {
-        showRefreshToast(
-          isRevisionRecorded ? 'Revisi Tersimpan ke Riwayat' : 'Perjalanan Tersimpan di Web',
-          `Data perjalanan "${historyItem.noST}" (${historyItem.metodePembayaran}) berhasil dicatat ke Riwayat Web.`
-        );
+      } else {
+        if (typeof syncLinkedBbmRecordsFromTrip === 'function') {
+          syncLinkedBbmRecordsFromTrip(historyItem, prevNoStForBbmSync);
+        }
+        if (isManual && typeof showRefreshToast === 'function') {
+          showRefreshToast(
+            isRevisionRecorded ? 'Revisi Tersimpan ke Riwayat' : 'Perjalanan Tersimpan di Web',
+            `Data perjalanan "${historyItem.noST}" (${historyItem.metodePembayaran}) berhasil dicatat ke Riwayat Web.`
+          );
+        }
       }
     }).catch(err => {
       console.warn('Gagal auto-integrasi ke Cloud:', err);
@@ -523,11 +648,16 @@ function saveCurrentTripToHistory(isManual = false, customCsvData = null) {
         );
       }
     });
-  } else if (isManual && typeof showRefreshToast === 'function') {
-    showRefreshToast(
-      'Perjalanan Tersimpan di Web',
-      `Data perjalanan "${historyItem.noST}" (${historyItem.metodePembayaran}) berhasil dicatat ke Riwayat Web.`
-    );
+  } else {
+    if (typeof syncLinkedBbmRecordsFromTrip === 'function') {
+      syncLinkedBbmRecordsFromTrip(historyItem, prevNoStForBbmSync);
+    }
+    if (isManual && typeof showRefreshToast === 'function') {
+      showRefreshToast(
+        'Perjalanan Tersimpan di Web',
+        `Data perjalanan "${historyItem.noST}" (${historyItem.metodePembayaran}) berhasil dicatat ke Riwayat Web.`
+      );
+    }
   }
 
   return historyItem;
@@ -570,7 +700,7 @@ function loadTripFromHistory(id, event = null) {
   }
 
   // Muat bundle berkas BBM yang terikat dengan SPT ini
-  const bbmRecord = getCachedBbmRecord(item);
+  const bbmRecord = isTripBbmRecord(item) && (typeof getCachedBbmRecord === 'function') ? getCachedBbmRecord(item) : null;
   if (bbmRecord && typeof loadBbmRecordIntoForm === 'function') {
     try {
       loadBbmRecordIntoForm(bbmRecord);
@@ -701,31 +831,136 @@ function setTripStatusFilter(filter) {
     all: 'btnFilterAll',
     ls: 'btnFilterLs',
     kkp: 'btnFilterKkp',
+    bbm: 'btnFilterBbm',
     diproses: 'btnFilterDiproses',
     dicairkan: 'btnFilterDicairkan'
   };
-  ['all', 'ls', 'kkp', 'diproses', 'dicairkan'].forEach(f => {
+  ['all', 'ls', 'kkp', 'bbm', 'diproses', 'dicairkan'].forEach(f => {
     const btn = document.querySelector(`.btn-filter-pill[data-filter="${f}"]`) || document.getElementById(filterMap[f]);
     if (btn) btn.classList.toggle('active', f === filter);
   });
   renderTripHistory();
 }
 
+function extractBbmEntryPelaksanaList(rec) {
+  const out = [];
+  const seen = new Set();
+  if (rec && Array.isArray(rec.items)) {
+    rec.items.forEach((it, idx) => {
+      let nama = String(it?.pelaksanaNama || '').trim();
+      if (!nama && it?.uraian) {
+        const m = String(it.uraian).match(/an\.\s+([^,\-]+(?:,\s*[A-Za-z.]+)?)/i);
+        if (m) nama = m[1].trim();
+      }
+      if (!nama && (String(rec.kendaraan || '').toLowerCase().includes('kdo') || ['B 2223 UKQ', 'B 2602 UYZ', 'B 2577 KRK'].includes(it?.platNomor))) {
+        nama = 'Kendaraan Dinas Operasional (KDO)';
+      }
+      if (nama && !seen.has(nama.toLowerCase())) {
+        seen.add(nama.toLowerCase());
+        out.push({ id: `bbm_emp_${idx}`, nama, nip: it?.pelaksanaNip || '' });
+      }
+    });
+  }
+  if (!out.length && rec?.pelaksanaBukti) {
+    String(rec.pelaksanaBukti).split(',').map(s => s.trim()).filter(Boolean).forEach((nama, idx) => {
+      if (!seen.has(nama.toLowerCase())) {
+        seen.add(nama.toLowerCase());
+        out.push({ id: `bbm_bk_${idx}`, nama, nip: '' });
+      }
+    });
+  }
+  if (!out.length && rec?.pelaksanaNama) {
+    out.push({ id: 'bbm_maker', nama: rec.pelaksanaNama, nip: rec.pelaksanaNip || '' });
+  }
+  return out;
+}
+
+function buildBbmVirtualPencairanEntry(rec) {
+  if (!rec) return null;
+  const norm = (typeof normalizeBbmRecordState === 'function') ? normalizeBbmRecordState(rec) : rec;
+  if (!norm || !norm.layakPencairan) return null;
+
+  const tglRef = norm.tanggalBukti || norm.tanggalKembali || norm.tanggalBerangkat || '';
+  return {
+    id: `bbm_entry_${norm.id}`,
+    bbmRecordId: norm.id,
+    tripId: norm.tripId || null,
+    tripCloudId: norm.tripCloudId || null,
+    recordType: 'bbm',
+    cloudId: norm.cloudId || norm.fallbackTripCloudId || null,
+    isCloud: Boolean(norm.cloudId || norm.fallbackTripCloudId),
+    noST: norm.noST || 'Berkas BBM',
+    mak: norm.mak || '523121',
+    metodePembayaran: 'BBM',
+    policyJenis: norm.policyJenis || 'kdo',
+    policyBadgeLabel: norm.policyBadgeLabel || 'KDO Dinas',
+    layakPencairan: true,
+    isPerorangan: Boolean(norm.isPerorangan),
+    agenda: norm.agenda || norm.pekerjaan || 'Reimburse Pembelian BBM',
+    tglBerangkat: norm.tanggalBerangkat || tglRef,
+    tglKembali: norm.tanggalKembali || tglRef,
+    kotaTujuan: '',
+    provinsiTujuan: norm.policyBadgeLabel || 'MAK 523121',
+    empCount: (Array.isArray(norm.items) && norm.items.length) || 1,
+    employees: extractBbmEntryPelaksanaList(norm),
+    totalBiaya: Number(norm.nilaiTotal) || 0,
+    status_berkas: norm.status_berkas === 'dicairkan' ? 'dicairkan' : 'diproses',
+    savedAt: norm.savedAt || norm.createdAt,
+    createdAt: norm.createdAt || norm.savedAt,
+    createdBy: norm.createdBy || null,
+    revision_log: Array.isArray(norm.revision_log) ? norm.revision_log : [],
+    bbmData: norm
+  };
+}
+
+/**
+ * Menggabungkan berkas Perjalanan Dinas & Berkas BBM yang memenuhi syarat Pencairan.
+ * Ketentuan:
+ * - Penugasan dalam kota DKI Jakarta (MAK 524113) tidak pernah diperlakukan sebagai Berkas BBM.
+ * - BBM KDO Dinas masuk pencairan; BBM Perorangan hanya masuk pencairan s.d. sebelum 1 Desember 2026.
+ */
+function getUnifiedPencairanEntries(passedTripList = null) {
+  const rawTrips = Array.isArray(passedTripList) ? passedTripList : getTripHistoryList();
+  const trips = rawTrips.filter(item => {
+    if (!item) return false;
+    if (typeof isNonPerdinBbmEntry === 'function' && isNonPerdinBbmEntry(item)) return false;
+    return item.recordType !== 'bbm' && !String(item.id || '').startsWith('trip_bbm_');
+  });
+
+  const savedBbm = (typeof getSavedBbmRecordsList === 'function') ? getSavedBbmRecordsList() : [];
+  const bbmEntries = savedBbm
+    .map(buildBbmVirtualPencairanEntry)
+    .filter(Boolean);
+
+  return [...trips, ...bbmEntries].sort((a, b) => {
+    const tA = new Date(a?.savedAt || a?.createdAt || 0).getTime();
+    const tB = new Date(b?.savedAt || b?.createdAt || 0).getTime();
+    return tB - tA;
+  });
+}
+window.getUnifiedPencairanEntries = getUnifiedPencairanEntries;
+
 function renderDashboardModule(passedList = null) {
-  const list = passedList || getTripHistoryList();
+  const list = getUnifiedPencairanEntries(passedList);
   const totalAll = list.length;
   const diprosesItems = list.filter(x => (x.status_berkas || 'diproses') !== 'dicairkan');
   const dicairkanItems = list.filter(x => x.status_berkas === 'dicairkan');
   const totalDiproses = diprosesItems.length;
   const totalDicairkan = dicairkanItems.length;
 
-  // Dana yang dibayarkan/dicairkan HANYA untuk berkas LS.
-  // Berkas KKP adalah kartu kredit pemerintah (non-tunai / bukan pencairan ke pelaksana).
+  // Dana yang dibayarkan/dicairkan meliputi berkas LS Perdin dan Berkas BBM yang memenuhi syarat pencairan.
+  // Berkas KKP bersifat non-tunai (kartu kredit pemerintah).
   const sumNominalDicairkanLS = dicairkanItems.filter(x => {
+    if (x.recordType === 'bbm') return false;
     const raw = x.metodePembayaran || x.draft?.fields?.metodePembayaran || x.draft?.fields?.lk_metodePembayaran || 'LS';
     return String(raw).trim().toUpperCase() !== 'KKP';
   }).reduce((acc, cur) => acc + (Number(cur.totalBiaya) || 0), 0);
-  const sumNominalDicairkan = sumNominalDicairkanLS;
+
+  const sumNominalDicairkanBBM = dicairkanItems
+    .filter(x => x.recordType === 'bbm')
+    .reduce((acc, cur) => acc + (Number(cur.totalBiaya) || 0), 0);
+
+  const sumNominalDicairkan = sumNominalDicairkanLS + sumNominalDicairkanBBM;
 
   // Update KPI cards
   const elCountDiproses = document.getElementById('kpiCountDiproses');
@@ -736,9 +971,11 @@ function renderDashboardModule(passedList = null) {
 
   const elNominalDicairkan = document.getElementById('kpiNominalDicairkan');
   if (elNominalDicairkan) {
-    const formattedNominal = (typeof rp === 'function') ? rp(sumNominalDicairkan) : 'Rp ' + sumNominalDicairkan.toLocaleString('id-ID');
-    elNominalDicairkan.textContent = `Dana LS Dibayarkan: ${formattedNominal}`;
-    elNominalDicairkan.title = 'Hanya menghitung dana berkas LS yang dicairkan/dibayarkan. Berkas KKP bersifat non-tunai (kartu kredit satker).';
+    const fmt = (n) => (typeof rp === 'function') ? rp(n) : 'Rp ' + Number(n || 0).toLocaleString('id-ID');
+    elNominalDicairkan.textContent = sumNominalDicairkanBBM > 0
+      ? `Dana Dibayarkan: ${fmt(sumNominalDicairkan)} (LS: ${fmt(sumNominalDicairkanLS)} • BBM: ${fmt(sumNominalDicairkanBBM)})`
+      : `Dana LS & BBM Dibayarkan: ${fmt(sumNominalDicairkan)}`;
+    elNominalDicairkan.title = 'Menghitung total pencairan berkas LS Perdin dan Berkas BBM (khusus perorangan s.d. sebelum 1 Des 2026 & KDO Dinas). KKP non-tunai tidak dijumlahkan.';
   }
 
   const elCountTotal = document.getElementById('kpiCountTotal');
@@ -755,13 +992,13 @@ function renderDashboardModule(passedList = null) {
   const progressPct = document.getElementById('dashboardProgressPct');
   if (progressPct) progressPct.textContent = `${pct}% Tuntas`;
 
-  // Render recent 5 trips on dashboard
+  // Render recent 5 entries on dashboard (termasuk Berkas BBM & Perdin)
   const recentContainer = document.getElementById('dashboardRecentList');
   if (recentContainer) {
     if (list.length === 0) {
       recentContainer.innerHTML = `
         <div style="text-align:center; padding:28px 16px; color:var(--text-muted, #64748b);">
-          Belum ada perjalanan dinas yang tercatat.
+          Belum ada pengajuan berkas yang tercatat.
         </div>
       `;
     } else {
@@ -780,7 +1017,7 @@ function renderDashboardModule(passedList = null) {
             <tr>
               <th>Nomor ST</th>
               <th>Maksud &amp; Tujuan</th>
-              <th>Pelaksana</th>
+              <th>Pelaksana / Struk</th>
               <th style="text-align:right;">Total Biaya</th>
               <th style="text-align:center;">Status Satker</th>
               <th style="text-align:right;">Aksi</th>
@@ -788,28 +1025,38 @@ function renderDashboardModule(passedList = null) {
           </thead>
           <tbody>
             ${recentFive.map(item => {
+              const isBbmEntry = item.recordType === 'bbm';
               const status = item.status_berkas || 'diproses';
               const isDicairkan = (status === 'dicairkan');
               const canEdit = (typeof canCurrentUserEdit === 'function') ? canCurrentUserEdit() : (typeof isCurrentUserAdmin === 'function' && isCurrentUserAdmin());
+              const statusClickHandler = isBbmEntry
+                ? `toggleBbmPencairanStatus('${item.bbmRecordId}', event)`
+                : `toggleTripStatus('${item.id}', event)`;
               const statusBadge = isDicairkan
-                ? `<span class="history-status-badge status-dicairkan" ${canEdit ? `onclick="toggleTripStatus('${item.id}', event)" style="font-size:11px;padding:3px 9px;cursor:pointer;" title="Klik untuk mengubah status kembali ke Diproses ke Satker"` : 'style="font-size:11px;padding:3px 9px;"'}><svg class="ico" style="width:12px;height:12px;"><use href="#i-check"></use></svg>Dicairkan</span>`
-                : `<span class="history-status-badge status-diproses" ${canEdit ? `onclick="toggleTripStatus('${item.id}', event)" style="font-size:11px;padding:3px 9px;cursor:pointer;" title="Klik untuk menandai berkas Sudah Dicairkan"` : 'style="font-size:11px;padding:3px 9px;"'}><svg class="ico" style="width:12px;height:12px;"><use href="#i-clipboard"></use></svg>Diproses</span>`;
+                ? `<span class="history-status-badge status-dicairkan" ${canEdit ? `onclick="${statusClickHandler}" style="font-size:11px;padding:3px 9px;cursor:pointer;" title="Klik untuk mengubah status kembali ke Diproses ke Satker"` : 'style="font-size:11px;padding:3px 9px;"'}><svg class="ico" style="width:12px;height:12px;"><use href="#i-check"></use></svg>Dicairkan</span>`
+                : `<span class="history-status-badge status-diproses" ${canEdit ? `onclick="${statusClickHandler}" style="font-size:11px;padding:3px 9px;cursor:pointer;" title="Klik untuk menandai berkas Sudah Dicairkan"` : 'style="font-size:11px;padding:3px 9px;"'}><svg class="ico" style="width:12px;height:12px;"><use href="#i-clipboard"></use></svg>Diproses</span>`;
               const cost = item.totalBiaya > 0 ? ((typeof rp === 'function') ? rp(item.totalBiaya) : 'Rp ' + Number(item.totalBiaya).toLocaleString('id-ID')) : 'Rp 0';
               const safeNo = (typeof escapeHtml === 'function') ? escapeHtml(item.noST || '-') : (item.noST || '-');
               const safeAgenda = (typeof escapeHtml === 'function') ? escapeHtml(item.agenda || '-') : (item.agenda || '-');
               const empCount = item.empCount || (item.employees || []).length || 1;
+              const stTag = isBbmEntry
+                ? `<span class="recent-st-badge" style="background:rgba(8,145,178,0.12);color:#0e7490;border-color:rgba(8,145,178,0.35);" title="Berkas BBM (${item.policyBadgeLabel || 'MAK 523121'})">⛽ BBM &bull; ${safeNo}</span>`
+                : `<span class="recent-st-badge" title="${safeNo}">${safeNo}</span>`;
+              const countText = isBbmEntry ? `${empCount} Struk` : `${empCount} Orang`;
+              const actBtn = isBbmEntry
+                ? `<button type="button" class="btn-recent-pdf" onclick="showTab('bbm'); setTimeout(() => { if(typeof onBbmHistoryPrint==='function') onBbmHistoryPrint('${item.bbmRecordId}'); }, 120);" title="Buka berkas dokumen BBM"><svg class="ico" style="width:13px;height:13px;"><use href="#i-fuel"></use></svg><span>Berkas BBM</span></button>`
+                : `<button type="button" class="btn-recent-pdf" onclick="openTripPdfModal('${item.id}', event)" title="Buka berkas PDF lengkap per pelaksana"><svg class="ico" style="width:13px;height:13px;"><use href="#i-file-lines"></use></svg><span>Berkas PDF</span></button>`;
+
               return `
                 <tr>
-                  <td class="col-st">
-                    <span class="recent-st-badge" title="${safeNo}">${safeNo}</span>
-                  </td>
+                  <td class="col-st">${stTag}</td>
                   <td class="col-agenda">
                     <div class="recent-agenda-text" title="${safeAgenda}">${safeAgenda}</div>
                   </td>
                   <td class="col-emp">
                     <span class="recent-pelaksana-badge">
-                      <svg class="ico" style="width:13px;height:13px;"><use href="#i-user"></use></svg>
-                      <span>${empCount} Orang</span>
+                      <svg class="ico" style="width:13px;height:13px;"><use href="${isBbmEntry ? '#i-fuel' : '#i-user'}"></use></svg>
+                      <span>${countText}</span>
                     </span>
                   </td>
                   <td class="col-cost" style="text-align:right;">
@@ -819,10 +1066,7 @@ function renderDashboardModule(passedList = null) {
                     ${statusBadge}
                   </td>
                   <td class="col-act" style="text-align:right;">
-                    <button type="button" class="btn-recent-pdf" onclick="openTripPdfModal('${item.id}', event)" title="Buka berkas PDF lengkap per pelaksana">
-                      <svg class="ico" style="width:13px;height:13px;"><use href="#i-file-lines"></use></svg>
-                      <span>Berkas PDF</span>
-                    </button>
+                    ${actBtn}
                   </td>
                 </tr>
               `;
@@ -918,23 +1162,27 @@ function renderTripHistory(filterText = '') {
   const countBadge = document.getElementById('historyCountBadge');
   if (!container) return;
 
-  const list = getTripHistoryList();
+  const list = getUnifiedPencairanEntries();
 
-  // Hitung metrik KPI real-time untuk Dashboard & Filter Pills (tanpa auto-push ulang agar tidak ada duplikat DB)
+  // Hitung metrik KPI real-time untuk Dashboard & Filter Pills (termasuk Berkas BBM yang masuk pencairan)
   const totalAll = list.length;
   const lsItems = list.filter(x => {
+    if (x.recordType === 'bbm') return false;
     const raw = x.metodePembayaran || x.draft?.fields?.metodePembayaran || x.draft?.fields?.lk_metodePembayaran || 'LS';
     return String(raw).trim().toUpperCase() !== 'KKP';
   });
   const kkpItems = list.filter(x => {
+    if (x.recordType === 'bbm') return false;
     const raw = x.metodePembayaran || x.draft?.fields?.metodePembayaran || x.draft?.fields?.lk_metodePembayaran || 'LS';
     return String(raw).trim().toUpperCase() === 'KKP';
   });
+  const bbmItems = list.filter(x => x.recordType === 'bbm');
   const diprosesItems = list.filter(x => (x.status_berkas || 'diproses') !== 'dicairkan');
   const dicairkanItems = list.filter(x => x.status_berkas === 'dicairkan');
 
   const totalLs = lsItems.length;
   const totalKkp = kkpItems.length;
+  const totalBbm = bbmItems.length;
   const totalDiproses = diprosesItems.length;
   const totalDicairkan = dicairkanItems.length;
 
@@ -944,6 +1192,8 @@ function renderTripHistory(filterText = '') {
   if (elPillLs) elPillLs.textContent = totalLs;
   const elPillKkp = document.getElementById('filterCountKkp');
   if (elPillKkp) elPillKkp.textContent = totalKkp;
+  const elPillBbm = document.getElementById('filterCountBbm');
+  if (elPillBbm) elPillBbm.textContent = totalBbm;
   const elPillDiproses = document.getElementById('filterCountDiproses');
   if (elPillDiproses) elPillDiproses.textContent = totalDiproses;
   const elPillDicairkan = document.getElementById('filterCountDicairkan');
@@ -955,12 +1205,14 @@ function renderTripHistory(filterText = '') {
   const q = String(filterText || document.getElementById('historySearchInput')?.value || '').trim().toLowerCase();
 
   const filtered = list.filter(item => {
+    const isBbmEntry = item.recordType === 'bbm';
     const status = item.status_berkas || 'diproses';
     const rawMetode = item.metodePembayaran || item.draft?.fields?.metodePembayaran || item.draft?.fields?.lk_metodePembayaran || 'LS';
-    const isKKP = String(rawMetode).trim().toUpperCase() === 'KKP';
+    const isKKP = !isBbmEntry && String(rawMetode).trim().toUpperCase() === 'KKP';
 
-    if (currentTripStatusFilter === 'ls' && isKKP) return false;
+    if (currentTripStatusFilter === 'ls' && (isBbmEntry || isKKP)) return false;
     if (currentTripStatusFilter === 'kkp' && !isKKP) return false;
+    if (currentTripStatusFilter === 'bbm' && !isBbmEntry) return false;
     if (currentTripStatusFilter === 'diproses' && status === 'dicairkan') return false;
     if (currentTripStatusFilter === 'dicairkan' && status !== 'dicairkan') return false;
 
@@ -968,7 +1220,7 @@ function renderTripHistory(filterText = '') {
     const provDisplay = (typeof getProvinsiDisplayName === 'function')
       ? getProvinsiDisplayName(item.provinsiTujuan)
       : (item.provinsiTujuan || '');
-    const itemMetode = String(item.metodePembayaran || item.draft?.fields?.metodePembayaran || item.draft?.fields?.lk_metodePembayaran || 'LS').trim().toUpperCase() === 'KKP' ? 'KKP' : 'LS';
+    const itemMetode = isBbmEntry ? 'bbm bensin' : (isKKP ? 'kkp' : 'ls');
     const searchTarget = [
       item.noST,
       itemMetode,
@@ -976,6 +1228,7 @@ function renderTripHistory(filterText = '') {
       provDisplay,
       item.kotaTujuan,
       item.mak,
+      item.policyBadgeLabel || '',
       item.status_berkas || 'diproses',
       ...(item.employees || []).map(e => e.nama || '')
     ].join(' ').toLowerCase();
@@ -983,7 +1236,7 @@ function renderTripHistory(filterText = '') {
   });
 
   if (countBadge) {
-    countBadge.textContent = `${list.length} Riwayat Tersimpan`;
+    countBadge.textContent = `${list.length} Berkas Tersimpan`;
   }
 
   const searchWrap = document.querySelector('.history-search-wrap');
@@ -998,7 +1251,7 @@ function renderTripHistory(filterText = '') {
           <svg class="ico"><use href="#i-history"></use></svg>
         </div>
         <h3>Belum Ada Riwayat Perjalanan</h3>
-        <p>Setiap kali Anda mengklik tombol <strong>Simpan Data</strong>, arsip perjalanan dinas akan otomatis tersimpan ke web (Riwayat &amp; Cloud) agar dapat Anda buka, revisi, atau unduh ke Excel/PDF kapan saja.</p>
+        <p>Setiap kali Anda mengklik tombol <strong>Simpan Data</strong>, arsip perjalanan dinas maupun Berkas BBM akan otomatis tersimpan ke web (Riwayat &amp; Cloud) agar dapat dipantau pencairannya.</p>
         <button type="button" class="btn btn-primary" onclick="showTab('input')">
           <svg class="ico"><use href="#i-edit"></use></svg>
           <span>Buka Formulir Input Perjalanan</span>
@@ -1010,31 +1263,192 @@ function renderTripHistory(filterText = '') {
 
   if (filtered.length === 0) {
     const safeQ = (typeof escapeHtml === 'function') ? escapeHtml(q) : q;
+    const filterMsg = q
+      ? `Tidak ada berkas yang cocok dengan kata kunci <em>"${safeQ}"</em>.`
+      : 'Belum ada berkas pada filter kategori ini.';
     container.innerHTML = `
       <div class="history-empty-card">
         <div class="history-empty-icon">
           <svg class="ico"><use href="#i-search"></use></svg>
         </div>
         <h3>Tidak Ditemukan Hasil</h3>
-        <p>Tidak ada riwayat yang cocok dengan kata kunci <em>"${safeQ}"</em>.</p>
-        <button type="button" class="btn btn-secondary" onclick="clearHistorySearch()">
-          <span>Bersihkan Pencarian</span>
-        </button>
+        <p>${filterMsg}</p>
+        ${q ? `<button type="button" class="btn btn-secondary" onclick="clearHistorySearch()"><span>Bersihkan Pencarian</span></button>` : ''}
       </div>
     `;
     return;
   }
 
+  const canEdit = (typeof canCurrentUserEdit === 'function') ? canCurrentUserEdit() : (typeof isCurrentUserAdmin === 'function' && isCurrentUserAdmin());
+  const isViewer = !canEdit && !!window.currentAuthUser;
+  const isAdmin = (typeof isCurrentUserAdmin === 'function' && isCurrentUserAdmin());
+
   container.innerHTML = filtered.map(item => {
+    const isBbmEntry = item.recordType === 'bbm';
     const costFormatted = item.totalBiaya > 0
       ? ((typeof rp === 'function') ? rp(item.totalBiaya) : 'Rp ' + Number(item.totalBiaya).toLocaleString('id-ID'))
       : 'Rp 0';
 
-    const tglTeks = (item.tglBerangkat && item.tglKembali)
+    const tglTeks = (item.tglBerangkat && item.tglKembali && item.tglBerangkat !== item.tglKembali)
       ? `${(typeof formatTgl === 'function' ? formatTgl(item.tglBerangkat) : item.tglBerangkat)} s.d. ${(typeof formatTgl === 'function' ? formatTgl(item.tglKembali) : item.tglKembali)}`
-      : item.tglBerangkat || 'Tanggal belum diisi';
+      : (item.tglBerangkat ? (typeof formatTgl === 'function' ? formatTgl(item.tglBerangkat) : item.tglBerangkat) : 'Tanggal belum diisi');
 
     const durationTeks = item.lamaTugas ? ` (${item.lamaTugas})` : '';
+    const safeNoST = (typeof escapeHtml === 'function') ? escapeHtml(item.noST || '-') : (item.noST || '-');
+    const safeMak = (typeof escapeHtml === 'function') ? escapeHtml(item.mak || '') : (item.mak || '');
+    const safeAgenda = (typeof escapeHtml === 'function') ? escapeHtml(item.agenda || '-') : (item.agenda || '-');
+    const safeTgl = (typeof escapeHtml === 'function') ? escapeHtml(tglTeks) : tglTeks;
+    const safeDuration = (typeof escapeHtml === 'function') ? escapeHtml(durationTeks) : durationTeks;
+    const emps = item.employees || [];
+
+    const empPillsHtml = emps.slice(0, 5).map(e => {
+      const shortName = (e.nama || '').split(',')[0];
+      const safeName = (typeof escapeHtml === 'function') ? escapeHtml(shortName) : shortName;
+      return `<span class="emp-pill">${safeName}</span>`;
+    }).join('');
+    const morePillHtml = emps.length > 5 ? `<span class="emp-pill more">+${emps.length - 5} lainnya</span>` : '';
+
+    const isCloud = !!item.isCloud;
+    const storagePill = isCloud
+      ? '<span class="history-cloud-pill" title="Tersimpan di Cloud Database">☁️ Cloud</span>'
+      : '<span class="history-local-pill" title="Tersimpan di Penyimpanan Lokal Browser (Belum Masuk Cloud)">💾 Lokal</span>';
+
+    // RENDER KARTU BERKAS BBM (MAK 523121) YANG MASUK PENCAIRAN
+    if (isBbmEntry) {
+      const status = item.status_berkas || 'diproses';
+      const isDicairkan = status === 'dicairkan';
+      const statusLabel = isDicairkan ? 'Sudah Dicairkan' : 'Diproses ke Satker';
+      const statusBadgeClass = isDicairkan ? 'status-dicairkan' : 'status-diproses';
+      const toggleBtnLabel = isDicairkan ? 'Ubah ke Diproses' : 'Tandai Dicairkan';
+      const toggleBtnClass = isDicairkan ? 'is-diproses' : 'is-dicairkan';
+      const safeBbmId = (typeof escapeHtml === 'function') ? escapeHtml(item.bbmRecordId) : item.bbmRecordId;
+      const safePolicyLbl = (typeof escapeHtml === 'function') ? escapeHtml(item.policyBadgeLabel || 'KDO Dinas') : (item.policyBadgeLabel || 'KDO Dinas');
+
+      const statusBadge = `
+        <span class="history-status-badge ${statusBadgeClass}" ${canEdit ? `onclick="toggleBbmPencairanStatus('${safeBbmId}', event)" style="cursor:pointer;" title="Klik untuk mengubah status pencairan Berkas BBM"` : `title="Status pencairan Berkas BBM"`}>
+          <svg class="ico" style="width:14px;height:14px;"><use href="${isDicairkan ? '#i-check' : '#i-clipboard'}"></use></svg>
+          <span>${statusLabel}</span>
+        </span>
+      `;
+
+      const policyPill = `
+        <span class="history-cloud-pill history-bbm-pill" title="${item.isPerorangan ? 'Berkas BBM khusus perorangan (diperkenankan s.d. sebelum 1 Desember 2026)' : 'Kendaraan Dinas Operasional (KDO)'}">
+          <svg class="ico" style="width:13px;height:13px;"><use href="#i-fuel"></use></svg>
+          ${safePolicyLbl}
+        </span>
+      `;
+
+      const linkedPerdin = (typeof findLinkedPerjadinTrip === 'function')
+        ? findLinkedPerjadinTrip(item.noST, item.tripId, item.tripCloudId)
+        : null;
+      const perdinSyncPill = linkedPerdin ? `
+        <span class="history-cloud-pill history-perdin-sync-pill" onclick="openTripPdfModal('${linkedPerdin.id}', event)" title="Berkas BBM ini dipisah dari Perjadin (${linkedPerdin.metodePembayaran || 'LS'}) namun tersinkron berdasarkan Nomor SPT. Klik untuk membuka berkas Perdin induk.">
+          &#128279; Sinkron Perdin (${linkedPerdin.metodePembayaran || 'LS'})
+        </span>
+      ` : '';
+
+      const statusToggleBtn = canEdit ? `
+        <button type="button" class="btn btn-status-toggle ${toggleBtnClass}" onclick="toggleBbmPencairanStatus('${safeBbmId}', event)" title="Perbarui status pencairan Berkas BBM">
+          <svg class="ico"><use href="${isDicairkan ? '#i-refresh' : '#i-check'}"></use></svg>
+          <span>${toggleBtnLabel}</span>
+        </button>
+      ` : '';
+
+      const viewPerdinBtn = linkedPerdin ? `
+        <button type="button" class="btn btn-outline btn-sm" onclick="openTripPdfModal('${linkedPerdin.id}', event)" title="Buka berkas Perjalanan Dinas induk yang tersinkron dengan Nomor SPT ini">
+          <svg class="ico"><use href="#i-file-lines"></use></svg>
+          <span>Lihat Perdin Induk</span>
+        </button>
+      ` : '';
+
+      const bbmActionsHtml = isViewer ? `
+        <div class="history-card-actions">
+          <button type="button" class="btn btn-primary btn-sm" onclick="openBbmTrackRecordModal('${safeBbmId}', event)" title="Lihat rincian &amp; track record berkas BBM">
+            <svg class="ico"><use href="#i-file-lines"></use></svg>
+            <span>Lihat Track Record &amp; Rincian</span>
+          </button>
+          ${viewPerdinBtn}
+          <button type="button" class="btn btn-secondary btn-sm" onclick="if(typeof onBbmHistoryExcel==='function') onBbmHistoryExcel('${safeBbmId}');" title="Unduh file Excel BBM">
+            <svg class="ico"><use href="#i-save"></use></svg>
+            <span>Unduh Excel</span>
+          </button>
+        </div>
+      ` : `
+        <div class="history-card-actions">
+          ${statusToggleBtn}
+          <button type="button" class="btn btn-primary btn-sm" onclick="event.stopPropagation(); showTab('bbm'); setTimeout(() => { if(typeof onBbmHistoryOpen==='function') onBbmHistoryOpen('${safeBbmId}'); }, 120);" title="Buka &amp; Edit Berkas BBM">
+            <svg class="ico"><use href="#i-edit"></use></svg>
+            <span>Edit / Revisi BBM</span>
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); showTab('bbm'); setTimeout(() => { if(typeof onBbmHistoryPrint==='function') onBbmHistoryPrint('${safeBbmId}'); }, 120);" title="Pratinjau &amp; Cetak 3 Dokumen BBM">
+            <svg class="ico"><use href="#i-print"></use></svg>
+            <span>Dokumen Cetak</span>
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); if(typeof onBbmHistoryExcel==='function') onBbmHistoryExcel('${safeBbmId}');" title="Unduh file Excel BBM">
+            <svg class="ico"><use href="#i-save"></use></svg>
+            <span>Unduh Excel</span>
+          </button>
+          ${viewPerdinBtn}
+          ${isAdmin ? `
+          <button type="button" class="btn btn-outline btn-sm" onclick="event.stopPropagation(); if(typeof onBbmHistoryDelete==='function') onBbmHistoryDelete('${safeBbmId}');" title="Hapus Berkas BBM dari Lokal &amp; Database Cloud">
+            <svg class="ico"><use href="#i-trash"></use></svg>
+            <span>Hapus</span>
+          </button>` : ''}
+        </div>
+      `;
+
+      return `
+        <div class="history-card card-method-bbm" data-bbm-id="${safeBbmId}" onclick="if(event && event.target && event.target.closest('button, a, .history-status-badge, .history-revision-box, .history-perdin-sync-pill')) return; if(${isViewer}) { openBbmTrackRecordModal('${safeBbmId}', event); } else { showTab('bbm'); setTimeout(() => { if(typeof onBbmHistoryPrint==='function') onBbmHistoryPrint('${safeBbmId}'); }, 120); }" title="Klik untuk melihat dokumen Berkas BBM">
+          <div class="history-card-top">
+            <div class="history-card-st">
+              <span class="history-st-badge">${safeNoST}</span>
+              <span class="history-metode-pill is-bbm" title="Berkas Reimburse BBM Terpisah (MAK 523121)">BBM</span>
+              ${safeMak ? `<span class="history-mak-pill" title="Mata Anggaran Kegiatan (MAK)">MAK: ${safeMak}</span>` : ''}
+              ${statusBadge}
+              ${storagePill}
+              ${policyPill}
+              ${perdinSyncPill}
+            </div>
+            <div class="history-card-date">
+              <svg class="ico"><use href="#i-calendar"></use></svg>
+              <span>Disimpan: ${formatHistoryDate(item.savedAt)}</span>
+            </div>
+          </div>
+
+          <div class="history-card-body">
+            <h3 class="history-card-agenda">${safeAgenda}</h3>
+
+            <div class="history-meta-grid">
+              <div class="history-meta-item">
+                <span class="meta-label">Tanggal Struk</span>
+                <span class="meta-val">${safeTgl}</span>
+              </div>
+              <div class="history-meta-item">
+                <span class="meta-label">Bukti Pengisian</span>
+                <span class="meta-val">${item.empCount} Struk</span>
+              </div>
+              <div class="history-meta-item history-meta-cost">
+                <span class="meta-label">Total Klaim BBM</span>
+                <span class="meta-val cost-text">${costFormatted}</span>
+              </div>
+            </div>
+
+            ${emps.length > 0 ? `
+              <div class="history-emp-pills">
+                ${empPillsHtml}
+                ${morePillHtml}
+              </div>
+            ` : ''}
+
+            ${renderRevisionLogHtml(item)}
+          </div>
+
+          ${bbmActionsHtml}
+        </div>
+      `;
+    }
+
+    // RENDER KARTU PERJALANAN DINAS REGULER (LS / KKP)
     const provDisplay = (typeof getProvinsiDisplayName === 'function')
       ? getProvinsiDisplayName(item.provinsiTujuan)
       : (item.provinsiTujuan || '');
@@ -1051,34 +1465,48 @@ function renderTripHistory(filterText = '') {
     } else if (provDisplay) {
       destinationTeks = provDisplay;
     }
-    const emps = item.employees || [];
-
-    const safeNoST = (typeof escapeHtml === 'function') ? escapeHtml(item.noST) : item.noST;
-    const safeMak = (typeof escapeHtml === 'function') ? escapeHtml(item.mak) : item.mak;
-    const safeAgenda = (typeof escapeHtml === 'function') ? escapeHtml(item.agenda) : item.agenda;
     const safeDest = (typeof escapeHtml === 'function') ? escapeHtml(destinationTeks) : destinationTeks;
-    const safeTgl = (typeof escapeHtml === 'function') ? escapeHtml(tglTeks) : tglTeks;
-    const safeDuration = (typeof escapeHtml === 'function') ? escapeHtml(durationTeks) : durationTeks;
 
-    const empPillsHtml = emps.slice(0, 5).map(e => {
-      const shortName = (e.nama || '').split(',')[0];
-      const safeName = (typeof escapeHtml === 'function') ? escapeHtml(shortName) : shortName;
-      return `<span class="emp-pill">${safeName}</span>`;
-    }).join('');
-
-    const morePillHtml = emps.length > 5 ? `<span class="emp-pill more">+${emps.length - 5} lainnya</span>` : '';
-    const canEdit = (typeof canCurrentUserEdit === 'function') ? canCurrentUserEdit() : (typeof isCurrentUserAdmin === 'function' && isCurrentUserAdmin());
-    const isViewer = !canEdit && !!window.currentAuthUser;
-    const isCloud = !!item.isCloud;
-    const storagePill = isCloud
-      ? '<span class="history-cloud-pill" title="Tersimpan di Cloud Database">☁️ Cloud</span>'
-      : '<span class="history-local-pill" title="Tersimpan di Penyimpanan Lokal Browser">💾 Lokal</span>';
-    const bbmRecord = getCachedBbmRecord(item);
-    const bbmPill = bbmRecord ? `
-      <span class="history-cloud-pill history-bbm-pill" title="Berkas BBM tersimpan di Cloud">
-        <svg class="ico" style="width:14px;height:14px;"><use href="#i-file"></use></svg>
-        Berkas BBM — No. ST: ${(typeof escapeHtml === 'function' ? escapeHtml(bbmRecord.noST || item.noST || '-') : (bbmRecord.noST || item.noST || '-'))}
+    // Untuk kartu Perdin, hanya tampilkan info sinkronisasi Berkas BBM terpisah jika BUKAN perjalanan dalam kota DKI Jakarta
+    const isTripDki = isDkiJakartaTrip(item);
+    const linkedBbmList = (!isTripDki && typeof getSavedBbmRecordsList === 'function')
+      ? getSavedBbmRecordsList().filter(b => {
+          if (!b) return false;
+          if (b.tripId && String(b.tripId) === String(item.id)) return true;
+          if (typeof normalizeSptMatchKey === 'function') {
+            const kA = normalizeSptMatchKey(b.noST);
+            const kB = normalizeSptMatchKey(item.noST);
+            return Boolean(kA && kB && kA === kB);
+          }
+          return String(b.noST || '').trim() && String(b.noST || '').trim() === String(item.noST || '').trim();
+        })
+      : [];
+    const primaryLinkedBbm = linkedBbmList[0] || null;
+    const totalLinkedBbmNominal = linkedBbmList.reduce((acc, b) => acc + (Number(b.nilaiTotal) || 0), 0);
+    const linkedBbmTitleNominal = (typeof formatRupiahMurni === 'function')
+      ? ('Rp ' + formatRupiahMurni(totalLinkedBbmNominal))
+      : '';
+    const bbmPill = primaryLinkedBbm ? `
+      <span class="history-cloud-pill history-bbm-pill" title="Berkas BBM terpisah yang tersinkron dengan SPT ini (${linkedBbmList.length} berkas • ${linkedBbmTitleNominal}). Klik untuk buka di modul BBM." onclick="event.stopPropagation(); if (typeof openOrCreateBbmForTrip === 'function') openOrCreateBbmForTrip('${item.id}', '${primaryLinkedBbm.id}');">
+        <svg class="ico" style="width:14px;height:14px;"><use href="#i-fuel"></use></svg>
+        Tersinkron BBM (${linkedBbmList.length}) &bull; ${linkedBbmTitleNominal}
       </span>` : '';
+
+    const bbmSyncStripHtml = primaryLinkedBbm ? (() => {
+      const anyDiproses = linkedBbmList.some(b => b.layakPencairan && (b.status_berkas || 'diproses') !== 'dicairkan');
+      const allDicairkan = linkedBbmList.every(b => b.status_berkas === 'dicairkan');
+      const bbmStatusText = allDicairkan ? 'Sudah Dicairkan' : (anyDiproses ? 'Diproses ke Satker' : 'Arsip Non-Pencairan');
+      return `
+        <div class="history-bbm-sync-strip" onclick="event.stopPropagation()">
+          <div class="history-bbm-sync-left">
+            <svg class="ico" style="width:15px;height:15px;color:#0e7490;flex-shrink:0;"><use href="#i-fuel"></use></svg>
+            <span><strong>Berkas BBM Terpisah (MAK 523121):</strong> ${linkedBbmList.length} berkas &bull; <strong>${linkedBbmTitleNominal}</strong> &bull; Status: <em>${bbmStatusText}</em></span>
+          </div>
+          <button type="button" class="btn btn-outline btn-xs" onclick="if (typeof openOrCreateBbmForTrip === 'function') openOrCreateBbmForTrip('${item.id}', '${primaryLinkedBbm.id}');">
+            Kelola Berkas BBM
+          </button>
+        </div>`;
+    })() : '';
 
     const rawMetode = item.metodePembayaran || (item.draft && item.draft.fields && (item.draft.fields.metodePembayaran || item.draft.fields.lk_metodePembayaran)) || 'LS';
     const isKKP = String(rawMetode).trim().toUpperCase() === 'KKP';
@@ -1159,7 +1587,12 @@ function renderTripHistory(filterText = '') {
           <svg class="ico"><use href="#i-plus"></use></svg>
           <span>Duplikat</span>
         </button>
-        ${(typeof isCurrentUserAdmin === 'function' && isCurrentUserAdmin()) ? `
+        ${(!isTripDki && !primaryLinkedBbm) ? `
+        <button type="button" class="btn btn-outline btn-sm" onclick="event.stopPropagation(); if (typeof openOrCreateBbmForTrip === 'function') openOrCreateBbmForTrip('${item.id}');" title="Buat Berkas BBM terpisah (MAK 523121) yang tersinkron dengan Nomor SPT ini">
+          <svg class="ico"><use href="#i-fuel"></use></svg>
+          <span>+ Berkas BBM</span>
+        </button>` : ''}
+        ${isAdmin ? `
         <button type="button" class="btn btn-outline btn-sm" onclick="deleteTripFromHistory('${item.id}', event)" title="Hapus perjalanan ini dari riwayat">
           <svg class="ico"><use href="#i-trash"></use></svg>
           <span>Hapus</span>
@@ -1186,7 +1619,7 @@ function renderTripHistory(filterText = '') {
 
         <div class="history-card-body">
           <h3 class="history-card-agenda">${safeAgenda}</h3>
-          
+
           <div class="history-meta-grid">
             <div class="history-meta-item">
               <span class="meta-label">Tujuan</span>
@@ -1212,6 +1645,8 @@ function renderTripHistory(filterText = '') {
               ${morePillHtml}
             </div>
           ` : ''}
+
+          ${bbmSyncStripHtml}
 
           ${renderRevisionLogHtml(item)}
         </div>

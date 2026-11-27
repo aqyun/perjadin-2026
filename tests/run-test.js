@@ -182,6 +182,30 @@ async function setRole(userId, role) {
   check('setelah terverifikasi: login berhasil', !r.error && r.data.session, r.error);
   window.PERDINKU_REQUIRE_EMAIL_VERIFICATION = false;
 
+  console.log('8. Koleksi khusus Berkas BBM (riwayat_bbm)');
+  r = await c.auth.signInWithPassword({ email, password: pw });
+  check('admin login kembali untuk uji riwayat_bbm', !r.error && r.data.session, r.error);
+  const bbmRow = {
+    bbm_uid: 'bbm_test_1', nomor_st: '395/ST/Sj.07/2026', kategori_kendaraan: 'pribadi',
+    kendaraan: 'Mobil', plat_nomor: 'F 1550 ABZ', pelaksana_bukti: 'Refly Saprilaturyandi',
+    pembuat_berkas: 'Yogi Andre', tgl_bukti: '2026-11-08', mak: '523121', nilai_total: 2723977,
+    status_berkas: 'diproses', layak_pencairan: true,
+    keterangan_pencairan: 'BBM Khusus Perorangan sebelum 1 Desember 2026',
+    payload_json: { id: 'bbm_test_1', items: [{ tanggal: '2026-11-08', jumlah: 2723977 }] },
+    created_by: uid
+  };
+  r = await c2.from('riwayat_bbm').insert(bbmRow).select('id');
+  check('viewer TIDAK boleh menyimpan ke riwayat_bbm', !!r.error, r);
+  r = await c.from('riwayat_bbm').insert(bbmRow).select('id');
+  check('admin boleh menyimpan ke riwayat_bbm', !r.error && Array.isArray(r.data) && r.data[0] && r.data[0].id, r);
+  const bbmCloudId = r.data && r.data[0] && r.data[0].id;
+  r = await c2.from('riwayat_bbm').select('*');
+  check('viewer dapat membaca riwayat_bbm', !r.error && Array.isArray(r.data) && r.data.length === 1 && r.data[0].bbm_uid === 'bbm_test_1', r);
+  r = await c.from('riwayat_bbm').update({ status_berkas: 'dicairkan', layak_pencairan: true }).eq('id', bbmCloudId).select('id');
+  check('admin dapat memperbarui status pencairan riwayat_bbm', !r.error && r.data && r.data[0] && r.data[0].id === bbmCloudId, r);
+  r = await c.from('riwayat_bbm').delete().eq('id', bbmCloudId);
+  check('admin dapat menghapus riwayat_bbm', !r.error, r);
+
   console.log('\nHasil: ' + pass + ' lulus, ' + fail + ' gagal');
   process.exit(fail ? 1 : 0);
 })().catch((e) => { console.error('ERROR', e); process.exit(2); });

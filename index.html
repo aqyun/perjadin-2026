@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8">
@@ -44,10 +44,10 @@
   <link rel="stylesheet" href="css/28-sbm-viewer-cockpit.css?v=20261126_13">
   <link rel="stylesheet" href="css/29-dashboard-kpi-dan-viewer.css?v=20261126_13">
   <link rel="stylesheet" href="css/30-modal-dokumen-pdf.css?v=20261126_13">
-  <link rel="stylesheet" href="css/31-dashboard-modular-dan-filter.css?v=20261126_13">
+  <link rel="stylesheet" href="css/31-dashboard-modular-dan-filter.css?v=20261127_35">
   <link rel="stylesheet" href="css/32-revisi-dan-mobile-nav.css?v=20261126_13">
   <link rel="stylesheet" href="css/33-kalkulator-simulasi.css?v=20261126_21">
-  <link rel="stylesheet" href="css/34-reimburse-bbm.css?v=20261127_20">
+  <link rel="stylesheet" href="css/34-reimburse-bbm.css?v=20261127_41">
 </head>
 <body class="auth-locked">
 
@@ -369,7 +369,6 @@
     <button type="button" class="tab-btn nav-btn-bbm" data-tab="bbm" onclick="showTab('bbm')">
       <span class="nav-ico"><svg class="ico"><use href="#i-fuel"></use></svg></span>
       <span class="nav-text">Reimburse BBM</span>
-      <span class="badge-role-pill">Admin/Op</span>
     </button>
     <button type="button" class="tab-btn" data-tab="dashboard" onclick="showTab('dashboard')">
       <span class="nav-ico"><svg class="ico"><use href="#i-chart"></use></svg></span>
@@ -930,6 +929,23 @@
           <span>Tutup</span>
         </button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ MODAL TRACK RECORD & RINCIAN BERKAS BBM -->
+<div class="welcome-overlay no-print" id="bbmTrackRecordModal" role="dialog" aria-modal="true" aria-labelledby="bbmTrackRecordTitle" onclick="if (event.target === this) closeBbmTrackRecordModal()" style="display:none;">
+  <div class="welcome-modal bbm-track-modal">
+    <button type="button" class="icon-btn welcome-close" onclick="closeBbmTrackRecordModal()" aria-label="Tutup jendela">
+      <svg class="ico"><use href="#i-close"></use></svg>
+    </button>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+      <span class="bbm-tr-modal-icon"><svg class="ico"><use href="#i-fuel"></use></svg></span>
+      <h3 id="bbmTrackRecordTitle" style="margin:0;font-size:16px;font-weight:700;">Track Record Berkas BBM</h3>
+    </div>
+    <div id="bbmTrackRecordBody"></div>
+    <div style="display:flex;justify-content:flex-end;margin-top:16px;">
+      <button type="button" class="btn btn-primary btn-sm" onclick="closeBbmTrackRecordModal()">Tutup</button>
     </div>
   </div>
 </div>
@@ -1529,21 +1545,21 @@
               <strong class="kpi-number" id="kpiCountDicairkan">0</strong>
               <span class="kpi-unit">Berkas</span>
             </div>
-            <p class="kpi-hint" id="kpiNominalDicairkan">Dana LS Dibayarkan: Rp 0</p>
+            <p class="kpi-hint" id="kpiNominalDicairkan">Dana LS &amp; BBM Dibayarkan: Rp 0</p>
           </div>
         </div>
 
-        <div class="kpi-card kpi-card-total" onclick="showTab('riwayat'); setTripStatusFilter('all');" style="cursor:pointer;" title="Klik untuk melihat seluruh riwayat berkas">
+        <div class="kpi-card kpi-card-total" onclick="showTab('riwayat'); setTripStatusFilter('all');" style="cursor:pointer;" title="Klik untuk melihat seluruh riwayat berkas Perdin &amp; BBM">
           <div class="kpi-icon-wrap">
             <svg class="ico"><use href="#i-file-lines"></use></svg>
           </div>
           <div class="kpi-content">
-            <span class="kpi-label">Total Berkas Perdin</span>
+            <span class="kpi-label">Total Berkas Pencairan</span>
             <div class="kpi-value-row">
               <strong class="kpi-number" id="kpiCountTotal">0</strong>
               <span class="kpi-unit">Tercatat</span>
             </div>
-            <p class="kpi-hint">Sinkronisasi Real-Time Basis Data Cloud</p>
+            <p class="kpi-hint">Berkas Perdin &amp; BBM (Cloud Real-Time)</p>
           </div>
         </div>
       </section>
@@ -1618,6 +1634,7 @@
             <button type="button" class="btn-filter-pill active" id="btnFilterAll" data-filter="all" onclick="setTripStatusFilter('all')">Semua Berkas (<span id="filterCountAll">0</span>)</button>
             <button type="button" class="btn-filter-pill filter-pill-ls" id="btnFilterLs" data-filter="ls" onclick="setTripStatusFilter('ls')">Berkas LS (<span id="filterCountLs">0</span>)</button>
             <button type="button" class="btn-filter-pill filter-pill-kkp" id="btnFilterKkp" data-filter="kkp" onclick="setTripStatusFilter('kkp')">Berkas KKP (<span id="filterCountKkp">0</span>)</button>
+            <button type="button" class="btn-filter-pill filter-pill-bbm" id="btnFilterBbm" data-filter="bbm" onclick="setTripStatusFilter('bbm')">Berkas BBM (<span id="filterCountBbm">0</span>)</button>
             <button type="button" class="btn-filter-pill filter-pill-diproses" id="btnFilterDiproses" data-filter="diproses" onclick="setTripStatusFilter('diproses')">Sedang Diproses (<span id="filterCountDiproses">0</span>)</button>
             <button type="button" class="btn-filter-pill filter-pill-dicairkan" id="btnFilterDicairkan" data-filter="dicairkan" onclick="setTripStatusFilter('dicairkan')">Selesai / Dicairkan (<span id="filterCountDicairkan">0</span>)</button>
           </div>
@@ -2469,14 +2486,11 @@
             </div>
           </div>
           <div class="bbm-hero-actions">
-            <button type="button" class="btn btn-secondary btn-sm" onclick="loadBbmSampleData()" title="Muat contoh struk Innova B 2577 KRK Rp 1.000.000">
+            <!-- <button type="button" class="btn btn-secondary btn-sm" onclick="loadBbmSampleData()" title="Muat contoh struk Innova B 2577 KRK Rp 1.000.000">
               <svg class="ico"><use href="#i-refresh"></use></svg> Muat Contoh
-            </button>
+            </button> -->
             <button type="button" class="btn btn-outline btn-sm" onclick="resetBbmForm()" title="Bersihkan isian untuk transaksi baru">
               <svg class="ico"><use href="#i-plus"></use></svg> Buat Baru
-            </button>
-            <button type="button" class="btn btn-success btn-sm" onclick="saveCurrentBbmRecord()" title="Simpan pengajuan BBM ini ke riwayat">
-              <svg class="ico"><use href="#i-check"></use></svg> Simpan Berkas
             </button>
           </div>
         </div>
@@ -2488,7 +2502,7 @@
               <span class="bbm-kpi-ic bbm-kpi-ic--ok"><svg class="ico"><use href="#i-wallet"></use></svg></span>
               <span class="bbm-kpi-label">Total Pengeluaran BBM</span>
             </div>
-            <div class="bbm-kpi-val text-success" id="bbm_kpi_total">Rp 1.000.000</div>
+            <div class="bbm-kpi-val text-success" id="bbm_kpi_total">Rp 0</div>
             <div class="bbm-kpi-sub">Total struk siap dipertanggungjawabkan</div>
           </div>
           <div class="bbm-kpi-item">
@@ -2512,13 +2526,13 @@
               <span class="bbm-kpi-ic"><svg class="ico"><use href="#i-clipboard"></use></svg></span>
               <span class="bbm-kpi-label">Berkas Tersimpan</span>
             </div>
-            <div class="bbm-kpi-val" id="bbm_kpi_count">1</div>
-            <div class="bbm-kpi-sub">Arsip pengajuan BBM di perangkat</div>
+            <div class="bbm-kpi-val" id="bbm_kpi_count">0</div>
+            <div class="bbm-kpi-sub">Terintegrasi Database Cloud &amp; Pencairan</div>
           </div>
         </div>
       </div>
 
-      <!-- 2. Sub-View Switcher Tabs Modern -->
+      <!-- 2. Sub-View Switcher Tabs Modern (Full width sejajar card di bawahnya) -->
       <div class="bbm-sub-nav no-print">
         <button type="button" class="bbm-sub-nav-btn active" id="btn_bbm_sub_form" onclick="switchBbmTabSubView('form')">
           <svg class="ico"><use href="#i-edit"></use></svg> 1. Input Struk BBM
@@ -2533,36 +2547,56 @@
 
       <!-- SUB-VIEW 1: FORMULIR INPUT STRUK BBM -->
       <div id="bbm_sub_form" class="bbm-sub-view-pane">
-        <!-- Live Connected SPT Banner (Direct Auto-Binding ke SPT Aktif) -->
+        <!-- Live Connected SPT Banner (100% Read-Only & Terkunci Mengikuti SPT Induk Perdin Non-DKI) -->
         <div class="bbm-spt-live-card">
           <div class="bbm-spt-live-head">
             <div class="bbm-spt-live-title-wrap">
-              <span class="bbm-spt-status-pill">
-                <span class="bbm-live-dot"></span> Terhubung ke SPT Aktif
+              <span class="bbm-spt-status-pill" id="bbm_spt_perdin_badge">
+                <span class="bbm-live-dot"></span> Terkunci Mengikuti SPT Induk Perdin
               </span>
-              <span class="bbm-spt-no-title" id="bbm_spt_no_lbl">395/ST/Sj.07/2026</span>
+              <span class="bbm-spt-no-title" id="bbm_spt_no_lbl">— Belum Ada SPT Induk Aktif —</span>
             </div>
-            <button type="button" class="btn btn-secondary btn-xs" onclick="syncBbmFromActiveSpt(true)" title="Tarik pembaruan data dari form formulir perjadin yang sedang aktif">
-              <svg class="ico"><use href="#i-refresh"></use></svg> Sinkronkan dari Form Perjadin
-            </button>
+            <div class="bbm-spt-head-actions">
+              <button type="button" id="btnBbmOpenLinkedPerdin" class="btn btn-outline btn-xs" style="display:none;" onclick="openLinkedPerdinFromBbm(event)" title="Buka berkas Perjalanan Dinas induk yang tersinkron dengan Nomor SPT ini">
+                <svg class="ico"><use href="#i-file-lines"></use></svg> Lihat Perdin Induk
+              </button>
+              <button type="button" class="btn btn-secondary btn-xs" onclick="syncBbmFromActiveSpt(true)" title="Tarik SPT Induk langsung dari formulir Input Perjadin yang sedang aktif (Non-DKI)">
+                <svg class="ico"><use href="#i-refresh"></use></svg> Tarik dari Input Perdin
+              </button>
+            </div>
+          </div>
+
+          <div id="bbm_no_spt_lock_warning" class="bbm-spt-lock-warning" style="display: none;">
+            <div class="bbm-spt-lock-warning-body">
+              <strong>SPT Induk Perjalanan Dinas (Non-DKI) Belum Aktif:</strong>
+              <span>Nomor SPT Berkas BBM tidak dapat dipilih atau diubah manual karena mengikuti bundel SPT Induk Perjadin (bukan DKI Jakarta 524113). Buka atau isi Perjalanan Dinas di <em>Input Perjalanan</em>, atau klik tombol <strong>+ Berkas BBM</strong> dari <em>Riwayat Perjalanan</em>.</span>
+            </div>
+            <div class="bbm-spt-lock-actions">
+              <button type="button" class="btn btn-primary btn-xs" onclick="showTab('input')">
+                <svg class="ico"><use href="#i-edit"></use></svg> Buka Input Perjalanan
+              </button>
+              <button type="button" class="btn btn-outline btn-xs" onclick="showTab('riwayat')">
+                <svg class="ico"><use href="#i-clipboard"></use></svg> Buka Riwayat Perjalanan
+              </button>
+            </div>
           </div>
 
           <div class="bbm-spt-agenda-text" id="bbm_spt_agenda_box">
-            <strong>Maksud Penugasan:</strong> <span id="bbm_spt_agenda_lbl">Pembuatan Video Dokumenter dan Pengambilan Footage Penerima Manfaat Bedah Rumah BSPS di Pulau Lancang, Kel. Pulau Pari, Kab. Kepulauan Seribu</span>
+            <strong>Maksud Penugasan:</strong> <span id="bbm_spt_agenda_lbl">—</span>
           </div>
 
           <div class="bbm-spt-meta-pills">
             <div class="bbm-spt-meta-item">
               <svg class="ico" style="width:13px;height:13px;"><use href="#i-calendar"></use></svg>
-              <span id="bbm_spt_tanggal_lbl">14 Okt 2026 - 16 Okt 2026</span>
+              <span id="bbm_spt_tanggal_lbl">-</span>
             </div>
             <div class="bbm-spt-meta-item">
               <svg class="ico" style="width:13px;height:13px;"><use href="#i-map-pin"></use></svg>
-              <span id="bbm_spt_tujuan_lbl">DKI Jakarta</span>
+              <span id="bbm_spt_tujuan_lbl">-</span>
             </div>
             <div class="bbm-spt-meta-item">
               <svg class="ico" style="width:13px;height:13px;"><use href="#i-user"></use></svg>
-              <span>Pelaksana Berkas: <strong id="bbm_spt_pelaksana_lbl">Yogi Andre Yonatan Pakpahan, S.P.W.K</strong></span>
+              <span>Pelaksana Berkas: <strong id="bbm_spt_pelaksana_lbl">-</strong></span>
             </div>
           </div>
         </div>
@@ -2574,7 +2608,10 @@
               <svg class="ico"><use href="#i-edit"></use></svg>
               <span>Identitas Kendaraan, Pelaksana &amp; Klasifikasi Anggaran</span>
             </h3>
-            <span class="badge badge-success">Akun 523121</span>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <span id="bbm_kategori_badge" class="badge badge-success">Mobil Dinas / KDO (Masuk Pencairan)</span>
+              <span class="badge badge-success">Akun 523121</span>
+            </div>
           </div>
           <div class="card-body">
             <div class="bbm-category-toggle" role="radiogroup" aria-label="Kategori kendaraan">
@@ -2582,16 +2619,20 @@
                 <span class="bbm-category-icon"><svg class="ico"><use href="#i-briefcase"></use></svg></span>
                 <span class="bbm-category-info">
                   <h5>Mobil Dinas Operasional</h5>
-                  <p>Pilih dari plat armada resmi biro</p>
+                  <p>Pilih dari plat armada resmi biro (Masuk Pencairan)</p>
                 </span>
               </button>
               <button type="button" class="bbm-category-card" id="bbm_cat_card_pribadi" role="radio" aria-checked="false" onclick="setBbmKategori('pribadi')">
                 <span class="bbm-category-icon"><svg class="ico"><use href="#i-user"></use></svg></span>
                 <span class="bbm-category-info">
-                  <h5>Mobil Pribadi Penugasan</h5>
-                  <p>Klaim operasional (hanya sebelum 1 Des 2026)</p>
+                  <h5>Mobil Pribadi Penugasan (Perorangan)</h5>
+                  <p>Masuk pencairan hanya s.d. sebelum 1 Des 2026</p>
                 </span>
               </button>
+            </div>
+            <div id="bbm_rule_december_banner" class="bbm-december-banner" style="display: none;">
+              <strong>Perhatian Ketentuan Kemenkeu / Setjen (Batas 1 Desember 2026):</strong>
+              <span>Terhitung mulai tanggal <strong>1 Desember 2026</strong>, penggantian biaya (reimburse/pencairan) pembelian BBM khusus <strong>Perorangan / Kendaraan Pribadi</strong> tidak lagi diperkenankan. Berkas ini tidak dapat dimasukkan ke daftar pencairan (hanya dapat disimpan sebagai arsip non-pencairan).</span>
             </div>
             <input type="hidden" id="bbm_kategoriKendaraan" value="dinas">
 
@@ -2608,11 +2649,11 @@
               <div class="bbm-auto-panel-grid">
                 <div class="form-group">
                   <label class="form-label" for="bbm_pelaksanaNama">Nama Lengkap</label>
-                  <input type="text" id="bbm_pelaksanaNama" class="form-control font-bold" value="Yogi Andre Yonatan Pakpahan, S.P.W.K" readonly>
+                  <input type="text" id="bbm_pelaksanaNama" class="form-control font-bold" value="" placeholder="Otomatis mengikuti SPT Induk..." readonly>
                 </div>
                 <div class="form-group">
                   <label class="form-label" for="bbm_pelaksanaNip">NIP</label>
-                  <input type="text" id="bbm_pelaksanaNip" class="form-control font-mono" value="199511272025061006" readonly>
+                  <input type="text" id="bbm_pelaksanaNip" class="form-control font-mono" value="" placeholder="-" readonly>
                 </div>
               </div>
             </div>
@@ -2620,11 +2661,11 @@
             <div class="form-grid form-grid-2">
               <div class="form-group">
                 <label class="form-label" for="bbm_namaPenyedia">Nama Penyedia / Pengaju</label>
-                <input type="text" id="bbm_namaPenyedia" class="form-control" value="Biro Komunikasi Publik" oninput="onBbmRowFieldChange()">
+                <input type="text" id="bbm_namaPenyedia" class="form-control" value="" placeholder="Otomatis terisi saat SPT Induk aktif" oninput="onBbmRowFieldChange()">
               </div>
               <div class="form-group">
                 <label class="form-label" for="bbm_jenisPengadaan">Jenis Pengadaan</label>
-                <input type="text" id="bbm_jenisPengadaan" class="form-control" value="Perawatan Kendaraan Bermotor" oninput="onBbmRowFieldChange()">
+                <input type="text" id="bbm_jenisPengadaan" class="form-control" value="" placeholder="Otomatis terisi saat SPT Induk aktif" oninput="onBbmRowFieldChange()">
               </div>
             </div>
 
@@ -2636,22 +2677,22 @@
             <div class="form-grid form-grid-2">
               <div class="form-group">
                 <label class="form-label" for="bbm_akun">Kode Akun / MAK Lengkap</label>
-                <input type="text" id="bbm_akun" class="form-control font-mono font-bold" value="146.01.WA.7665.EBA.994.002.0D.523121" oninput="onBbmRowFieldChange()">
+                <input type="text" id="bbm_akun" class="form-control font-mono font-bold" value="" placeholder="146.01.WA.7665.EBA.994.002.0D.523121" oninput="onBbmRowFieldChange()">
               </div>
               <div class="form-group">
                 <label class="form-label" for="bbm_namaAkun">Uraian Nama Akun</label>
-                <input type="text" id="bbm_namaAkun" class="form-control" value="Belanja Pemeliharaan Peralatan dan Mesin" oninput="onBbmRowFieldChange()">
+                <input type="text" id="bbm_namaAkun" class="form-control" value="" placeholder="Belanja Pemeliharaan Peralatan dan Mesin" oninput="onBbmRowFieldChange()">
               </div>
             </div>
 
             <div class="form-group">
               <label class="form-label" for="bbm_pekerjaan">Uraian Pekerjaan (Checklist &amp; Rincian S-46)</label>
-              <input type="text" id="bbm_pekerjaan" class="form-control" value="Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan Mobil Dinas (B 2577 KRK)." oninput="onBbmRowFieldChange()">
+              <input type="text" id="bbm_pekerjaan" class="form-control" value="" placeholder="Otomatis mengikuti SPT Induk..." oninput="onBbmRowFieldChange()">
             </div>
 
             <div class="form-group">
               <label class="form-label" for="bbm_pekerjaanKuitansi">Uraian Pembayaran Pada Kuitansi (Untuk Pembayaran)</label>
-              <input type="text" id="bbm_pekerjaanKuitansi" class="form-control" value="Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan Mobil Dinas (B 2577 KRK), Output: Perawatan Kendaraan Bermotor." oninput="onBbmRowFieldChange()">
+              <input type="text" id="bbm_pekerjaanKuitansi" class="form-control" value="" placeholder="Otomatis mengikuti SPT Induk..." oninput="onBbmRowFieldChange()">
             </div>
 
             <!-- Row 5: Tabel Rincian Struk Pembelian BBM Modern -->
@@ -2682,7 +2723,7 @@
                 </table>
               </div>
               <div class="bbm-table-footer">
-                <button type="button" class="btn btn-secondary btn-sm" onclick="addBbmItemRow()">
+                <button type="button" id="btnBbmAddItemRow" class="btn btn-secondary btn-sm" onclick="addBbmItemRow()">
                   <svg class="ico"><use href="#i-plus"></use></svg> Tambah Struk BBM
                 </button>
               </div>
@@ -2692,10 +2733,10 @@
             <div class="bbm-total-widget">
               <div>
                 <div class="bbm-total-info-label">TOTAL BIAYA REIMBURSE BBM</div>
-                <div class="bbm-total-info-terbilang" id="bbm_grand_terbilang">"Satu Juta Rupiah"</div>
+                <div class="bbm-total-info-terbilang" id="bbm_grand_terbilang">"Nol Rupiah"</div>
               </div>
               <div class="bbm-total-info-amount font-mono" id="bbm_grand_total">
-                Rp 1.000.000
+                Rp 0
               </div>
             </div>
 
@@ -2767,33 +2808,80 @@
       <!-- SUB-VIEW 3: ARSIP RIWAYAT BBM -->
       <div id="bbm_sub_history" class="bbm-sub-view-pane" style="display: none;">
         <div class="card">
-          <div class="card-head bbm-history-head">
-            <div class="card-title">
-              <svg class="ico"><use href="#i-clipboard"></use></svg>
-              <span>Arsip Riwayat Pengajuan Reimburse BBM</span>
+          <div class="card-head history-card-head bbm-history-head">
+            <div class="history-head-info">
+              <h2 class="card-title">
+                <svg class="ico"><use href="#i-clipboard"></use></svg>
+                <span>Arsip Riwayat, Pencairan &amp; Track Record BBM</span>
+              </h2>
+              <p class="card-sub">Berkas BBM terpisah (MAK 523121), tersinkronisasi dengan Berkas Perdin per Nomor SPT, terintegrasi Database Cloud &amp; Pencairan.</p>
             </div>
-            <button type="button" class="btn btn-secondary btn-sm" onclick="switchBbmTabSubView('form')">
-              <svg class="ico"><use href="#i-arrow-left"></use></svg> Kembali ke Form Input
-            </button>
+            <div class="history-head-actions bbm-history-head-actions">
+              <button type="button" id="btnBbmCloudSync" class="btn-tool btn-tool-cloud-sync" onclick="syncBbmFromCloud(false)" title="Tarik &amp; sinkronkan berkas BBM dengan Database Cloud PocketBase">
+                <svg class="ico"><use href="#i-refresh"></use></svg>
+                <span>Tarik / Sync Database</span>
+              </button>
+              <span class="history-autosave-badge" title="Setiap penyimpanan berkas BBM terintegrasi ke Database Cloud riwayat_bbm &amp; Daftar Pencairan">
+                <span class="history-status-dot"></span>
+                <span>Database &amp; Track Record Aktif</span>
+              </span>
+            </div>
           </div>
           <div class="card-body">
-            <div class="table-responsive">
-              <table class="bbm-history-table">
-                <thead>
-                  <tr>
-                    <th style="width: 40px;" class="tc">No</th>
-                    <th>Kendaraan &amp; Plat</th>
-                    <th>Pelaksana</th>
-                    <th>No. ST</th>
-                    <th class="tr">Total (Rp)</th>
-                    <th class="tc" style="width: 100px;">Status</th>
-                    <th class="tc" style="width: 220px;">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody id="bbm_history_tbody">
-                  <!-- Populated by JS -->
-                </tbody>
-              </table>
+            <div id="bbmHistoryRoleNotice" class="history-role-banner banner-guest" style="display:none; margin-bottom: 14px;"></div>
+
+            <!-- Alert apabila ada data berkas bensin lokal yang belum masuk ke Database Cloud -->
+            <div id="bbmUnsyncedDbBanner" class="bbm-unsynced-banner" style="display: none;">
+              <div class="bbm-unsynced-msg">
+                <svg class="ico"><use href="#i-info"></use></svg>
+                <span id="bbmUnsyncedDbText">Terdapat berkas BBM lokal yang belum masuk ke Database Cloud.</span>
+              </div>
+              <button type="button" class="btn btn-primary btn-xs" onclick="pushUnsyncedBbmRecordsToCloud(true)">
+                <svg class="ico"><use href="#i-refresh"></use></svg>
+                <span>Kirim ke Database Cloud</span>
+              </button>
+            </div>
+
+            <!-- Ringkasan Nominal Pencairan BBM -->
+            <div class="bbm-hist-summary-grid">
+              <div class="bbm-hist-sum-card">
+                <span class="bbm-hist-sum-lbl">Total Berkas BBM Masuk Pencairan</span>
+                <strong class="bbm-hist-sum-val" id="bbmHistSummaryMasuk">Rp 0</strong>
+              </div>
+              <div class="bbm-hist-sum-card is-diproses">
+                <span class="bbm-hist-sum-lbl">Sedang Diproses ke Satker</span>
+                <strong class="bbm-hist-sum-val" id="bbmHistSummaryDiproses">Rp 0</strong>
+              </div>
+              <div class="bbm-hist-sum-card is-dicairkan">
+                <span class="bbm-hist-sum-lbl">Sudah Dicairkan (SP2D)</span>
+                <strong class="bbm-hist-sum-val" id="bbmHistSummaryDicairkan">Rp 0</strong>
+              </div>
+            </div>
+
+            <!-- Filter Pill Pencairan BBM -->
+            <div class="bbm-hist-filter-row">
+              <button type="button" class="btn-filter-pill bbm-hist-filter-pill active" data-filter="all" onclick="setBbmHistoryFilter('all')">Semua (<span id="bbmFilterCountAll">0</span>)</button>
+              <button type="button" class="btn-filter-pill bbm-hist-filter-pill filter-pill-bbm" data-filter="pencairan" onclick="setBbmHistoryFilter('pencairan')">Masuk Pencairan (<span id="bbmFilterCountPencairan">0</span>)</button>
+              <button type="button" class="btn-filter-pill bbm-hist-filter-pill" data-filter="dinas" onclick="setBbmHistoryFilter('dinas')">KDO Dinas (<span id="bbmFilterCountDinas">0</span>)</button>
+              <button type="button" class="btn-filter-pill bbm-hist-filter-pill" data-filter="perorangan" onclick="setBbmHistoryFilter('perorangan')">Perorangan ≤ 30 Nov (<span id="bbmFilterCountPerorangan">0</span>)</button>
+              <button type="button" class="btn-filter-pill bbm-hist-filter-pill filter-pill-diproses" data-filter="diproses" onclick="setBbmHistoryFilter('diproses')">Diproses Satker (<span id="bbmFilterCountDiproses">0</span>)</button>
+              <button type="button" class="btn-filter-pill bbm-hist-filter-pill filter-pill-dicairkan" data-filter="dicairkan" onclick="setBbmHistoryFilter('dicairkan')">Sudah Dicairkan (<span id="bbmFilterCountDicairkan">0</span>)</button>
+              <button type="button" class="btn-filter-pill bbm-hist-filter-pill" data-filter="non_pencairan" onclick="setBbmHistoryFilter('non_pencairan')">Non-Pencairan ≥ 1 Des (<span id="bbmFilterCountNonPencairan">0</span>)</button>
+            </div>
+            
+            <div class="history-toolbar bbm-history-toolbar">
+              <div class="history-search-wrap" id="bbmSearchWrap">
+                <svg class="ico search-ico"><use href="#i-search"></use></svg>
+                <input type="text" id="bbmHistorySearch" placeholder="Cari nomor SPT, nama pelaksana bukti BBM, atau agenda..." oninput="onBbmSearchInput(this.value)">
+                <button type="button" class="history-search-clear" onclick="clearBbmHistorySearch()" title="Bersihkan pencarian">×</button>
+              </div>
+              <div class="history-stats">
+                <span id="bbmHistoryTotalCount" class="badge">0 Berkas BBM</span>
+              </div>
+            </div>
+
+            <div id="bbm_history_tbody" class="history-list-container bbm-history-card-list">
+              <!-- Populated by JS -->
             </div>
           </div>
         </div>
@@ -2814,13 +2902,10 @@
               2. Kuitansi BBM
             </button>
             <button type="button" class="bbm-doc-nav-pill" data-filter="rincian" onclick="setBbmDocFilter('rincian')">
-              3. Rincian S-46
+              3. Rincian
             </button>
           </div>
           <div class="bbm-doc-actions">
-            <button type="button" class="btn btn-secondary" onclick="switchBbmTabSubView('form')">
-              <svg class="ico"><use href="#i-arrow-left"></use></svg> Edit Formulir
-            </button>
             <button type="button" class="btn btn-outline" onclick="downloadBbmExcelCurrent()" title="Ekspor 4 Sheet Excel (.xlsx) plek ketiplek template">
               <svg class="ico"><use href="#i-file"></use></svg> Unduh Excel (.xlsx)
             </button>
@@ -3751,11 +3836,11 @@
      Urutan WAJIB: 01-shim, 02-supabase, 03-data, 04-utils, 05-calc, 06-documents, 07-excel, 08-ui.
      Gabungan isi tiap folder identik dengan file js/*.js lama (tidak ada logika yang diubah).
      Naikkan ?v= setiap kali isi file JS diubah supaya cache peramban ikut diperbarui. -->
-<script src="js/01-shim/01-pocketbase-shim.js?v=20261126_13"></script>
+<script src="js/01-shim/01-pocketbase-shim.js?v=20261127_31"></script>
 <script src="js/02-supabase/01-klien-dan-konfigurasi.js?v=20261126_13"></script>
 <script src="js/02-supabase/02-gerbang-login.js?v=20261127_01"></script>
 <script src="js/02-supabase/03-proses-autentikasi.js?v=20261126_13"></script>
-<script src="js/02-supabase/04-sinkron-riwayat-cloud.js?v=20261126_13"></script>
+<script src="js/02-supabase/04-sinkron-riwayat-cloud.js?v=20261127_36"></script>
 <script src="js/02-supabase/05-modal-auth-dan-konfigurasi.js?v=20261126_13"></script>
 <script src="js/02-supabase/06-kelola-pengguna.js?v=20261126_13"></script>
 <script src="js/03-data/01-data-pegawai.js?v=20261126_13"></script>
@@ -3773,9 +3858,9 @@
 <script src="js/06-documents/01-render-nominatif-dan-rekap.js?v=20261126_13"></script>
 <script src="js/06-documents/02-render-rincian-per-orang.js?v=20261126_13"></script>
 <script src="js/06-documents/03-render-dpr-per-orang.js?v=20261126_13"></script>
-<script src="js/06-documents/04-render-bbm.js?v=20261127_20"></script>
+<script src="js/06-documents/04-render-bbm.js?v=20261127_31"></script>
 <script src="js/07-excel/01-ekspor-impor-excel.js?v=20261127_06"></script>
-<script src="js/07-excel/02-ekspor-bbm-excel.js?v=20261127_20"></script>
+<script src="js/07-excel/02-ekspor-bbm-excel.js?v=20261127_30"></script>
 <script src="js/08-ui/01-mode-tampilan.js?v=20261126_13"></script>
 <script src="js/08-ui/02-init-aplikasi.js?v=20261126_13"></script>
 <script src="js/08-ui/03-validasi-form.js?v=20261126_13"></script>
@@ -3786,8 +3871,8 @@
 <script src="js/08-ui/08-modal-pmk.js?v=20261126_13"></script>
 <script src="js/08-ui/09-daftar-pegawai.js?v=20261126_13"></script>
 <script src="js/08-ui/10-autosave-draft.js?v=20261127_04"></script>
-<script src="js/08-ui/11-riwayat-perjalanan.js?v=20261127_04"></script>
+<script src="js/08-ui/11-riwayat-perjalanan.js?v=20261127_36"></script>
 <script src="js/08-ui/12-modal-dokumen-pdf.js?v=20261126_13"></script>
-<script src="js/08-ui/13-reimburse-bbm-ui.js?v=20261127_20"></script>
+<script src="js/08-ui/13-reimburse-bbm-ui.js?v=20261127_41"></script>
 </body>
 </html>
