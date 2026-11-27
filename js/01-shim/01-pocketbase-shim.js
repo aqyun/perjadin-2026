@@ -48,6 +48,24 @@
         if (!o.created_by) delete o.created_by;
         return o;
       }
+    },
+    riwayat_bbm: {
+      collection: 'riwayat_bbm',
+      colIn: { created_at: 'created_at', updated_at: 'updated_at' },
+      rowOut: (r) => {
+        const o = { ...r };
+        delete o.collectionId; delete o.collectionName;
+        o.created_at = fixDate(o.created_at || o.created);
+        o.updated_at = fixDate(o.updated_at || o.updated);
+        return o;
+      },
+      dataIn: (d) => {
+        const o = { ...d };
+        delete o.updated_at; delete o.created_at; delete o.id;
+        delete o.created; delete o.updated;
+        if (!o.created_by) delete o.created_by;
+        return o;
+      }
     }
   };
 

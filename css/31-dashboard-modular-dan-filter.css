@@ -361,6 +361,12 @@ html[data-theme="dark"] .btn-filter-pill:hover {
   box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
 }
 
+.btn-filter-pill.filter-pill-bbm.active {
+  background: #0891b2;
+  border-color: #0e7490;
+  box-shadow: 0 4px 12px rgba(8, 145, 178, 0.3);
+}
+
 .btn-filter-pill.filter-pill-diproses.active {
   background: #d97706;
   border-color: #b45309;
@@ -392,6 +398,12 @@ html[data-theme="dark"] .btn-filter-pill.filter-pill-kkp.active {
   box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
 }
 
+html[data-theme="dark"] .btn-filter-pill.filter-pill-bbm.active {
+  background: #0891b2;
+  border-color: #06b6d4;
+  box-shadow: 0 4px 14px rgba(8, 145, 178, 0.35);
+}
+
 html[data-theme="dark"] .btn-filter-pill.filter-pill-diproses.active {
   background: #d97706;
   border-color: #b45309;
@@ -402,5 +414,89 @@ html[data-theme="dark"] .btn-filter-pill.filter-pill-dicairkan.active {
   background: #059669;
   border-color: #047857;
   box-shadow: 0 4px 14px rgba(5, 150, 105, 0.35);
+}
+
+.history-cloud-pill.history-bbm-pill {
+  background: rgba(8, 145, 178, 0.1);
+  color: #0e7490;
+  border: 1px solid rgba(8, 145, 178, 0.35);
+  cursor: pointer;
+}
+
+.history-cloud-pill.history-bbm-pill:hover {
+  background: rgba(8, 145, 178, 0.2);
+  transform: translateY(-1px);
+}
+
+html[data-theme="dark"] .history-cloud-pill.history-bbm-pill {
+  background: rgba(8, 145, 178, 0.22);
+  color: #38bdf8;
+  border-color: rgba(8, 145, 178, 0.45);
+}
+
+.history-metode-pill.is-bbm {
+  background: rgba(8, 145, 178, 0.14);
+  color: #0e7490;
+  border: 1px solid rgba(8, 145, 178, 0.35);
+}
+
+html[data-theme="dark"] .history-metode-pill.is-bbm {
+  background: rgba(8, 145, 178, 0.25);
+  color: #38bdf8;
+  border-color: rgba(6, 182, 212, 0.45);
+}
+
+.history-card.card-method-bbm {
+  border-left: 4px solid #0891b2;
+}
+
+html[data-theme="dark"] .history-card.card-method-bbm {
+  border-left-color: #06b6d4;
+}
+
+.history-cloud-pill.history-perdin-sync-pill {
+  background: rgba(37, 99, 235, 0.1);
+  color: #1d4ed8;
+  border: 1px solid rgba(37, 99, 235, 0.3);
+  cursor: pointer;
+}
+
+.history-cloud-pill.history-perdin-sync-pill:hover {
+  background: rgba(37, 99, 235, 0.18);
+  transform: translateY(-1px);
+}
+
+html[data-theme="dark"] .history-cloud-pill.history-perdin-sync-pill {
+  background: rgba(59, 130, 246, 0.2);
+  color: #93c5fd;
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.history-bbm-sync-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(8, 145, 178, 0.28);
+  background: rgba(8, 145, 178, 0.06);
+  font-size: 12px;
+  color: #0e7490;
+}
+
+.history-bbm-sync-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+html[data-theme="dark"] .history-bbm-sync-strip {
+  background: rgba(8, 145, 178, 0.14);
+  border-color: rgba(6, 182, 212, 0.35);
+  color: #67e8f9;
 }
 
