@@ -297,24 +297,24 @@ function renderBbmChecklistHtml(d) {
           <div>Disetujui</div>
           <div style="font-weight: bold;">Pejabat Pembuat Komitmen</div>
           <div style="height: 60px;"></div>
-          <div>${data.pejabat?.ppkNama || 'Emanuel Pati Libak, S.Pd., M.T.'}</div>
-          <div>NIP. ${cleanNip(data.pejabat?.ppkNip || '197512072010121001')}</div>
+          <div>${(typeof document !== 'undefined' && document.getElementById('cfg_ppkNama')?.value) || data.pejabat?.ppkNama || 'Emanuel Pati Libak, S.Pd., M.T.'}</div>
+          <div>NIP. ${cleanNip((typeof document !== 'undefined' && document.getElementById('cfg_ppkNip')?.value) || data.pejabat?.ppkNip || '197512072010121001')}</div>
         </div>
 
         <div>
           <div style="font-weight: bold;">PPSPM</div>
           <div>(Pejabat Penanda Tangan SPM)</div>
           <div style="height: 60px;"></div>
-          <div>${data.pejabat?.ppspmNama || 'Mala Hayati Rahayu, S.E'}</div>
-          <div>NIP. ${cleanNip(data.pejabat?.ppspmNip || '198408012009122003')}</div>
+          <div>${(typeof document !== 'undefined' && document.getElementById('cfg_ppspmNama')?.value) || data.pejabat?.ppspmNama || 'Mala Hayati Rahayu, S.E'}</div>
+          <div>NIP. ${cleanNip((typeof document !== 'undefined' && document.getElementById('cfg_ppspmNip')?.value) || data.pejabat?.ppspmNip || '198408012009122003')}</div>
         </div>
 
         <div>
           <div>Jakarta,</div>
           <div>Verifikator Pejabat Pembuat Komitmen</div>
           <div style="height: 60px;"></div>
-          <div>${data.pejabat?.verifikatorNama || '................................................................'}</div>
-          <div>${data.pejabat?.verifikatorNip ? 'NIP. ' + cleanNip(data.pejabat.verifikatorNip) : 'NIP.'}</div>
+          <div>${(typeof document !== 'undefined' && document.getElementById('cfg_verifikatorNama')?.value) || data.pejabat?.verifikatorNama || '................................................................'}</div>
+          <div>${((typeof document !== 'undefined' && document.getElementById('cfg_verifikatorNip')?.value) || data.pejabat?.verifikatorNip) ? 'NIP. ' + cleanNip(document.getElementById('cfg_verifikatorNip')?.value || data.pejabat.verifikatorNip) : 'NIP.'}</div>
         </div>
       </div>
     </div>
@@ -465,15 +465,15 @@ function renderBbmKuitansiHtml(d) {
             <div>Sekretariat Jenderal</div>
             <div>Kementerian Perumahan dan Kawasan Permukiman</div>
             <div style="height: 52px;"></div>
-            <div>${data.pejabat?.ppkNama || 'Emanuel Pati Libak'}</div>
-            <div>NIP. ${cleanNip(data.pejabat?.ppkNip || '197512072010121001')}</div>
+            <div>${(typeof document !== 'undefined' && document.getElementById('cfg_ppkNama')?.value) || data.pejabat?.ppkNama || 'Emanuel Pati Libak'}</div>
+            <div>NIP. ${cleanNip((typeof document !== 'undefined' && document.getElementById('cfg_ppkNip')?.value) || data.pejabat?.ppkNip || '197512072010121001')}</div>
           </div>
           <div style="width: 44%;">
             <div>Lunas dibayar tgl &nbsp; &nbsp;:</div>
             <div style="margin-top: 2px;">Bendahara Pengeluaran</div>
             <div style="height: 82px;"></div>
-            <div>${data.pejabat?.bendaharaNama || 'Rahmat H'}</div>
-            <div>NIP. ${cleanNip(data.pejabat?.bendaharaNip || '198004022014081001')}</div>
+            <div>${(typeof document !== 'undefined' && document.getElementById('cfg_bendNama')?.value) || data.pejabat?.bendaharaNama || 'Rahmat H'}</div>
+            <div>NIP. ${cleanNip((typeof document !== 'undefined' && document.getElementById('cfg_bendNip')?.value) || data.pejabat?.bendaharaNip || '198004022014081001')}</div>
           </div>
         </div>
 
@@ -486,8 +486,8 @@ function renderBbmKuitansiHtml(d) {
           <div>Pejabat yang bertanggungjawab</div>
           <div>Kepala Subbagian Tata Usaha</div>
           <div style="height: 52px;"></div>
-          <div>${data.pejabat?.kasubbagTuNama || 'Ahmad Jayadi, S.Hum., MT.'}</div>
-          <div>NIP. ${cleanNip(data.pejabat?.kasubbagTuNip || '198702182010121003')}</div>
+          <div>${(typeof document !== 'undefined' && document.getElementById('cfg_ktuNama')?.value) || data.pejabat?.kasubbagTuNama || 'Ahmad Jayadi, S.Hum., MT.'}</div>
+          <div>NIP. ${cleanNip((typeof document !== 'undefined' && document.getElementById('cfg_ktuNip')?.value) || data.pejabat?.kasubbagTuNip || '198702182010121003')}</div>
         </div>
 
       </div>
@@ -629,8 +629,8 @@ function renderBbmRincianHtml(d) {
           <div>Sekretariat Jenderal</div>
           <div>Kementerian Perumahan dan Kawasan Permukiman</div>
           <div style="height: 55px;"></div>
-          <div>${data.pejabat?.ppkNama || 'Emanuel Pati Libak'}</div>
-          <div>NIP. '${cleanNip(data.pejabat?.ppkNip || '197512072010121001')}</div>
+          <div>${(typeof document !== 'undefined' && document.getElementById('cfg_ppkNama')?.value) || data.pejabat?.ppkNama || 'Emanuel Pati Libak'}</div>
+          <div>NIP. '${cleanNip((typeof document !== 'undefined' && document.getElementById('cfg_ppkNip')?.value) || data.pejabat?.ppkNip || '197512072010121001')}</div>
         </div>
       </div>
 

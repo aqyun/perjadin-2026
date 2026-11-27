@@ -142,6 +142,20 @@ function initBbmModule() {
     populateBbmPelaksanaDropdown();
     populateBbmKendaraanPresets();
 
+    // Pelaksana pertanggungjawaban BBM selalu diselaraskan sama dengan pembuat berkas perjadin (lk_pelaksana)
+    const lkPel = (document.getElementById('lk_pelaksana')?.value || '').trim();
+    if (lkPel) {
+      const elPelNama = document.getElementById('bbm_pelaksanaNama');
+      const elPelPanggil = document.getElementById('bbm_pelaksanaPanggilan');
+      if (elPelNama) elPelNama.value = lkPel;
+      if (elPelPanggil) {
+        const parts = lkPel.split(/[\s,]+/);
+        elPelPanggil.value = parts.length > 2 ? `${parts[0]} ${parts[1]}` : parts[0];
+      }
+      const elPelLbl = document.getElementById('bbm_spt_pelaksana_lbl');
+      if (elPelLbl) elPelLbl.textContent = lkPel;
+    }
+
     const record = getActiveBbmRecord();
     loadBbmRecordIntoForm(record);
     renderBbmHistoryTable();
@@ -472,15 +486,31 @@ function loadBbmRecordIntoForm(rec) {
   if (elNo && rec.noST) elNo.textContent = rec.noST;
   if (elPel && rec.pelaksanaNama) elPel.textContent = rec.pelaksanaNama;
 
-  // Pejabat
-  setVal('bbm_ppkNama', rec.pejabat?.ppkNama || 'Emanuel Pati Libak, S.Pd., M.T.');
-  setVal('bbm_ppkNip', rec.pejabat?.ppkNip || '197512072010121001');
-  setVal('bbm_ppspmNama', rec.pejabat?.ppspmNama || 'Mala Hayati Rahayu, S.E');
-  setVal('bbm_ppspmNip', rec.pejabat?.ppspmNip || '198408012009122003');
-  setVal('bbm_bendaharaNama', rec.pejabat?.bendaharaNama || 'Rahmat H');
-  setVal('bbm_bendaharaNip', rec.pejabat?.bendaharaNip || '198004022014081001');
-  setVal('bbm_kasubbagTuNama', rec.pejabat?.kasubbagTuNama || 'Ahmad Jayadi, S.Hum., MT.');
-  setVal('bbm_kasubbagTuNip', rec.pejabat?.kasubbagTuNip || '198702182010121003');
+  // Pejabat diselaraskan langsung dari Tab Pengaturan (Settings)
+  const ppkNama = (document.getElementById('cfg_ppkNama')?.value || rec.pejabat?.ppkNama || 'Emanuel Pati Libak, S.Pd., M.T.').trim();
+  const ppkNip = (document.getElementById('cfg_ppkNip')?.value || rec.pejabat?.ppkNip || '197512072010121001').trim();
+  const ppspmNama = (document.getElementById('cfg_ppspmNama')?.value || rec.pejabat?.ppspmNama || 'Mala Hayati Rahayu, S.E').trim();
+  const ppspmNip = (document.getElementById('cfg_ppspmNip')?.value || rec.pejabat?.ppspmNip || '198408012009122003').trim();
+  const bendNama = (document.getElementById('cfg_bendNama')?.value || rec.pejabat?.bendaharaNama || 'Rahmat H').trim();
+  const bendNip = (document.getElementById('cfg_bendNip')?.value || rec.pejabat?.bendaharaNip || '198004022014081001').trim();
+  const ktuNama = (document.getElementById('cfg_ktuNama')?.value || rec.pejabat?.kasubbagTuNama || 'Ahmad Jayadi, S.Hum., MT.').trim();
+  const ktuNip = (document.getElementById('cfg_ktuNip')?.value || rec.pejabat?.kasubbagTuNip || '198702182010121003').trim();
+
+  setVal('bbm_ppkNama', ppkNama);
+  setVal('bbm_ppkNip', ppkNip);
+  setVal('bbm_ppspmNama', ppspmNama);
+  setVal('bbm_ppspmNip', ppspmNip);
+  setVal('bbm_bendaharaNama', bendNama);
+  setVal('bbm_bendaharaNip', bendNip);
+  setVal('bbm_kasubbagTuNama', ktuNama);
+  setVal('bbm_kasubbagTuNip', ktuNip);
+
+  // Perbarui tampilan ringkasan pejabat di form BBM
+  const setTxt = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+  setTxt('bbm_sync_ppk', ppkNama);
+  setTxt('bbm_sync_ppspm', ppspmNama);
+  setTxt('bbm_sync_bendahara', bendNama);
+  setTxt('bbm_sync_ktu', ktuNama);
 
   if (typeof onBbmKategoriChange === 'function') {
     onBbmKategoriChange(kat);
@@ -716,7 +746,7 @@ function collectBbmFormData() {
     tanggalKuitansi: getV('bbm_tanggalKuitansi') || 'Desember 2026',
     nomorSPM: getV('bbm_nomorSPM') || '-',
     nomorSPD: getV('bbm_nomorSPD') || '-',
-    pelaksanaNama: getV('bbm_pelaksanaNama'),
+    pelaksanaNama: (document.getElementById('lk_pelaksana')?.value || getV('bbm_pelaksanaNama') || 'Yogi Andre Yonatan Pakpahan, S.P.W.K').trim(),
     pelaksanaNip: getV('bbm_pelaksanaNip'),
     pelaksanaPanggilan: getV('bbm_pelaksanaPanggilan') || getV('bbm_pelaksanaNama'),
     pemilikMobil: getV('bbm_pemilikMobil'),
@@ -741,16 +771,16 @@ function collectBbmFormData() {
     tanggalBerangkat: window.currentBbmRecord?.tanggalBerangkat || getV('tglBerangkat') || '',
     tanggalKembali: window.currentBbmRecord?.tanggalKembali || getV('tglKembali') || '',
     pejabat: {
-      ppkNama: getV('bbm_ppkNama') || 'Emanuel Pati Libak, S.Pd., M.T.',
-      ppkNip: getV('bbm_ppkNip') || '197512072010121001',
-      ppspmNama: getV('bbm_ppspmNama') || 'Mala Hayati Rahayu, S.E',
-      ppspmNip: getV('bbm_ppspmNip') || '198408012009122003',
-      bendaharaNama: getV('bbm_bendaharaNama') || 'Rahmat H',
-      bendaharaNip: getV('bbm_bendaharaNip') || '198004022014081001',
-      kasubbagTuNama: getV('bbm_kasubbagTuNama') || 'Ahmad Jayadi, S.Hum., MT.',
-      kasubbagTuNip: getV('bbm_kasubbagTuNip') || '198702182010121003',
-      verifikatorNama: '…......…...........…........................................',
-      verifikatorNip: ''
+      ppkNama: document.getElementById('cfg_ppkNama')?.value || getV('bbm_ppkNama') || 'Emanuel Pati Libak, S.Pd., M.T.',
+      ppkNip: document.getElementById('cfg_ppkNip')?.value || getV('bbm_ppkNip') || '197512072010121001',
+      ppspmNama: document.getElementById('cfg_ppspmNama')?.value || getV('bbm_ppspmNama') || 'Mala Hayati Rahayu, S.E',
+      ppspmNip: document.getElementById('cfg_ppspmNip')?.value || getV('bbm_ppspmNip') || '198408012009122003',
+      bendaharaNama: document.getElementById('cfg_bendNama')?.value || getV('bbm_bendaharaNama') || 'Rahmat H',
+      bendaharaNip: document.getElementById('cfg_bendNip')?.value || getV('bbm_bendaharaNip') || '198004022014081001',
+      kasubbagTuNama: document.getElementById('cfg_ktuNama')?.value || getV('bbm_kasubbagTuNama') || 'Ahmad Jayadi, S.Hum., MT.',
+      kasubbagTuNip: document.getElementById('cfg_ktuNip')?.value || getV('bbm_kasubbagTuNip') || '198702182010121003',
+      verifikatorNama: document.getElementById('cfg_verifikatorNama')?.value || '…......…...........…........................................',
+      verifikatorNip: document.getElementById('cfg_verifikatorNip')?.value || ''
     }
   };
 

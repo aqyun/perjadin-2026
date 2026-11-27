@@ -2619,22 +2619,24 @@
               </div>
             </div>
 
-            <!-- Row 2: Pelaksana -->
+            <!-- Row 2: Pelaksana Pertanggungjawaban (Sama dengan Pembuat Berkas Perjadin) -->
             <div class="form-grid form-grid-3">
               <div class="form-group">
-                <label class="form-label" for="bbm_select_pegawai">Pilih Pegawai Pelaksana (Database)</label>
-                <select id="bbm_select_pegawai" class="form-control" onchange="onBbmPelaksanaChange()">
-                  <!-- Populated by JS -->
-                </select>
-                <span class="form-hint">Pilih pelaksana yang melakukan pembelian BBM</span>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="bbm_pelaksanaNama">Nama Lengkap &amp; Gelar Pelaksana *</label>
+                <label class="form-label" for="bbm_pelaksanaNama">Pelaksana Pertanggungjawaban *</label>
                 <input type="text" id="bbm_pelaksanaNama" class="form-control font-bold" value="Yogi Andre Yonatan Pakpahan, S.P.W.K" oninput="onBbmRowFieldChange()">
+                <span class="form-hint" style="color: #0284c7;">Otomatis sama dengan Pembuat Berkas Perjadin</span>
               </div>
               <div class="form-group">
                 <label class="form-label" for="bbm_pelaksanaNip">NIP Pelaksana *</label>
                 <input type="text" id="bbm_pelaksanaNip" class="form-control font-mono" value="199511272025061006" oninput="onBbmRowFieldChange()">
+                <span class="form-hint">NIP penanggungjawab pembuat daftar</span>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="bbm_select_pegawai">Ganti Cepat Pelaksana (Database)</label>
+                <select id="bbm_select_pegawai" class="form-control" onchange="onBbmPelaksanaChange()">
+                  <!-- Populated by JS -->
+                </select>
+                <span class="form-hint">Pilihan personil jika ingin mengganti pelaksana</span>
               </div>
             </div>
 
@@ -2762,53 +2764,39 @@
               </div>
             </div>
 
-            <!-- Row 6: Data Pejabat Pengesah -->
-            <div class="bbm-section-header">
-              <svg class="ico"><use href="#i-user"></use></svg>
-              <span>Pejabat Penandatangan Dokumen</span>
-            </div>
-            <div class="form-grid form-grid-2">
-              <div class="form-group">
-                <label class="form-label" for="bbm_ppkNama">Nama PPK</label>
-                <input type="text" id="bbm_ppkNama" class="form-control" value="Emanuel Pati Libak, S.Pd., M.T." oninput="onBbmRowFieldChange()">
+            <!-- Pejabat Penandatangan Dokumen BBM: Otomatis Diselaraskan dari Pengaturan (PPK, PPSPM, Bendahara, KTU) -->
+            <div class="bbm-pejabat-synced-box" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 14px 18px; margin-top: 18px; margin-bottom: 18px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <svg class="ico" style="color: #0284c7; width: 16px; height: 16px;"><use href="#i-user"></use></svg>
+                    <strong style="color: #0f172a; font-size: 13px;">Pejabat Penandatangan Dokumen BBM (Diselaraskan dari Pengaturan)</strong>
+                    <span class="badge badge-success" style="font-size: 10px;">Otomatis</span>
+                  </div>
+                  <div style="margin-top: 6px; font-size: 12px; color: #475569; line-height: 1.6;">
+                    • <strong>PPK:</strong> <span id="bbm_sync_ppk" class="font-bold text-dark">Emanuel Pati Libak, S.Pd., M.T.</span> &nbsp;|&nbsp;
+                    • <strong>PPSPM:</strong> <span id="bbm_sync_ppspm" class="font-bold text-dark">Mala Hayati Rahayu, S.E.</span> &nbsp;|&nbsp;
+                    • <strong>Bendahara:</strong> <span id="bbm_sync_bendahara" class="font-bold text-dark">Rahmat H</span> &nbsp;|&nbsp;
+                    • <strong>Kasubbag TU (KTU):</strong> <span id="bbm_sync_ktu" class="font-bold text-dark">Ahmad Jayadi, S.Hum., MT.</span>
+                  </div>
+                  <div style="font-size: 11px; color: #64748b; margin-top: 3px;">
+                    Pejabat PPK, Bendahara, PPSPM, dan KTU diambil langsung dari Tab Pengaturan sehingga tidak perlu diinput manual ulang.
+                  </div>
+                </div>
+                <button type="button" class="btn btn-outline btn-xs" onclick="showTab('pengaturan')" title="Buka Tab Pengaturan untuk mengubah nama / NIP pejabat">
+                  <svg class="ico"><use href="#i-settings"></use></svg> Ubah di Pengaturan
+                </button>
               </div>
-              <div class="form-group">
-                <label class="form-label" for="bbm_ppkNip">NIP PPK</label>
-                <input type="text" id="bbm_ppkNip" class="form-control font-mono" value="197512072010121001" oninput="onBbmRowFieldChange()">
-              </div>
-            </div>
 
-            <div class="form-grid form-grid-2">
-              <div class="form-group">
-                <label class="form-label" for="bbm_ppspmNama">Nama PPSPM</label>
-                <input type="text" id="bbm_ppspmNama" class="form-control" value="Mala Hayati Rahayu, S.E" oninput="onBbmRowFieldChange()">
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="bbm_ppspmNip">NIP PPSPM</label>
-                <input type="text" id="bbm_ppspmNip" class="form-control font-mono" value="198408012009122003" oninput="onBbmRowFieldChange()">
-              </div>
-            </div>
-
-            <div class="form-grid form-grid-2">
-              <div class="form-group">
-                <label class="form-label" for="bbm_bendaharaNama">Nama Bendahara Pengeluaran</label>
-                <input type="text" id="bbm_bendaharaNama" class="form-control" value="Rahmat H" oninput="onBbmRowFieldChange()">
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="bbm_bendaharaNip">NIP Bendahara Pengeluaran</label>
-                <input type="text" id="bbm_bendaharaNip" class="form-control font-mono" value="198004022014081001" oninput="onBbmRowFieldChange()">
-              </div>
-            </div>
-
-            <div class="form-grid form-grid-2">
-              <div class="form-group">
-                <label class="form-label" for="bbm_kasubbagTuNama">Nama Kasubbag Tata Usaha</label>
-                <input type="text" id="bbm_kasubbagTuNama" class="form-control" value="Ahmad Jayadi, S.Hum., MT." oninput="onBbmRowFieldChange()">
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="bbm_kasubbagTuNip">NIP Kasubbag Tata Usaha</label>
-                <input type="text" id="bbm_kasubbagTuNip" class="form-control font-mono" value="198702182010121003" oninput="onBbmRowFieldChange()">
-              </div>
+              <!-- Input tersembunyi untuk kompatibilitas sistem -->
+              <input type="hidden" id="bbm_ppkNama" value="Emanuel Pati Libak, S.Pd., M.T.">
+              <input type="hidden" id="bbm_ppkNip" value="197512072010121001">
+              <input type="hidden" id="bbm_ppspmNama" value="Mala Hayati Rahayu, S.E">
+              <input type="hidden" id="bbm_ppspmNip" value="198408012009122003">
+              <input type="hidden" id="bbm_bendaharaNama" value="Rahmat H">
+              <input type="hidden" id="bbm_bendaharaNip" value="198004022014081001">
+              <input type="hidden" id="bbm_kasubbagTuNama" value="Ahmad Jayadi, S.Hum., MT.">
+              <input type="hidden" id="bbm_kasubbagTuNip" value="198702182010121003">
             </div>
 
             <div class="form-group">
@@ -3694,6 +3682,20 @@
               <input type="text" id="cfg_ppspmNip" value="NIP. 198408012009122003">
             </div>
 
+            <div class="form-section full">Kepala Subbagian Tata Usaha (KTU)</div>
+            <div class="form-group">
+              <label for="cfg_ktuNama">Nama Kepala Subbagian Tata Usaha (KTU)</label>
+              <input type="text" id="cfg_ktuNama" value="Ahmad Jayadi, S.Hum., MT.">
+            </div>
+            <div class="form-group">
+              <label for="cfg_ktuNip">NIP Kepala Subbagian Tata Usaha (KTU)</label>
+              <input type="text" id="cfg_ktuNip" value="NIP. 198702182010121003">
+            </div>
+            <div class="form-group full">
+              <label for="cfg_ktuJabatan">Jabatan KTU</label>
+              <input type="text" id="cfg_ktuJabatan" value="Kepala Subbagian Tata Usaha">
+            </div>
+
             <div class="form-section full">Verifikator</div>
             <div class="form-group">
               <label for="cfg_verifikatorNama">Nama Verifikator PPK</label>
@@ -3826,9 +3828,9 @@
 <script src="js/06-documents/01-render-nominatif-dan-rekap.js?v=20261126_13"></script>
 <script src="js/06-documents/02-render-rincian-per-orang.js?v=20261126_13"></script>
 <script src="js/06-documents/03-render-dpr-per-orang.js?v=20261126_13"></script>
-<script src="js/06-documents/04-render-bbm.js?v=20261127_04"></script>
-<script src="js/07-excel/01-ekspor-impor-excel.js?v=20261127_04"></script>
-<script src="js/07-excel/02-ekspor-bbm-excel.js?v=20261127_04"></script>
+<script src="js/06-documents/04-render-bbm.js?v=20261127_06"></script>
+<script src="js/07-excel/01-ekspor-impor-excel.js?v=20261127_06"></script>
+<script src="js/07-excel/02-ekspor-bbm-excel.js?v=20261127_06"></script>
 <script src="js/08-ui/01-mode-tampilan.js?v=20261126_13"></script>
 <script src="js/08-ui/02-init-aplikasi.js?v=20261126_13"></script>
 <script src="js/08-ui/03-validasi-form.js?v=20261126_13"></script>
@@ -3841,6 +3843,6 @@
 <script src="js/08-ui/10-autosave-draft.js?v=20261127_04"></script>
 <script src="js/08-ui/11-riwayat-perjalanan.js?v=20261127_04"></script>
 <script src="js/08-ui/12-modal-dokumen-pdf.js?v=20261126_13"></script>
-<script src="js/08-ui/13-reimburse-bbm-ui.js?v=20261127_05"></script>
+<script src="js/08-ui/13-reimburse-bbm-ui.js?v=20261127_06"></script>
 </body>
 </html>

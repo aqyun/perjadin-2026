@@ -331,13 +331,13 @@ function exportBbmToExcel(d) {
   for (let i = 0; i < 5; i++) fullRows.push(emptyRow(10));
 
   const r73 = emptyRow(10);
-  r73[1] = data.pejabat?.ppkNama || 'Emanuel Pati Libak';
-  r73[7] = data.pejabat?.bendaharaNama || 'Rahmat H';
+  r73[1] = (typeof document !== 'undefined' && document.getElementById('cfg_ppkNama')?.value) || data.pejabat?.ppkNama || 'Emanuel Pati Libak';
+  r73[7] = (typeof document !== 'undefined' && document.getElementById('cfg_bendNama')?.value) || data.pejabat?.bendaharaNama || 'Rahmat H';
   fullRows.push(r73);
 
   const r74 = emptyRow(10);
-  r74[1] = `NIP. ${cleanNip(data.pejabat?.ppkNip || '197512072010121001')}`;
-  r74[7] = `NIP. ${cleanNip(data.pejabat?.bendaharaNip || '198004022014081001')}`;
+  r74[1] = `NIP. ${cleanNip((typeof document !== 'undefined' && document.getElementById('cfg_ppkNip')?.value) || data.pejabat?.ppkNip || '197512072010121001')}`;
+  r74[7] = `NIP. ${cleanNip((typeof document !== 'undefined' && document.getElementById('cfg_bendNip')?.value) || data.pejabat?.bendaharaNip || '198004022014081001')}`;
   fullRows.push(r74);
 
   const r75 = emptyRow(10);
@@ -356,11 +356,11 @@ function exportBbmToExcel(d) {
   for (let i = 0; i < 5; i++) fullRows.push(emptyRow(10));
 
   const r83 = emptyRow(10);
-  r83[1] = data.pejabat?.kasubbagTuNama || 'Ahmad Jayadi, S.Hum., MT.';
+  r83[1] = (typeof document !== 'undefined' && document.getElementById('cfg_ktuNama')?.value) || data.pejabat?.kasubbagTuNama || 'Ahmad Jayadi, S.Hum., MT.';
   fullRows.push(r83);
 
   const r84 = emptyRow(10);
-  r84[1] = `NIP. ${cleanNip(data.pejabat?.kasubbagTuNip || '198702182010121003')}`;
+  r84[1] = `NIP. ${cleanNip((typeof document !== 'undefined' && document.getElementById('cfg_ktuNip')?.value) || data.pejabat?.kasubbagTuNip || '198702182010121003')}`;
   fullRows.push(r84);
 
   // Spasi antar dokumen (4 baris)
@@ -561,15 +561,15 @@ function exportBbmToExcel(d) {
     ['', 'Sekretariat  Jenderal'],
     ['', 'Kementerian Perumahan dan Kawasan Permukiman'],
     [], [], [], [],
-    ['', data.pejabat?.ppkNama || 'Emanuel Pati Libak', '', '', '', '', '', data.pejabat?.bendaharaNama || 'Rahmat H'],
-    ['', `NIP. ${cleanNip(data.pejabat?.ppkNip || '197512072010121001')}`, '', '', '', '', '', `NIP. ${cleanNip(data.pejabat?.bendaharaNip || '198004022014081001')}`],
+    ['', (typeof document !== 'undefined' && document.getElementById('cfg_ppkNama')?.value) || data.pejabat?.ppkNama || 'Emanuel Pati Libak', '', '', '', '', '', (typeof document !== 'undefined' && document.getElementById('cfg_bendNama')?.value) || data.pejabat?.bendaharaNama || 'Rahmat H'],
+    ['', `NIP. ${cleanNip((typeof document !== 'undefined' && document.getElementById('cfg_ppkNip')?.value) || data.pejabat?.ppkNip || '197512072010121001')}`, '', '', '', '', '', `NIP. ${cleanNip((typeof document !== 'undefined' && document.getElementById('cfg_bendNip')?.value) || data.pejabat?.bendaharaNip || '198004022014081001')}`],
     [],
     ['', 'Barang / pekerjaan tersebut telah diterima / diselesaikan dengan lengkap dan baik'],
     ['', 'Pejabat yang bertanggungjawab'],
     ['', 'Kepala Subbagian Tata Usaha'],
     [], [], [], [],
-    ['', data.pejabat?.kasubbagTuNama || 'Ahmad Jayadi, S.Hum., MT.'],
-    ['', `NIP. ${cleanNip(data.pejabat?.kasubbagTuNip || '198702182010121003')}`]
+    ['', (typeof document !== 'undefined' && document.getElementById('cfg_ktuNama')?.value) || data.pejabat?.kasubbagTuNama || 'Ahmad Jayadi, S.Hum., MT.'],
+    ['', `NIP. ${cleanNip((typeof document !== 'undefined' && document.getElementById('cfg_ktuNip')?.value) || data.pejabat?.kasubbagTuNip || '198702182010121003')}`]
   ];
   const wsKw = XLSX.utils.aoa_to_sheet(kwRows);
   wsKw['!cols'] = [{ wch: 4 }, { wch: 32 }, { wch: 14 }, { wch: 4 }, { wch: 38 }, { wch: 14 }, { wch: 14 }, { wch: 22 }, { wch: 4 }, { wch: 28 }];
