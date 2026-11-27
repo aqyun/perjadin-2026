@@ -112,8 +112,16 @@ function onBbmPelaksanaChange() {
   onBbmRowFieldChange();
 }
 
-function onBbmKategoriChange(val) {
+function setBbmKategori(val) {
   const isPribadi = val === 'pribadi';
+  const selKat = document.getElementById('bbm_kategoriKendaraan');
+  if (selKat) selKat.value = val;
+
+  const cardDinas = document.getElementById('bbm_cat_card_dinas');
+  const cardPribadi = document.getElementById('bbm_cat_card_pribadi');
+  if (cardDinas) cardDinas.classList.toggle('active', !isPribadi);
+  if (cardPribadi) cardPribadi.classList.toggle('active', isPribadi);
+
   const pribadiWrap = document.getElementById('bbm_pribadi_fields');
   const presetWrap = document.getElementById('bbm_preset_wrap');
   const lblKend = document.getElementById('bbm_lbl_kendaraan');
@@ -133,31 +141,29 @@ function onBbmKategoriChange(val) {
   updateBbmUraianOtomatis();
 }
 
+function onBbmKategoriChange(val) {
+  setBbmKategori(val);
+}
+
+function onBbmPlatInput(val) {
+  const badge = document.getElementById('bbm_plat_badge');
+  if (badge) {
+    badge.textContent = (val || '').trim() || '-';
+  }
+  updateBbmUraianOtomatis();
+}
+
 /**
  * Inisialisasi modul BBM saat pertama kali tab dibuka
  */
 function initBbmModule() {
   try {
-    populateBbmSptDropdown();
-    populateBbmPelaksanaDropdown();
     populateBbmKendaraanPresets();
+    populateBbmPelaksanaDropdown();
 
-    // Pelaksana pertanggungjawaban BBM selalu diselaraskan sama dengan pembuat berkas perjadin (lk_pelaksana)
-    const lkPel = (document.getElementById('lk_pelaksana')?.value || '').trim();
-    if (lkPel) {
-      const elPelNama = document.getElementById('bbm_pelaksanaNama');
-      const elPelPanggil = document.getElementById('bbm_pelaksanaPanggilan');
-      if (elPelNama) elPelNama.value = lkPel;
-      if (elPelPanggil) {
-        const parts = lkPel.split(/[\s,]+/);
-        elPelPanggil.value = parts.length > 2 ? `${parts[0]} ${parts[1]}` : parts[0];
-      }
-      const elPelLbl = document.getElementById('bbm_spt_pelaksana_lbl');
-      if (elPelLbl) elPelLbl.textContent = lkPel;
-    }
+    // Otomatis tarik & hubungkan langsung dengan SPT aktif saat ini
+    syncBbmFromActiveSpt(false);
 
-    const record = getActiveBbmRecord();
-    loadBbmRecordIntoForm(record);
     renderBbmHistoryTable();
     checkBbmDecemberRule();
     updateBbmDocPreview();
@@ -171,138 +177,96 @@ function initBbmModule() {
 }
 
 /**
- * Dropdown pemilih Surat Tugas (SPT) dari form aktif atau arsip riwayat cloud
+ * Backward compatibility stub
  */
-function populateBbmSptDropdown() {
-  const sel = document.getElementById('bbm_spt_selector');
-  if (!sel) return;
-
-  const currentVal = sel.value;
-  const noSTAktif = (typeof document !== 'undefined' && (document.getElementById('noST')?.value || document.getElementById('noSTNum')?.value)) || '';
-  sel.innerHTML = `<option value="active">-- SPT Aktif pada Formulir Input (${noSTAktif || 'Sedang diedit'}) --</option>`;
-
-  if (typeof getTripHistoryList === 'function') {
-    const trips = getTripHistoryList();
-    trips.forEach(t => {
-      if (!t || !t.id) return;
-      const no = t.noST || 'Tanpa No ST';
-      const ag = t.agenda ? (t.agenda.length > 45 ? t.agenda.slice(0, 45) + '...' : t.agenda) : '';
-      const tgl = t.tglBerangkat ? formatTanggalIndoLengkap(t.tglBerangkat) : '';
-      const opt = document.createElement('option');
-      opt.value = t.id;
-      opt.textContent = `${no} - ${ag} ${tgl ? '(' + tgl + ')' : ''}`;
-      sel.appendChild(opt);
-    });
-  }
-
-  if (currentVal && Array.from(sel.options).some(o => o.value === currentVal)) {
-    sel.value = currentVal;
-  }
-}
+function populateBbmSptDropdown() {}
+function onBbmSptSelectorChange() {}
 
 /**
- * Event handler saat user memilih SPT di selector
- */
-function onBbmSptSelectorChange() {
-  const sel = document.getElementById('bbm_spt_selector');
-  if (!sel) return;
-
-  if (sel.value === 'active') {
-    syncBbmFromActiveSpt(true);
-    return;
-  }
-
-  if (typeof getTripHistoryList === 'function') {
-    const trips = getTripHistoryList();
-    const trip = trips.find(t => t.id === sel.value);
-    if (trip) {
-      const bbmData = trip.bbmData || (trip.draft && trip.draft.bbmData);
-      if (bbmData) {
-        loadBbmRecordIntoForm(bbmData);
-      } else {
-        // Tautkan data dari trip yang dipilih
-        const elNo = document.getElementById('bbm_spt_no_lbl');
-        if (elNo) elNo.textContent = trip.noST || '-';
-
-        const pel = (trip.draft && trip.draft.fields && trip.draft.fields.lk_pelaksana) || trip.lk_pelaksana || '';
-        if (pel) {
-          const elPel = document.getElementById('bbm_pelaksanaNama');
-          if (elPel) elPel.value = pel;
-          const elPelLbl = document.getElementById('bbm_spt_pelaksana_lbl');
-          if (elPelLbl) elPelLbl.textContent = pel;
-        }
-
-        if (window.currentBbmRecord) {
-          window.currentBbmRecord.noST = trip.noST;
-          window.currentBbmRecord.agenda = trip.agenda;
-          window.currentBbmRecord.tanggalBerangkat = trip.tglBerangkat;
-          window.currentBbmRecord.tanggalKembali = trip.tglKembali;
-        }
-
-        updateBbmUraianOtomatis();
-      }
-
-      checkBbmDecemberRule();
-      updateBbmDocPreview();
-      if (typeof showRefreshToast === 'function') {
-        showRefreshToast('SPT Dimuat', `Memuat data BBM terkait ST: ${trip.noST}`);
-      }
-    }
-  }
-}
-
-/**
- * Sinkronisasi data BBM langsung dari form SPT aktif di aplikasi
+ * Sinkronisasi data BBM langsung dari form SPT aktif di aplikasi (Direct Auto-Binding)
  */
 function syncBbmFromActiveSpt(showToast = true) {
-  const getV = id => document.getElementById(id)?.value || '';
-  const noST = getV('noST') || getV('noSTNum') || '395/ST/Sj.07/2026';
-  const agenda = getV('agenda') || 'Pembuatan Video Dokumenter dan Pengambilan Footage Penerima Manfaat Bedah Rumah BSPS di Pulau Lancang, Kel. Pulau Pari, Kab. Kepulauan Seribu';
-  const tglBerangkat = getV('tglBerangkat') || '2026-10-14';
-  const tglKembali = getV('tglKembali') || '2026-10-16';
-  const pelaksana = getV('lk_pelaksana') || 'Yogi Andre Yonatan Pakpahan, S.P.W.K';
+  const getV = id => (document.getElementById(id)?.value || '').trim();
 
-  // 1. Pelaksana Pertanggungjawaban BBM sama persis dengan pembuat berkas perjadin
-  const elPelNama = document.getElementById('bbm_pelaksanaNama');
-  const elPelNip = document.getElementById('bbm_pelaksanaNip');
-  const elPelPanggil = document.getElementById('bbm_pelaksanaPanggilan');
-  if (elPelNama) elPelNama.value = pelaksana;
-  if (elPelPanggil) {
-    const parts = pelaksana.split(/[\s,]+/);
-    elPelPanggil.value = parts.length > 2 ? `${parts[0]} ${parts[1]}` : parts[0];
+  // 1. Ambil data dari formulir perjadin yang sedang aktif atau _activeEditingTrip
+  const activeTrip = window._activeEditingTrip || null;
+  const noST = getV('noST') || getV('noSTNum') || (activeTrip && activeTrip.noST) || '395/ST/Sj.07/2026';
+  const agenda = getV('agenda') || (activeTrip && activeTrip.agenda) || 'Pembuatan Video Dokumenter dan Pengambilan Footage Penerima Manfaat Bedah Rumah BSPS di Pulau Lancang, Kel. Pulau Pari, Kab. Kepulauan Seribu';
+  const tglBerangkat = getV('tglBerangkat') || (activeTrip && activeTrip.tglBerangkat) || '2026-10-14';
+  const tglKembali = getV('tglKembali') || (activeTrip && activeTrip.tglKembali) || '2026-10-16';
+  const pelaksana = getV('lk_pelaksana') || (activeTrip && (activeTrip.lk_pelaksana || (activeTrip.draft && activeTrip.draft.fields && activeTrip.draft.fields.lk_pelaksana))) || 'Yogi Andre Yonatan Pakpahan, S.P.W.K';
+  const prov = getV('tujuanProvinsi') || (activeTrip && activeTrip.tujuanProvinsi) || 'DKI Jakarta';
+  const kota = getV('tujuanKota') || getV('tujuanKabKota') || (activeTrip && activeTrip.tujuanKota) || '';
+  const tujuanLengkap = kota ? `${prov}, ${kota}` : prov;
+
+  // 2. Periksa apakah trip ini sudah memiliki rekaman BBM tersimpan sebelumnya
+  let existingBbm = (activeTrip && (activeTrip.bbmData || (activeTrip.draft && activeTrip.draft.bbmData))) || null;
+  if (!existingBbm) {
+    const storageList = getBbmStorageList();
+    existingBbm = storageList.find(x => x && x.noST && x.noST === noST) || null;
   }
 
-  // Cari NIP dari database jika belum terisi
-  if (typeof masterPegawai !== 'undefined' && Array.isArray(masterPegawai)) {
-    const matchedP = masterPegawai.find(p => p.nama && pelaksana.includes(p.nama.split(',')[0]));
-    if (matchedP && elPelNip && matchedP.nip) {
-      elPelNip.value = matchedP.nip;
+  if (existingBbm) {
+    loadBbmRecordIntoForm(existingBbm);
+  } else {
+    // 3. Update field identitas pelaksana BBM dari lk_pelaksana
+    const elPelNama = document.getElementById('bbm_pelaksanaNama');
+    const elPelNip = document.getElementById('bbm_pelaksanaNip');
+    const elPelPanggil = document.getElementById('bbm_pelaksanaPanggilan');
+    if (elPelNama) elPelNama.value = pelaksana;
+    if (elPelPanggil) {
+      const parts = pelaksana.split(/[\s,]+/);
+      elPelPanggil.value = parts.length > 2 ? `${parts[0]} ${parts[1]}` : parts[0];
+    }
+
+    // Cari NIP dari masterPegawai jika belum terisi
+    if (typeof masterPegawai !== 'undefined' && Array.isArray(masterPegawai)) {
+      const matchedP = masterPegawai.find(p => p.nama && pelaksana.includes(p.nama.split(',')[0]));
+      if (matchedP && elPelNip && matchedP.nip) {
+        elPelNip.value = matchedP.nip;
+      }
+    }
+
+    // Tanggal berkas diselaraskan dengan tanggal kegiatan penugasan
+    const elTglMasuk = document.getElementById('bbm_tanggalMasuk');
+    const elTglBukti = document.getElementById('bbm_tanggalBukti');
+    if (elTglMasuk && tglKembali) elTglMasuk.value = tglKembali;
+    if (elTglBukti && tglBerangkat) elTglBukti.value = tglBerangkat;
+
+    if (window.currentBbmRecord) {
+      window.currentBbmRecord.noST = noST;
+      window.currentBbmRecord.agenda = agenda;
+      window.currentBbmRecord.tanggalBerangkat = tglBerangkat;
+      window.currentBbmRecord.tanggalKembali = tglKembali;
+      window.currentBbmRecord.pelaksanaNama = pelaksana;
+    }
+
+    updateBbmUraianOtomatis();
+  }
+
+  // 4. Perbarui elemen banner SPT aktif live card
+  const noLbl = document.getElementById('bbm_spt_no_lbl');
+  const agLbl = document.getElementById('bbm_spt_agenda_lbl');
+  const pelLbl = document.getElementById('bbm_spt_pelaksana_lbl');
+  const tglLbl = document.getElementById('bbm_spt_tanggal_lbl');
+  const tujLbl = document.getElementById('bbm_spt_tujuan_lbl');
+
+  if (noLbl) noLbl.textContent = noST || '-';
+  if (agLbl) agLbl.textContent = agenda || '-';
+  if (pelLbl) pelLbl.textContent = pelaksana || '-';
+  if (tujLbl) tujLbl.textContent = tujuanLengkap || '-';
+
+  if (tglLbl) {
+    if (tglBerangkat && tglKembali && tglBerangkat !== tglKembali) {
+      tglLbl.textContent = `${formatTanggalIndoLengkap(tglBerangkat)} - ${formatTanggalIndoLengkap(tglKembali)}`;
+    } else if (tglBerangkat) {
+      tglLbl.textContent = formatTanggalIndoLengkap(tglBerangkat);
+    } else {
+      tglLbl.textContent = '-';
     }
   }
 
-  // 2. Tanggal berkas
-  const elTglMasuk = document.getElementById('bbm_tanggalMasuk');
-  const elTglBukti = document.getElementById('bbm_tanggalBukti');
-  if (elTglMasuk && tglKembali) elTglMasuk.value = tglKembali;
-  if (elTglBukti && tglBerangkat) elTglBukti.value = tglBerangkat;
-
-  // 3. Ringkasan banner
-  const noLbl = document.getElementById('bbm_spt_no_lbl');
-  const pelLbl = document.getElementById('bbm_spt_pelaksana_lbl');
-  if (noLbl) noLbl.textContent = noST;
-  if (pelLbl) pelLbl.textContent = pelaksana;
-
-  if (window.currentBbmRecord) {
-    window.currentBbmRecord.noST = noST;
-    window.currentBbmRecord.agenda = agenda;
-    window.currentBbmRecord.tanggalBerangkat = tglBerangkat;
-    window.currentBbmRecord.tanggalKembali = tglKembali;
-    window.currentBbmRecord.pelaksanaNama = pelaksana;
-  }
-
-  updateBbmUraianOtomatis();
-
-  // 4. Re-render item rows agar dropdown personil menyesuaikan pegawai di ST ini
+  // 5. Re-render item rows agar pilihan pelaku BBM otomatis mengambil personil di SPT ini
   const currentItems = collectBbmFormData().items;
   renderBbmItemRows(currentItems);
 
@@ -310,7 +274,7 @@ function syncBbmFromActiveSpt(showToast = true) {
   updateBbmDocPreview();
 
   if (showToast && typeof showRefreshToast === 'function') {
-    showRefreshToast('SPT Ditautkan', `BBM berhasil dihubungkan dengan ST: ${noST}`);
+    showRefreshToast('SPT Ditautkan', `BBM berhasil dihubungkan langsung dengan ST: ${noST}`);
   }
 }
 
@@ -506,14 +470,27 @@ function loadBbmRecordIntoForm(rec) {
   setVal('bbm_kasubbagTuNip', ktuNip);
 
   // Perbarui tampilan ringkasan pejabat di form BBM
+  const cleanNip = raw => {
+    if (!raw) return '-';
+    const t = raw.trim();
+    return (t.startsWith('NIP.') || t.startsWith('NIP ') || t.startsWith('NIP:')) ? t : `NIP. ${t}`;
+  };
+
   const setTxt = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
   setTxt('bbm_sync_ppk', ppkNama);
+  setTxt('bbm_sync_ppk_nip', cleanNip(ppkNip));
   setTxt('bbm_sync_ppspm', ppspmNama);
+  setTxt('bbm_sync_ppspm_nip', cleanNip(ppspmNip));
   setTxt('bbm_sync_bendahara', bendNama);
+  setTxt('bbm_sync_bendahara_nip', cleanNip(bendNip));
   setTxt('bbm_sync_ktu', ktuNama);
+  setTxt('bbm_sync_ktu_nip', cleanNip(ktuNip));
 
-  if (typeof onBbmKategoriChange === 'function') {
-    onBbmKategoriChange(kat);
+  const badgePlat = document.getElementById('bbm_plat_badge');
+  if (badgePlat) badgePlat.textContent = rec.platNomor || '-';
+
+  if (typeof setBbmKategori === 'function') {
+    setBbmKategori(kat);
   }
 
   // Rincian Struk / Item (Mendukung Multi-Struk & Multi-Pelaksana)
@@ -1006,25 +983,28 @@ function onBbmHistoryDelete(id) {
 }
 
 /**
- * Navigasi Sub-Tampilan BBM: 'form' (Formulir & Riwayat) atau 'docs' (Pratinjau Dokumen)
+ * Navigasi Sub-Tampilan BBM: 'form' (Input Struk), 'docs' (Pratinjau Dokumen), atau 'history' (Arsip Riwayat)
  */
 function switchBbmTabSubView(sub) {
   const formWrap = document.getElementById('bbm_sub_form');
   const docsWrap = document.getElementById('bbm_sub_docs');
+  const histWrap = document.getElementById('bbm_sub_history');
   const btnForm = document.getElementById('btn_bbm_sub_form');
   const btnDocs = document.getElementById('btn_bbm_sub_docs');
+  const btnHist = document.getElementById('btn_bbm_sub_history');
+
+  if (formWrap) formWrap.style.display = (sub === 'form') ? 'block' : 'none';
+  if (docsWrap) docsWrap.style.display = (sub === 'docs') ? 'block' : 'none';
+  if (histWrap) histWrap.style.display = (sub === 'history') ? 'block' : 'none';
+
+  if (btnForm) btnForm.classList.toggle('active', sub === 'form');
+  if (btnDocs) btnDocs.classList.toggle('active', sub === 'docs');
+  if (btnHist) btnHist.classList.toggle('active', sub === 'history');
 
   if (sub === 'docs') {
-    if (formWrap) formWrap.style.display = 'none';
-    if (docsWrap) docsWrap.style.display = 'block';
-    if (btnForm) btnForm.classList.remove('active');
-    if (btnDocs) btnDocs.classList.add('active');
     updateBbmDocPreview();
-  } else {
-    if (formWrap) formWrap.style.display = 'block';
-    if (docsWrap) docsWrap.style.display = 'none';
-    if (btnForm) btnForm.classList.add('active');
-    if (btnDocs) btnDocs.classList.remove('active');
+  } else if (sub === 'history') {
+    renderBbmHistoryTable();
   }
 }
 
