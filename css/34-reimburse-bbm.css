@@ -2,8 +2,8 @@
    css/34-reimburse-bbm.css
    Modul Reimburse BBM (MAK 523121)
 
-   Bagian A — TAMPILAN WEB (hero, form, tabel struk, arsip, toolbar pratinjau)
-   Bagian B — DOKUMEN RESMI & CETAK (kertas Lembar Kendali, Kuitansi, S-46)
+   Bagian A ΓÇö TAMPILAN WEB (hero, form, tabel struk, arsip, toolbar pratinjau)
+   Bagian B ΓÇö DOKUMEN RESMI & CETAK (kertas Lembar Kendali, Kuitansi, S-46)
    Gaya dokumen pada Bagian B sengaja tidak diubah: tampilannya harus plek
    ketiplek dengan template Excel resmi.
    ========================================================================== */
@@ -519,6 +519,10 @@ body.role-viewer .nav-btn-bbm {
   position: relative;
   display: flex;
   align-items: center;
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  text-align: left;
   gap: 13px;
   padding: 15px 46px 15px 16px;
   border: 1px solid var(--line);
@@ -870,7 +874,7 @@ body.role-viewer .nav-btn-bbm {
 
 #tab-bbm .bbm-items-table {
   width: 100%;
-  min-width: 1040px;
+  min-width: 1120px;
   border-collapse: separate;
   border-spacing: 0;
   font-size: 12.5px;
@@ -1557,7 +1561,7 @@ html[data-theme="dark"] #tab-bbm .bbm-history-table tbody tr:hover td {
 /* ==========================================================================
    B. DOKUMEN RESMI BBM (PLEK KETIPLEK TEMPLATE EXCEL)
    Gaya di bawah ini dipakai oleh Lembar Kendali, Kuitansi, dan Rincian S-46.
-   Jangan diubah — hasil cetak harus sama dengan template resmi.
+   Jangan diubah ΓÇö hasil cetak harus sama dengan template resmi.
    ========================================================================== */
 .bbm-paper-container,
 .bbm-all-documents-container {

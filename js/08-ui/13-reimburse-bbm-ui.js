@@ -1,75 +1,24 @@
 /**
  * js/08-ui/13-reimburse-bbm-ui.js
  * Modul Antarmuka (UI) & Manajemen Reimburse BBM Kendaraan Dinas & Pribadi
- * Khusus Administrator dan Operator Biro Komunikasi Publik TA 2026
- * Mendukung Multi-Struk BBM & Pilihan Mobil Dinas vs Mobil Pribadi
+ * Khusus Administrator dan Operator Biro Komunikasi Publik
+ * Mendukung Multi-Struk BBM & Pilihan Kendaraan per Baris
  */
 
 window.currentBbmRecord = null;
-const BBM_STORAGE_KEY = 'perdinku_bbm_records_v1';
+const BBM_KDO_NOPOL_OPTIONS = ['B 2223 UKQ', 'B 2602 UYZ', 'B 2577 KRK'];
 
-function getBbmStorageList() {
-  try {
-    const raw = localStorage.getItem(BBM_STORAGE_KEY);
-    if (!raw) {
-      // Inisialisasi awal dengan sampel resmi template Excel Innova B 2577 KRK
-      const sample = getDefaultBbmData();
-      localStorage.setItem(BBM_STORAGE_KEY, JSON.stringify([sample]));
-      return [sample];
-    }
-    const arr = JSON.parse(raw);
-    return Array.isArray(arr) ? arr : [];
-  } catch (err) {
-    console.error('Error reading BBM storage:', err);
-    return [getDefaultBbmData()];
-  }
-}
-
-function saveBbmStorageList(list) {
-  try {
-    localStorage.setItem(BBM_STORAGE_KEY, JSON.stringify(list || []));
-  } catch (err) {
-    console.error('Error saving BBM storage:', err);
-  }
+function getBbmCloudRecords() {
+  return window._bbmCloudRecords ? [...window._bbmCloudRecords.values()] : [];
 }
 
 function getActiveBbmRecord() {
   if (!window.currentBbmRecord) {
-    const list = getBbmStorageList();
-    window.currentBbmRecord = list.length ? list[0] : getDefaultBbmData();
+    window.currentBbmRecord = (typeof collectBbmFormData === 'function')
+      ? collectBbmFormData()
+      : getDefaultBbmData();
   }
   return window.currentBbmRecord;
-}
-
-/**
- * Daftar plat kendaraan yang tersedia
- */
-const BBM_KENDARAAN_PRESETS = [
-  { plat: 'B 2223 UKQ', label: 'B 2223 UKQ (Rendhi Mirad)' },
-  { plat: 'B 2602 UYZ', label: 'B 2602 UYZ (Arif Fajar Alfalaqy)' },
-  { plat: 'B 2577 KRK', label: 'B 2577 KRK (bukan atas nama siapa-siapa)' },
-  { plat: '', label: '-- Input Plat Manual / Lainnya --' }
-];
-
-function populateBbmKendaraanPresets() {
-  const sel = document.getElementById('bbm_preset_kendaraan');
-  if (!sel) return;
-  const currentPlat = document.getElementById('bbm_platNomor')?.value || 'B 2577 KRK';
-  sel.innerHTML = BBM_KENDARAAN_PRESETS.map(p => {
-    const isSel = (p.plat && currentPlat.toUpperCase().includes(p.plat.toUpperCase())) ? 'selected' : '';
-    return `<option value="${p.plat}" ${isSel}>${p.label}</option>`;
-  }).join('');
-}
-
-function onBbmPresetKendaraanChange() {
-  const sel = document.getElementById('bbm_preset_kendaraan');
-  if (!sel) return;
-  const found = BBM_KENDARAAN_PRESETS.find(p => p.plat === sel.value);
-  if (found && found.plat) {
-    const elPlat = document.getElementById('bbm_platNomor');
-    if (elPlat) elPlat.value = found.plat;
-    onBbmPlatInput(found.plat);
-  }
 }
 
 /**
@@ -83,7 +32,7 @@ function normalizeBbmJenisKendaraan(val) {
  * Cari data pegawai berdasarkan nama (tanpa gelar) dari database kepegawaian
  */
 function findBbmPegawaiByNama(nama) {
-  if (!nama || typeof employees === 'undefined' || !Array.isArray(employees)) return null;
+  if (!nama || typeof employees === 'undefined' || !employees || typeof employees.find !== 'function') return null;
   const key = nama.split(',')[0].trim().toLowerCase();
   if (!key) return null;
   return employees.find(p => p && p.nama && p.nama.split(',')[0].trim().toLowerCase() === key) || null;
@@ -108,7 +57,7 @@ function resolveBbmPelaksanaIdentity(rawNama, fallbackNip) {
   const raw = (rawNama || '').trim();
   let emp = null;
 
-  if (raw && typeof employees !== 'undefined' && Array.isArray(employees)) {
+  if (raw && typeof employees !== 'undefined' && employees && typeof employees.filter === 'function') {
     emp = findBbmPegawaiByNama(raw);
     if (!emp) {
       // Cocokkan lewat unsur nama (mis. "Aqyun (Kompu)" -> pegawai bernama Aqyun)
@@ -129,29 +78,24 @@ function resolveBbmPelaksanaIdentity(rawNama, fallbackNip) {
 }
 
 function setBbmKategori(val) {
-  const isPribadi = val === 'pribadi';
+  const kategori = val === 'pribadi' ? 'pribadi' : 'dinas';
+  const isPribadi = kategori === 'pribadi';
   const selKat = document.getElementById('bbm_kategoriKendaraan');
-  if (selKat) selKat.value = val;
+  if (selKat) selKat.value = kategori;
 
   const cardDinas = document.getElementById('bbm_cat_card_dinas');
   const cardPribadi = document.getElementById('bbm_cat_card_pribadi');
-  if (cardDinas) cardDinas.classList.toggle('active', !isPribadi);
-  if (cardPribadi) cardPribadi.classList.toggle('active', isPribadi);
-
-  const pribadiWrap = document.getElementById('bbm_pribadi_fields');
-  const presetWrap = document.getElementById('bbm_preset_wrap');
-  const lblKend = document.getElementById('bbm_lbl_kendaraan');
-  const hintKend = document.getElementById('bbm_hint_kendaraan');
-
-  if (pribadiWrap) pribadiWrap.style.display = isPribadi ? 'block' : 'none';
-  if (presetWrap) presetWrap.style.display = isPribadi ? 'none' : 'block';
-
-  if (lblKend) {
-    lblKend.textContent = isPribadi ? 'Jenis Kendaraan Pribadi *' : 'Jenis Kendaraan Dinas *';
+  if (cardDinas) {
+    cardDinas.classList.toggle('active', !isPribadi);
+    cardDinas.setAttribute('aria-checked', String(!isPribadi));
   }
-  if (hintKend) {
-    hintKend.textContent = 'Cukup pilih mobil atau motor';
+  if (cardPribadi) {
+    cardPribadi.classList.toggle('active', isPribadi);
+    cardPribadi.setAttribute('aria-checked', String(isPribadi));
   }
+
+  const currentItems = collectBbmFormData().items;
+  renderBbmItemRows(currentItems);
 
   checkBbmDecemberRule();
   updateBbmUraianOtomatis();
@@ -161,21 +105,14 @@ function onBbmKategoriChange(val) {
   setBbmKategori(val);
 }
 
-function onBbmPlatInput(val) {
-  const badge = document.getElementById('bbm_plat_badge');
-  if (badge) {
-    badge.textContent = (val || '').trim() || '-';
-  }
-  updateBbmUraianOtomatis();
-}
-
 /**
  * Inisialisasi modul BBM saat pertama kali tab dibuka
  */
-function initBbmModule() {
+async function initBbmModule() {
   try {
-    populateBbmKendaraanPresets();
-
+    if (typeof syncTripsFromCloud === 'function') {
+      await syncTripsFromCloud(true);
+    }
     // Otomatis tarik & hubungkan langsung dengan SPT aktif saat ini
     syncBbmFromActiveSpt(false);
     syncBbmNipPelaksana();
@@ -198,6 +135,40 @@ function initBbmModule() {
 function populateBbmSptDropdown() {}
 function onBbmSptSelectorChange() {}
 
+function resolveActiveBbmTrip(preferredRecord = null) {
+  if (typeof getTripHistoryList !== 'function') return null;
+  const trips = getTripHistoryList();
+  if (preferredRecord?.tripId) {
+    const preferred = trips.find(trip => String(trip.id) === String(preferredRecord.tripId));
+    if (preferred) return preferred;
+  }
+  if (preferredRecord?.tripCloudId) {
+    const preferred = trips.find(trip => trip.cloudId === preferredRecord.tripCloudId);
+    if (preferred) return preferred;
+  }
+
+  const active = window._activeEditingTrip;
+  if (active?.id) {
+    const activeTrip = trips.find(trip => String(trip.id) === String(active.id));
+    if (activeTrip) return activeTrip;
+  }
+  if (active?.cloudId) {
+    const activeTrip = trips.find(trip => trip.cloudId === active.cloudId);
+    if (activeTrip) return activeTrip;
+  }
+
+  const noST = (document.getElementById('noST')?.value || document.getElementById('noSTNum')?.value || '').trim();
+  const mak = (document.getElementById('mak')?.value || '').trim();
+  const metode = document.getElementById('metodePembayaran')?.value || document.getElementById('lk_metodePembayaran')?.value || 'LS';
+  const compKey = getTripCompositeDedupeKey(noST, mak, metode);
+  if (compKey) {
+    const matched = trips.find(trip => getTripCompositeDedupeKey(trip) === compKey);
+    if (matched) return matched;
+  }
+  const sameNoST = trips.filter(trip => String(trip.noST || '').trim() === noST);
+  return sameNoST.length === 1 ? sameNoST[0] : null;
+}
+
 /**
  * Sinkronisasi data BBM langsung dari form SPT aktif di aplikasi (Direct Auto-Binding)
  */
@@ -205,7 +176,7 @@ function syncBbmFromActiveSpt(showToast = true) {
   const getV = id => (document.getElementById(id)?.value || '').trim();
 
   // 1. Ambil data dari formulir perjadin yang sedang aktif atau _activeEditingTrip
-  const activeTrip = window._activeEditingTrip || null;
+  const activeTrip = resolveActiveBbmTrip();
   const noST = getV('noST') || getV('noSTNum') || (activeTrip && activeTrip.noST) || '395/ST/Sj.07/2026';
   const agenda = getV('agenda') || (activeTrip && activeTrip.agenda) || 'Pembuatan Video Dokumenter dan Pengambilan Footage Penerima Manfaat Bedah Rumah BSPS di Pulau Lancang, Kel. Pulau Pari, Kab. Kepulauan Seribu';
   const tglBerangkat = getV('tglBerangkat') || (activeTrip && activeTrip.tglBerangkat) || '2026-10-14';
@@ -219,23 +190,12 @@ function syncBbmFromActiveSpt(showToast = true) {
 
   // 2. Periksa apakah trip ini sudah memiliki rekaman BBM tersimpan sebelumnya
   let existingBbm = (activeTrip && (activeTrip.bbmData || (activeTrip.draft && activeTrip.draft.bbmData))) || null;
-  if (!existingBbm) {
-    const storageList = getBbmStorageList();
-    existingBbm = storageList.find(x => x && x.noST && x.noST === noST) || null;
+  if (!existingBbm && activeTrip) {
+    existingBbm = getCachedBbmRecord(activeTrip);
   }
 
   if (existingBbm) {
     loadBbmRecordIntoForm(existingBbm);
-
-    // Tanggal checklist tidak diisi manual, jadi selalu dikosongkan di form
-    const elTglMasuk = document.getElementById('bbm_tanggalMasuk');
-    const elTglBukti = document.getElementById('bbm_tanggalBukti');
-    if (elTglMasuk) elTglMasuk.value = '';
-    if (elTglBukti) elTglBukti.value = '';
-    if (window.currentBbmRecord) {
-      window.currentBbmRecord.tanggalMasuk = '';
-      window.currentBbmRecord.tanggalBukti = '';
-    }
 
     // Identitas pelaksana tetap mengikuti pembuat berkas perjadin yang aktif
     const elPelNama = document.getElementById('bbm_pelaksanaNama');
@@ -254,6 +214,9 @@ function syncBbmFromActiveSpt(showToast = true) {
     if (elPelNip && pelaksanaIdentity.nip) elPelNip.value = pelaksanaIdentity.nip;
 
     if (window.currentBbmRecord) {
+      window.currentBbmRecord.id = 'bbm_' + Date.now();
+      delete window.currentBbmRecord.tripId;
+      delete window.currentBbmRecord.tripCloudId;
       window.currentBbmRecord.noST = noST;
       window.currentBbmRecord.agenda = agenda;
       window.currentBbmRecord.tanggalBerangkat = tglBerangkat;
@@ -317,13 +280,7 @@ function checkBbmDecemberRule() {
     return true;
   }
 
-  // Cek tanggal bukti struk atau tanggal pelaksanaan
   const dates = [];
-  const tglBukti = document.getElementById('bbm_tanggalBukti')?.value;
-  const tglMasuk = document.getElementById('bbm_tanggalMasuk')?.value;
-  if (tglBukti) dates.push(tglBukti);
-  if (tglMasuk) dates.push(tglMasuk);
-
   document.querySelectorAll('#bbm_items_body .bbm-item-tanggal').forEach(inp => {
     if (inp.value) dates.push(inp.value);
   });
@@ -337,14 +294,14 @@ function checkBbmDecemberRule() {
       badgeKategori.className = 'badge badge-danger';
     }
     return false;
-  } else {
-    if (banner) banner.style.display = 'none';
-    if (badgeKategori) {
-      badgeKategori.textContent = 'Mobil Pribadi (Diperkenankan s.d. 30 Nov 2026)';
-      badgeKategori.className = 'badge badge-warning';
-    }
-    return true;
   }
+
+  if (banner) banner.style.display = 'none';
+  if (badgeKategori) {
+    badgeKategori.textContent = 'Mobil Pribadi (Diperkenankan s.d. 30 Nov 2026)';
+    badgeKategori.className = 'badge badge-warning';
+  }
+  return true;
 }
 
 /**
@@ -353,31 +310,19 @@ function checkBbmDecemberRule() {
 function getAvailablePelakuList() {
   const list = [];
   const seen = new Set();
+  const pelaksanaRaw = document.getElementById('lk_pelaksana')?.value || document.getElementById('bbm_pelaksanaNama')?.value || '';
+  const pelaksana = resolveBbmPelaksanaIdentity(pelaksanaRaw);
 
-  // 1. Pegawai terpilih dari SPT aktif di formulir
   if (typeof selectedEmpIds !== 'undefined' && selectedEmpIds && typeof employees !== 'undefined') {
     selectedEmpIds.forEach(id => {
       const emp = employees.find(e => e.id === id);
-      if (emp && emp.nama && !seen.has(emp.nama)) {
+      const isPelaksana = pelaksana.nama && (
+        emp?.nama === pelaksana.nama ||
+        (pelaksana.nip && emp?.nip === pelaksana.nip)
+      );
+      if (emp && emp.nama && !isPelaksana && !seen.has(emp.nama)) {
         seen.add(emp.nama);
         list.push({ nama: emp.nama, nip: emp.nip || '', gol: emp.golongan || emp.gol || '' });
-      }
-    });
-  }
-
-  // 2. Pelaksana pertanggungjawaban dari lk_pelaksana
-  const pel = document.getElementById('lk_pelaksana')?.value || document.getElementById('bbm_pelaksanaNama')?.value;
-  if (pel && !seen.has(pel)) {
-    seen.add(pel);
-    list.unshift({ nama: pel, nip: document.getElementById('bbm_pelaksanaNip')?.value || '', gol: '' });
-  }
-
-  // 3. Pegawai dari masterPegawai jika list masih sedikit
-  if (typeof masterPegawai !== 'undefined' && Array.isArray(masterPegawai)) {
-    masterPegawai.forEach(p => {
-      if (p.nama && !seen.has(p.nama)) {
-        seen.add(p.nama);
-        list.push({ nama: p.nama, nip: p.nip || '', gol: p.gol || '' });
       }
     });
   }
@@ -387,41 +332,31 @@ function getAvailablePelakuList() {
 
 
 function updateBbmUraianOtomatis() {
-  const selKategori = document.getElementById('bbm_kategoriKendaraan');
-  const isPribadi = (selKategori && selKategori.value === 'pribadi');
-  const kend = normalizeBbmJenisKendaraan(document.getElementById('bbm_kendaraan')?.value);
-  const plat = document.getElementById('bbm_platNomor')?.value || '';
+  const firstRow = document.querySelector('#bbm_items_body .bbm-item-row');
+  const kend = normalizeBbmJenisKendaraan(firstRow?.querySelector('.bbm-item-kendaraan')?.value);
+  const plat = firstRow?.querySelector('.bbm-item-plat')?.value.trim() || '';
   const elPekerjaan = document.getElementById('bbm_pekerjaan');
   const elPekerjaanKuitansi = document.getElementById('bbm_pekerjaanKuitansi');
 
-  const jenisLabel = `${kend} ${isPribadi ? 'Pribadi' : 'Dinas'}`;
-  const platSfx = plat ? ` (${plat})` : '';
+  const isPribadi = document.getElementById('bbm_kategoriKendaraan')?.value === 'pribadi';
+  const tglAwal = document.getElementById('tglBerangkat')?.value || window.currentBbmRecord?.tanggalBerangkat || firstRow?.querySelector('.bbm-item-tanggal')?.value;
+  const tglAkhir = document.getElementById('tglKembali')?.value || window.currentBbmRecord?.tanggalKembali || tglAwal;
+  const uraianData = {
+    agenda: (document.getElementById('agenda')?.value || window.currentBbmRecord?.agenda || '').trim(),
+    noST: (document.getElementById('noST')?.value || document.getElementById('noSTNum')?.value || window.currentBbmRecord?.noST || '').trim(),
+    tanggalBerangkat: tglAwal,
+    tanggalKembali: tglAkhir,
+    kendaraan: kend,
+    platNomor: plat,
+    kategoriKendaraan: isPribadi ? 'pribadi' : 'dinas',
+    namaAkun: document.getElementById('bbm_namaAkun')?.value || window.currentBbmRecord?.namaAkun || 'Belanja Pemeliharaan Peralatan dan Mesin'
+  };
 
   if (elPekerjaan) {
-    elPekerjaan.value = `Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan ${jenisLabel}${platSfx}.`;
+    elPekerjaan.value = getBbmUraianKegiatan(uraianData);
   }
-
-  // Format Aturan 1 Kuitansi: "Pembelian BBM untuk kegiatan perjalanan dinas dalam rangka (...) tanggal (...) dengan Nomor ST (...)."
-  const agenda = (document.getElementById('agenda')?.value || window.currentBbmRecord?.agenda || '').trim();
-  const noST = (document.getElementById('noST')?.value || document.getElementById('noSTNum')?.value || window.currentBbmRecord?.noST || '').trim();
-  const tglAwal = document.getElementById('tglBerangkat')?.value || window.currentBbmRecord?.tanggalBerangkat || document.getElementById('bbm_tanggalBukti')?.value;
-  const tglAkhir = document.getElementById('tglKembali')?.value || window.currentBbmRecord?.tanggalKembali || tglAwal;
-
-  let tglRentang = '';
-  if (tglAwal && tglAkhir && tglAwal !== tglAkhir) {
-    tglRentang = `${formatTanggalIndoLengkap(tglAwal)} s.d. ${formatTanggalIndoLengkap(tglAkhir)}`;
-  } else if (tglAwal) {
-    tglRentang = formatTanggalIndoLengkap(tglAwal);
-  } else {
-    tglRentang = formatTanggalIndoLengkap(document.getElementById('bbm_tanggalBukti')?.value || '2026-11-20');
-  }
-
   if (elPekerjaanKuitansi) {
-    if (agenda || noST) {
-      elPekerjaanKuitansi.value = `Pembelian BBM untuk kegiatan perjalanan dinas dalam rangka ${agenda || '...'} tanggal ${tglRentang} dengan Nomor ST ${noST || '...'}.`;
-    } else {
-      elPekerjaanKuitansi.value = `Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan ${jenisLabel}${platSfx}, Output: Perawatan Kendaraan Bermotor.`;
-    }
+    elPekerjaanKuitansi.value = getBbmUraianKuitansi(uraianData);
   }
 
   collectBbmFormData();
@@ -437,24 +372,14 @@ function loadBbmRecordIntoForm(rec) {
 
   const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = (v ?? ''); };
 
-  const kat = rec.kategoriKendaraan || 'dinas';
+  const kat = rec.kategoriKendaraan === 'pribadi' ? 'pribadi' : 'dinas';
   const selKat = document.getElementById('bbm_kategoriKendaraan');
   if (selKat) selKat.value = kat;
 
-  setVal('bbm_tanggalMasuk', rec.tanggalMasuk);
-  setVal('bbm_tanggalBukti', rec.tanggalBukti);
-  setVal('bbm_tanggalKuitansi', rec.tanggalKuitansi);
-  setVal('bbm_nomorSPM', rec.nomorSPM || '-');
-  setVal('bbm_nomorSPD', rec.nomorSPD || '-');
   const recIdentity = resolveBbmPelaksanaIdentity(rec.pelaksanaNama, rec.pelaksanaNip);
   setVal('bbm_pelaksanaNama', recIdentity.nama);
   setVal('bbm_pelaksanaNip', recIdentity.nip);
-  setVal('bbm_pemilikMobil', rec.pemilikMobil || '');
   setVal('bbm_namaPenyedia', rec.namaPenyedia || 'Biro Komunikasi Publik');
-  setVal('bbm_noBukti', rec.noBukti || '-');
-  setVal('bbm_noKuitansi', rec.noKuitansi || '            /KW/Bend/Satker-Setjen/2026');
-  setVal('bbm_kendaraan', normalizeBbmJenisKendaraan(rec.kendaraan));
-  setVal('bbm_platNomor', rec.platNomor);
   setVal('bbm_pekerjaan', rec.pekerjaan);
   setVal('bbm_pekerjaanKuitansi', rec.pekerjaanKuitansi);
   setVal('bbm_akun', rec.akun || '146.01.WA.7665.EBA.994.002.0D.523121');
@@ -503,16 +428,9 @@ function loadBbmRecordIntoForm(rec) {
   setTxt('bbm_sync_ktu', ktuNama);
   setTxt('bbm_sync_ktu_nip', cleanNip(ktuNip));
 
-  const badgePlat = document.getElementById('bbm_plat_badge');
-  if (badgePlat) badgePlat.textContent = rec.platNomor || '-';
-
-  if (typeof setBbmKategori === 'function') {
-    setBbmKategori(kat);
-  }
-
   // Rincian Struk / Item (Mendukung Multi-Struk & Multi-Pelaksana)
   renderBbmItemRows(rec.items || []);
-  checkBbmDecemberRule();
+  setBbmKategori(kat);
   recalcBbmTotal();
 }
 
@@ -554,25 +472,25 @@ function appendBbmItemRowHtml(item = {}, idx = 0) {
   const tbody = document.getElementById('bbm_items_body');
   if (!tbody) return;
 
-  const defaultKend = normalizeBbmJenisKendaraan(document.getElementById('bbm_kendaraan')?.value);
-  const defaultPlat = document.getElementById('bbm_platNomor')?.value || 'B 2577 KRK';
-  const kendVal = normalizeBbmJenisKendaraan(item.kendaraan || defaultKend);
-  const platVal = item.platNomor || defaultPlat;
-  const itemKendPlat = platVal ? `${kendVal} ${platVal}` : kendVal;
+  const kendVal = normalizeBbmJenisKendaraan(item.kendaraan || 'Mobil');
+  const isPribadi = document.getElementById('bbm_kategoriKendaraan')?.value === 'pribadi';
+  const platVal = isPribadi ? (item.platNomor || '') : (BBM_KDO_NOPOL_OPTIONS.includes(item.platNomor) ? item.platNomor : 'B 2577 KRK');
+  const platControl = isPribadi
+    ? `<input type="text" class="form-control bbm-item-plat font-mono font-bold" value="${platVal}" placeholder="Ketik Nopol" oninput="onBbmRowFieldChange()">`
+    : `<select class="form-control bbm-item-plat font-mono font-bold" onchange="onBbmRowFieldChange()">
+        ${BBM_KDO_NOPOL_OPTIONS.map(plat => `<option value="${plat}" ${plat === platVal ? 'selected' : ''}>${plat}</option>`).join('')}
+      </select>`;
 
   const pelakuList = getAvailablePelakuList();
-  const currentPelaku = item.pelaksanaNama || document.getElementById('lk_pelaksana')?.value || document.getElementById('bbm_pelaksanaNama')?.value || (pelakuList[0]?.nama || 'Ahmad Jayadi, S.Hum., MT.');
+  const requestedPelaku = item.pelaksanaNama || '';
+  const currentPelaku = pelakuList.some(p => p.nama === requestedPelaku) ? requestedPelaku : (pelakuList[0]?.nama || '');
 
-  let optHtml = '';
-  let matched = false;
-  pelakuList.forEach(p => {
-    const isSel = (p.nama === currentPelaku);
-    if (isSel) matched = true;
-    optHtml += `<option value="${p.nama}" data-nip="${p.nip || ''}" ${isSel ? 'selected' : ''}>${p.nama}</option>`;
-  });
-  if (!matched && currentPelaku) {
-    optHtml = `<option value="${currentPelaku}" selected>${currentPelaku}</option>` + optHtml;
-  }
+  const optHtml = pelakuList.length
+    ? pelakuList.map(p => {
+      const isSel = p.nama === currentPelaku;
+      return `<option value="${p.nama}" data-nip="${p.nip || ''}" ${isSel ? 'selected' : ''}>${p.nama}</option>`;
+    }).join('')
+    : '<option value="" selected>Pilih pegawai dari SPT</option>';
 
   const tr = document.createElement('tr');
   tr.className = 'bbm-item-row';
@@ -584,10 +502,16 @@ function appendBbmItemRowHtml(item = {}, idx = 0) {
       </select>
     </td>
     <td>
-      <input type="text" class="form-control bbm-item-kendaraan-plat font-bold" value="${itemKendPlat}" placeholder="Mobil B 2577 KRK" oninput="onBbmRowFieldChange()">
+      <select class="form-control bbm-item-kendaraan font-bold" onchange="onBbmRowFieldChange()">
+        <option value="Mobil" ${kendVal === 'Mobil' ? 'selected' : ''}>Mobil</option>
+        <option value="Motor" ${kendVal === 'Motor' ? 'selected' : ''}>Motor</option>
+      </select>
     </td>
     <td>
-      <input type="date" class="form-control bbm-item-tanggal" value="${item.tanggal || document.getElementById('bbm_tanggalBukti')?.value || '2026-11-20'}" onchange="onBbmRowFieldChange()">
+      ${platControl}
+    </td>
+    <td>
+      <input type="date" class="form-control bbm-item-tanggal" value="${item.tanggal || new Date().toISOString().slice(0, 10)}" onchange="onBbmRowFieldChange()">
     </td>
     <td>
       <select class="form-control bbm-item-jenis" onchange="onBbmItemJenisChange(this)">
@@ -622,19 +546,15 @@ function appendBbmItemRowHtml(item = {}, idx = 0) {
  * Tambah Baris Struk BBM Baru (Mendukung Banyak Struk)
  */
 function addBbmItemRow() {
-  const tgl = document.getElementById('bbm_tanggalBukti')?.value || new Date().toISOString().slice(0, 10);
-  const kend = normalizeBbmJenisKendaraan(document.getElementById('bbm_kendaraan')?.value);
-  const plat = document.getElementById('bbm_platNomor')?.value || 'B 2577 KRK';
-  const kendPlat = plat ? `${kend} ${plat}` : kend;
   const pelakuList = getAvailablePelakuList();
-  const defPelaku = pelakuList[0]?.nama || document.getElementById('bbm_pelaksanaNama')?.value || 'Ahmad Jayadi, S.Hum., MT.';
+  const defPelaku = pelakuList[0]?.nama || '';
+  const isPribadi = document.getElementById('bbm_kategoriKendaraan')?.value === 'pribadi';
 
   appendBbmItemRowHtml({
     pelaksanaNama: defPelaku,
-    kendaraanPlat: kendPlat,
-    kendaraan: kend,
-    platNomor: plat,
-    tanggal: tgl,
+    kendaraan: 'Mobil',
+    platNomor: isPribadi ? '' : 'B 2577 KRK',
+    tanggal: new Date().toISOString().slice(0, 10),
     jenisBbm: 'Pertamina Dex',
     liter: '',
     jumlah: 0
@@ -703,7 +623,6 @@ function recalcBbmTotal() {
  */
 function collectBbmFormData() {
   const getV = id => document.getElementById(id)?.value || '';
-  const kat = document.getElementById('bbm_kategoriKendaraan')?.value || 'dinas';
 
   const items = [];
   let sum = 0;
@@ -712,17 +631,15 @@ function collectBbmFormData() {
     const jumlah = parseInt(rawJumlah, 10) || 0;
     sum += jumlah;
 
-    const pelaksanaNama = tr.querySelector('.bbm-item-pelaksana')?.value || getV('bbm_pelaksanaNama') || 'Ahmad Jayadi, S.Hum., MT.';
-    const kendPlatRaw = (tr.querySelector('.bbm-item-kendaraan-plat')?.value || `${getV('bbm_kendaraan')} ${getV('bbm_platNomor')}`).trim();
-    const kendPlatMatch = kendPlatRaw.match(/^(mobil|motor)\s+(.+)$/i);
-    const kendItem = normalizeBbmJenisKendaraan(kendPlatMatch ? kendPlatMatch[1] : getV('bbm_kendaraan'));
-    const platItem = kendPlatMatch ? kendPlatMatch[2].trim() : kendPlatRaw;
+    const pelaksanaNama = tr.querySelector('.bbm-item-pelaksana')?.value || '';
+    const kendItem = normalizeBbmJenisKendaraan(tr.querySelector('.bbm-item-kendaraan')?.value);
+    const platItem = tr.querySelector('.bbm-item-plat')?.value.trim() || '';
     const kendPlat = platItem ? `${kendItem} ${platItem}` : kendItem;
-    const tgl = tr.querySelector('.bbm-item-tanggal')?.value || getV('bbm_tanggalBukti') || '2026-11-20';
+    const tgl = tr.querySelector('.bbm-item-tanggal')?.value || new Date().toISOString().slice(0, 10);
     const jenisBbm = tr.querySelector('.bbm-item-jenis')?.value || 'Pertamina Dex';
     const liter = parseFloat(tr.querySelector('.bbm-item-liter')?.value) || 0;
 
-    const uraian = `Pengisian Bahan Bakar Minyak (BBM) ${jenisBbm} - ${kendPlat}`;
+    const uraian = `Pengisian Bahan Bakar Minyak (BBM) ${jenisBbm} - ${kendPlat} an. ${pelaksanaNama}`;
 
     items.push({
       id: i + 1,
@@ -743,38 +660,44 @@ function collectBbmFormData() {
     getV('bbm_pelaksanaNip')
   );
 
+  const receipt = getBbmReceiptPeriod({
+    items,
+    tanggalKembali: window.currentBbmRecord?.tanggalKembali || getV('tglKembali') || ''
+  });
+  const tahunBerkas = receipt.tahun;
+  const firstItem = items[0] || {};
+
   const record = {
     id: window.currentBbmRecord?.id || ('bbm_' + Date.now()),
-    kategoriKendaraan: kat,
-    tanggalMasuk: getV('bbm_tanggalMasuk'),
-    tanggalBukti: getV('bbm_tanggalBukti'),
-    tanggalKuitansi: getV('bbm_tanggalKuitansi') || 'Desember 2026',
-    nomorSPM: getV('bbm_nomorSPM') || '-',
-    nomorSPD: getV('bbm_nomorSPD') || '-',
-    pelaksanaNama: pelIdentity.nama || 'Yogi Andre Yonatan Pakpahan, S.P.W.K',
+    kategoriKendaraan: document.getElementById('bbm_kategoriKendaraan')?.value || 'dinas',
+    tanggalMasuk: '',
+    tanggalBukti: receipt.tanggalBukti,
+    tanggalKuitansi: receipt.tanggalKuitansi,
+    nomorSPM: '-',
+    nomorSPD: '-',
+    pelaksanaNama: pelIdentity.nama,
     pelaksanaNip: pelIdentity.nip,
     pelaksanaPanggilan: pelIdentity.nama,
-    pemilikMobil: getV('bbm_pemilikMobil'),
     namaPenyedia: getV('bbm_namaPenyedia') || 'Biro Komunikasi Publik',
-    noBukti: getV('bbm_noBukti') || '-',
-    noKuitansi: getV('bbm_noKuitansi') || '            /KW/Bend/Satker-Setjen/2026',
-    kendaraan: getV('bbm_kendaraan'),
-    platNomor: getV('bbm_platNomor'),
+    noBukti: '-',
+    noKuitansi: `            /KW/Bend/Satker-Setjen/${tahunBerkas}`,
+    kendaraan: firstItem.kendaraan || 'Mobil',
+    platNomor: firstItem.platNomor || '',
     pekerjaan: getV('bbm_pekerjaan'),
     pekerjaanKuitansi: getV('bbm_pekerjaanKuitansi'),
     akun: getV('bbm_akun') || '146.01.WA.7665.EBA.994.002.0D.523121',
     namaAkun: getV('bbm_namaAkun') || 'Belanja Pemeliharaan Peralatan dan Mesin',
     outputKegiatan: 'Perawatan Kendaraan Bermotor',
     jenisPengadaan: getV('bbm_jenisPengadaan') || 'Perawatan Kendaraan Bermotor',
-    ta: '2026',
+    ta: tahunBerkas,
     items: items,
     nilaiTotal: sum,
     catatan: '',
     status: window.currentBbmRecord?.status || 'selesai',
-    noST: window.currentBbmRecord?.noST || getV('noST') || '395/ST/Sj.07/2026',
-    agenda: window.currentBbmRecord?.agenda || getV('agenda') || '',
-    tanggalBerangkat: window.currentBbmRecord?.tanggalBerangkat || getV('tglBerangkat') || '',
-    tanggalKembali: window.currentBbmRecord?.tanggalKembali || getV('tglKembali') || '',
+    noST: getV('noST') || getV('noSTNum') || window.currentBbmRecord?.noST || '',
+    agenda: getV('agenda') || window.currentBbmRecord?.agenda || '',
+    tanggalBerangkat: getV('tglBerangkat') || window.currentBbmRecord?.tanggalBerangkat || '',
+    tanggalKembali: getV('tglKembali') || window.currentBbmRecord?.tanggalKembali || '',
     pejabat: {
       ppkNama: document.getElementById('cfg_ppkNama')?.value || getV('bbm_ppkNama') || 'Emanuel Pati Libak, S.Pd., M.T.',
       ppkNip: document.getElementById('cfg_ppkNip')?.value || getV('bbm_ppkNip') || '197512072010121001',
@@ -784,7 +707,7 @@ function collectBbmFormData() {
       bendaharaNip: document.getElementById('cfg_bendNip')?.value || getV('bbm_bendaharaNip') || '198004022014081001',
       kasubbagTuNama: document.getElementById('cfg_ktuNama')?.value || getV('bbm_kasubbagTuNama') || 'Ahmad Jayadi, S.Hum., MT.',
       kasubbagTuNip: document.getElementById('cfg_ktuNip')?.value || getV('bbm_kasubbagTuNip') || '198702182010121003',
-      verifikatorNama: document.getElementById('cfg_verifikatorNama')?.value || '…......…...........…........................................',
+      verifikatorNama: document.getElementById('cfg_verifikatorNama')?.value || 'ΓÇª......ΓÇª...........ΓÇª........................................',
       verifikatorNip: document.getElementById('cfg_verifikatorNip')?.value || ''
     }
   };
@@ -794,66 +717,67 @@ function collectBbmFormData() {
 }
 
 /**
- * Simpan data BBM saat ini ke riwayat penyimpanan lokal & bundle SPT di Cloud
+ * Simpan data BBM ke bundle SPT dan Cloud tanpa penyimpanan lokal khusus
  */
-function saveCurrentBbmRecord() {
+async function saveCurrentBbmRecord() {
+  if (window._isSavingBbm) return false;
   const record = collectBbmFormData();
 
-  // Validasi Aturan 2: 1 Desember 2026
   const isRuleOk = checkBbmDecemberRule();
   if (!isRuleOk && record.kategoriKendaraan === 'pribadi') {
     const konfirm = confirm('PERHATIAN KETENTUAN KEMENKEU / SETJEN:\nTerhitung mulai tanggal 1 Desember 2026, penggantian biaya (reimburse/klaim) pembelian BBM untuk KENDARAAN PRIBADI TIDAK LAGI DIPERKENANKAN.\n\nApakah Anda tetap ingin menyimpan berkas ini sebagai arsip internal?');
-    if (!konfirm) return;
+    if (!konfirm) return false;
   }
 
-  const list = getBbmStorageList();
-  const existingIdx = list.findIndex(x => x.id === record.id);
-
-  if (existingIdx >= 0) {
-    list[existingIdx] = record;
-  } else {
-    list.unshift(record);
-  }
-
-  saveBbmStorageList(list);
-  renderBbmHistoryTable();
-
-  // INTEGRASI SEBUNDLE DENGAN SPT PERJADIN & CLOUD
-  let bundledTrip = null;
-  const selSpt = document.getElementById('bbm_spt_selector');
-  const sptId = selSpt ? selSpt.value : 'active';
-
-  if (typeof getTripHistoryList === 'function') {
-    const trips = getTripHistoryList();
-    if (sptId && sptId !== 'active') {
-      bundledTrip = trips.find(t => t.id === sptId);
-    } else if (window._activeEditingTrip) {
-      bundledTrip = window._activeEditingTrip;
-    } else {
-      const activeNoST = document.getElementById('noST')?.value;
-      if (activeNoST) {
-        bundledTrip = trips.find(t => t.noST === activeNoST);
-      }
+  const bundledTrip = resolveActiveBbmTrip(record);
+  if (!bundledTrip || typeof uploadTripToCloud !== 'function') {
+    if (typeof showRefreshToast === 'function') {
+      showRefreshToast('BBM Belum Dapat Disimpan', 'Simpan Surat Tugas Perjalanan Dinas dan pastikan Cloud terhubung. Data BBM tidak disimpan ke lokal.');
     }
-
-    if (bundledTrip) {
-      bundledTrip.bbmData = record;
-      if (bundledTrip.draft) {
-        bundledTrip.draft.bbmData = record;
-      }
-      if (typeof saveTripHistoryList === 'function') {
-        saveTripHistoryList(trips);
-      }
-      if (typeof syncTripToCloudAutomatic === 'function') {
-        syncTripToCloudAutomatic(bundledTrip).catch(e => console.warn('Sync cloud trip bundle BBM:', e));
-      }
-    }
+    return false;
   }
 
-  if (typeof showRefreshToast === 'function') {
-    const tipeLabel = record.kategoriKendaraan === 'pribadi' ? 'Mobil Pribadi' : 'Mobil Dinas';
-    const bundleMsg = bundledTrip ? ` (Terbundle dengan ST: ${bundledTrip.noST} & Cloud)` : '';
-    showRefreshToast('Data BBM Disimpan', `Pengajuan BBM ${tipeLabel} (${record.kendaraan}) sebesar ${formatRupiahMurni(record.nilaiTotal)} berhasil disimpan${bundleMsg}.`);
+  record.noST = bundledTrip.noST || record.noST;
+  record.agenda = bundledTrip.agenda || record.agenda;
+  record.tanggalBerangkat = bundledTrip.tglBerangkat || record.tanggalBerangkat;
+  record.tanggalKembali = bundledTrip.tglKembali || record.tanggalKembali;
+  record.pekerjaan = getBbmUraianKegiatan(record);
+  record.pekerjaanKuitansi = getBbmUraianKuitansi(record);
+  bundledTrip.bbmData = record;
+  if (bundledTrip.draft) bundledTrip.draft.bbmData = record;
+
+  window._isSavingBbm = true;
+  try {
+    const cloudId = await uploadTripToCloud(bundledTrip);
+    if (!cloudId) throw new Error('Cloud tidak mengembalikan ID berkas');
+    bundledTrip.cloudId = cloudId;
+    bundledTrip.isCloud = true;
+    cacheBbmRecord(bundledTrip, record);
+    if (window._activeEditingTrip && window._activeEditingTrip.id === bundledTrip.id) {
+      window._activeEditingTrip.cloudId = cloudId;
+      window._activeEditingTrip.isCloud = true;
+    }
+    if (typeof saveTripHistoryList === 'function') {
+      const trips = getTripHistoryList();
+      const idx = trips.findIndex(trip => trip.id === bundledTrip.id || trip.cloudId === cloudId);
+      if (idx >= 0) trips[idx] = bundledTrip;
+      saveTripHistoryList(trips);
+    }
+    renderBbmHistoryTable();
+    if (typeof renderTripHistory === 'function') renderTripHistory();
+    if (typeof showRefreshToast === 'function') {
+      const tipeLabel = `${record.kendaraan || 'Mobil'} ${record.kategoriKendaraan === 'pribadi' ? 'Pribadi' : 'Dinas'}`;
+      showRefreshToast('Data BBM Disimpan di Cloud', `Pengajuan BBM ${tipeLabel} sebesar ${formatRupiahMurni(record.nilaiTotal)} berhasil disimpan dan terhubung ke ST: ${record.noST}.`);
+    }
+    return true;
+  } catch (err) {
+    console.error('Gagal menyimpan BBM ke Cloud:', err);
+    if (typeof showRefreshToast === 'function') {
+      showRefreshToast('BBM Gagal Disimpan ke Cloud', 'Data BBM tidak disimpan ke lokal. Periksa koneksi Cloud lalu coba lagi.');
+    }
+    return false;
+  } finally {
+    window._isSavingBbm = false;
   }
 }
 
@@ -920,7 +844,7 @@ function renderBbmHistoryTable() {
   }
 
   tbody.innerHTML = list.map((item, idx) => {
-    const tgl = formatTanggalIndoLengkap(item.tanggalBukti || item.tanggalMasuk);
+    const tgl = formatTanggalIndoLengkap(item.tanggalBukti || item.items?.[0]?.tanggal || item.tanggalMasuk);
     const tipeBadges = item.kategoriKendaraan === 'pribadi'
       ? '<span class="badge badge-warning">Pribadi</span>'
       : '<span class="badge badge-success">Dinas</span>';

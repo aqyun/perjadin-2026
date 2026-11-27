@@ -23,9 +23,10 @@ function exportBbmToExcel(d) {
   const data = d || (typeof getActiveBbmRecord === 'function' ? getActiveBbmRecord() : getDefaultBbmData());
   const wb = XLSX.utils.book_new();
 
+  const receipt = getBbmReceiptPeriod(data);
+  const noKuitansi = `            /KW/Bend/Satker-Setjen/${receipt.tahun}`;
   const tglMasuk = formatTanggalIndoLengkap(data.tanggalMasuk) || '';
-  const tglBukti = formatTanggalIndoLengkap(data.tanggalBukti) || '';
-  const tglKuitansi = data.tanggalKuitansi || 'Desember 2026';
+  const tglKuitansi = receipt.tanggalKuitansi;
   const terbilangTeks = (typeof terbilang === 'function')
     ? terbilang(data.nilaiTotal || 0)
     : 'Satu Juta Rupiah';
@@ -38,34 +39,13 @@ function exportBbmToExcel(d) {
   const pelaksanaNama = pelaksanaIdentity.nama;
   const pelaksanaNip = pelaksanaIdentity.nip || '199511272025061006';
 
-  // Format Uraian Kuitansi Formal Aturan 1:
-  // "Pembelian BBM untuk kegiatan perjalanan dinas dalam rangka (...) tanggal (...) dengan Nomor ST (...)."
-  const agenda = data.agenda || (typeof document !== 'undefined' && document.getElementById('agenda')?.value) || '';
-  const noST = data.noST || (typeof document !== 'undefined' && document.getElementById('noST')?.value) || '';
-  const tglAwal = data.tanggalBerangkat || (typeof document !== 'undefined' && document.getElementById('tglBerangkat')?.value) || data.tanggalBukti;
-  const tglAkhir = data.tanggalKembali || (typeof document !== 'undefined' && document.getElementById('tglKembali')?.value) || tglAwal;
-
-  let tglRentang = '';
-  if (tglAwal && tglAkhir && tglAwal !== tglAkhir) {
-    tglRentang = `${formatTanggalIndoLengkap(tglAwal)} s.d. ${formatTanggalIndoLengkap(tglAkhir)}`;
-  } else if (tglAwal) {
-    tglRentang = formatTanggalIndoLengkap(tglAwal);
-  } else {
-    tglRentang = formatTanggalIndoLengkap(data.tanggalBukti || '2026-11-20');
-  }
-
-  let defaultUraianKuitansi = '';
-  if (agenda || noST) {
-    defaultUraianKuitansi = `Pembelian BBM untuk kegiatan perjalanan dinas dalam rangka ${agenda || '...'} tanggal ${tglRentang} dengan Nomor ST ${noST || '...'}.`;
-  } else {
-    defaultUraianKuitansi = `Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan ${data.kendaraan || 'Mobil'} Dinas${data.platNomor ? ' (' + data.platNomor + ')' : ''}, Output: Perawatan Kendaraan Bermotor.`;
-  }
-  const uraianKuitansi = data.pekerjaanKuitansi || defaultUraianKuitansi;
+  const uraianKegiatan = getBbmUraianKegiatan(data);
+  const uraianKuitansi = getBbmUraianKuitansi(data);
 
   const items = (data.items && data.items.length) ? data.items : [
     {
-      tanggal: data.tanggalBukti || '2026-11-20',
-      uraian: `Pengisian Bahan Bakar Minyak (BBM) Pertamina Dex - Mobil ${data.platNomor || 'B 2577 KRK'}`,
+      tanggal: receipt.tanggalBukti,
+      uraian: `Pengisian Bahan Bakar Minyak (BBM) Pertamina Dex - Mobil ${data.platNomor || 'B 2577 KRK'} an. ${pelaksanaNama}`,
       jumlah: data.nilaiTotal || 1000000
     }
   ];
@@ -114,10 +94,10 @@ function exportBbmToExcel(d) {
   const r14 = emptyRow(10);
   r14[3] = 'Pekerjaan';
   r14[4] = ':';
-  r14[5] = data.pekerjaan || `Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan ${data.kendaraan || 'Mobil'} Dinas${data.platNomor ? ' (' + data.platNomor + ')' : ''}.`;
+  r14[5] = uraianKegiatan;
   r14[7] = 'Tanggal Bukti\nPembayaran /\nKuitansi / SPK';
   r14[8] = ':';
-  r14[9] = tglBukti;
+  r14[9] = '';
   fullRows.push(r14);
 
   // Row 15: Akun / Nilai
@@ -208,7 +188,7 @@ function exportBbmToExcel(d) {
   const r32 = emptyRow(10);
   r32[2] = data.pejabat?.ppkNama || 'Emanuel Pati Libak, S.Pd., M.T.';
   r32[5] = data.pejabat?.ppspmNama || 'Mala Hayati Rahayu, S.E';
-  r32[7] = data.pejabat?.verifikatorNama || '…......…...........…........................................';
+  r32[7] = data.pejabat?.verifikatorNama || 'ΓÇª......ΓÇª...........ΓÇª........................................';
   fullRows.push(r32);
 
   // Row 33: NIP Penandatangan
@@ -228,13 +208,13 @@ function exportBbmToExcel(d) {
   const r35 = emptyRow(10);
   r35[7] = 'TA';
   r35[8] = ':';
-  r35[9] = data.ta || '2026';
+  r35[9] = receipt.tahun;
   fullRows.push(r35);
 
   const r36 = emptyRow(10);
   r36[7] = 'Nomor Bukti';
   r36[8] = ':';
-  r36[9] = data.noKuitansi || '            /KW/Bend/Satker-Setjen/2026';
+  r36[9] = noKuitansi;
   fullRows.push(r36);
 
   const r37 = emptyRow(10);
@@ -415,7 +395,7 @@ function exportBbmToExcel(d) {
   // Group items by date and pelaku for Excel export
   const dateGroups = {};
   items.forEach(item => {
-    const tgl = item.tanggal || data.tanggalBukti || '2026-11-20';
+    const tgl = item.tanggal || receipt.tanggalBukti;
     if (!dateGroups[tgl]) dateGroups[tgl] = {};
     const pel = (item.pelaksanaNama || data.pelaksanaNama || 'Pelaksana BBM').trim();
     if (!dateGroups[tgl][pel]) dateGroups[tgl][pel] = [];
@@ -434,7 +414,7 @@ function exportBbmToExcel(d) {
       fullRows.push(rPel);
 
       dateGroups[tgl][pelName].forEach((item, itemIdx) => {
-        const itemUraian = item.uraian || `Pengisian Bahan Bakar Minyak (BBM) ${item.jenisBbm || 'Pertamina Dex'} - ${item.kendaraanPlat || `${item.kendaraan || data.kendaraan || 'Mobil'} ${item.platNomor || data.platNomor || 'B 2577 KRK'}`}`;
+        const itemUraian = item.uraian || `Pengisian Bahan Bakar Minyak (BBM) ${item.jenisBbm || 'Pertamina Dex'} - ${item.kendaraanPlat || `${item.kendaraan || data.kendaraan || 'Mobil'} ${item.platNomor || data.platNomor || 'B 2577 KRK'}`} an. ${pelName}`;
         const rItem = emptyRow(10);
         rItem[1] = itemIdx + 1;
         rItem[2] = itemUraian;
@@ -509,7 +489,7 @@ function exportBbmToExcel(d) {
     ['', 'PELAKSANA PERTANGGUNGJAWABAN', '', '', ':', pelaksanaNama],
     ['', 'CHECKLIST PENGENDALIAN PENGADAAN BARANG / JASA'],
     ['', 'Pelaksana Pekerjaan Pengadaan Barang/Jasa', '', 'Nama Penyedia', ':', data.namaPenyedia || 'Biro Komunikasi Publik', '', 'Nomor Bukti Pembayaran / Kuitansi / SPK', ':', data.noBukti || '-'],
-    ['', '', '', 'Pekerjaan', ':', data.pekerjaan || `Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan ${data.kendaraan || 'Mobil'} Dinas${data.platNomor ? ' (' + data.platNomor + ')' : ''}.`, '', 'Tanggal Bukti Pembayaran / Kuitansi / SPK', ':', tglBukti],
+    ['', '', '', 'Pekerjaan', ':', uraianKegiatan, '', 'Tanggal Bukti Pembayaran / Kuitansi / SPK', ':', ''],
     ['', 'Akun/Kegiatan :', '', data.akun || '146.01.WA.7665.EBA.994.002.0D.523121', '', '', '', 'Nilai (Rp)', ':', Number(data.nilaiTotal || 0)],
     ['', `Jenis Pengadaan : ${data.jenisPengadaan || 'Perawatan Kendaraan Bermotor'}`],
     [],
@@ -526,7 +506,7 @@ function exportBbmToExcel(d) {
     ['', '', 'Disetujui', '', '', 'PPSPM', '', `Jakarta, ${tglMasuk}`],
     ['', '', 'Pejabat Pembuat Komitmen', '', '', '(Pejabat Penanda Tangan SPM)', '', 'Verifikator Pejabat Pembuat Komitmen'],
     [], [], [], [], [],
-    ['', '', data.pejabat?.ppkNama || 'Emanuel Pati Libak, S.Pd., M.T.', '', '', data.pejabat?.ppspmNama || 'Mala Hayati Rahayu, S.E', '', data.pejabat?.verifikatorNama || '…......…...........…........................................'],
+    ['', '', data.pejabat?.ppkNama || 'Emanuel Pati Libak, S.Pd., M.T.', '', '', data.pejabat?.ppspmNama || 'Mala Hayati Rahayu, S.E', '', data.pejabat?.verifikatorNama || 'ΓÇª......ΓÇª...........ΓÇª........................................'],
     ['', '', `NIP. ${cleanNip(data.pejabat?.ppkNip || '197512072010121001')}`, '', '', `NIP. ${cleanNip(data.pejabat?.ppspmNip || '198408012009122003')}`, '', data.pejabat?.verifikatorNip ? `NIP. ${cleanNip(data.pejabat.verifikatorNip)}` : 'NIP.']
   ];
   const wsChk = XLSX.utils.aoa_to_sheet(chkRows);
@@ -537,8 +517,8 @@ function exportBbmToExcel(d) {
   // 3. SHEET: 2. KUITANSI BBM
   // =========================================================================
   const kwRows = [
-    ['', '', '', '', '', '', '', 'TA', ':', data.ta || '2026'],
-    ['', '', '', '', '', '', '', 'Nomor Bukti', ':', data.noKuitansi || '            /KW/Bend/Satker-Setjen/2026'],
+    ['', '', '', '', '', '', '', 'TA', ':', receipt.tahun],
+    ['', '', '', '', '', '', '', 'Nomor Bukti', ':', noKuitansi],
     ['', '', '', '', '', '', '', 'Akun', ':', data.akun || '146.01.WA.7665.EBA.994.002.0D.523121'],
     ['', '', '', '', '', '', '', '', '', `(${data.namaAkun || 'Belanja Pemeliharaan Peralatan dan Mesin'})`],
     [],
@@ -598,7 +578,7 @@ function exportBbmToExcel(d) {
     Object.keys(dateGroups[tgl]).forEach(pelName => {
       s46Rows.push(['', pelName]);
       dateGroups[tgl][pelName].forEach((item, itemIdx) => {
-        const itemUraian = item.uraian || `Pengisian Bahan Bakar Minyak (BBM) ${item.jenisBbm || 'Pertamina Dex'} - ${item.kendaraanPlat || `${item.kendaraan || data.kendaraan || 'Mobil'} ${item.platNomor || data.platNomor || 'B 2577 KRK'}`}`;
+        const itemUraian = item.uraian || `Pengisian Bahan Bakar Minyak (BBM) ${item.jenisBbm || 'Pertamina Dex'} - ${item.kendaraanPlat || `${item.kendaraan || data.kendaraan || 'Mobil'} ${item.platNomor || data.platNomor || 'B 2577 KRK'}`} an. ${pelName}`;
         s46Rows.push(['', itemIdx + 1, itemUraian, '', '', '', Number(item.jumlah || 0)]);
       });
     });
@@ -622,7 +602,7 @@ function exportBbmToExcel(d) {
 
   // Unduh Berkas
   const platClean = (data.platNomor || 'BBM').replace(/[^a-zA-Z0-9]/g, '_');
-  const tglClean = (data.tanggalBukti || '2026').replace(/[^0-9]/g, '');
+  const tglClean = receipt.tanggalBukti.replace(/[^0-9]/g, '');
   const fileName = `Reimburse_BBM_${platClean}_${tglClean}.xlsx`;
 
   XLSX.writeFile(wb, fileName);

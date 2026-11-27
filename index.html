@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8">
@@ -47,7 +47,7 @@
   <link rel="stylesheet" href="css/31-dashboard-modular-dan-filter.css?v=20261126_13">
   <link rel="stylesheet" href="css/32-revisi-dan-mobile-nav.css?v=20261126_13">
   <link rel="stylesheet" href="css/33-kalkulator-simulasi.css?v=20261126_21">
-  <link rel="stylesheet" href="css/34-reimburse-bbm.css?v=20261127_16">
+  <link rel="stylesheet" href="css/34-reimburse-bbm.css?v=20261127_20">
 </head>
 <body class="auth-locked">
 
@@ -2577,35 +2577,23 @@
             <span class="badge badge-success">Akun 523121</span>
           </div>
           <div class="card-body">
+            <div class="bbm-category-toggle" role="radiogroup" aria-label="Kategori kendaraan">
+              <button type="button" class="bbm-category-card active" id="bbm_cat_card_dinas" role="radio" aria-checked="true" onclick="setBbmKategori('dinas')">
+                <span class="bbm-category-icon"><svg class="ico"><use href="#i-briefcase"></use></svg></span>
+                <span class="bbm-category-info">
+                  <h5>Mobil Dinas Operasional</h5>
+                  <p>Pilih dari plat armada resmi biro</p>
+                </span>
+              </button>
+              <button type="button" class="bbm-category-card" id="bbm_cat_card_pribadi" role="radio" aria-checked="false" onclick="setBbmKategori('pribadi')">
+                <span class="bbm-category-icon"><svg class="ico"><use href="#i-user"></use></svg></span>
+                <span class="bbm-category-info">
+                  <h5>Mobil Pribadi Penugasan</h5>
+                  <p>Klaim operasional (hanya sebelum 1 Des 2026)</p>
+                </span>
+              </button>
+            </div>
             <input type="hidden" id="bbm_kategoriKendaraan" value="dinas">
-
-            <!-- Row 1: Jenis Kendaraan + Nomor Polisi -->
-            <div class="form-grid form-grid-2">
-              <div class="form-group">
-                <label class="form-label" id="bbm_lbl_kendaraan" for="bbm_kendaraan">Jenis Kendaraan *</label>
-                <select id="bbm_kendaraan" class="form-control font-bold" onchange="updateBbmUraianOtomatis()">
-                  <option value="Mobil" selected>Mobil</option>
-                  <option value="Motor">Motor</option>
-                </select>
-                <span class="form-hint" id="bbm_hint_kendaraan">Cukup pilih mobil atau motor</span>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="bbm_platNomor">Nomor Polisi (Plat) *</label>
-                <div class="bbm-plat-row">
-                  <input type="text" id="bbm_platNomor" class="form-control font-mono font-bold" value="B 2577 KRK" oninput="onBbmPlatInput(this.value)" placeholder="Contoh: B 2577 KRK">
-                  <div class="bbm-plat-preview-badge" id="bbm_plat_badge" style="margin-top: 0; white-space: nowrap;">B 2577 KRK</div>
-                </div>
-                <span class="form-hint">Nomor plat polisi kendaraan</span>
-              </div>
-            </div>
-
-            <div class="form-group" id="bbm_preset_wrap">
-              <label class="form-label" for="bbm_preset_kendaraan">Pilih Cepat Plat Kendaraan</label>
-              <select id="bbm_preset_kendaraan" class="form-control" onchange="onBbmPresetKendaraanChange()">
-                <!-- Populated by JS -->
-              </select>
-              <span class="form-hint">Pilih plat armada untuk mengisi otomatis kolom Nomor Polisi</span>
-            </div>
 
                         <!-- Row 2: Pelaksana Pertanggungjawaban (Otomatis dari Lembar Kendali Perjadin) -->
             <div class="bbm-auto-panel">
@@ -2637,45 +2625,6 @@
               <div class="form-group">
                 <label class="form-label" for="bbm_jenisPengadaan">Jenis Pengadaan</label>
                 <input type="text" id="bbm_jenisPengadaan" class="form-control" value="Perawatan Kendaraan Bermotor" oninput="onBbmRowFieldChange()">
-              </div>
-            </div>
-
-            <!-- Row 3: Tanggal & Nomor Kuitansi -->
-            <div class="bbm-section-header">
-              <svg class="ico"><use href="#i-receipt"></use></svg>
-              <span>Tanggal Berkas, Administrasi SPM/SP2D &amp; Nomor Kuitansi</span>
-            </div>
-            <div class="form-grid form-grid-3">
-              <div class="form-group">
-                <label class="form-label" for="bbm_tanggalMasuk">Tanggal Masuk Berkas (Checklist)</label>
-                <input type="date" id="bbm_tanggalMasuk" class="form-control" onchange="onBbmRowFieldChange()">
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="bbm_tanggalBukti">Tanggal Bukti Struk / S-46</label>
-                <input type="date" id="bbm_tanggalBukti" class="form-control" onchange="onBbmRowFieldChange()">
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="bbm_tanggalKuitansi">Bulan / Tanggal Kuitansi</label>
-                <input type="text" id="bbm_tanggalKuitansi" class="form-control" value="Desember 2026" oninput="onBbmRowFieldChange()" placeholder="Contoh: Desember 2026">
-              </div>
-            </div>
-
-            <div class="form-grid form-grid-4">
-              <div class="form-group">
-                <label class="form-label" for="bbm_noBukti">Nomor Bukti</label>
-                <input type="text" id="bbm_noBukti" class="form-control" value="-" oninput="onBbmRowFieldChange()">
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="bbm_noKuitansi">Nomor Kuitansi</label>
-                <input type="text" id="bbm_noKuitansi" class="form-control font-mono" value="            /KW/Bend/Satker-Setjen/2026" oninput="onBbmRowFieldChange()">
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="bbm_nomorSPM">Nomor SPM</label>
-                <input type="text" id="bbm_nomorSPM" class="form-control" value="-" oninput="onBbmRowFieldChange()" placeholder="-">
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="bbm_nomorSPD">Nomor SP2D</label>
-                <input type="text" id="bbm_nomorSPD" class="form-control" value="-" oninput="onBbmRowFieldChange()" placeholder="-">
               </div>
             </div>
 
@@ -2717,8 +2666,9 @@
                   <thead>
                     <tr>
                       <th style="width: 44px;" class="tc">No</th>
-                      <th style="width: 220px;">Pelaku BBM (Pegawai)</th>
-                      <th style="width: 190px;">Kendaraan &amp; Plat Nopol</th>
+                      <th style="width: 190px;">Pelaku BBM (Pegawai)</th>
+                      <th style="width: 110px;">Jenis Kendaraan</th>
+                      <th style="width: 150px;">Nopol</th>
                       <th style="width: 130px;">Tanggal Struk</th>
                       <th style="width: 140px;">Jenis BBM</th>
                       <th style="width: 80px;" class="tr">Liter</th>
@@ -2834,7 +2784,7 @@
                     <th style="width: 40px;" class="tc">No</th>
                     <th>Kendaraan &amp; Plat</th>
                     <th>Pelaksana</th>
-                    <th>Tanggal Struk</th>
+                    <th>No. ST</th>
                     <th class="tr">Total (Rp)</th>
                     <th class="tc" style="width: 100px;">Status</th>
                     <th class="tc" style="width: 220px;">Aksi</th>
@@ -3823,9 +3773,9 @@
 <script src="js/06-documents/01-render-nominatif-dan-rekap.js?v=20261126_13"></script>
 <script src="js/06-documents/02-render-rincian-per-orang.js?v=20261126_13"></script>
 <script src="js/06-documents/03-render-dpr-per-orang.js?v=20261126_13"></script>
-<script src="js/06-documents/04-render-bbm.js?v=20261127_13"></script>
+<script src="js/06-documents/04-render-bbm.js?v=20261127_20"></script>
 <script src="js/07-excel/01-ekspor-impor-excel.js?v=20261127_06"></script>
-<script src="js/07-excel/02-ekspor-bbm-excel.js?v=20261127_12"></script>
+<script src="js/07-excel/02-ekspor-bbm-excel.js?v=20261127_20"></script>
 <script src="js/08-ui/01-mode-tampilan.js?v=20261126_13"></script>
 <script src="js/08-ui/02-init-aplikasi.js?v=20261126_13"></script>
 <script src="js/08-ui/03-validasi-form.js?v=20261126_13"></script>
@@ -3838,6 +3788,6 @@
 <script src="js/08-ui/10-autosave-draft.js?v=20261127_04"></script>
 <script src="js/08-ui/11-riwayat-perjalanan.js?v=20261127_04"></script>
 <script src="js/08-ui/12-modal-dokumen-pdf.js?v=20261126_13"></script>
-<script src="js/08-ui/13-reimburse-bbm-ui.js?v=20261127_13"></script>
+<script src="js/08-ui/13-reimburse-bbm-ui.js?v=20261127_20"></script>
 </body>
 </html>

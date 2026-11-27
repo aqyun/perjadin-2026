@@ -31,10 +31,57 @@ function formatTanggalIndoLengkap(dStr) {
   return dStr;
 }
 
-function getDefaultBbmData() {
+function getBbmReceiptPeriod(data = {}) {
+  const itemDates = Array.isArray(data.items) ? data.items.map(item => item.tanggal).filter(Boolean) : [];
+  const dates = [...itemDates, data.tanggalKembali, data.tanggalBerangkat, data.tanggalBukti]
+    .filter(date => /^\d{4}-\d{2}-\d{2}$/.test(date || ''))
+    .sort();
+  const referenceDate = dates[dates.length - 1] || new Date().toISOString().slice(0, 10);
+  const [tahun, bulan] = referenceDate.split('-');
+  const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
   return {
+    tanggalBukti: referenceDate,
+    tahun,
+    tanggalKuitansi: `${months[parseInt(bulan, 10) - 1]} ${tahun}`
+  };
+}
+
+function getBbmUraianKegiatan(data = {}) {
+  const doc = typeof document !== 'undefined' ? document : null;
+  const agenda = data.agenda || doc?.getElementById('agenda')?.value || '';
+  const noST = data.noST || doc?.getElementById('noST')?.value || doc?.getElementById('noSTNum')?.value || '';
+  const receipt = getBbmReceiptPeriod(data);
+  const tglAwal = data.tanggalBerangkat || doc?.getElementById('tglBerangkat')?.value || receipt.tanggalBukti;
+  const tglAkhir = data.tanggalKembali || doc?.getElementById('tglKembali')?.value || tglAwal;
+
+  let tglRentang = '';
+  if (tglAwal && tglAkhir && tglAwal !== tglAkhir) {
+    tglRentang = `${formatTanggalIndoLengkap(tglAwal)} s.d. ${formatTanggalIndoLengkap(tglAkhir)}`;
+  } else if (tglAwal) {
+    tglRentang = formatTanggalIndoLengkap(tglAwal);
+  } else {
+    tglRentang = formatTanggalIndoLengkap(receipt.tanggalBukti);
+  }
+
+  if (agenda || noST) {
+    return `Pembelian BBM untuk kegiatan perjalanan dinas dalam rangka ${agenda || '...'} tanggal ${tglRentang} dengan Nomor ST ${noST || '...'}.`;
+  }
+
+  const kendLabel = `${data.kendaraan || 'Mobil'} ${data.kategoriKendaraan === 'pribadi' ? 'Pribadi' : 'Dinas'}${data.platNomor ? ' - ' + data.platNomor : ''}`;
+  return `Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan ${kendLabel}.`;
+}
+
+function getBbmUraianKuitansi(data = {}) {
+  const doc = typeof document !== 'undefined' ? document : null;
+  const base = getBbmUraianKegiatan(data).replace(/\s+Output\s*:?\s*.*$/i, '').trim();
+  const output = data.namaAkun || doc?.getElementById('bbm_namaAkun')?.value || 'Belanja Pemeliharaan Peralatan dan Mesin';
+  return `${base} Output ${output}`;
+}
+
+function getDefaultBbmData() {
+  const data = {
     id: 'bbm_' + Date.now(),
-    kategoriKendaraan: 'dinas', // 'dinas' | 'pribadi'
+    kategoriKendaraan: 'dinas',
     tanggalMasuk: '',
     pelaksanaPanggilan: 'Yogi Pakpahan',
     pelaksanaNama: 'Yogi Andre Yonatan Pakpahan, S.P.W.K',
@@ -48,13 +95,10 @@ function getDefaultBbmData() {
     tanggalKembali: '2026-10-16',
     nomorSPM: '-',
     nomorSPD: '-',
-    pekerjaan: 'Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan Mobil Dinas (B 2577 KRK).',
-    pekerjaanKuitansi: 'Pembelian BBM untuk kegiatan perjalanan dinas dalam rangka Pembuatan Video Dokumenter dan Pengambilan Footage Penerima Manfaat Bedah Rumah BSPS di Pulau Lancang, Kel. Pulau Pari, Kab. Kepulauan Seribu tanggal 14 Oktober 2026 s.d. 16 Oktober 2026 dengan Nomor ST 395/ST/Sj.07/2026.',
     kendaraan: 'Mobil',
     platNomor: 'B 2577 KRK',
-    pemilikMobil: '',
-    tanggalBukti: '',
-    tanggalKuitansi: 'Desember 2026',
+    tanggalBukti: '2026-11-20',
+    tanggalKuitansi: 'November 2026',
     tempatKota: 'Jakarta',
     akun: '146.01.WA.7665.EBA.994.002.0D.523121',
     namaAkun: 'Belanja Pemeliharaan Peralatan dan Mesin',
@@ -73,7 +117,7 @@ function getDefaultBbmData() {
         spbu: 'SPBU Pertamina',
         liter: 65,
         jumlah: 1000000,
-        uraian: 'Pengisian Bahan Bakar Minyak (BBM) Pertamina Dex - Mobil B 2577 KRK'
+        uraian: 'Pengisian Bahan Bakar Minyak (BBM) Pertamina Dex - Mobil B 2577 KRK an. Ahmad Jayadi, S.Hum., MT.'
       },
       {
         id: 2,
@@ -86,7 +130,7 @@ function getDefaultBbmData() {
         spbu: 'SPBU Pertamina',
         liter: 65,
         jumlah: 1000000,
-        uraian: 'Pengisian Bahan Bakar Minyak (BBM) Pertamina Dex - Mobil B 2577 KRK'
+        uraian: 'Pengisian Bahan Bakar Minyak (BBM) Pertamina Dex - Mobil B 2577 KRK an. Fitrah Faizal, S.I.Kom.'
       }
     ],
     nilaiTotal: 2000000,
@@ -100,10 +144,13 @@ function getDefaultBbmData() {
       bendaharaNip: '198004022014081001',
       kasubbagTuNama: 'Ahmad Jayadi, S.Hum., MT.',
       kasubbagTuNip: '198702182010121003',
-      verifikatorNama: '…......…...........…........................................',
+      verifikatorNama: 'ΓÇª......ΓÇª...........ΓÇª........................................',
       verifikatorNip: ''
     }
   };
+  data.pekerjaan = getBbmUraianKegiatan(data);
+  data.pekerjaanKuitansi = getBbmUraianKuitansi(data);
+  return data;
 }
 
 /**
@@ -113,8 +160,8 @@ function getDefaultBbmData() {
  */
 function renderBbmChecklistHtml(d) {
   const data = d || getDefaultBbmData();
+  const receipt = getBbmReceiptPeriod(data);
   const tglMasuk = formatTanggalIndoLengkap(data.tanggalMasuk);
-  const tglBukti = formatTanggalIndoLengkap(data.tanggalBukti);
   const nilaiFmt = Number(data.nilaiTotal || 0).toLocaleString('id-ID');
   const logoSrc = (typeof LOGO_PKP_BASE64 !== 'undefined' && LOGO_PKP_BASE64) ? LOGO_PKP_BASE64 : 'logo-pkp.webp';
   const alamat = (typeof document !== 'undefined' && ((document.getElementById('cfg_alamatSatker')?.value || document.getElementById('alamatSatker')?.value) || '')) || 'Raden Patah No. 1 RT. 002 RW. 001 Kebayoran Baru, Jakarta Selatan - DKI Jakarta';
@@ -124,9 +171,7 @@ function renderBbmChecklistHtml(d) {
     ? resolveBbmPelaksanaIdentity(pelaksanaRaw, data.pelaksanaNip).nama
     : pelaksanaRaw;
 
-  const kendLabel = `${data.kendaraan || 'Mobil'} ${data.kategoriKendaraan === 'pribadi' ? 'Pribadi' : 'Dinas'}${data.platNomor ? ' - ' + data.platNomor : ''}`;
-
-  const pekerjaanText = data.pekerjaan || `Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan ${kendLabel}.`;
+  const pekerjaanText = getBbmUraianKegiatan(data);
 
   return `
     <div class="bbm-paper bbm-paper-checklist" style="font-family: Arial, sans-serif; color: #000; background: #fff;">
@@ -197,7 +242,7 @@ function renderBbmChecklistHtml(d) {
               <div style="display: flex; align-items: flex-start;">
                 <span style="width: 115px; flex-shrink: 0; font-weight: bold; font-size: 10px; line-height: 1.25;">Tanggal Bukti<br>Pembayaran /<br>Kuitansi / SPK</span>
                 <span style="width: 14px; text-align: center; flex-shrink: 0; padding-top: 1px;">:</span>
-                <span style="padding-top: 1px; white-space: nowrap;">${tglBukti || '&nbsp;'}</span>
+                <span style="padding-top: 1px; white-space: nowrap;">&nbsp;</span>
               </div>
             </td>
           </tr>
@@ -330,13 +375,12 @@ function renderBbmChecklistHtml(d) {
  */
 function renderBbmKuitansiHtml(d) {
   const data = d || getDefaultBbmData();
+  const receipt = getBbmReceiptPeriod(data);
+  const noKuitansi = `            /KW/Bend/Satker-Setjen/${receipt.tahun}`;
   const terbilangTeks = (typeof terbilang === 'function')
     ? terbilang(data.nilaiTotal || 0)
     : 'Satu Juta Rupiah';
 
-  const kendLabel = `${data.kendaraan || 'Mobil'} ${data.kategoriKendaraan === 'pribadi' ? 'Pribadi' : 'Dinas'}${data.platNomor ? ' - ' + data.platNomor : ''}`;
-
-  // Pembuat Daftar sama dengan Pelaksana Pertanggungjawaban pembuat berkas perjadin
   const pelaksanaRaw = (typeof document !== 'undefined' && document.getElementById('lk_pelaksana')?.value) || data.pelaksanaNama || 'Yogi Andre Yonatan Pakpahan, S.P.W.K';
   const pelIdentity = (typeof resolveBbmPelaksanaIdentity === 'function')
     ? resolveBbmPelaksanaIdentity(pelaksanaRaw, data.pelaksanaNip)
@@ -344,30 +388,7 @@ function renderBbmKuitansiHtml(d) {
   const pelaksanaNama = pelIdentity.nama;
   const pelaksanaNip = pelIdentity.nip || '199511272025061006';
 
-  // Format Uraian Kuitansi Formal Aturan 1:
-  // "Pembelian BBM untuk kegiatan perjalanan dinas dalam rangka (...) tanggal (...) dengan Nomor ST (...)."
-  const agenda = data.agenda || (typeof document !== 'undefined' && document.getElementById('agenda')?.value) || '';
-  const noST = data.noST || (typeof document !== 'undefined' && document.getElementById('noST')?.value) || '';
-  const tglAwal = data.tanggalBerangkat || (typeof document !== 'undefined' && document.getElementById('tglBerangkat')?.value) || data.tanggalBukti;
-  const tglAkhir = data.tanggalKembali || (typeof document !== 'undefined' && document.getElementById('tglKembali')?.value) || tglAwal;
-
-  let tglRentang = '';
-  if (tglAwal && tglAkhir && tglAwal !== tglAkhir) {
-    tglRentang = `${formatTanggalIndoLengkap(tglAwal)} s.d. ${formatTanggalIndoLengkap(tglAkhir)}`;
-  } else if (tglAwal) {
-    tglRentang = formatTanggalIndoLengkap(tglAwal);
-  } else {
-    tglRentang = formatTanggalIndoLengkap(data.tanggalBukti || '2026-11-20');
-  }
-
-  let defaultUraianKuitansi = '';
-  if (agenda || noST) {
-    defaultUraianKuitansi = `Pembelian BBM untuk kegiatan perjalanan dinas dalam rangka ${agenda || '...'} tanggal ${tglRentang} dengan Nomor ST ${noST || '...'}.`;
-  } else {
-    defaultUraianKuitansi = `Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan ${kendLabel}, Output: Perawatan Kendaraan Bermotor.`;
-  }
-
-  const uraianKuitansi = data.pekerjaanKuitansi || defaultUraianKuitansi;
+  const uraianKuitansi = getBbmUraianKuitansi(data);
 
   return `
     <div class="bbm-paper bbm-paper-kuitansi" style="padding: 20px;">
@@ -385,7 +406,7 @@ function renderBbmKuitansiHtml(d) {
             <tr>
               <td style="vertical-align: top;">Nomor Bukti</td>
               <td style="text-align: center; vertical-align: top;">:</td>
-              <td style="vertical-align: top; font-family: monospace;">${data.noKuitansi || '            /KW/Bend/Satker-Setjen/2026'}</td>
+              <td style="vertical-align: top; font-family: monospace;">${noKuitansi}</td>
             </tr>
             <tr>
               <td style="vertical-align: top;">Akun</td>
@@ -446,7 +467,7 @@ function renderBbmKuitansiHtml(d) {
               <tr>
                 <td style="width: 110px;">Tempat / Tanggal</td>
                 <td style="width: 10px; text-align: center;">:</td>
-                <td>Jakarta/ &nbsp; &nbsp; ${data.tanggalKuitansi || 'Desember 2026'}</td>
+                <td>Jakarta/ &nbsp; &nbsp; ${receipt.tanggalKuitansi}</td>
               </tr>
             </table>
             <div>Pembuat Daftar</div>
@@ -505,25 +526,26 @@ function renderBbmKuitansiHtml(d) {
  */
 function renderBbmRincianHtml(d) {
   const data = d || getDefaultBbmData();
+  const receipt = getBbmReceiptPeriod(data);
   const items = (data.items && data.items.length) ? data.items : [
     {
       id: 1,
       pelaksanaNama: 'Ahmad Jayadi, S.Hum., MT.',
-      tanggal: data.tanggalBukti || '2026-11-20',
+      tanggal: receipt.tanggalBukti,
       kendaraan: 'Mobil',
       platNomor: 'B 2577 KRK',
       jenisBbm: 'Pertamina Dex',
-      uraian: 'Pengisian Bahan Bakar Minyak (BBM) Pertamina Dex - Mobil B 2577 KRK',
+      uraian: 'Pengisian Bahan Bakar Minyak (BBM) Pertamina Dex - Mobil B 2577 KRK an. Ahmad Jayadi, S.Hum., MT.',
       jumlah: 1000000
     },
     {
       id: 2,
       pelaksanaNama: 'Fitrah Faizal, S.I.Kom.',
-      tanggal: data.tanggalBukti || '2026-11-20',
+      tanggal: receipt.tanggalBukti,
       kendaraan: 'Mobil',
       platNomor: 'B 2577 KRK',
       jenisBbm: 'Pertamina Dex',
-      uraian: 'Pengisian Bahan Bakar Minyak (BBM) Pertamina Dex - Mobil B 2577 KRK',
+      uraian: 'Pengisian Bahan Bakar Minyak (BBM) Pertamina Dex - Mobil B 2577 KRK an. Fitrah Faizal, S.I.Kom.',
       jumlah: 1000000
     }
   ];
@@ -531,7 +553,7 @@ function renderBbmRincianHtml(d) {
   // Group items by date, then by pelaksana
   const dateGroups = {};
   items.forEach(item => {
-    const tgl = item.tanggal || data.tanggalBukti || '2026-11-20';
+    const tgl = item.tanggal || receipt.tanggalBukti;
     if (!dateGroups[tgl]) dateGroups[tgl] = {};
     const pel = (item.pelaksanaNama || data.pelaksanaNama || 'Pelaksana BBM').trim();
     if (!dateGroups[tgl][pel]) dateGroups[tgl][pel] = [];
@@ -561,7 +583,7 @@ function renderBbmRincianHtml(d) {
 
       // 3. Baris Struk di bawah pelaku tersebut (nomor berulang mulai dari 1)
       dateGroups[tgl][pelName].forEach((item, itemIdx) => {
-        const itemUraian = item.uraian || `Pengisian Bahan Bakar Minyak (BBM) ${item.jenisBbm || 'Pertamina Dex'} - ${item.kendaraanPlat || `${item.kendaraan || data.kendaraan || 'Mobil'} ${item.platNomor || data.platNomor || 'B 2577 KRK'}`}`;
+        const itemUraian = item.uraian || `Pengisian Bahan Bakar Minyak (BBM) ${item.jenisBbm || 'Pertamina Dex'} - ${item.kendaraanPlat || `${item.kendaraan || data.kendaraan || 'Mobil'} ${item.platNomor || data.platNomor || 'B 2577 KRK'}`} an. ${pelName}`;
         groupedRowsHtml += `
           <tr>
             <td style="border: 1px solid #000; padding: 5px 8px; text-align: center;">${itemIdx + 1}</td>
@@ -627,7 +649,7 @@ function renderBbmRincianHtml(d) {
       <!-- TANDA TANGAN PPK KANAN -->
       <div style="display: flex; justify-content: flex-end;">
         <div style="width: 320px; font-size: 11px; text-align: left; line-height: 1.35;">
-          <div>Jakarta, &nbsp; &nbsp; &nbsp; ${data.tanggalKuitansi || 'Desember 2026'}</div>
+          <div>Jakarta, &nbsp; &nbsp; &nbsp; ${receipt.tanggalKuitansi}</div>
           <div style="margin-top: 3px;">Pejabat Pembuat Komitmen</div>
           <div>Sekretariat Jenderal</div>
           <div>Kementerian Perumahan dan Kawasan Permukiman</div>

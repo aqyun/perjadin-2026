@@ -212,6 +212,8 @@ async function syncTripsFromCloud(silent = false) {
         return tB - tA;
       });
 
+      combined.forEach(item => cacheBbmRecord(item));
+
       if (typeof saveTripHistoryList === 'function') {
         saveTripHistoryList(combined);
       }
@@ -274,10 +276,58 @@ async function executeSupabaseOperationWithFallback(operationFn, initialPayload)
   return await operationFn(curPayload);
 }
 
+async function hydrateTripBbmFromCloud(tripItem) {
+  if (!tripItem || tripItem.bbmData || tripItem.draft?.bbmData) {
+    cacheBbmRecord(tripItem);
+    return;
+  }
+  const cached = getCachedBbmRecord(tripItem);
+  if (cached) {
+    tripItem.bbmData = cached;
+    if (tripItem.draft) tripItem.draft.bbmData = cached;
+    return;
+  }
+
+  const client = getSupabaseClient();
+  if (!client || (!tripItem.cloudId && !normalizeStKey(tripItem.noST))) return;
+  try {
+    let query = client.from('riwayat_perjadin').select('payload_json');
+    if (tripItem.cloudId) {
+      query = query.eq('id', tripItem.cloudId);
+    } else {
+      query = query.eq('nomor_st', tripItem.noST);
+    }
+    const { data, error } = await query.limit(50);
+    if (error || !Array.isArray(data)) return;
+    const targetKey = getTripCompositeDedupeKey(tripItem);
+    const matched = tripItem.cloudId
+      ? data[0]
+      : data.find(row => {
+        const payload = row.payload_json || {};
+        const key = getTripCompositeDedupeKey(payload);
+        return key && targetKey && key === targetKey;
+      });
+    const bbm = matched?.payload_json?.bbmData || matched?.payload_json?.draft?.bbmData;
+    if (!bbm) return;
+    tripItem.bbmData = bbm;
+    if (tripItem.draft) tripItem.draft.bbmData = bbm;
+    cacheBbmRecord(tripItem, bbm);
+  } catch (e) {
+    console.warn('Gagal memuat BBM Cloud untuk pembaruan perjalanan:', e);
+  }
+}
+
 // Simpan data perjalanan saat ini langsung ke Cloud Supabase Publik (Anti-Duplikat & Thread-Safe)
-async function uploadTripToCloud(tripItem) {
+async function uploadTripToCloud(tripItem, options = {}) {
   const client = getSupabaseClient();
   if (!client || !tripItem) return null;
+
+  if (options.removeBbm) {
+    delete tripItem.bbmData;
+    if (tripItem.draft) delete tripItem.draft.bbmData;
+  } else {
+    await hydrateTripBbmFromCloud(tripItem);
+  }
 
   window._inFlightCloudUploads = window._inFlightCloudUploads || new Map();
   const compKey = getTripCompositeDedupeKey(tripItem);
@@ -415,7 +465,13 @@ async function uploadTripToCloud(tripItem) {
   })();
 
   window._inFlightCloudUploads.set(lockKey, uploadPromise);
-  return uploadPromise;
+  const cloudId = await uploadPromise;
+  if (cloudId && options.removeBbm) {
+    clearCachedBbmRecord(tripItem);
+  } else if (cloudId) {
+    cacheBbmRecord(tripItem);
+  }
+  return cloudId;
 }
 
 // Sinkronkan berkas lokal yang benar-benar belum memiliki cloudId (khusus pemanggil manual, bukan refresh halaman)

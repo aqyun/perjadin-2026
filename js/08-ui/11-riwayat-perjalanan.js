@@ -3,12 +3,60 @@
 // =====================================================================
 const TRIP_HISTORY_KEY = 'perdinku_trip_history_v1';
 
+function cacheBbmRecord(trip, record = null) {
+  const bbm = record || trip?.bbmData || trip?.draft?.bbmData;
+  if (!bbm) return null;
+  window._bbmCloudRecords = window._bbmCloudRecords || new Map();
+  window._bbmCloudTripIndex = window._bbmCloudTripIndex || new Map();
+  const recordId = String(bbm.id || (trip?.id ? `bbm_trip_${trip.id}` : ''));
+  if (!recordId) return bbm;
+  if (trip?.id) {
+    const tripKey = String(trip.id);
+    bbm.tripId = tripKey;
+    const previousId = window._bbmCloudTripIndex.get(tripKey);
+    if (previousId && previousId !== recordId) window._bbmCloudRecords.delete(previousId);
+    window._bbmCloudTripIndex.set(tripKey, recordId);
+  }
+  if (trip?.cloudId) bbm.tripCloudId = trip.cloudId;
+  window._bbmCloudRecords.set(recordId, bbm);
+  return bbm;
+}
+
+function getCachedBbmRecord(trip) {
+  if (!trip || !window._bbmCloudTripIndex || !window._bbmCloudRecords) return null;
+  return window._bbmCloudRecords.get(window._bbmCloudTripIndex.get(String(trip.id))) || null;
+}
+
+function clearCachedBbmRecord(trip) {
+  if (!trip || !window._bbmCloudTripIndex || !window._bbmCloudRecords) return;
+  const tripKey = String(trip.id);
+  const recordId = window._bbmCloudTripIndex.get(tripKey);
+  if (recordId) window._bbmCloudRecords.delete(recordId);
+  window._bbmCloudTripIndex.delete(tripKey);
+}
+
+function stripBbmDataForLocalStorage(item) {
+  if (!item || typeof item !== 'object') return item;
+  const copy = { ...item };
+  delete copy.bbmData;
+  if (copy.draft && typeof copy.draft === 'object') {
+    const draft = { ...copy.draft };
+    delete draft.bbmData;
+    copy.draft = draft;
+  }
+  return copy;
+}
+
 function getTripHistoryList() {
   try {
     const raw = localStorage.getItem(TRIP_HISTORY_KEY);
     let list = raw ? JSON.parse(raw) : [];
     if ((!Array.isArray(list) || list.length === 0) && typeof window !== 'undefined' && Array.isArray(window.INITIAL_TRIPS_ARCHIVE) && window.INITIAL_TRIPS_ARCHIVE.length > 0) {
       list = [...window.INITIAL_TRIPS_ARCHIVE];
+      saveTripHistoryList(list);
+    }
+    if (Array.isArray(list) && list.some(item => item?.bbmData || item?.draft?.bbmData)) {
+      list.forEach(item => cacheBbmRecord(item));
       saveTripHistoryList(list);
     }
     return Array.isArray(list) ? list : [];
@@ -20,7 +68,8 @@ function getTripHistoryList() {
 
 function saveTripHistoryList(list) {
   try {
-    localStorage.setItem(TRIP_HISTORY_KEY, JSON.stringify(list));
+    const localList = (Array.isArray(list) ? list : []).map(stripBbmDataForLocalStorage);
+    localStorage.setItem(TRIP_HISTORY_KEY, JSON.stringify(localList));
   } catch (e) {
     console.warn('Gagal menyimpan riwayat perjalanan:', e);
   }
@@ -305,6 +354,8 @@ function saveCurrentTripToHistory(isManual = false, customCsvData = null) {
     csv_data: csvStr
   };
 
+  cacheBbmRecord(historyItem);
+
   let list = getTripHistoryList();
   // Cari entri yang sudah ada berdasarkan context revisi aktif, cloudId, id, atau composite key (No ST + Metode + MAK)
   const existingIdx = list.findIndex(item => {
@@ -519,11 +570,12 @@ function loadTripFromHistory(id, event = null) {
   }
 
   // Muat bundle berkas BBM yang terikat dengan SPT ini
-  if ((item.bbmData || (item.draft && item.draft.bbmData)) && typeof loadBbmRecordIntoForm === 'function') {
+  const bbmRecord = getCachedBbmRecord(item);
+  if (bbmRecord && typeof loadBbmRecordIntoForm === 'function') {
     try {
-      loadBbmRecordIntoForm(item.bbmData || item.draft.bbmData);
+      loadBbmRecordIntoForm(bbmRecord);
     } catch (e) {
-      console.warn('Gagal memuat bbmData bundle saat loadTripToForm:', e);
+      console.warn('Gagal memuat bundle BBM saat loadTripToForm:', e);
     }
   }
 
@@ -1021,6 +1073,12 @@ function renderTripHistory(filterText = '') {
     const storagePill = isCloud
       ? '<span class="history-cloud-pill" title="Tersimpan di Cloud Database">☁️ Cloud</span>'
       : '<span class="history-local-pill" title="Tersimpan di Penyimpanan Lokal Browser">💾 Lokal</span>';
+    const bbmRecord = getCachedBbmRecord(item);
+    const bbmPill = bbmRecord ? `
+      <span class="history-cloud-pill history-bbm-pill" title="Berkas BBM tersimpan di Cloud">
+        <svg class="ico" style="width:14px;height:14px;"><use href="#i-file"></use></svg>
+        Berkas BBM — No. ST: ${(typeof escapeHtml === 'function' ? escapeHtml(bbmRecord.noST || item.noST || '-') : (bbmRecord.noST || item.noST || '-'))}
+      </span>` : '';
 
     const rawMetode = item.metodePembayaran || (item.draft && item.draft.fields && (item.draft.fields.metodePembayaran || item.draft.fields.lk_metodePembayaran)) || 'LS';
     const isKKP = String(rawMetode).trim().toUpperCase() === 'KKP';
@@ -1118,6 +1176,7 @@ function renderTripHistory(filterText = '') {
             ${safeMak ? `<span class="history-mak-pill" title="Mata Anggaran Kegiatan (MAK)">MAK: ${safeMak}</span>` : ''}
             ${statusBadge}
             ${storagePill}
+            ${bbmPill}
           </div>
           <div class="history-card-date">
             <svg class="ico"><use href="#i-calendar"></use></svg>
