@@ -2518,6 +2518,44 @@
 
       <!-- SUB-VIEW 1: FORMULIR & RIWAYAT -->
       <div id="bbm_sub_form" class="bbm-sub-view-pane">
+        <!-- Banner & Selector Tautan SPT Perjadin (Satu Bundle per SPT & Cloud Sync) -->
+        <div class="card bbm-spt-link-card" style="border: 1.5px solid #0284c7; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); margin-bottom: 20px;">
+          <div class="card-body" style="padding: 16px 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 12px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="background: #0284c7; color: #fff; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                  <svg class="ico" style="fill: #fff; width: 20px; height: 20px;"><use href="#i-link"></use></svg>
+                </div>
+                <div>
+                  <h4 style="margin: 0; font-size: 14px; font-weight: 700; color: #0369a1;">Integrasi Sebundle Surat Tugas (SPT) &amp; Cloud Database</h4>
+                  <div style="font-size: 11.5px; color: #0284c7;">Berkas pertanggungjawaban BBM dipisahkan pada Akun D.523121, namun otomatis terhubung &amp; tersimpan dalam 1 bundle per SPT di Cloud</div>
+                </div>
+              </div>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="syncBbmFromActiveSpt()" title="Tarik data nomor ST, agenda, tanggal, pelaksana dan personil dari form aktif">
+                  <svg class="ico"><use href="#i-refresh"></use></svg> Tarik dari Form SPT Aktif
+                </button>
+              </div>
+            </div>
+
+            <div class="form-grid form-grid-2" style="margin-bottom: 8px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-size: 12px; color: #0369a1; font-weight: 600;">Pilih SPT / Riwayat Perjadin Terkait :</label>
+                <select id="bbm_spt_selector" class="form-control" style="font-weight: 600; font-size: 12.5px; border-color: #38bdf8;" onchange="onBbmSptSelectorChange()">
+                  <option value="active">-- SPT Aktif pada Formulir Input Perjadin --</option>
+                  <!-- Populated from riwayat_perjadin -->
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-size: 12px; color: #0369a1; font-weight: 600;">Status Tautan &amp; Pelaksana :</label>
+                <div id="bbm_spt_summary" style="background: #ffffff; border: 1px solid #bae6fd; border-radius: 6px; padding: 7px 12px; font-size: 12px; line-height: 1.4; color: #0f172a;">
+                  <strong>ST:</strong> <span id="bbm_spt_no_lbl">395/ST/Sj.07/2026</span> | <strong>Pelaksana:</strong> <span id="bbm_spt_pelaksana_lbl">Yogi Andre Yonatan Pakpahan</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Card Form Input -->
         <div class="card bbm-form-card">
           <div class="card-head">
@@ -2528,6 +2566,17 @@
             <span class="badge badge-success">Akun 523121</span>
           </div>
           <div class="card-body">
+            <!-- Banner Peringatan Aturan 1 Desember 2026 -->
+            <div id="bbm_rule_december_banner" style="display: none; background: #fff1f2; border: 1.5px solid #f43f5e; color: #9f1239; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-size: 12px; line-height: 1.5;">
+              <div style="display: flex; gap: 10px; align-items: flex-start;">
+                <span style="font-size: 18px; line-height: 1;">⛔</span>
+                <div>
+                  <strong style="display: block; font-size: 12.5px; margin-bottom: 2px;">KETENTUAN PEMBELIAN BBM MULAI 1 DESEMBER 2026:</strong>
+                  Terhitung mulai tanggal <strong>1 Desember 2026</strong>, penggantian biaya (reimburse/klaim) pembelian BBM untuk <strong>kendaraan pribadi</strong> dalam rangka perjalanan dinas <strong>tidak lagi diperkenankan</strong>, meskipun kendaraan pribadi tersebut digunakan untuk tugas dinas. Berkas klaim mobil pribadi hanya berlaku untuk kegiatan sebelum 1 Desember 2026.
+                </div>
+              </div>
+            </div>
+
             <!-- Kategori Kendaraan: Mobil Dinas vs Mobil Pribadi -->
             <div class="bbm-kategori-selector" style="display: flex; align-items: center; justify-content: space-between; background: #f0f7ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 12px 18px; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
               <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
@@ -2677,16 +2726,17 @@
             </div>
 
             <div class="table-responsive">
-              <table class="bbm-items-table">
+              <table class="bbm-items-table" style="min-width: 980px;">
                 <thead>
                   <tr>
-                    <th style="width: 44px;" class="tc">No</th>
-                    <th style="width: 140px;">Tanggal Struk</th>
-                    <th style="width: 170px;">Jenis BBM</th>
-                    <th>Uraian Pengisian &amp; SPBU</th>
-                    <th style="width: 100px;" class="tr">Liter</th>
-                    <th style="width: 170px;" class="tr">Jumlah (Rp)</th>
-                    <th style="width: 50px;" class="tc">Aksi</th>
+                    <th style="width: 40px;" class="tc">No</th>
+                    <th style="width: 220px;">Pelaku BBM (Pegawai)</th>
+                    <th style="width: 190px;">Kendaraan &amp; Plat Nopol</th>
+                    <th style="width: 130px;">Tanggal Struk</th>
+                    <th style="width: 140px;">Jenis BBM</th>
+                    <th style="width: 80px;" class="tr">Liter</th>
+                    <th style="width: 140px;" class="tr">Jumlah (Rp)</th>
+                    <th style="width: 48px;" class="tc">Aksi</th>
                   </tr>
                 </thead>
                 <tbody id="bbm_items_body">
@@ -3776,21 +3826,21 @@
 <script src="js/06-documents/01-render-nominatif-dan-rekap.js?v=20261126_13"></script>
 <script src="js/06-documents/02-render-rincian-per-orang.js?v=20261126_13"></script>
 <script src="js/06-documents/03-render-dpr-per-orang.js?v=20261126_13"></script>
-<script src="js/06-documents/04-render-bbm.js?v=20261127_03"></script>
-<script src="js/07-excel/01-ekspor-impor-excel.js?v=20261126_13"></script>
-<script src="js/07-excel/02-ekspor-bbm-excel.js?v=20261127_03"></script>
+<script src="js/06-documents/04-render-bbm.js?v=20261127_04"></script>
+<script src="js/07-excel/01-ekspor-impor-excel.js?v=20261127_04"></script>
+<script src="js/07-excel/02-ekspor-bbm-excel.js?v=20261127_04"></script>
 <script src="js/08-ui/01-mode-tampilan.js?v=20261126_13"></script>
 <script src="js/08-ui/02-init-aplikasi.js?v=20261126_13"></script>
 <script src="js/08-ui/03-validasi-form.js?v=20261126_13"></script>
 <script src="js/08-ui/04-nomor-surat-tugas.js?v=20261126_13"></script>
 <script src="js/08-ui/05-loader-aplikasi.js?v=20261126_13"></script>
-<script src="js/08-ui/06-navigasi-tab.js?v=20261127_03"></script>
+<script src="js/08-ui/06-navigasi-tab.js?v=20261127_04"></script>
 <script src="js/08-ui/07-modal-selamat-datang.js?v=20261126_13"></script>
 <script src="js/08-ui/08-modal-pmk.js?v=20261126_13"></script>
 <script src="js/08-ui/09-daftar-pegawai.js?v=20261126_13"></script>
-<script src="js/08-ui/10-autosave-draft.js?v=20261126_13"></script>
-<script src="js/08-ui/11-riwayat-perjalanan.js?v=20261126_13"></script>
+<script src="js/08-ui/10-autosave-draft.js?v=20261127_04"></script>
+<script src="js/08-ui/11-riwayat-perjalanan.js?v=20261127_04"></script>
 <script src="js/08-ui/12-modal-dokumen-pdf.js?v=20261126_13"></script>
-<script src="js/08-ui/13-reimburse-bbm-ui.js?v=20261127_03"></script>
+<script src="js/08-ui/13-reimburse-bbm-ui.js?v=20261127_04"></script>
 </body>
 </html>

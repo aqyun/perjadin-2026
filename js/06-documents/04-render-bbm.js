@@ -42,11 +42,15 @@ function getDefaultBbmData() {
     namaPenyedia: 'Biro Komunikasi Publik',
     noBukti: '-',
     noKuitansi: '            /KW/Bend/Satker-Setjen/2026',
+    noST: '395/ST/Sj.07/2026',
+    agenda: 'Pembuatan Video Dokumenter dan Pengambilan Footage Penerima Manfaat Bedah Rumah BSPS di Pulau Lancang, Kel. Pulau Pari, Kab. Kepulauan Seribu',
+    tanggalBerangkat: '2026-10-14',
+    tanggalKembali: '2026-10-16',
     nomorSPM: '-',
     nomorSPD: '-',
     pekerjaan: 'Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan Mobil Dinas - TOYOTA INNOVA B 2577 KRK.',
-    pekerjaanKuitansi: 'Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan Mobil Dinas - TOYOTA INNOVA B 2577 KRK, Output: Perawatan Kendaraan Bermotor.',
-    kendaraan: 'TOYOTA INNOVA B 2577 KRK',
+    pekerjaanKuitansi: 'Pembelian BBM untuk kegiatan perjalanan dinas dalam rangka Pembuatan Video Dokumenter dan Pengambilan Footage Penerima Manfaat Bedah Rumah BSPS di Pulau Lancang, Kel. Pulau Pari, Kab. Kepulauan Seribu tanggal 14 Oktober 2026 s.d. 16 Oktober 2026 dengan Nomor ST 395/ST/Sj.07/2026.',
+    kendaraan: 'Innova',
     platNomor: 'B 2577 KRK',
     pemilikMobil: '',
     tanggalBukti: '2026-11-20',
@@ -60,15 +64,32 @@ function getDefaultBbmData() {
     items: [
       {
         id: 1,
+        pelaksanaNama: 'Ahmad Jayadi, S.Hum., MT.',
+        pelaksanaNip: '198702182010121003',
         tanggal: '2026-11-20',
-        uraian: 'Pengisian Bahan Bakar Minyak (BBM) Pertamina Dex - Mobil Innova B 2577 KRK',
-        spbu: 'SPBU Pertamina',
+        kendaraan: 'Innova',
+        platNomor: 'B 2577 KRK',
         jenisBbm: 'Pertamina Dex',
+        spbu: 'SPBU Pertamina',
         liter: 65,
-        jumlah: 1000000
+        jumlah: 1000000,
+        uraian: 'Pengisian Bahan Bakar Minyak (BBM) Pertamina Dex - Mobil Innova B 2577 KRK'
+      },
+      {
+        id: 2,
+        pelaksanaNama: 'Fitrah Faizal, S.I.Kom.',
+        pelaksanaNip: '199208152020121004',
+        tanggal: '2026-11-20',
+        kendaraan: 'Innova',
+        platNomor: 'B 2577 KRK',
+        jenisBbm: 'Pertamina Dex',
+        spbu: 'SPBU Pertamina',
+        liter: 65,
+        jumlah: 1000000,
+        uraian: 'Pengisian Bahan Bakar Minyak (BBM) Pertamina Dex - Mobil Innova B 2577 KRK'
       }
     ],
-    nilaiTotal: 1000000,
+    nilaiTotal: 2000000,
     catatan: '',
     pejabat: {
       ppkNama: 'Emanuel Pati Libak, S.Pd., M.T.',
@@ -88,6 +109,7 @@ function getDefaultBbmData() {
 /**
  * 1. RENDER CHECKLIST PENGENDALIAN PENGADAAN BARANG / JASA (LEMBAR KENDALI BBM)
  * 100% Plek Ketiplek Format Gambar User (BBM Only: Single Unified Border Box)
+ * Kop Mengikuti Standar Resmi PerdinKu & Pelaksana Pertanggungjawaban Sinkron dengan Berkas Perjadin
  */
 function renderBbmChecklistHtml(d) {
   const data = d || getDefaultBbmData();
@@ -95,7 +117,9 @@ function renderBbmChecklistHtml(d) {
   const tglBukti = formatTanggalIndoLengkap(data.tanggalBukti);
   const nilaiFmt = Number(data.nilaiTotal || 0).toLocaleString('id-ID');
   const logoSrc = (typeof LOGO_PKP_BASE64 !== 'undefined' && LOGO_PKP_BASE64) ? LOGO_PKP_BASE64 : 'logo-pkp.webp';
-  const alamat = (typeof document !== 'undefined' && document.getElementById('cfg_alamatSatker')?.value) || 'Jl. Kebon Sirih No.83, RT.2/RW.1, Kb. Sirih, Menteng, Jakarta Pusat, Daerah Khusus Ibukota Jakarta 10340';
+  const alamat = (typeof document !== 'undefined' && ((document.getElementById('cfg_alamatSatker')?.value || document.getElementById('alamatSatker')?.value) || '')) || 'Raden Patah No. 1 RT. 002 RW. 001 Kebayoran Baru, Jakarta Selatan - DKI Jakarta';
+
+  const pelaksana = (typeof document !== 'undefined' && document.getElementById('lk_pelaksana')?.value) || data.pelaksanaNama || data.pelaksanaPanggilan || 'Yogi Andre Yonatan Pakpahan, S.P.W.K';
 
   const kendLabel = (data.kategoriKendaraan === 'pribadi')
     ? `Mobil Pribadi - ${data.kendaraan || 'Kendaraan Pribadi'} ${data.platNomor ? '(' + data.platNomor + ')' : ''}`
@@ -105,14 +129,14 @@ function renderBbmChecklistHtml(d) {
 
   return `
     <div class="bbm-paper bbm-paper-checklist" style="font-family: Arial, sans-serif; color: #000; background: #fff;">
-      <!-- KOP KEMENTERIAN PKP RESMI -->
-      <header class="lembar-kendali-header" style="display: grid; grid-template-columns: 85px 1fr; gap: 14px; align-items: center; text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 8px;">
-        <img class="lembar-kendali-logo" src="${logoSrc}" alt="Logo PKP" style="width: 78px; height: 74px; object-fit: contain;">
+      <!-- KOP RESMI IDENTIK DENGAN LEMBAR KENDALI PERJADIN -->
+      <header class="lembar-kendali-header">
+        <img class="lembar-kendali-logo" src="${logoSrc}" alt="Logo PKP">
         <div>
-          <div class="lembar-kendali-ministry" style="font-size: 13.5px; font-weight: 800; color: #0E5B73; letter-spacing: 0.5px;">KEMENTERIAN PERUMAHAN DAN KAWASAN PERMUKIMAN <span style="color: #D5C58A;">REPUBLIK INDONESIA</span></div>
-          <strong class="lembar-kendali-secretariat" style="display: block; font-size: 15px; font-weight: 900; line-height: 1.2; color: #000;">SEKRETARIAT JENDERAL</strong>
-          <div class="lembar-kendali-unit" style="font-size: 13px; font-weight: 700; color: #000;">SATUAN KERJA</div>
-          <div class="lembar-kendali-address" style="font-size: 10px; margin-top: 2px; color: #000;">${alamat}</div>
+          <div class="lembar-kendali-ministry">KEMENTERIAN PERUMAHAN DAN KAWASAN PERMUKIMAN <span>REPUBLIK INDONESIA</span></div>
+          <strong class="lembar-kendali-secretariat">SEKRETARIAT JENDERAL</strong>
+          <div class="lembar-kendali-unit">SATUAN KERJA</div>
+          ${alamat ? `<div class="lembar-kendali-address">${alamat}</div>` : ''}
         </div>
       </header>
 
@@ -124,9 +148,9 @@ function renderBbmChecklistHtml(d) {
       <!-- KOTAK TABEL UTAMA CHECKLIST TERPADU BINGKAI HITAM -->
       <div class="bbm-checklist-main-box" style="border: 1.5px solid #000; background: #fff; color: #000; font-family: Arial, sans-serif; font-size: 11px; line-height: 1.35; box-sizing: border-box;">
         
-        <!-- BARIS 1: PELAKSANA PERTANGGUNGJAWABAN -->
+        <!-- BARIS 1: PELAKSANA PERTANGGUNGJAWABAN (SINKRON BERKAS PERJADIN) -->
         <div style="border-bottom: 1px solid #000; padding: 5px 8px; font-size: 11px;">
-          <strong>PELAKSANA PERTANGGUNGJAWABAN</strong> &nbsp; : &nbsp; ${data.pelaksanaPanggilan || data.pelaksanaNama || 'Yogi Pakpahan'}
+          <strong>PELAKSANA PERTANGGUNGJAWABAN</strong> &nbsp; : &nbsp; ${pelaksana}
         </div>
 
         <!-- BARIS 2: CHECKLIST PENGENDALIAN PENGADAAN BARANG / JASA -->
@@ -196,7 +220,7 @@ function renderBbmChecklistHtml(d) {
           <strong>Jenis Pengadaan :</strong> ${data.jenisPengadaan || 'Perawatan Kendaraan Bermotor'}
         </div>
 
-        <!-- BARIS 7-10: TABEL BERKAS KEGIATAN -->
+        <!-- BARIS 7-12: TABEL BERKAS KEGIATAN (TERMASUK SURAT TUGAS, UNDANGAN, LAPORAN, DOKUMENTASI) -->
         <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
           <colgroup>
             <col style="width: 48px;">
@@ -230,8 +254,29 @@ function renderBbmChecklistHtml(d) {
               <td style="border-bottom: 1px solid #000; padding: 5px;"></td>
             </tr>
             <tr>
-              <td style="border-right: 1px solid #000; padding: 5px; text-align: center;">3</td>
-              <td style="border-right: 1px solid #000; padding: 5px 8px;">Dokumentasi</td>
+              <td style="border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center;">3</td>
+              <td style="border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 5px 8px;">Surat Tugas</td>
+              <td style="border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;"></td>
+              <td style="border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;"></td>
+              <td style="border-bottom: 1px solid #000; padding: 5px;"></td>
+            </tr>
+            <tr>
+              <td style="border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center;">4</td>
+              <td style="border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 5px 8px;">Undangan (jika ada)</td>
+              <td style="border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;"></td>
+              <td style="border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;"></td>
+              <td style="border-bottom: 1px solid #000; padding: 5px;"></td>
+            </tr>
+            <tr>
+              <td style="border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center;">5</td>
+              <td style="border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 5px 8px;">Laporan Perjalanan Dinas</td>
+              <td style="border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;"></td>
+              <td style="border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;"></td>
+              <td style="border-bottom: 1px solid #000; padding: 5px;"></td>
+            </tr>
+            <tr>
+              <td style="border-right: 1px solid #000; padding: 5px; text-align: center;">6</td>
+              <td style="border-right: 1px solid #000; padding: 5px 8px;">Dokumentasi Kegiatan</td>
               <td style="border-right: 1px solid #000; padding: 5px;"></td>
               <td style="border-right: 1px solid #000; padding: 5px;"></td>
               <td style="padding: 5px;"></td>
@@ -239,8 +284,8 @@ function renderBbmChecklistHtml(d) {
           </tbody>
         </table>
 
-        <!-- BARIS 11: CATATAN (AREA KOSONG LAPANG ~80PX) -->
-        <div style="border-top: 1px solid #000; padding: 6px 8px; min-height: 80px; font-size: 11px; box-sizing: border-box;">
+        <!-- BARIS CATATAN -->
+        <div style="border-top: 1px solid #000; padding: 6px 8px; min-height: 65px; font-size: 11px; box-sizing: border-box;">
           <strong>Catatan :</strong> ${data.catatan ? `<span>${data.catatan}</span>` : ''}
         </div>
 
@@ -279,6 +324,8 @@ function renderBbmChecklistHtml(d) {
 /**
  * 2. RENDER KUITANSI / BUKTI PEMBAYARAN BBM (Akun 523121)
  * 100% Plek Ketiplek Format Box Gambar User (Image 1)
+ * Ketentuan Aturan 1: Uraian kuitansi menyebutkan maksud penugasan, tanggal rentang, dan Nomor ST.
+ * Pembuat Daftar sinkron dengan pelaksana pertanggungjawaban pembuat berkas perjadin.
  */
 function renderBbmKuitansiHtml(d) {
   const data = d || getDefaultBbmData();
@@ -290,7 +337,33 @@ function renderBbmKuitansiHtml(d) {
     ? `Mobil Pribadi - ${data.kendaraan || 'Kendaraan Pribadi'} ${data.platNomor ? '(' + data.platNomor + ')' : ''}`
     : `Mobil Dinas - ${data.kendaraan || 'TOYOTA INNOVA B 2577 KRK'}`;
 
-  const defaultUraianKuitansi = `Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan ${kendLabel}, Output: Perawatan Kendaraan Bermotor.`;
+  // Pembuat Daftar sama dengan Pelaksana Pertanggungjawaban pembuat berkas perjadin
+  const pelaksanaNama = (typeof document !== 'undefined' && document.getElementById('lk_pelaksana')?.value) || data.pelaksanaNama || 'Yogi Andre Yonatan Pakpahan, S.P.W.K';
+  const pelaksanaNip = data.pelaksanaNip || '199511272025061006';
+
+  // Format Uraian Kuitansi Formal Aturan 1:
+  // "Pembelian BBM untuk kegiatan perjalanan dinas dalam rangka (...) tanggal (...) dengan Nomor ST (...)."
+  const agenda = data.agenda || (typeof document !== 'undefined' && document.getElementById('agenda')?.value) || '';
+  const noST = data.noST || (typeof document !== 'undefined' && document.getElementById('noST')?.value) || '';
+  const tglAwal = data.tanggalBerangkat || (typeof document !== 'undefined' && document.getElementById('tglBerangkat')?.value) || data.tanggalBukti;
+  const tglAkhir = data.tanggalKembali || (typeof document !== 'undefined' && document.getElementById('tglKembali')?.value) || tglAwal;
+
+  let tglRentang = '';
+  if (tglAwal && tglAkhir && tglAwal !== tglAkhir) {
+    tglRentang = `${formatTanggalIndoLengkap(tglAwal)} s.d. ${formatTanggalIndoLengkap(tglAkhir)}`;
+  } else if (tglAwal) {
+    tglRentang = formatTanggalIndoLengkap(tglAwal);
+  } else {
+    tglRentang = formatTanggalIndoLengkap(data.tanggalBukti || '2026-11-20');
+  }
+
+  let defaultUraianKuitansi = '';
+  if (agenda || noST) {
+    defaultUraianKuitansi = `Pembelian BBM untuk kegiatan perjalanan dinas dalam rangka ${agenda || '...'} tanggal ${tglRentang} dengan Nomor ST ${noST || '...'}.`;
+  } else {
+    defaultUraianKuitansi = `Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan ${kendLabel}, Output: Perawatan Kendaraan Bermotor.`;
+  }
+
   const uraianKuitansi = data.pekerjaanKuitansi || defaultUraianKuitansi;
 
   return `
@@ -375,8 +448,8 @@ function renderBbmKuitansiHtml(d) {
             </table>
             <div>Pembuat Daftar</div>
             <div style="height: 52px;"></div>
-            <div>${data.pelaksanaNama || 'Yogi Andre Yonatan Pakpahan, S.P.W.K'}</div>
-            <div>NIP. ${cleanNip(data.pelaksanaNip || '199511272025061006')}</div>
+            <div>${pelaksanaNama}</div>
+            <div>NIP. ${cleanNip(pelaksanaNip)}</div>
           </div>
         </div>
 
@@ -424,35 +497,48 @@ function renderBbmKuitansiHtml(d) {
 
 /**
  * 3. RENDER DAFTAR RINCIAN PEMBAYARAN
- * 100% Plek Ketiplek Format Gambar User (Image 2)
- * Mendukung Multi-Struk BBM dikelompokkan berdasarkan Tanggal
+ * 100% Plek Ketiplek Format Gambar User (Image 4 / S-46 Multi-Pelaksana)
+ * Dikelompokkan berjenjang: Tanggal -> Nama Pelaku (colspan 3) -> Rincian Struk per Pelaku (Nomor 1, 2, ...)
  */
 function renderBbmRincianHtml(d) {
   const data = d || getDefaultBbmData();
   const items = (data.items && data.items.length) ? data.items : [
     {
       id: 1,
+      pelaksanaNama: 'Ahmad Jayadi, S.Hum., MT.',
       tanggal: data.tanggalBukti || '2026-11-20',
-      uraian: `Pengisian Bahan Bakar Minyak (BBM) Pertamina Dex - Mobil Innova ${data.platNomor || 'B 2577 KRK'}`,
-      spbu: 'SPBU Pertamina',
+      kendaraan: 'Innova',
+      platNomor: 'B 2577 KRK',
       jenisBbm: 'Pertamina Dex',
-      liter: 65,
-      jumlah: data.nilaiTotal || 1000000
+      uraian: 'Pengisian Bahan Bakar Minyak (BBM) Pertamina Dex - Mobil Innova B 2577 KRK',
+      jumlah: 1000000
+    },
+    {
+      id: 2,
+      pelaksanaNama: 'Fitrah Faizal, S.I.Kom.',
+      tanggal: data.tanggalBukti || '2026-11-20',
+      kendaraan: 'Innova',
+      platNomor: 'B 2577 KRK',
+      jenisBbm: 'Pertamina Dex',
+      uraian: 'Pengisian Bahan Bakar Minyak (BBM) Pertamina Dex - Mobil Innova B 2577 KRK',
+      jumlah: 1000000
     }
   ];
 
-  // Group items by date for clean rendering
+  // Group items by date, then by pelaksana
   const dateGroups = {};
-  items.forEach((item, idx) => {
+  items.forEach(item => {
     const tgl = item.tanggal || data.tanggalBukti || '2026-11-20';
-    if (!dateGroups[tgl]) dateGroups[tgl] = [];
-    dateGroups[tgl].push({ ...item, globalIdx: idx + 1 });
+    if (!dateGroups[tgl]) dateGroups[tgl] = {};
+    const pel = (item.pelaksanaNama || data.pelaksanaNama || 'Pelaksana BBM').trim();
+    if (!dateGroups[tgl][pel]) dateGroups[tgl][pel] = [];
+    dateGroups[tgl][pel].push(item);
   });
 
   let groupedRowsHtml = '';
   Object.keys(dateGroups).forEach(tgl => {
     const tglFormatted = formatTanggalIndoLengkap(tgl);
-    // Header Baris Tanggal
+    // 1. Baris Tanggal: No kosong, Uraian tanggal, Jumlah kosong
     groupedRowsHtml += `
       <tr>
         <td style="border: 1px solid #000; padding: 5px 8px;"></td>
@@ -460,20 +546,32 @@ function renderBbmRincianHtml(d) {
         <td style="border: 1px solid #000; padding: 5px 8px;"></td>
       </tr>
     `;
-    // Baris Struk di bawah tanggal tersebut
-    dateGroups[tgl].forEach(item => {
+
+    // 2. Baris Pelaku (colspan 3) persis gambar referensi user
+    const pelakus = Object.keys(dateGroups[tgl]);
+    pelakus.forEach(pelName => {
       groupedRowsHtml += `
         <tr>
-          <td style="border: 1px solid #000; padding: 5px 8px; text-align: center;">${item.globalIdx}</td>
-          <td style="border: 1px solid #000; padding: 5px 8px;">${item.uraian}</td>
-          <td style="border: 1px solid #000; padding: 5px 8px;">
-            <div style="display: flex; justify-content: space-between;">
-              <span>Rp</span>
-              <span style="font-family: Arial, sans-serif;">${Number(item.jumlah || 0).toLocaleString('en-US')}</span>
-            </div>
-          </td>
+          <td colspan="3" style="border: 1px solid #000; padding: 5px 8px; font-weight: normal; text-align: left;">${pelName}</td>
         </tr>
       `;
+
+      // 3. Baris Struk di bawah pelaku tersebut (nomor berulang mulai dari 1)
+      dateGroups[tgl][pelName].forEach((item, itemIdx) => {
+        const itemUraian = item.uraian || `Pengisian Bahan Bakar Minyak (BBM) ${item.jenisBbm || 'Pertamina Dex'} - Mobil ${item.kendaraan || data.kendaraan || 'Innova'} ${item.platNomor || data.platNomor || 'B 2577 KRK'}`;
+        groupedRowsHtml += `
+          <tr>
+            <td style="border: 1px solid #000; padding: 5px 8px; text-align: center;">${itemIdx + 1}</td>
+            <td style="border: 1px solid #000; padding: 5px 8px;">${itemUraian}</td>
+            <td style="border: 1px solid #000; padding: 5px 8px;">
+              <div style="display: flex; justify-content: space-between;">
+                <span>Rp</span>
+                <span style="font-family: Arial, sans-serif;">${Number(item.jumlah || 0).toLocaleString('en-US')}</span>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
     });
   });
 
@@ -532,7 +630,7 @@ function renderBbmRincianHtml(d) {
           <div>Kementerian Perumahan dan Kawasan Permukiman</div>
           <div style="height: 55px;"></div>
           <div>${data.pejabat?.ppkNama || 'Emanuel Pati Libak'}</div>
-          <div>NIP. ${cleanNip(data.pejabat?.ppkNip || '197512072010121001')}</div>
+          <div>NIP. '${cleanNip(data.pejabat?.ppkNip || '197512072010121001')}</div>
         </div>
       </div>
 

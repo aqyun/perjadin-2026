@@ -125,7 +125,8 @@ function collectPerjadinDraftData() {
     transports,
     hotels,
     customCosts,
-    manualMeals
+    manualMeals,
+    bbmData: (typeof collectBbmFormData === 'function' ? collectBbmFormData() : null)
   };
 }
 
@@ -258,6 +259,14 @@ function restorePerjadinDraftData(data) {
   if (typeof updateAllSpdSuffixLabels === 'function') updateAllSpdSuffixLabels();
   if (typeof renderRincianTransportEditor === 'function') renderRincianTransportEditor();
   if (typeof refreshHotelSummaries === 'function') refreshHotelSummaries();
+
+  if (data.bbmData && typeof loadBbmRecordIntoForm === 'function') {
+    try {
+      loadBbmRecordIntoForm(data.bbmData);
+    } catch (e) {
+      console.warn('Gagal memuat bbmData bundle ke form BBM:', e);
+    }
+  }
 
   return true;
 }

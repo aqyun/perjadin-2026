@@ -301,6 +301,7 @@ function saveCurrentTripToHistory(isManual = false, customCsvData = null) {
     createdBy: actor,
     revision_log: [],
     draft: draft,
+    bbmData: (draft && draft.bbmData) || (typeof collectBbmFormData === 'function' ? collectBbmFormData() : null),
     csv_data: csvStr
   };
 
@@ -515,6 +516,15 @@ function loadTripFromHistory(id, event = null) {
 
   if (typeof restorePerjadinDraftData === 'function') {
     restorePerjadinDraftData(item.draft);
+  }
+
+  // Muat bundle berkas BBM yang terikat dengan SPT ini
+  if ((item.bbmData || (item.draft && item.draft.bbmData)) && typeof loadBbmRecordIntoForm === 'function') {
+    try {
+      loadBbmRecordIntoForm(item.bbmData || item.draft.bbmData);
+    } catch (e) {
+      console.warn('Gagal memuat bbmData bundle saat loadTripToForm:', e);
+    }
   }
 
   // Pastikan metode pembayaran terupdate di seluruh kontrol input & tabs

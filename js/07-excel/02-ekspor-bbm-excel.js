@@ -30,6 +30,34 @@ function exportBbmToExcel(d) {
     ? terbilang(data.nilaiTotal || 0)
     : 'Satu Juta Rupiah';
 
+  // Pembuat Daftar sinkron dengan pelaksana pertanggungjawaban pembuat berkas perjadin
+  const pelaksanaNama = (typeof document !== 'undefined' && document.getElementById('lk_pelaksana')?.value) || data.pelaksanaNama || 'Yogi Andre Yonatan Pakpahan, S.P.W.K';
+  const pelaksanaNip = data.pelaksanaNip || '199511272025061006';
+
+  // Format Uraian Kuitansi Formal Aturan 1:
+  // "Pembelian BBM untuk kegiatan perjalanan dinas dalam rangka (...) tanggal (...) dengan Nomor ST (...)."
+  const agenda = data.agenda || (typeof document !== 'undefined' && document.getElementById('agenda')?.value) || '';
+  const noST = data.noST || (typeof document !== 'undefined' && document.getElementById('noST')?.value) || '';
+  const tglAwal = data.tanggalBerangkat || (typeof document !== 'undefined' && document.getElementById('tglBerangkat')?.value) || data.tanggalBukti;
+  const tglAkhir = data.tanggalKembali || (typeof document !== 'undefined' && document.getElementById('tglKembali')?.value) || tglAwal;
+
+  let tglRentang = '';
+  if (tglAwal && tglAkhir && tglAwal !== tglAkhir) {
+    tglRentang = `${formatTanggalIndoLengkap(tglAwal)} s.d. ${formatTanggalIndoLengkap(tglAkhir)}`;
+  } else if (tglAwal) {
+    tglRentang = formatTanggalIndoLengkap(tglAwal);
+  } else {
+    tglRentang = formatTanggalIndoLengkap(data.tanggalBukti || '2026-11-20');
+  }
+
+  let defaultUraianKuitansi = '';
+  if (agenda || noST) {
+    defaultUraianKuitansi = `Pembelian BBM untuk kegiatan perjalanan dinas dalam rangka ${agenda || '...'} tanggal ${tglRentang} dengan Nomor ST ${noST || '...'}.`;
+  } else {
+    defaultUraianKuitansi = `Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan Mobil Dinas - ${data.kendaraan}, Output: Perawatan Kendaraan Bermotor.`;
+  }
+  const uraianKuitansi = data.pekerjaanKuitansi || defaultUraianKuitansi;
+
   const items = (data.items && data.items.length) ? data.items : [
     {
       tanggal: data.tanggalBukti || '2026-11-20',
@@ -126,8 +154,26 @@ function exportBbmToExcel(d) {
   // Row 20: Item 3
   const r20 = emptyRow(10);
   r20[1] = 3;
-  r20[2] = 'Dokumentasi';
+  r20[2] = 'Surat Tugas';
   fullRows.push(r20);
+
+  // Row 20b: Item 4
+  const r20b = emptyRow(10);
+  r20b[1] = 4;
+  r20b[2] = 'Undangan (jika ada)';
+  fullRows.push(r20b);
+
+  // Row 20c: Item 5
+  const r20c = emptyRow(10);
+  r20c[1] = 5;
+  r20c[2] = 'Laporan Perjalanan Dinas';
+  fullRows.push(r20c);
+
+  // Row 20d: Item 6
+  const r20d = emptyRow(10);
+  r20d[1] = 6;
+  r20d[2] = 'Dokumentasi Kegiatan';
+  fullRows.push(r20d);
 
   // Row 21: Catatan
   const r21 = emptyRow(10);
@@ -234,7 +280,7 @@ function exportBbmToExcel(d) {
   const r50 = emptyRow(10);
   r50[1] = 'Untuk pembayaran';
   r50[3] = ':';
-  r50[4] = data.pekerjaanKuitansi || `Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan Mobil Dinas - ${data.kendaraan}, Output: Perawatan Kendaraan Bermotor.`;
+  r50[4] = uraianKuitansi;
   fullRows.push(r50);
   fullRows.push(emptyRow(10));
 
@@ -252,11 +298,11 @@ function exportBbmToExcel(d) {
   for (let i = 0; i < 7; i++) fullRows.push(emptyRow(10));
 
   const r61 = emptyRow(10);
-  r61[7] = data.pelaksanaNama || 'Yogi Andre Yonatan Pakpahan, S.P.W.K';
+  r61[7] = pelaksanaNama;
   fullRows.push(r61);
 
   const r62 = emptyRow(10);
-  r62[7] = `NIP. ${cleanNip(data.pelaksanaNip || '199511272025061006')}`;
+  r62[7] = `NIP. ${cleanNip(pelaksanaNip)}`;
   fullRows.push(r62);
 
   const r63 = emptyRow(10);
@@ -362,18 +408,36 @@ function exportBbmToExcel(d) {
   r99[6] = 'Jumlah';
   fullRows.push(r99);
 
-  items.forEach((item, idx) => {
-    const tglItem = formatTanggalIndoLengkap(item.tanggal);
-    if (idx === 0 || item.tanggal !== items[idx - 1]?.tanggal) {
-      const rDate = emptyRow(10);
-      rDate[2] = tglItem;
-      fullRows.push(rDate);
-    }
-    const rItem = emptyRow(10);
-    rItem[1] = idx + 1;
-    rItem[2] = item.uraian;
-    rItem[6] = Number(item.jumlah || 0);
-    fullRows.push(rItem);
+  // Group items by date and pelaku for Excel export
+  const dateGroups = {};
+  items.forEach(item => {
+    const tgl = item.tanggal || data.tanggalBukti || '2026-11-20';
+    if (!dateGroups[tgl]) dateGroups[tgl] = {};
+    const pel = (item.pelaksanaNama || data.pelaksanaNama || 'Pelaksana BBM').trim();
+    if (!dateGroups[tgl][pel]) dateGroups[tgl][pel] = [];
+    dateGroups[tgl][pel].push(item);
+  });
+
+  Object.keys(dateGroups).forEach(tgl => {
+    const tglItem = formatTanggalIndoLengkap(tgl);
+    const rDate = emptyRow(10);
+    rDate[2] = tglItem;
+    fullRows.push(rDate);
+
+    Object.keys(dateGroups[tgl]).forEach(pelName => {
+      const rPel = emptyRow(10);
+      rPel[1] = pelName;
+      fullRows.push(rPel);
+
+      dateGroups[tgl][pelName].forEach((item, itemIdx) => {
+        const itemUraian = item.uraian || `Pengisian Bahan Bakar Minyak (BBM) ${item.jenisBbm || 'Pertamina Dex'} - Mobil ${item.kendaraan || data.kendaraan || 'Innova'} ${item.platNomor || data.platNomor || 'B 2577 KRK'}`;
+        const rItem = emptyRow(10);
+        rItem[1] = itemIdx + 1;
+        rItem[2] = itemUraian;
+        rItem[6] = Number(item.jumlah || 0);
+        fullRows.push(rItem);
+      });
+    });
   });
 
   const rTot = emptyRow(10);
@@ -414,7 +478,7 @@ function exportBbmToExcel(d) {
   fullRows.push(rSignName);
 
   const rSignNip = emptyRow(10);
-  rSignNip[5] = `NIP. ${cleanNip(data.pejabat?.ppkNip || '197512072010121001')}`;
+  rSignNip[5] = `NIP. '${cleanNip(data.pejabat?.ppkNip || '197512072010121001')}`;
   fullRows.push(rSignNip);
 
   // Kolom lebar untuk Sheet Berkas Lengkap
@@ -438,7 +502,7 @@ function exportBbmToExcel(d) {
   // =========================================================================
   const chkRows = [
     ['', '', '', '', '', '', 'Tanggal Masuk Berkas :', tglMasuk],
-    ['', 'PELAKSANA PERTANGGUNGJAWABAN', '', '', ':', data.pelaksanaPanggilan || data.pelaksanaNama || 'Yogi Pakpahan'],
+    ['', 'PELAKSANA PERTANGGUNGJAWABAN', '', '', ':', pelaksanaNama],
     ['', 'CHECKLIST PENGENDALIAN PENGADAAN BARANG / JASA'],
     ['', 'Pelaksana Pekerjaan Pengadaan Barang/Jasa', '', 'Nama Penyedia', ':', data.namaPenyedia || 'Biro Komunikasi Publik', '', 'Nomor Bukti Pembayaran / Kuitansi / SPK', ':', data.noBukti || '-'],
     ['', '', '', 'Pekerjaan', ':', data.pekerjaan || `Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan Mobil Dinas - ${data.kendaraan}.`, '', 'Tanggal Bukti Pembayaran / Kuitansi / SPK', ':', tglBukti],
@@ -448,7 +512,10 @@ function exportBbmToExcel(d) {
     ['', 'No', 'Berkas Kegiatan', '', '', 'Ada', 'Tidak Ada', 'Kesesuaian'],
     ['', 1, 'Kwitansi/Struk Pembayaran', '', '', '', '', ''],
     ['', 2, 'Daftar Rincian Pembayaran', '', '', '', '', ''],
-    ['', 3, 'Dokumentasi', '', '', '', '', ''],
+    ['', 3, 'Surat Tugas', '', '', '', '', ''],
+    ['', 4, 'Undangan (jika ada)', '', '', '', '', ''],
+    ['', 5, 'Laporan Perjalanan Dinas', '', '', '', '', ''],
+    ['', 6, 'Dokumentasi Kegiatan', '', '', '', '', ''],
     [],
     ['', `Catatan : ${data.catatan || ''}`],
     [],
@@ -480,13 +547,13 @@ function exportBbmToExcel(d) {
     [],
     ['', 'Terbilang', '', ':', terbilangTeks],
     [],
-    ['', 'Untuk pembayaran', '', ':', data.pekerjaanKuitansi || `Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan Mobil Dinas - ${data.kendaraan}, Output: Perawatan Kendaraan Bermotor.`],
+    ['', 'Untuk pembayaran', '', ':', uraianKuitansi],
     [],
     ['', '', '', '', '', '', '', 'Tempat / Tanggal', ':', `Jakarta/     ${tglKuitansi}`],
     ['', '', '', '', '', '', '', 'Pembuat Daftar'],
     [], [], [], [],
-    ['', '', '', '', '', '', '', data.pelaksanaNama || 'Yogi Andre Yonatan Pakpahan, S.P.W.K'],
-    ['', '', '', '', '', '', '', `NIP. ${cleanNip(data.pelaksanaNip || '199511272025061006')}`],
+    ['', '', '', '', '', '', '', pelaksanaNama],
+    ['', '', '', '', '', '', '', `NIP. ${cleanNip(pelaksanaNip)}`],
     [],
     ['', 'Setuju dibebankan pada mata anggaran berkenaan,', '', '', '', '', '', 'Lunas dibayar tgl :'],
     ['', 'An. Kuasa Pengguna Anggaran'],
@@ -521,12 +588,16 @@ function exportBbmToExcel(d) {
     ['', 'No', 'Uraian', '', '', '', 'Jumlah'],
   ];
 
-  items.forEach((item, idx) => {
-    const tglItem = formatTanggalIndoLengkap(item.tanggal);
-    if (idx === 0 || item.tanggal !== items[idx - 1]?.tanggal) {
-      s46Rows.push(['', '', tglItem]);
-    }
-    s46Rows.push(['', idx + 1, item.uraian, '', '', '', Number(item.jumlah || 0)]);
+  Object.keys(dateGroups).forEach(tgl => {
+    const tglItem = formatTanggalIndoLengkap(tgl);
+    s46Rows.push(['', '', tglItem]);
+    Object.keys(dateGroups[tgl]).forEach(pelName => {
+      s46Rows.push(['', pelName]);
+      dateGroups[tgl][pelName].forEach((item, itemIdx) => {
+        const itemUraian = item.uraian || `Pengisian Bahan Bakar Minyak (BBM) ${item.jenisBbm || 'Pertamina Dex'} - Mobil ${item.kendaraan || data.kendaraan || 'Innova'} ${item.platNomor || data.platNomor || 'B 2577 KRK'}`;
+        s46Rows.push(['', itemIdx + 1, itemUraian, '', '', '', Number(item.jumlah || 0)]);
+      });
+    });
   });
 
   s46Rows.push(['', '', 'Nilai Total', '', '', '', Number(data.nilaiTotal || 0)]);
@@ -539,7 +610,7 @@ function exportBbmToExcel(d) {
   s46Rows.push(['', '', '', '', '', 'Kementerian Perumahan dan Kawasan Permukiman']);
   s46Rows.push([]); s46Rows.push([]); s46Rows.push([]); s46Rows.push([]);
   s46Rows.push(['', '', '', '', '', data.pejabat?.ppkNama || 'Emanuel Pati Libak']);
-  s46Rows.push(['', '', '', '', '', `NIP. ${cleanNip(data.pejabat?.ppkNip || '197512072010121001')}`]);
+  s46Rows.push(['', '', '', '', '', `NIP. '${cleanNip(data.pejabat?.ppkNip || '197512072010121001')}`]);
 
   const wsS46 = XLSX.utils.aoa_to_sheet(s46Rows);
   wsS46['!cols'] = [{ wch: 4 }, { wch: 6 }, { wch: 55 }, { wch: 8 }, { wch: 8 }, { wch: 20 }, { wch: 22 }];
