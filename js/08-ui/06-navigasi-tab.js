@@ -3,6 +3,7 @@
 // =====================================================================
 const tabMeta = {
   input: ['Input Perjalanan', 'Formulir'],
+  bbm: ['Reimburse BBM Kendaraan Dinas', 'Pengadaan Barang & Jasa (MAK 523121)'],
   dashboard: ['Dashboard Eksekutif', 'Portal Pemantau'],
   riwayat: ['Riwayat Perjalanan Dinas', 'Arsip & Berkas'],
   sbm: ['Kamus & Cek Tarif SBM 2026', 'Standar Biaya Masukan'],
@@ -34,7 +35,7 @@ function showTab(name) {
   if (currentActive && currentActive.id === 'tab-' + name) {
     return;
   }
-  if (!['input', 'pengaturan', 'dashboard', 'riwayat', 'sbm', 'simulasi'].includes(name)) {
+  if (!['input', 'pengaturan', 'dashboard', 'riwayat', 'sbm', 'simulasi', 'bbm'].includes(name)) {
     const val = validateTripForm();
     if (!val.valid) {
       showValidationToast(val.missing, val.dateMismatch ? 'Tanggal kembali tidak boleh sebelum tanggal berangkat!' : null);
@@ -51,6 +52,8 @@ function showTab(name) {
       initViewerSbmCockpit();
     } else if (name === 'simulasi' && typeof initSimulasiKalkulator === 'function') {
       initSimulasiKalkulator();
+    } else if (name === 'bbm' && typeof initBbmModule === 'function') {
+      initBbmModule();
     } else if (name === 'riwayat' && typeof renderTripHistory === 'function') {
       renderTripHistory();
       if (typeof syncTripsFromCloud === 'function') syncTripsFromCloud(true);
@@ -78,6 +81,9 @@ function switchTabPanel(name) {
   if (eyebrowEl) eyebrowEl.textContent = meta[1];
   closeSidebar();
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (name === 'bbm') {
+    if (typeof initBbmModule === 'function') initBbmModule();
+  }
   if (name === 'dashboard') {
     if (typeof renderDashboardModule === 'function') renderDashboardModule();
     if (typeof syncTripsFromCloud === 'function') syncTripsFromCloud(true);

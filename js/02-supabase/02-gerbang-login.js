@@ -254,6 +254,12 @@ function applyRolePermissions() {
     inputTabBtn.style.display = isViewer ? 'none' : 'flex';
   }
 
+  // Toggle Reimburse BBM (Hanya Admin & Operator yang boleh melihat menu dan akses BBM)
+  const bbmTabBtns = document.querySelectorAll('.tab-btn[data-tab="bbm"], .bottom-nav-btn[data-tab="bbm"]');
+  bbmTabBtns.forEach(el => {
+    el.style.display = isViewer ? 'none' : 'flex';
+  });
+
   // Toggle Simulasi Biaya (HANYA role Viewer yang melihat fitur simulasi; Admin & Operator TIDAK MUNCUL)
   const simTabBtns = document.querySelectorAll('.tab-btn[data-tab="simulasi"], .bottom-nav-btn[data-tab="simulasi"], .btn-hero-simulasi, .sbm-btn-to-simulasi');
   simTabBtns.forEach(el => {
