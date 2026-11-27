@@ -9,6 +9,11 @@
  * - "3. Rincian S-46"
  */
 
+function cleanNip(nip) {
+  if (!nip) return '';
+  return String(nip).replace(/^['"]+|['"]+$/g, '').trim();
+}
+
 function exportBbmToExcel(d) {
   if (typeof XLSX === 'undefined') {
     alert('Pustaka SheetJS (XLSX) belum dimuat.');
@@ -110,24 +115,18 @@ function exportBbmToExcel(d) {
   const r18 = emptyRow(10);
   r18[1] = 1;
   r18[2] = 'Kwitansi/Struk Pembayaran';
-  r18[5] = '✓';
-  r18[7] = 'Sesuai';
   fullRows.push(r18);
 
   // Row 19: Item 2
   const r19 = emptyRow(10);
   r19[1] = 2;
   r19[2] = 'Daftar Rincian Pembayaran';
-  r19[5] = '✓';
-  r19[7] = 'Sesuai';
   fullRows.push(r19);
 
   // Row 20: Item 3
   const r20 = emptyRow(10);
   r20[1] = 3;
   r20[2] = 'Dokumentasi';
-  r20[5] = '✓';
-  r20[7] = 'Sesuai';
   fullRows.push(r20);
 
   // Row 21: Catatan
@@ -157,16 +156,16 @@ function exportBbmToExcel(d) {
 
   // Row 32: Nama Penandatangan
   const r32 = emptyRow(10);
-  r32[2] = `"${data.pejabat?.ppkNama || 'Emanuel Pati Libak, S.Pd., M.T.'}"`;
-  r32[5] = `"${data.pejabat?.ppspmNama || 'Mala Hayati Rahayu, S.E'}"`;
+  r32[2] = data.pejabat?.ppkNama || 'Emanuel Pati Libak, S.Pd., M.T.';
+  r32[5] = data.pejabat?.ppspmNama || 'Mala Hayati Rahayu, S.E';
   r32[7] = data.pejabat?.verifikatorNama || '…......…...........…........................................';
   fullRows.push(r32);
 
   // Row 33: NIP Penandatangan
   const r33 = emptyRow(10);
-  r33[2] = `NIP. ${data.pejabat?.ppkNip || '197512072010121001'}`;
-  r33[5] = `NIP. ${data.pejabat?.ppspmNip || '198408012009122003'}`;
-  r33[7] = data.pejabat?.verifikatorNip ? `NIP. ${data.pejabat.verifikatorNip}` : 'NIP.';
+  r33[2] = `NIP. ${cleanNip(data.pejabat?.ppkNip || '197512072010121001')}`;
+  r33[5] = `NIP. ${cleanNip(data.pejabat?.ppspmNip || '198408012009122003')}`;
+  r33[7] = data.pejabat?.verifikatorNip ? `NIP. ${cleanNip(data.pejabat.verifikatorNip)}` : 'NIP.';
   fullRows.push(r33);
 
   // Spasi antar dokumen (2 baris)
@@ -235,7 +234,7 @@ function exportBbmToExcel(d) {
   const r50 = emptyRow(10);
   r50[1] = 'Untuk pembayaran';
   r50[3] = ':';
-  r50[4] = `"${data.pekerjaanKuitansi || `Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan Mobil Dinas - ${data.kendaraan}, Output: Perawatan Kendaraan Bermotor.`}"`;
+  r50[4] = data.pekerjaanKuitansi || `Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan Mobil Dinas - ${data.kendaraan}, Output: Perawatan Kendaraan Bermotor.`;
   fullRows.push(r50);
   fullRows.push(emptyRow(10));
 
@@ -253,15 +252,15 @@ function exportBbmToExcel(d) {
   for (let i = 0; i < 7; i++) fullRows.push(emptyRow(10));
 
   const r61 = emptyRow(10);
-  r61[7] = `"${data.pelaksanaNama || 'Yogi Andre Yonatan Pakpahan, S.P.W.K'}"`;
+  r61[7] = data.pelaksanaNama || 'Yogi Andre Yonatan Pakpahan, S.P.W.K';
   fullRows.push(r61);
 
   const r62 = emptyRow(10);
-  r62[7] = `NIP. ${data.pelaksanaNip || '199511272025061006'}`;
+  r62[7] = `NIP. ${cleanNip(data.pelaksanaNip || '199511272025061006')}`;
   fullRows.push(r62);
 
   const r63 = emptyRow(10);
-  r63[1] = '"Setuju dibebankan pada mata anggaran berkenaan,"';
+  r63[1] = 'Setuju dibebankan pada mata anggaran berkenaan,';
   r63[7] = 'Lunas dibayar tgl :';
   fullRows.push(r63);
 
@@ -291,8 +290,8 @@ function exportBbmToExcel(d) {
   fullRows.push(r73);
 
   const r74 = emptyRow(10);
-  r74[1] = `NIP. '${data.pejabat?.ppkNip || '197512072010121001'}`;
-  r74[7] = `NIP. ${data.pejabat?.bendaharaNip || '198004022014081001'}`;
+  r74[1] = `NIP. ${cleanNip(data.pejabat?.ppkNip || '197512072010121001')}`;
+  r74[7] = `NIP. ${cleanNip(data.pejabat?.bendaharaNip || '198004022014081001')}`;
   fullRows.push(r74);
 
   const r75 = emptyRow(10);
@@ -315,7 +314,7 @@ function exportBbmToExcel(d) {
   fullRows.push(r83);
 
   const r84 = emptyRow(10);
-  r84[1] = `NIP. ${data.pejabat?.kasubbagTuNip || '198702182010121003'}`;
+  r84[1] = `NIP. ${cleanNip(data.pejabat?.kasubbagTuNip || '198702182010121003')}`;
   fullRows.push(r84);
 
   // Spasi antar dokumen (4 baris)
@@ -415,7 +414,7 @@ function exportBbmToExcel(d) {
   fullRows.push(rSignName);
 
   const rSignNip = emptyRow(10);
-  rSignNip[5] = `NIP. '${data.pejabat?.ppkNip || '197512072010121001'}`;
+  rSignNip[5] = `NIP. ${cleanNip(data.pejabat?.ppkNip || '197512072010121001')}`;
   fullRows.push(rSignNip);
 
   // Kolom lebar untuk Sheet Berkas Lengkap
@@ -447,17 +446,17 @@ function exportBbmToExcel(d) {
     ['', `Jenis Pengadaan : ${data.jenisPengadaan || 'Perawatan Kendaraan Bermotor'}`],
     [],
     ['', 'No', 'Berkas Kegiatan', '', '', 'Ada', 'Tidak Ada', 'Kesesuaian'],
-    ['', 1, 'Kwitansi/Struk Pembayaran', '', '', '✓', '', 'Sesuai'],
-    ['', 2, 'Daftar Rincian Pembayaran', '', '', '✓', '', 'Sesuai'],
-    ['', 3, 'Dokumentasi', '', '', '✓', '', 'Sesuai'],
+    ['', 1, 'Kwitansi/Struk Pembayaran', '', '', '', '', ''],
+    ['', 2, 'Daftar Rincian Pembayaran', '', '', '', '', ''],
+    ['', 3, 'Dokumentasi', '', '', '', '', ''],
     [],
     ['', `Catatan : ${data.catatan || ''}`],
     [],
     ['', '', 'Disetujui', '', '', 'PPSPM', '', `Jakarta, ${tglMasuk}`],
     ['', '', 'Pejabat Pembuat Komitmen', '', '', '(Pejabat Penanda Tangan SPM)', '', 'Verifikator Pejabat Pembuat Komitmen'],
     [], [], [], [], [],
-    ['', '', `"${data.pejabat?.ppkNama || 'Emanuel Pati Libak, S.Pd., M.T.'}"`, '', '', `"${data.pejabat?.ppspmNama || 'Mala Hayati Rahayu, S.E'}"`, '', data.pejabat?.verifikatorNama || '…......…...........…........................................'],
-    ['', '', `NIP. ${data.pejabat?.ppkNip || '197512072010121001'}`, '', '', `NIP. ${data.pejabat?.ppspmNip || '198408012009122003'}`, '', data.pejabat?.verifikatorNip ? `NIP. ${data.pejabat.verifikatorNip}` : 'NIP.']
+    ['', '', data.pejabat?.ppkNama || 'Emanuel Pati Libak, S.Pd., M.T.', '', '', data.pejabat?.ppspmNama || 'Mala Hayati Rahayu, S.E', '', data.pejabat?.verifikatorNama || '…......…...........…........................................'],
+    ['', '', `NIP. ${cleanNip(data.pejabat?.ppkNip || '197512072010121001')}`, '', '', `NIP. ${cleanNip(data.pejabat?.ppspmNip || '198408012009122003')}`, '', data.pejabat?.verifikatorNip ? `NIP. ${cleanNip(data.pejabat.verifikatorNip)}` : 'NIP.']
   ];
   const wsChk = XLSX.utils.aoa_to_sheet(chkRows);
   wsChk['!cols'] = [{ wch: 4 }, { wch: 30 }, { wch: 24 }, { wch: 18 }, { wch: 4 }, { wch: 35 }, { wch: 12 }, { wch: 35 }, { wch: 4 }, { wch: 25 }];
@@ -481,29 +480,29 @@ function exportBbmToExcel(d) {
     [],
     ['', 'Terbilang', '', ':', terbilangTeks],
     [],
-    ['', 'Untuk pembayaran', '', ':', `"${data.pekerjaanKuitansi || `Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan Mobil Dinas - ${data.kendaraan}, Output: Perawatan Kendaraan Bermotor.`}"`],
+    ['', 'Untuk pembayaran', '', ':', data.pekerjaanKuitansi || `Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan Mobil Dinas - ${data.kendaraan}, Output: Perawatan Kendaraan Bermotor.`],
     [],
     ['', '', '', '', '', '', '', 'Tempat / Tanggal', ':', `Jakarta/     ${tglKuitansi}`],
     ['', '', '', '', '', '', '', 'Pembuat Daftar'],
     [], [], [], [],
-    ['', '', '', '', '', '', '', `"${data.pelaksanaNama || 'Yogi Andre Yonatan Pakpahan, S.P.W.K'}"`],
-    ['', '', '', '', '', '', '', `NIP. ${data.pelaksanaNip || '199511272025061006'}`],
+    ['', '', '', '', '', '', '', data.pelaksanaNama || 'Yogi Andre Yonatan Pakpahan, S.P.W.K'],
+    ['', '', '', '', '', '', '', `NIP. ${cleanNip(data.pelaksanaNip || '199511272025061006')}`],
     [],
-    ['', '"Setuju dibebankan pada mata anggaran berkenaan,"', '', '', '', '', '', 'Lunas dibayar tgl :'],
+    ['', 'Setuju dibebankan pada mata anggaran berkenaan,', '', '', '', '', '', 'Lunas dibayar tgl :'],
     ['', 'An. Kuasa Pengguna Anggaran'],
     ['', 'Pejabat Pembuat Komitmen', '', '', '', '', '', 'Bendahara Pengeluaran'],
     ['', 'Sekretariat  Jenderal'],
     ['', 'Kementerian Perumahan dan Kawasan Permukiman'],
     [], [], [], [],
     ['', data.pejabat?.ppkNama || 'Emanuel Pati Libak', '', '', '', '', '', data.pejabat?.bendaharaNama || 'Rahmat H'],
-    ['', `NIP. '${data.pejabat?.ppkNip || '197512072010121001'}`, '', '', '', '', '', `NIP. ${data.pejabat?.bendaharaNip || '198004022014081001'}`],
+    ['', `NIP. ${cleanNip(data.pejabat?.ppkNip || '197512072010121001')}`, '', '', '', '', '', `NIP. ${cleanNip(data.pejabat?.bendaharaNip || '198004022014081001')}`],
     [],
     ['', 'Barang / pekerjaan tersebut telah diterima / diselesaikan dengan lengkap dan baik'],
     ['', 'Pejabat yang bertanggungjawab'],
     ['', 'Kepala Subbagian Tata Usaha'],
     [], [], [], [],
     ['', data.pejabat?.kasubbagTuNama || 'Ahmad Jayadi, S.Hum., MT.'],
-    ['', `NIP. ${data.pejabat?.kasubbagTuNip || '198702182010121003'}`]
+    ['', `NIP. ${cleanNip(data.pejabat?.kasubbagTuNip || '198702182010121003')}`]
   ];
   const wsKw = XLSX.utils.aoa_to_sheet(kwRows);
   wsKw['!cols'] = [{ wch: 4 }, { wch: 32 }, { wch: 14 }, { wch: 4 }, { wch: 38 }, { wch: 14 }, { wch: 14 }, { wch: 22 }, { wch: 4 }, { wch: 28 }];
@@ -540,7 +539,7 @@ function exportBbmToExcel(d) {
   s46Rows.push(['', '', '', '', '', 'Kementerian Perumahan dan Kawasan Permukiman']);
   s46Rows.push([]); s46Rows.push([]); s46Rows.push([]); s46Rows.push([]);
   s46Rows.push(['', '', '', '', '', data.pejabat?.ppkNama || 'Emanuel Pati Libak']);
-  s46Rows.push(['', '', '', '', '', `NIP. '${data.pejabat?.ppkNip || '197512072010121001'}`]);
+  s46Rows.push(['', '', '', '', '', `NIP. ${cleanNip(data.pejabat?.ppkNip || '197512072010121001')}`]);
 
   const wsS46 = XLSX.utils.aoa_to_sheet(s46Rows);
   wsS46['!cols'] = [{ wch: 4 }, { wch: 6 }, { wch: 55 }, { wch: 8 }, { wch: 8 }, { wch: 20 }, { wch: 22 }];

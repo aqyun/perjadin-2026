@@ -689,6 +689,18 @@ body.dark-mode .bbm-doc-nav-pill {
   margin: 0 auto;
 }
 
+/* Checklist BBM Main Box (Sesuai Image Lembar Kendali BBM Only) */
+.bbm-checklist-main-box {
+  border: 1.5px solid #000000;
+  background: #ffffff;
+  color: #000000;
+  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+  font-size: 11px;
+  line-height: 1.35;
+  box-sizing: border-box;
+  width: 100%;
+}
+
 /* Utility Helpers */
 .bbm-mt-14 { margin-top: 14px; }
 .bbm-mt-15 { margin-top: 15px; }

@@ -12,6 +12,11 @@ function formatRupiahMurni(n) {
   return 'Rp ' + num.toLocaleString('id-ID');
 }
 
+function cleanNip(nip) {
+  if (!nip) return '';
+  return String(nip).replace(/^['"]+|['"]+$/g, '').trim();
+}
+
 function formatTanggalIndoLengkap(dStr) {
   if (!dStr) return '';
   if (/[a-zA-Z]/.test(dStr)) return dStr;
@@ -82,7 +87,7 @@ function getDefaultBbmData() {
 
 /**
  * 1. RENDER CHECKLIST PENGENDALIAN PENGADAAN BARANG / JASA (LEMBAR KENDALI BBM)
- * Menggunakan Layout Lembar Kendali Resmi Kementerian PKP (Identik dengan format di PerdinKu)
+ * 100% Plek Ketiplek Format Gambar User (BBM Only: Single Unified Border Box)
  */
 function renderBbmChecklistHtml(d) {
   const data = d || getDefaultBbmData();
@@ -90,7 +95,7 @@ function renderBbmChecklistHtml(d) {
   const tglBukti = formatTanggalIndoLengkap(data.tanggalBukti);
   const nilaiFmt = Number(data.nilaiTotal || 0).toLocaleString('id-ID');
   const logoSrc = (typeof LOGO_PKP_BASE64 !== 'undefined' && LOGO_PKP_BASE64) ? LOGO_PKP_BASE64 : 'logo-pkp.webp';
-  const alamat = (typeof document !== 'undefined' && document.getElementById('cfg_alamatSatker')?.value) || '';
+  const alamat = (typeof document !== 'undefined' && document.getElementById('cfg_alamatSatker')?.value) || 'Jl. Kebon Sirih No.83, RT.2/RW.1, Kb. Sirih, Menteng, Jakarta Pusat, Daerah Khusus Ibukota Jakarta 10340';
 
   const kendLabel = (data.kategoriKendaraan === 'pribadi')
     ? `Mobil Pribadi - ${data.kendaraan || 'Kendaraan Pribadi'} ${data.platNomor ? '(' + data.platNomor + ')' : ''}`
@@ -99,176 +104,174 @@ function renderBbmChecklistHtml(d) {
   const pekerjaanText = data.pekerjaan || `Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan ${kendLabel}.`;
 
   return `
-    <div class="bbm-paper bbm-paper-checklist">
-      <section class="lembar-kendali-area" style="max-width: 100%; padding: 0; background: transparent; font-family: Arial, sans-serif; font-size: 11.5px; color: #000;">
-        <!-- KOP KEMENTERIAN PKP RESMI -->
-        <header class="lembar-kendali-header" style="display: grid; grid-template-columns: 85px 1fr; gap: 14px; align-items: center; text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 8px;">
-          <img class="lembar-kendali-logo" src="${logoSrc}" alt="Logo PKP" style="width: 78px; height: 74px; object-fit: contain;">
-          <div>
-            <div class="lembar-kendali-ministry" style="font-size: 14px; font-weight: 800; color: #0E5B73; letter-spacing: 0.5px;">KEMENTERIAN PERUMAHAN DAN KAWASAN PERMUKIMAN <span style="color: #D5C58A;">REPUBLIK INDONESIA</span></div>
-            <strong class="lembar-kendali-secretariat" style="display: block; font-size: 15px; font-weight: 900; line-height: 1.2; color: #000;">SEKRETARIAT JENDERAL</strong>
-            <div class="lembar-kendali-unit" style="font-size: 13.5px; font-weight: 700; color: #000;">SATUAN KERJA</div>
-            ${alamat ? `<div class="lembar-kendali-address" style="font-size: 10.5px; margin-top: 2px;">${alamat}</div>` : ''}
-          </div>
-        </header>
+    <div class="bbm-paper bbm-paper-checklist" style="font-family: Arial, sans-serif; color: #000; background: #fff;">
+      <!-- KOP KEMENTERIAN PKP RESMI -->
+      <header class="lembar-kendali-header" style="display: grid; grid-template-columns: 85px 1fr; gap: 14px; align-items: center; text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 8px;">
+        <img class="lembar-kendali-logo" src="${logoSrc}" alt="Logo PKP" style="width: 78px; height: 74px; object-fit: contain;">
+        <div>
+          <div class="lembar-kendali-ministry" style="font-size: 13.5px; font-weight: 800; color: #0E5B73; letter-spacing: 0.5px;">KEMENTERIAN PERUMAHAN DAN KAWASAN PERMUKIMAN <span style="color: #D5C58A;">REPUBLIK INDONESIA</span></div>
+          <strong class="lembar-kendali-secretariat" style="display: block; font-size: 15px; font-weight: 900; line-height: 1.2; color: #000;">SEKRETARIAT JENDERAL</strong>
+          <div class="lembar-kendali-unit" style="font-size: 13px; font-weight: 700; color: #000;">SATUAN KERJA</div>
+          <div class="lembar-kendali-address" style="font-size: 10px; margin-top: 2px; color: #000;">${alamat}</div>
+        </div>
+      </header>
 
-        <!-- TANGGAL MASUK BERKAS & PELAKSANA -->
-        <div class="lembar-kendali-section-title lembar-kendali-section-title-berkas" style="text-align: left; padding: 4px 8px; font-weight: bold; border: 1px solid #000; margin-top: 6px; font-size: 11px;">
-          Tanggal Masuk Berkas: ${tglMasuk || '&nbsp;'}
+      <!-- TANGGAL MASUK BERKAS (CENTERED POLOS TANPA KOTAK) -->
+      <div style="text-align: center; font-size: 11px; margin: 10px 0 6px 0; font-family: Arial, sans-serif;">
+        Tanggal Masuk Berkas : &nbsp;${tglMasuk || ''}
+      </div>
+
+      <!-- KOTAK TABEL UTAMA CHECKLIST TERPADU BINGKAI HITAM -->
+      <div class="bbm-checklist-main-box" style="border: 1.5px solid #000; background: #fff; color: #000; font-family: Arial, sans-serif; font-size: 11px; line-height: 1.35; box-sizing: border-box;">
+        
+        <!-- BARIS 1: PELAKSANA PERTANGGUNGJAWABAN -->
+        <div style="border-bottom: 1px solid #000; padding: 5px 8px; font-size: 11px;">
+          <strong>PELAKSANA PERTANGGUNGJAWABAN</strong> &nbsp; : &nbsp; ${data.pelaksanaPanggilan || data.pelaksanaNama || 'Yogi Pakpahan'}
         </div>
 
-        <table class="lembar-kendali-meta" style="width: 100%; border-collapse: collapse; border: 1px solid #000; margin-bottom: 8px; font-size: 11px;">
-          <colgroup>
-            <col style="width:20%">
-            <col style="width:15%">
-            <col style="width:2%">
-            <col style="width:30%">
-            <col style="width:13%">
-            <col style="width:2%">
-            <col style="width:18%">
-          </colgroup>
-          <tr>
-            <th colspan="2" rowspan="2" class="lembar-kendali-meta-label" style="border: 1px solid #000; padding: 5px 8px; font-weight: bold; vertical-align: middle;">PELAKSANA PERTANGGUNGJAWABAN</th>
-            <td rowspan="2" class="lembar-kendali-meta-separator" style="border: 1px solid #000; text-align: center; vertical-align: middle;">:</td>
-            <td rowspan="2" class="lembar-kendali-meta-value font-bold" style="border: 1px solid #000; padding: 5px 8px; vertical-align: middle;">${data.pelaksanaPanggilan || data.pelaksanaNama || 'Yogi Pakpahan'}</td>
-            <th class="lembar-kendali-meta-label" style="border: 1px solid #000; padding: 4px 6px; font-weight: bold;">SPM</th>
-            <td class="lembar-kendali-meta-separator" style="border: 1px solid #000; text-align: center;">:</td>
-            <td class="lembar-kendali-meta-value" style="border: 1px solid #000; padding: 4px 6px;">${data.nomorSPM || '-'}</td>
-          </tr>
-          <tr>
-            <th class="lembar-kendali-meta-label" style="border: 1px solid #000; padding: 4px 6px; font-weight: bold;">SP2D</th>
-            <td class="lembar-kendali-meta-separator" style="border: 1px solid #000; text-align: center;">:</td>
-            <td class="lembar-kendali-meta-value" style="border: 1px solid #000; padding: 4px 6px;">${data.nomorSPD || '-'}</td>
-          </tr>
-        </table>
-
-        <!-- JUDUL CHECKLIST -->
-        <div class="lembar-kendali-section-title lembar-kendali-section-title-checklist" style="text-align: center; border: 1px solid #000; padding: 5px; font-size: 13px; font-weight: 800; background: #fafafa; margin-bottom: 0;">
+        <!-- BARIS 2: CHECKLIST PENGENDALIAN PENGADAAN BARANG / JASA -->
+        <div style="border-bottom: 1px solid #000; padding: 6px 8px; text-align: center; font-size: 12px; font-weight: bold; letter-spacing: 0.3px;">
           CHECKLIST PENGENDALIAN PENGADAAN BARANG / JASA
         </div>
 
-        <!-- TABEL DATA PENGADAAN (SESUAI TEMPLATE EXCEL BBM) -->
-        <table class="lembar-kendali-info" style="width: 100%; border-collapse: collapse; border: 1px solid #000; font-size: 11px;">
+        <!-- BARIS 3 & 4: PELAKSANA PEKERJAAN | PENYEDIA & PEKERJAAN | NOMOR & TANGGAL BUKTI -->
+        <table style="width: 100%; border-collapse: collapse; border-bottom: 1px solid #000; font-size: 11px;">
           <colgroup>
-            <col style="width:16%">
-            <col style="width:14%">
-            <col style="width:2%">
-            <col style="width:32%">
-            <col style="width:16%">
-            <col style="width:2%">
-            <col style="width:18%">
+            <col style="width: 14%;">
+            <col style="width: 45%;">
+            <col style="width: 41%;">
           </colgroup>
           <tr>
-            <th rowspan="2" class="lembar-kendali-side-label font-bold" style="border: 1px solid #000; padding: 6px; text-align: left; vertical-align: middle; background: #fbfbfb;">
-              Pelaksana Pekerjaan<br>Pengadaan Barang/Jasa
-            </th>
-            <th class="lembar-kendali-before-colon" style="border: 1px solid #000; padding: 5px 6px; text-align: left;">Nama Penyedia</th>
-            <td class="lembar-kendali-colon" style="border: 1px solid #000; text-align: center;">:</td>
-            <td style="border: 1px solid #000; padding: 5px 6px;">${data.namaPenyedia || 'Biro Komunikasi Publik'}</td>
-            <th class="lembar-kendali-before-colon font-bold" style="border: 1px solid #000; padding: 5px 6px; text-align: left;">Nomor Bukti Pembayaran / Kuitansi / SPK</th>
-            <td class="lembar-kendali-colon" style="border: 1px solid #000; text-align: center;">:</td>
-            <td style="border: 1px solid #000; padding: 5px 6px;">${data.noBukti || '-'}</td>
+            <td rowspan="2" style="border-right: 1px solid #000; padding: 6px 6px; text-align: center; vertical-align: middle; font-weight: bold; line-height: 1.35;">
+              Pelaksana<br>Pekerjaan<br>Pengadaan<br>Barang/Jasa
+            </td>
+            <td style="border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 5px 8px; vertical-align: top;">
+              <div style="display: flex;">
+                <span style="width: 95px; flex-shrink: 0; font-weight: bold;">Nama Penyedia</span>
+                <span style="width: 14px; text-align: center; flex-shrink: 0;">:</span>
+                <span>${data.namaPenyedia || 'Biro Komunikasi Publik'}</span>
+              </div>
+            </td>
+            <td style="border-bottom: 1px solid #000; padding: 5px 8px; vertical-align: top;">
+              <div style="display: flex; align-items: flex-start;">
+                <span style="width: 115px; flex-shrink: 0; font-weight: bold; font-size: 10px; line-height: 1.25;">Nomor Bukti<br>Pembayaran /<br>Kuitansi / SPK</span>
+                <span style="width: 14px; text-align: center; flex-shrink: 0; padding-top: 1px;">:</span>
+                <span style="padding-top: 1px;">${data.noBukti || '-'}</span>
+              </div>
+            </td>
           </tr>
           <tr>
-            <th class="lembar-kendali-before-colon" style="border: 1px solid #000; padding: 5px 6px; text-align: left;">Pekerjaan</th>
-            <td class="lembar-kendali-colon" style="border: 1px solid #000; text-align: center;">:</td>
-            <td style="border: 1px solid #000; padding: 5px 6px; font-weight: bold;">${pekerjaanText}</td>
-            <th class="lembar-kendali-before-colon font-bold" style="border: 1px solid #000; padding: 5px 6px; text-align: left;">Tanggal Bukti Pembayaran / Kuitansi / SPK</th>
-            <td class="lembar-kendali-colon" style="border: 1px solid #000; text-align: center;">:</td>
-            <td style="border: 1px solid #000; padding: 5px 6px;">${tglBukti || '&nbsp;'}</td>
-          </tr>
-          <tr>
-            <th colspan="2" class="lembar-kendali-before-colon font-bold" style="border: 1px solid #000; padding: 5px 6px; text-align: left;">Akun/Kegiatan :</th>
-            <td class="lembar-kendali-colon" style="border: 1px solid #000; text-align: center;">:</td>
-            <td style="border: 1px solid #000; padding: 5px 6px; font-family: monospace; font-weight: bold;">${data.akun || '146.01.WA.7665.EBA.994.002.0D.523121'}</td>
-            <th class="lembar-kendali-before-colon font-bold" style="border: 1px solid #000; padding: 5px 6px; text-align: left;">Nilai (Rp)</th>
-            <td class="lembar-kendali-colon" style="border: 1px solid #000; text-align: center;">:</td>
-            <td style="border: 1px solid #000; padding: 5px 6px; font-weight: bold; text-align: right;">${nilaiFmt}</td>
-          </tr>
-          <tr>
-            <th colspan="2" class="lembar-kendali-before-colon font-bold" style="border: 1px solid #000; padding: 5px 6px; text-align: left;">Jenis Pengadaan</th>
-            <td class="lembar-kendali-colon" style="border: 1px solid #000; text-align: center;">:</td>
-            <td colspan="4" style="border: 1px solid #000; padding: 5px 6px;">${data.jenisPengadaan || 'Perawatan Kendaraan Bermotor'}</td>
+            <td style="border-right: 1px solid #000; padding: 5px 8px; vertical-align: top;">
+              <div style="display: flex;">
+                <span style="width: 95px; flex-shrink: 0; font-weight: bold;">Pekerjaan</span>
+                <span style="width: 14px; text-align: center; flex-shrink: 0;">:</span>
+                <span style="line-height: 1.35;">${pekerjaanText}</span>
+              </div>
+            </td>
+            <td style="padding: 5px 8px; vertical-align: top;">
+              <div style="display: flex; align-items: flex-start;">
+                <span style="width: 115px; flex-shrink: 0; font-weight: bold; font-size: 10px; line-height: 1.25;">Tanggal Bukti<br>Pembayaran /<br>Kuitansi / SPK</span>
+                <span style="width: 14px; text-align: center; flex-shrink: 0; padding-top: 1px;">:</span>
+                <span style="padding-top: 1px; white-space: nowrap;">${tglBukti || '&nbsp;'}</span>
+              </div>
+            </td>
           </tr>
         </table>
 
-        <!-- TABEL BERKAS KEGIATAN -->
-        <table class="lembar-kendali-checklist" style="width: 100%; border-collapse: collapse; border: 1px solid #000; margin-top: 8px; font-size: 11px;">
+        <!-- BARIS 5: AKUN / KEGIATAN & NILAI (RP) -->
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #000; font-size: 11px;">
+          <div style="padding: 5px 8px; display: flex; align-items: center; flex: 1;">
+            <strong style="margin-right: 8px;">Akun/Kegiatan :</strong>
+            <span style="font-family: Arial, sans-serif;">${data.akun || '146.01.WA.7665.EBA.994.002.0D.523121'}</span>
+          </div>
+          <div style="width: 41%; padding: 5px 8px; display: flex; align-items: center; box-sizing: border-box;">
+            <strong style="width: 90px; flex-shrink: 0;">Nilai (Rp)</strong>
+            <span style="width: 14px; text-align: center; flex-shrink: 0;">:</span>
+            <span style="font-family: Arial, sans-serif;">${nilaiFmt}</span>
+          </div>
+        </div>
+
+        <!-- BARIS 6: JENIS PENGADAAN -->
+        <div style="border-bottom: 1px solid #000; padding: 5px 8px; font-size: 11px;">
+          <strong>Jenis Pengadaan :</strong> ${data.jenisPengadaan || 'Perawatan Kendaraan Bermotor'}
+        </div>
+
+        <!-- BARIS 7-10: TABEL BERKAS KEGIATAN -->
+        <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+          <colgroup>
+            <col style="width: 48px;">
+            <col style="width: auto;">
+            <col style="width: 85px;">
+            <col style="width: 95px;">
+            <col style="width: 135px;">
+          </colgroup>
           <thead>
-            <tr style="background: #f8fafc;">
-              <th style="width: 44px; border: 1px solid #000; padding: 6px; text-align: center;">No</th>
-              <th style="border: 1px solid #000; padding: 6px; text-align: left;">Berkas Kegiatan</th>
-              <th style="width: 80px; border: 1px solid #000; padding: 6px; text-align: center;">Ada</th>
-              <th style="width: 90px; border: 1px solid #000; padding: 6px; text-align: center;">Tidak Ada</th>
-              <th style="width: 130px; border: 1px solid #000; padding: 6px; text-align: center;">Kesesuaian</th>
+            <tr>
+              <th style="border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center; font-weight: bold;">No</th>
+              <th style="border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 5px 8px; text-align: center; font-weight: bold;">Berkas Kegiatan</th>
+              <th style="border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center; font-weight: bold;">Ada</th>
+              <th style="border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center; font-weight: bold;">Tidak Ada</th>
+              <th style="border-bottom: 1px solid #000; padding: 5px; text-align: center; font-weight: bold;">Kesesuaian</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td style="border: 1px solid #000; padding: 5px; text-align: center; font-weight: bold;">1</td>
-              <td style="border: 1px solid #000; padding: 5px 8px;">Kwitansi/Struk Pembayaran</td>
-              <td style="border: 1px solid #000; padding: 5px; text-align: center; font-weight: bold;">✓</td>
-              <td style="border: 1px solid #000; padding: 5px;"></td>
-              <td style="border: 1px solid #000; padding: 5px; text-align: center;">Sesuai</td>
+              <td style="border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center;">1</td>
+              <td style="border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 5px 8px;">Kwitansi/Struk Pembayaran</td>
+              <td style="border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;"></td>
+              <td style="border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;"></td>
+              <td style="border-bottom: 1px solid #000; padding: 5px;"></td>
             </tr>
             <tr>
-              <td style="border: 1px solid #000; padding: 5px; text-align: center; font-weight: bold;">2</td>
-              <td style="border: 1px solid #000; padding: 5px 8px;">Daftar Rincian Pembayaran</td>
-              <td style="border: 1px solid #000; padding: 5px; text-align: center; font-weight: bold;">✓</td>
-              <td style="border: 1px solid #000; padding: 5px;"></td>
-              <td style="border: 1px solid #000; padding: 5px; text-align: center;">Sesuai</td>
+              <td style="border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: center;">2</td>
+              <td style="border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 5px 8px;">Daftar Rincian Pembayaran</td>
+              <td style="border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;"></td>
+              <td style="border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 5px;"></td>
+              <td style="border-bottom: 1px solid #000; padding: 5px;"></td>
             </tr>
             <tr>
-              <td style="border: 1px solid #000; padding: 5px; text-align: center; font-weight: bold;">3</td>
-              <td style="border: 1px solid #000; padding: 5px 8px;">Dokumentasi</td>
-              <td style="border: 1px solid #000; padding: 5px; text-align: center; font-weight: bold;">✓</td>
-              <td style="border: 1px solid #000; padding: 5px;"></td>
-              <td style="border: 1px solid #000; padding: 5px; text-align: center;">Sesuai</td>
-            </tr>
-            <tr class="lembar-kendali-notes">
-              <td colspan="5" style="border: 1px solid #000; padding: 8px 10px; font-size: 11px;">
-                <strong>Catatan :</strong> ${data.catatan || ''}
-              </td>
+              <td style="border-right: 1px solid #000; padding: 5px; text-align: center;">3</td>
+              <td style="border-right: 1px solid #000; padding: 5px 8px;">Dokumentasi</td>
+              <td style="border-right: 1px solid #000; padding: 5px;"></td>
+              <td style="border-right: 1px solid #000; padding: 5px;"></td>
+              <td style="padding: 5px;"></td>
             </tr>
           </tbody>
         </table>
 
-        <!-- TANDA TANGAN 3 KOLOM RESMI LEMBAR KENDALI -->
-        <div class="lembar-kendali-signatures" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-top: 24px; text-align: center; font-size: 11px; line-height: 1.35;">
-          <div class="lk-sig-col">
-            <div class="lk-sig-head">
-              <div>Disetujui</div>
-              <strong style="display: block;">Pejabat Pembuat Komitmen</strong>
-              <div>Sekretariat Jenderal Kementerian PKP</div>
-            </div>
-            <div class="lembar-kendali-signature-space" style="height: 55px;"></div>
-            <div style="font-weight: bold; text-decoration: underline;">${data.pejabat?.ppkNama || 'Emanuel Pati Libak, S.Pd., M.T.'}</div>
-            <div>NIP. ${data.pejabat?.ppkNip || '197512072010121001'}</div>
-          </div>
-
-          <div class="lk-sig-col">
-            <div class="lk-sig-head">
-              <strong style="display: block;">PPSPM</strong>
-              <div>(Pejabat Penanda Tangan SPM)</div>
-              <div>&nbsp;</div>
-            </div>
-            <div class="lembar-kendali-signature-space" style="height: 55px;"></div>
-            <div style="font-weight: bold; text-decoration: underline;">${data.pejabat?.ppspmNama || 'Mala Hayati Rahayu, S.E'}</div>
-            <div>NIP. ${data.pejabat?.ppspmNip || '198408012009122003'}</div>
-          </div>
-
-          <div class="lk-sig-col">
-            <div class="lk-sig-head">
-              <div>Jakarta, ${tglMasuk || '&nbsp;'}</div>
-              <strong style="display: block;">Verifikator Pejabat Pembuat Komitmen</strong>
-              <div>&nbsp;</div>
-            </div>
-            <div class="lembar-kendali-signature-space" style="height: 55px;"></div>
-            <div style="text-decoration: underline;">${data.pejabat?.verifikatorNama || '…......…...........…........................................'}</div>
-            <div>NIP. ${data.pejabat?.verifikatorNip || '..................................'}</div>
-          </div>
+        <!-- BARIS 11: CATATAN (AREA KOSONG LAPANG ~80PX) -->
+        <div style="border-top: 1px solid #000; padding: 6px 8px; min-height: 80px; font-size: 11px; box-sizing: border-box;">
+          <strong>Catatan :</strong> ${data.catatan ? `<span>${data.catatan}</span>` : ''}
         </div>
-      </section>
+
+      </div>
+
+      <!-- TANDA TANGAN 3 KOLOM RESMI (POLOS TANPA UNDERLINE / GARIS BAWAH) -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 24px; text-align: center; font-size: 11px; line-height: 1.35; font-family: Arial, sans-serif;">
+        <div>
+          <div>Disetujui</div>
+          <div style="font-weight: bold;">Pejabat Pembuat Komitmen</div>
+          <div style="height: 60px;"></div>
+          <div>${data.pejabat?.ppkNama || 'Emanuel Pati Libak, S.Pd., M.T.'}</div>
+          <div>NIP. ${cleanNip(data.pejabat?.ppkNip || '197512072010121001')}</div>
+        </div>
+
+        <div>
+          <div style="font-weight: bold;">PPSPM</div>
+          <div>(Pejabat Penanda Tangan SPM)</div>
+          <div style="height: 60px;"></div>
+          <div>${data.pejabat?.ppspmNama || 'Mala Hayati Rahayu, S.E'}</div>
+          <div>NIP. ${cleanNip(data.pejabat?.ppspmNip || '198408012009122003')}</div>
+        </div>
+
+        <div>
+          <div>Jakarta,</div>
+          <div>Verifikator Pejabat Pembuat Komitmen</div>
+          <div style="height: 60px;"></div>
+          <div>${data.pejabat?.verifikatorNama || '................................................................'}</div>
+          <div>${data.pejabat?.verifikatorNip ? 'NIP. ' + cleanNip(data.pejabat.verifikatorNip) : 'NIP.'}</div>
+        </div>
+      </div>
     </div>
   `;
 }
@@ -373,7 +376,7 @@ function renderBbmKuitansiHtml(d) {
             <div>Pembuat Daftar</div>
             <div style="height: 52px;"></div>
             <div>${data.pelaksanaNama || 'Yogi Andre Yonatan Pakpahan, S.P.W.K'}</div>
-            <div>NIP. ${data.pelaksanaNip || '199511272025061006'}</div>
+            <div>NIP. ${cleanNip(data.pelaksanaNip || '199511272025061006')}</div>
           </div>
         </div>
 
@@ -390,14 +393,14 @@ function renderBbmKuitansiHtml(d) {
             <div>Kementerian Perumahan dan Kawasan Permukiman</div>
             <div style="height: 52px;"></div>
             <div>${data.pejabat?.ppkNama || 'Emanuel Pati Libak'}</div>
-            <div>NIP. '${data.pejabat?.ppkNip || '197512072010121001'}</div>
+            <div>NIP. ${cleanNip(data.pejabat?.ppkNip || '197512072010121001')}</div>
           </div>
           <div style="width: 44%;">
             <div>Lunas dibayar tgl &nbsp; &nbsp;:</div>
             <div style="margin-top: 2px;">Bendahara Pengeluaran</div>
             <div style="height: 82px;"></div>
             <div>${data.pejabat?.bendaharaNama || 'Rahmat H'}</div>
-            <div>NIP. ${data.pejabat?.bendaharaNip || '198004022014081001'}</div>
+            <div>NIP. ${cleanNip(data.pejabat?.bendaharaNip || '198004022014081001')}</div>
           </div>
         </div>
 
@@ -411,7 +414,7 @@ function renderBbmKuitansiHtml(d) {
           <div>Kepala Subbagian Tata Usaha</div>
           <div style="height: 52px;"></div>
           <div>${data.pejabat?.kasubbagTuNama || 'Ahmad Jayadi, S.Hum., MT.'}</div>
-          <div>NIP. ${data.pejabat?.kasubbagTuNip || '198702182010121003'}</div>
+          <div>NIP. ${cleanNip(data.pejabat?.kasubbagTuNip || '198702182010121003')}</div>
         </div>
 
       </div>
@@ -529,7 +532,7 @@ function renderBbmRincianHtml(d) {
           <div>Kementerian Perumahan dan Kawasan Permukiman</div>
           <div style="height: 55px;"></div>
           <div>${data.pejabat?.ppkNama || 'Emanuel Pati Libak'}</div>
-          <div>NIP. '${data.pejabat?.ppkNip || '197512072010121001'}</div>
+          <div>NIP. ${cleanNip(data.pejabat?.ppkNip || '197512072010121001')}</div>
         </div>
       </div>
 
