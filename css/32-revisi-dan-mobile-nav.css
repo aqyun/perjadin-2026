@@ -305,12 +305,41 @@ html[data-theme="dark"] .rev-log-marker.is-creator {
   display: none;
 }
 
-body.role-viewer .bottom-nav-btn[data-tab="input"] {
+body.role-viewer .bottom-nav-btn[data-tab="input"],
+body.role-viewer .bottom-nav-btn[data-tab="bbm"] {
   display: none !important;
 }
 
 body:not(.role-viewer) .bottom-nav-btn[data-tab="simulasi"] {
   display: none !important;
+}
+
+@media screen and (max-width: 1024px) {
+  .app-main,
+  .workspace,
+  .tab-content,
+  .card {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .topbar-title {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .topbar h1 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .dashboard-recent-table-wrap,
+  [id$="Out"] {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 @media screen and (max-width: 768px) {
@@ -749,6 +778,7 @@ body:not(.role-viewer) .bottom-nav-btn[data-tab="simulasi"] {
   .field-control input,
   .field-control select,
   .field-control textarea,
+  #tab-bbm .form-control,
   .history-search-wrap input,
   .user-mgmt-search-wrap input,
   .sbm-search-input {
@@ -1157,6 +1187,17 @@ body:not(.role-viewer) .bottom-nav-btn[data-tab="simulasi"] {
 }
 
 @media screen and (max-width: 420px) {
+  .bottom-nav-btn {
+    font-size: 9.5px;
+    gap: 2px;
+    padding: 4px 1px;
+  }
+
+  .bottom-nav-btn .ico {
+    width: 17px;
+    height: 17px;
+  }
+
   .history-meta-grid {
     grid-template-columns: 1fr;
   }

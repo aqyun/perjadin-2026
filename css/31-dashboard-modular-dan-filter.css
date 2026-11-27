@@ -500,3 +500,47 @@ html[data-theme="dark"] .history-bbm-sync-strip {
   color: #67e8f9;
 }
 
+@media (max-width: 960px) {
+  .dashboard-hero-card {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 22px 24px;
+    gap: 16px;
+  }
+
+  .dashboard-hero-actions {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .history-filter-pill-row {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+    margin-bottom: 14px;
+  }
+
+  .history-filter-pill-row::-webkit-scrollbar {
+    display: none;
+  }
+
+  .history-filter-pill-row .btn-filter-pill {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .history-bbm-sync-strip {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .history-bbm-sync-strip .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+

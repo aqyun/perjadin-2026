@@ -1059,25 +1059,25 @@ function appendBbmItemRowHtml(item = {}, idx = 0) {
   const tr = document.createElement('tr');
   tr.className = 'bbm-item-row';
   tr.innerHTML = `
-    <td class="tc bbm-row-no font-bold">${tbody.children.length + 1}</td>
-    <td>
+    <td class="tc bbm-row-no bbm-td-no font-bold" data-label="No">${tbody.children.length + 1}</td>
+    <td class="bbm-td-pelaku" data-label="Pelaku BBM (Pegawai)">
       <select class="form-control bbm-item-pelaksana font-bold" onchange="onBbmRowFieldChange()">
         ${optHtml}
       </select>
     </td>
-    <td>
+    <td class="bbm-td-kendaraan" data-label="Jenis Kendaraan">
       <select class="form-control bbm-item-kendaraan font-bold" onchange="onBbmRowFieldChange()">
         <option value="Mobil" ${kendVal === 'Mobil' ? 'selected' : ''}>Mobil</option>
         <option value="Motor" ${kendVal === 'Motor' ? 'selected' : ''}>Motor</option>
       </select>
     </td>
-    <td>
+    <td class="bbm-td-nopol" data-label="Nopol">
       ${platControl}
     </td>
-    <td>
+    <td class="bbm-td-tanggal" data-label="Tanggal Struk">
       <input type="date" class="form-control bbm-item-tanggal" value="${item.tanggal || new Date().toISOString().slice(0, 10)}" onchange="onBbmRowFieldChange()">
     </td>
-    <td>
+    <td class="bbm-td-jenis" data-label="Jenis BBM">
       <select class="form-control bbm-item-jenis" onchange="onBbmItemJenisChange(this)">
         <option value="Pertamina Dex" ${item.jenisBbm === 'Pertamina Dex' ? 'selected' : ''}>Pertamina Dex</option>
         <option value="Pertamax Turbo" ${item.jenisBbm === 'Pertamax Turbo' ? 'selected' : ''}>Pertamax Turbo</option>
@@ -1091,13 +1091,13 @@ function appendBbmItemRowHtml(item = {}, idx = 0) {
         <option value="Lainnya" ${item.jenisBbm === 'Lainnya' ? 'selected' : ''}>Lainnya</option>
       </select>
     </td>
-    <td>
+    <td class="bbm-td-liter" data-label="Liter">
       <input type="number" step="0.01" class="form-control bbm-item-liter tr" value="${item.liter || ''}" placeholder="Liter" oninput="onBbmRowFieldChange()">
     </td>
-    <td>
+    <td class="bbm-td-jumlah" data-label="Jumlah (Rp)">
       <input type="text" class="form-control bbm-item-jumlah tr font-bold font-mono" value="${Number(item.jumlah || 0).toLocaleString('id-ID')}" placeholder="0" oninput="onBbmJumlahInput(this)">
     </td>
-    <td class="tc">
+    <td class="tc bbm-td-aksi" data-label="Aksi">
       <button type="button" class="btn-icon-danger" onclick="removeBbmItemRow(this)" title="Hapus baris ini">
         <svg class="ico"><use href="#i-trash"></use></svg>
       </button>

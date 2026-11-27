@@ -1546,15 +1546,207 @@ html[data-theme="dark"] #tab-bbm .bbm-items-table tbody tr:hover td {
   }
 }
 
+@media (max-width: 1024px) {
+  #tab-bbm .bbm-items-table {
+    min-width: 920px;
+  }
+
+  #tab-bbm .bbm-doc-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  #tab-bbm .bbm-doc-nav-pills {
+    flex: none;
+    width: 100%;
+  }
+
+  #tab-bbm .bbm-doc-actions {
+    width: 100%;
+    padding-left: 0;
+    border-left: 0;
+    padding-top: 10px;
+    border-top: 1px solid var(--line);
+    justify-content: flex-end;
+  }
+
+  #tab-bbm .history-card-actions .bbm-card-del-btn {
+    margin-left: 0;
+  }
+
+  #tab-bbm .bbm-doc-render-area {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 16px;
+  }
+
+  #tab-bbm .bbm-doc-render-area .bbm-paper {
+    min-width: 720px;
+  }
+}
+
 @media (max-width: 960px) {
   #tab-bbm .form-grid-3 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #tab-bbm .bbm-hist-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #tab-bbm .bbm-hist-sum-card:last-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 760px) {
+  #tab-bbm .bbm-hist-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  #tab-bbm .bbm-hist-sum-card:last-child {
+    grid-column: auto;
+  }
+
+  /* Ubah tabel rincian struk BBM menjadi kartu vertikal di ponsel */
+  #tab-bbm .bbm-table-card {
+    overflow: visible;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  #tab-bbm .bbm-table-card .table-responsive {
+    overflow-x: visible;
+  }
+
+  #tab-bbm .bbm-items-table {
+    display: block;
+    min-width: 0;
+    width: 100%;
+  }
+
+  #tab-bbm .bbm-items-table thead {
+    display: none;
+  }
+
+  #tab-bbm .bbm-items-table tbody {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  #tab-bbm .bbm-items-table tbody tr:not(.bbm-item-row) {
+    display: block;
+  }
+
+  #tab-bbm .bbm-items-table tbody tr:not(.bbm-item-row) td {
+    display: block;
+    width: 100%;
+    border: 1px dashed var(--line-strong);
+    border-radius: var(--r-md);
+    background: var(--surface-2);
+  }
+
+  #tab-bbm .bbm-items-table tbody tr.bbm-item-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 10px 12px;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+    align-items: start;
+  }
+
+  #tab-bbm .bbm-items-table tbody tr.bbm-item-row:hover td {
+    background: transparent;
+  }
+
+  #tab-bbm .bbm-items-table tbody tr.bbm-item-row td {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+    text-align: left !important;
+  }
+
+  #tab-bbm .bbm-items-table tbody tr.bbm-item-row td[data-label]::before {
+    content: attr(data-label);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  #tab-bbm .bbm-items-table tbody tr.bbm-item-row td.bbm-td-no {
+    grid-column: 1;
+    order: -2;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--brand-600);
+  }
+
+  #tab-bbm .bbm-items-table tbody tr.bbm-item-row td.bbm-td-no::before {
+    content: "Struk #";
+    font-size: 10.5px;
+    color: var(--muted);
+  }
+
+  #tab-bbm .bbm-items-table tbody tr.bbm-item-row td.bbm-td-aksi {
+    grid-column: 2;
+    order: -1;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  #tab-bbm .bbm-items-table tbody tr.bbm-item-row td.bbm-td-aksi::before {
+    display: none;
+  }
+
+  #tab-bbm .bbm-items-table tbody tr.bbm-item-row td.bbm-td-aksi .btn-icon-danger {
+    margin: 0;
+    width: 34px;
+    height: 30px;
+  }
+
+  #tab-bbm .bbm-items-table tbody tr.bbm-item-row td.bbm-td-pelaku,
+  #tab-bbm .bbm-items-table tbody tr.bbm-item-row td.bbm-td-tanggal,
+  #tab-bbm .bbm-items-table tbody tr.bbm-item-row td.bbm-td-jenis {
+    grid-column: 1 / -1;
+  }
+
+  #tab-bbm .bbm-table-footer {
+    margin-top: 12px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    padding: 10px 12px;
+  }
+
+  #tab-bbm #btnBbmAddItemRow {
+    width: 100%;
+    justify-content: center;
   }
 }
 
 @media (max-width: 680px) {
   #tab-bbm .bbm-hero-card {
-    padding: 18px;
+    padding: 16px;
   }
 
   #tab-bbm .bbm-hero-head {
@@ -1563,7 +1755,16 @@ html[data-theme="dark"] #tab-bbm .bbm-items-table tbody tr:hover td {
   }
 
   #tab-bbm .bbm-hero-title {
-    font-size: 17px;
+    font-size: 16.5px;
+  }
+
+  #tab-bbm .bbm-hero-actions {
+    width: 100%;
+  }
+
+  #tab-bbm .bbm-hero-actions .btn {
+    flex: 1 1 auto;
+    justify-content: center;
   }
 
   #tab-bbm .bbm-kpi-grid {
@@ -1571,7 +1772,60 @@ html[data-theme="dark"] #tab-bbm .bbm-items-table tbody tr:hover td {
   }
 
   #tab-bbm .bbm-sub-nav {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
     width: 100%;
+    overflow: visible;
+  }
+
+  #tab-bbm .bbm-sub-nav-btn {
+    flex-direction: column;
+    gap: 4px;
+    white-space: normal;
+    text-align: center;
+    padding: 8px 6px;
+    font-size: 11px;
+    line-height: 1.25;
+  }
+
+  #tab-bbm .bbm-spt-live-card {
+    padding: 14px 14px 14px 18px;
+  }
+
+  #tab-bbm .bbm-spt-head-actions {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  #tab-bbm .bbm-spt-head-actions .btn {
+    flex: 1 1 140px;
+    justify-content: center;
+  }
+
+  #tab-bbm .bbm-spt-lock-warning {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  #tab-bbm .bbm-spt-lock-actions {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  #tab-bbm .bbm-spt-lock-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  #tab-bbm .bbm-spt-meta-item {
+    max-width: 100%;
+    white-space: normal;
+    word-break: break-word;
   }
 
   #tab-bbm .bbm-category-toggle {
@@ -1602,43 +1856,111 @@ html[data-theme="dark"] #tab-bbm .bbm-items-table tbody tr:hover td {
   }
 
   #tab-bbm .bbm-form-actions {
-    justify-content: stretch;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
   }
 
   #tab-bbm .bbm-form-actions .btn {
-    flex: 1 1 auto;
-  }
-
-  #tab-bbm .bbm-doc-actions {
     width: 100%;
-    padding-left: 0;
-    border-left: 0;
-    padding-top: 8px;
-    border-top: 1px solid var(--line);
-  }
-
-  #tab-bbm .bbm-doc-actions .btn {
-    flex: 1 1 auto;
+    justify-content: center;
+    height: 40px;
+    padding: 0 10px;
+    font-size: 12px;
   }
 
   #tab-bbm .bbm-doc-nav-pills {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
     width: 100%;
   }
 
   #tab-bbm .bbm-doc-nav-pill {
-    flex: 1 1 auto;
+    flex: none;
+    width: 100%;
+    white-space: normal;
     text-align: center;
+    font-size: 11.5px;
+    line-height: 1.25;
+    padding: 8px;
   }
-}
 
-@media screen and (max-width: 900px) {
-  #tab-bbm .bbm-doc-render-area {
+  #tab-bbm .bbm-doc-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+  }
+
+  #tab-bbm .bbm-doc-actions .btn {
+    width: 100%;
+    justify-content: center;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+
+  #tab-bbm .bbm-history-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  #tab-bbm .bbm-history-head-actions {
+    width: 100%;
+    margin-left: 0;
+    justify-content: stretch;
+  }
+
+  #tab-bbm .bbm-history-head-actions > * {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+
+  #tab-bbm .bbm-hist-filter-row {
+    flex-wrap: nowrap;
     overflow-x: auto;
-    padding-bottom: 16px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 4px;
   }
 
-  #tab-bbm .bbm-doc-render-area .bbm-paper {
-    min-width: 720px;
+  #tab-bbm .bbm-hist-filter-row::-webkit-scrollbar {
+    display: none;
+  }
+
+  #tab-bbm .bbm-hist-filter-pill {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  #tab-bbm .bbm-history-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  #tab-bbm .bbm-history-toolbar .history-search-wrap {
+    flex: none;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  #tab-bbm .bbm-card-track-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .bbm-track-modal {
+    width: calc(100vw - 20px);
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 18px 14px;
+  }
+
+  .bbm-tr-row {
+    flex-direction: column;
+    gap: 2px;
   }
 }
 
@@ -2242,12 +2564,6 @@ html[data-theme="dark"] .bbm-tr-summary {
 
 html[data-theme="dark"] .bbm-tr-row span {
   color: #94a3b8;
-}
-
-@media (max-width: 760px) {
-  .bbm-hist-summary-grid {
-    grid-template-columns: 1fr;
-  }
 }
 
 /* Status Terkunci saat Belum Ada SPT Induk Aktif */
