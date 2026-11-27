@@ -311,7 +311,7 @@ function exportBbmToExcel(d) {
   for (let i = 0; i < 5; i++) fullRows.push(emptyRow(10));
 
   const r83 = emptyRow(10);
-  r83[1] = `"${data.pejabat?.kasubbagTuNama || 'Ahmad Jayadi, S.Hum., MT.'}"`;
+  r83[1] = data.pejabat?.kasubbagTuNama || 'Ahmad Jayadi, S.Hum., MT.';
   fullRows.push(r83);
 
   const r84 = emptyRow(10);
@@ -348,7 +348,7 @@ function exportBbmToExcel(d) {
   fullRows.push(emptyRow(10));
 
   const r95 = emptyRow(10);
-  r95[1] = '"Yang bertandatangan di bawah ini menyatakan bahwa kami bertanggungjawab atas pengeluaran yang tidak diperoleh kuitansi, dengan perincian sebagai berikut :"';
+  r95[1] = 'Yang bertandatangan di bawah ini menyatakan bahwa kami bertanggungjawab atas pengeluaran yang tidak diperoleh kuitansi, dengan perincian sebagai berikut:';
   fullRows.push(r95);
   fullRows.push(emptyRow(10));
 
@@ -385,7 +385,7 @@ function exportBbmToExcel(d) {
   fullRows.push(emptyRow(10));
 
   const rClose = emptyRow(10);
-  rClose[1] = '"Jumlah uang tersebut di atas benar - benar di keluarkan untuk pelaksanaan dukungan atas kegiatan biro kompu, kami bersedia untuk menyetorkan kelebihan tersebut ke kas negara"';
+  rClose[1] = 'Jumlah uang tersebut di atas benar - benar di keluarkan untuk pelaksanaan dukungan atas kegiatan biro kompu, kami bersedia untuk menyetorkan kelebihan tersebut ke kas negara';
   fullRows.push(rClose);
 
   fullRows.push(emptyRow(10));
@@ -502,7 +502,7 @@ function exportBbmToExcel(d) {
     ['', 'Pejabat yang bertanggungjawab'],
     ['', 'Kepala Subbagian Tata Usaha'],
     [], [], [], [],
-    ['', `"${data.pejabat?.kasubbagTuNama || 'Ahmad Jayadi, S.Hum., MT.'}"`],
+    ['', data.pejabat?.kasubbagTuNama || 'Ahmad Jayadi, S.Hum., MT.'],
     ['', `NIP. ${data.pejabat?.kasubbagTuNip || '198702182010121003'}`]
   ];
   const wsKw = XLSX.utils.aoa_to_sheet(kwRows);
@@ -513,16 +513,11 @@ function exportBbmToExcel(d) {
   // 4. SHEET: 3. RINCIAN PEMBAYARAN S-46
   // =========================================================================
   const s46Rows = [
-    ['', '', '', '', 'Lampiran Surat Direktur Jenderal Perbendaharaan'],
-    ['', '', '', '', 'Nomor', ':', 'S-46 /PB/2013'],
-    ['', '', '', '', 'Tanggal', ':', '2013-01-03'],
-    [],
     ['', 'Daftar Rincian Pembayaran'],
     [],
-    ['', '"Yang bertandatangan di bawah ini menyatakan bahwa kami bertanggungjawab atas pengeluaran yang tidak diperoleh kuitansi, dengan perincian sebagai berikut :"'],
+    ['', 'Yang bertandatangan di bawah ini menyatakan bahwa kami bertanggungjawab atas pengeluaran yang tidak diperoleh kuitansi, dengan perincian sebagai berikut:'],
     [],
     ['', 'Klasifikasi anggaran : fungsi / sub fungsi / program / kegiatan / output / sub kelompok akun / akun'],
-    ['', data.akun || '146.01.WA.7665.EBA.994.002.0D.523121'],
     [],
     ['', 'No', 'Uraian', '', '', '', 'Jumlah'],
   ];
@@ -537,7 +532,7 @@ function exportBbmToExcel(d) {
 
   s46Rows.push(['', '', 'Nilai Total', '', '', '', Number(data.nilaiTotal || 0)]);
   s46Rows.push([]);
-  s46Rows.push(['', '"Jumlah uang tersebut di atas benar - benar di keluarkan untuk pelaksanaan dukungan atas kegiatan biro kompu, kami bersedia untuk menyetorkan kelebihan tersebut ke kas negara"']);
+  s46Rows.push(['', 'Jumlah uang tersebut di atas benar - benar di keluarkan untuk pelaksanaan dukungan atas kegiatan biro kompu, kami bersedia untuk menyetorkan kelebihan tersebut ke kas negara']);
   s46Rows.push([]);
   s46Rows.push(['', '', '', '', '', `Jakarta,         ${tglKuitansi}`]);
   s46Rows.push(['', '', '', '', '', 'Pejabat Pembuat Komitmen']);

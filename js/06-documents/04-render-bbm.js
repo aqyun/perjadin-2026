@@ -1,10 +1,10 @@
 /**
  * js/06-documents/04-render-bbm.js
- * Engine Render Dokumen Resmi Reimburse BBM Kendaraan Dinas
- * Sesuai Template Excel Biro Komunikasi Publik Kementerian PKP
- * 1. Checklist Pengendalian Pengadaan Barang / Jasa (Lembar Kendali BBM)
- * 2. Kuitansi / Bukti Pembayaran (Akun 523121)
- * 3. Daftar Rincian Pembayaran (Lampiran Surat Dirjen Perbendaharaan S-46/PB/2013)
+ * Engine Render Dokumen Resmi Reimburse BBM Kendaraan Dinas & Pribadi
+ * Format Plek Ketiplek Template Resmi Biro Komunikasi Publik Kementerian PKP
+ * 1. Checklist Pengendalian Pengadaan Barang / Jasa (Format Lembar Kendali Resmi PerdinKu)
+ * 2. Kuitansi / Bukti Pembayaran (Akun 523121 - Sesuai Template Box Resmi)
+ * 3. Daftar Rincian Pembayaran (Multi-Struk BBM Grouping Per Tanggal)
  */
 
 function formatRupiahMurni(n) {
@@ -14,7 +14,6 @@ function formatRupiahMurni(n) {
 
 function formatTanggalIndoLengkap(dStr) {
   if (!dStr) return '';
-  // Jika formatnya sudah teks seperti "20 November 2026" atau "Desember 2026"
   if (/[a-zA-Z]/.test(dStr)) return dStr;
   const parts = dStr.split('-');
   if (parts.length === 3) {
@@ -30,6 +29,7 @@ function formatTanggalIndoLengkap(dStr) {
 function getDefaultBbmData() {
   return {
     id: 'bbm_' + Date.now(),
+    kategoriKendaraan: 'dinas', // 'dinas' | 'pribadi'
     tanggalMasuk: '2026-11-20',
     pelaksanaPanggilan: 'Yogi Pakpahan',
     pelaksanaNama: 'Yogi Andre Yonatan Pakpahan, S.P.W.K',
@@ -37,10 +37,13 @@ function getDefaultBbmData() {
     namaPenyedia: 'Biro Komunikasi Publik',
     noBukti: '-',
     noKuitansi: '            /KW/Bend/Satker-Setjen/2026',
+    nomorSPM: '-',
+    nomorSPD: '-',
     pekerjaan: 'Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan Mobil Dinas - TOYOTA INNOVA B 2577 KRK.',
     pekerjaanKuitansi: 'Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan Mobil Dinas - TOYOTA INNOVA B 2577 KRK, Output: Perawatan Kendaraan Bermotor.',
     kendaraan: 'TOYOTA INNOVA B 2577 KRK',
     platNomor: 'B 2577 KRK',
+    pemilikMobil: '',
     tanggalBukti: '2026-11-20',
     tanggalKuitansi: 'Desember 2026',
     tempatKota: 'Jakarta',
@@ -62,11 +65,6 @@ function getDefaultBbmData() {
     ],
     nilaiTotal: 1000000,
     catatan: '',
-    checklist: {
-      kwitansi: { ada: true, tidakAda: false, sesuai: true },
-      rincian: { ada: true, tidakAda: false, sesuai: true },
-      dokumentasi: { ada: true, tidakAda: false, sesuai: true }
-    },
     pejabat: {
       ppkNama: 'Emanuel Pati Libak, S.Pd., M.T.',
       ppkNip: '197512072010121001',
@@ -83,149 +81,201 @@ function getDefaultBbmData() {
 }
 
 /**
- * 1. RENDER CHECKLIST PENGENDALIAN PENGADAAN BARANG / JASA (Lembar Kendali BBM)
+ * 1. RENDER CHECKLIST PENGENDALIAN PENGADAAN BARANG / JASA (LEMBAR KENDALI BBM)
+ * Menggunakan Layout Lembar Kendali Resmi Kementerian PKP (Identik dengan format di PerdinKu)
  */
 function renderBbmChecklistHtml(d) {
   const data = d || getDefaultBbmData();
   const tglMasuk = formatTanggalIndoLengkap(data.tanggalMasuk);
   const tglBukti = formatTanggalIndoLengkap(data.tanggalBukti);
   const nilaiFmt = Number(data.nilaiTotal || 0).toLocaleString('id-ID');
+  const logoSrc = (typeof LOGO_PKP_BASE64 !== 'undefined' && LOGO_PKP_BASE64) ? LOGO_PKP_BASE64 : 'logo-pkp.webp';
+  const alamat = (typeof document !== 'undefined' && document.getElementById('cfg_alamatSatker')?.value) || '';
+
+  const kendLabel = (data.kategoriKendaraan === 'pribadi')
+    ? `Mobil Pribadi - ${data.kendaraan || 'Kendaraan Pribadi'} ${data.platNomor ? '(' + data.platNomor + ')' : ''}`
+    : `Mobil Dinas - ${data.kendaraan || 'TOYOTA INNOVA B 2577 KRK'}`;
+
+  const pekerjaanText = data.pekerjaan || `Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan ${kendLabel}.`;
 
   return `
     <div class="bbm-paper bbm-paper-checklist">
-      <!-- HEADER ATAS -->
-      <div class="bbm-top-meta">
-        <div class="bbm-meta-row">
-          <span class="bbm-meta-label">Tanggal Masuk Berkas</span>
-          <span class="bbm-meta-sep">:</span>
-          <span class="bbm-meta-val">${tglMasuk || '&nbsp;'}</span>
-        </div>
-        <div class="bbm-meta-row">
-          <span class="bbm-meta-label font-bold">PELAKSANA PERTANGGUNGJAWABAN</span>
-          <span class="bbm-meta-sep">:</span>
-          <span class="bbm-meta-val font-bold">${data.pelaksanaPanggilan || data.pelaksanaNama || '&nbsp;'}</span>
-        </div>
-      </div>
+      <section class="lembar-kendali-area" style="max-width: 100%; padding: 0; background: transparent; font-family: Arial, sans-serif; font-size: 11.5px; color: #000;">
+        <!-- KOP KEMENTERIAN PKP RESMI -->
+        <header class="lembar-kendali-header" style="display: grid; grid-template-columns: 85px 1fr; gap: 14px; align-items: center; text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 8px;">
+          <img class="lembar-kendali-logo" src="${logoSrc}" alt="Logo PKP" style="width: 78px; height: 74px; object-fit: contain;">
+          <div>
+            <div class="lembar-kendali-ministry" style="font-size: 14px; font-weight: 800; color: #0E5B73; letter-spacing: 0.5px;">KEMENTERIAN PERUMAHAN DAN KAWASAN PERMUKIMAN <span style="color: #D5C58A;">REPUBLIK INDONESIA</span></div>
+            <strong class="lembar-kendali-secretariat" style="display: block; font-size: 15px; font-weight: 900; line-height: 1.2; color: #000;">SEKRETARIAT JENDERAL</strong>
+            <div class="lembar-kendali-unit" style="font-size: 13.5px; font-weight: 700; color: #000;">SATUAN KERJA</div>
+            ${alamat ? `<div class="lembar-kendali-address" style="font-size: 10.5px; margin-top: 2px;">${alamat}</div>` : ''}
+          </div>
+        </header>
 
-      <!-- JUDUL RESMI -->
-      <div class="bbm-doc-title">
-        CHECKLIST PENGENDALIAN PENGADAAN BARANG / JASA
-      </div>
-
-      <!-- TABEL KETERANGAN PENGADAAN -->
-      <table class="bbm-table bbm-table-meta">
-        <tbody>
-          <tr>
-            <td rowspan="2" class="bbm-w-pelaksana font-bold bbm-bg-light">
-              Pelaksana Pekerjaan Pengadaan Barang/Jasa
-            </td>
-            <td class="bbm-w-sublabel">Nama Penyedia</td>
-            <td class="bbm-w-sep">:</td>
-            <td class="bbm-w-subval">${data.namaPenyedia || 'Biro Komunikasi Publik'}</td>
-            <td class="bbm-w-spk-label font-bold">
-              Nomor Bukti<br>Pembayaran /<br>Kuitansi / SPK
-            </td>
-            <td class="bbm-w-sep">:</td>
-            <td class="bbm-w-spk-val">${data.noBukti || '-'}</td>
-          </tr>
-          <tr>
-            <td class="bbm-w-sublabel">Pekerjaan</td>
-            <td class="bbm-w-sep">:</td>
-            <td class="bbm-w-subval font-bold">${data.pekerjaan || `Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan Mobil Dinas - ${data.kendaraan}.`}</td>
-            <td class="bbm-w-spk-label font-bold">
-              Tanggal Bukti<br>Pembayaran /<br>Kuitansi / SPK
-            </td>
-            <td class="bbm-w-sep">:</td>
-            <td class="bbm-w-spk-val">${tglBukti || '&nbsp;'}</td>
-          </tr>
-          <tr>
-            <td class="font-bold">Akun/Kegiatan :</td>
-            <td colspan="3" class="font-bold">${data.akun || '146.01.WA.7665.EBA.994.002.0D.523121'}</td>
-            <td class="font-bold">Nilai (Rp)</td>
-            <td class="bbm-w-sep">:</td>
-            <td class="font-bold">${nilaiFmt}</td>
-          </tr>
-          <tr>
-            <td colspan="7" class="font-bold">
-              Jenis Pengadaan : ${data.jenisPengadaan || 'Perawatan Kendaraan Bermotor'}
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <!-- TABEL BERKAS KEGIATAN -->
-      <table class="bbm-table bbm-table-check">
-        <thead>
-          <tr>
-            <th style="width: 40px;">No</th>
-            <th style="width: 320px;">Berkas Kegiatan</th>
-            <th style="width: 60px;">Ada</th>
-            <th style="width: 70px;">Tidak Ada</th>
-            <th style="width: 100px;">Kesesuaian</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="tc font-bold">1</td>
-            <td>Kwitansi/Struk Pembayaran</td>
-            <td class="tc font-bold">✓</td>
-            <td class="tc"></td>
-            <td class="tc">Sesuai</td>
-          </tr>
-          <tr>
-            <td class="tc font-bold">2</td>
-            <td>Daftar Rincian Pembayaran</td>
-            <td class="tc font-bold">✓</td>
-            <td class="tc"></td>
-            <td class="tc">Sesuai</td>
-          </tr>
-          <tr>
-            <td class="tc font-bold">3</td>
-            <td>Dokumentasi</td>
-            <td class="tc font-bold">✓</td>
-            <td class="tc"></td>
-            <td class="tc">Sesuai</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <!-- CATATAN -->
-      <div class="bbm-catatan-box">
-        <span class="font-bold">Catatan :</span> ${data.catatan || ''}
-      </div>
-
-      <!-- TANDA TANGAN 3 KOLOM -->
-      <div class="bbm-sign-row bbm-mt-30">
-        <div class="bbm-sign-col">
-          <p class="bbm-sign-role">Disetujui</p>
-          <p class="bbm-sign-role font-bold">Pejabat Pembuat Komitmen</p>
-          <div class="bbm-sign-space"></div>
-          <p class="bbm-sign-name font-bold underline">"${data.pejabat?.ppkNama || 'Emanuel Pati Libak, S.Pd., M.T.'}"</p>
-          <p class="bbm-sign-nip">NIP. ${data.pejabat?.ppkNip || '197512072010121001'}</p>
+        <!-- TANGGAL MASUK BERKAS & PELAKSANA -->
+        <div class="lembar-kendali-section-title lembar-kendali-section-title-berkas" style="text-align: left; padding: 4px 8px; font-weight: bold; border: 1px solid #000; margin-top: 6px; font-size: 11px;">
+          Tanggal Masuk Berkas: ${tglMasuk || '&nbsp;'}
         </div>
 
-        <div class="bbm-sign-col">
-          <p class="bbm-sign-role font-bold">PPSPM</p>
-          <p class="bbm-sign-role">(Pejabat Penanda Tangan SPM)</p>
-          <div class="bbm-sign-space"></div>
-          <p class="bbm-sign-name font-bold underline">"${data.pejabat?.ppspmNama || 'Mala Hayati Rahayu, S.E'}"</p>
-          <p class="bbm-sign-nip">NIP. ${data.pejabat?.ppspmNip || '198408012009122003'}</p>
+        <table class="lembar-kendali-meta" style="width: 100%; border-collapse: collapse; border: 1px solid #000; margin-bottom: 8px; font-size: 11px;">
+          <colgroup>
+            <col style="width:20%">
+            <col style="width:15%">
+            <col style="width:2%">
+            <col style="width:30%">
+            <col style="width:13%">
+            <col style="width:2%">
+            <col style="width:18%">
+          </colgroup>
+          <tr>
+            <th colspan="2" rowspan="2" class="lembar-kendali-meta-label" style="border: 1px solid #000; padding: 5px 8px; font-weight: bold; vertical-align: middle;">PELAKSANA PERTANGGUNGJAWABAN</th>
+            <td rowspan="2" class="lembar-kendali-meta-separator" style="border: 1px solid #000; text-align: center; vertical-align: middle;">:</td>
+            <td rowspan="2" class="lembar-kendali-meta-value font-bold" style="border: 1px solid #000; padding: 5px 8px; vertical-align: middle;">${data.pelaksanaPanggilan || data.pelaksanaNama || 'Yogi Pakpahan'}</td>
+            <th class="lembar-kendali-meta-label" style="border: 1px solid #000; padding: 4px 6px; font-weight: bold;">SPM</th>
+            <td class="lembar-kendali-meta-separator" style="border: 1px solid #000; text-align: center;">:</td>
+            <td class="lembar-kendali-meta-value" style="border: 1px solid #000; padding: 4px 6px;">${data.nomorSPM || '-'}</td>
+          </tr>
+          <tr>
+            <th class="lembar-kendali-meta-label" style="border: 1px solid #000; padding: 4px 6px; font-weight: bold;">SP2D</th>
+            <td class="lembar-kendali-meta-separator" style="border: 1px solid #000; text-align: center;">:</td>
+            <td class="lembar-kendali-meta-value" style="border: 1px solid #000; padding: 4px 6px;">${data.nomorSPD || '-'}</td>
+          </tr>
+        </table>
+
+        <!-- JUDUL CHECKLIST -->
+        <div class="lembar-kendali-section-title lembar-kendali-section-title-checklist" style="text-align: center; border: 1px solid #000; padding: 5px; font-size: 13px; font-weight: 800; background: #fafafa; margin-bottom: 0;">
+          CHECKLIST PENGENDALIAN PENGADAAN BARANG / JASA
         </div>
 
-        <div class="bbm-sign-col">
-          <p class="bbm-sign-role">Jakarta, ${tglMasuk || '&nbsp;'}</p>
-          <p class="bbm-sign-role font-bold">Verifikator Pejabat Pembuat Komitmen</p>
-          <div class="bbm-sign-space"></div>
-          <p class="bbm-sign-name font-bold underline">${data.pejabat?.verifikatorNama || '…......…...........…........................................'}</p>
-          <p class="bbm-sign-nip">NIP. ${data.pejabat?.verifikatorNip || ''}</p>
+        <!-- TABEL DATA PENGADAAN (SESUAI TEMPLATE EXCEL BBM) -->
+        <table class="lembar-kendali-info" style="width: 100%; border-collapse: collapse; border: 1px solid #000; font-size: 11px;">
+          <colgroup>
+            <col style="width:16%">
+            <col style="width:14%">
+            <col style="width:2%">
+            <col style="width:32%">
+            <col style="width:16%">
+            <col style="width:2%">
+            <col style="width:18%">
+          </colgroup>
+          <tr>
+            <th rowspan="2" class="lembar-kendali-side-label font-bold" style="border: 1px solid #000; padding: 6px; text-align: left; vertical-align: middle; background: #fbfbfb;">
+              Pelaksana Pekerjaan<br>Pengadaan Barang/Jasa
+            </th>
+            <th class="lembar-kendali-before-colon" style="border: 1px solid #000; padding: 5px 6px; text-align: left;">Nama Penyedia</th>
+            <td class="lembar-kendali-colon" style="border: 1px solid #000; text-align: center;">:</td>
+            <td style="border: 1px solid #000; padding: 5px 6px;">${data.namaPenyedia || 'Biro Komunikasi Publik'}</td>
+            <th class="lembar-kendali-before-colon font-bold" style="border: 1px solid #000; padding: 5px 6px; text-align: left;">Nomor Bukti Pembayaran / Kuitansi / SPK</th>
+            <td class="lembar-kendali-colon" style="border: 1px solid #000; text-align: center;">:</td>
+            <td style="border: 1px solid #000; padding: 5px 6px;">${data.noBukti || '-'}</td>
+          </tr>
+          <tr>
+            <th class="lembar-kendali-before-colon" style="border: 1px solid #000; padding: 5px 6px; text-align: left;">Pekerjaan</th>
+            <td class="lembar-kendali-colon" style="border: 1px solid #000; text-align: center;">:</td>
+            <td style="border: 1px solid #000; padding: 5px 6px; font-weight: bold;">${pekerjaanText}</td>
+            <th class="lembar-kendali-before-colon font-bold" style="border: 1px solid #000; padding: 5px 6px; text-align: left;">Tanggal Bukti Pembayaran / Kuitansi / SPK</th>
+            <td class="lembar-kendali-colon" style="border: 1px solid #000; text-align: center;">:</td>
+            <td style="border: 1px solid #000; padding: 5px 6px;">${tglBukti || '&nbsp;'}</td>
+          </tr>
+          <tr>
+            <th colspan="2" class="lembar-kendali-before-colon font-bold" style="border: 1px solid #000; padding: 5px 6px; text-align: left;">Akun/Kegiatan :</th>
+            <td class="lembar-kendali-colon" style="border: 1px solid #000; text-align: center;">:</td>
+            <td style="border: 1px solid #000; padding: 5px 6px; font-family: monospace; font-weight: bold;">${data.akun || '146.01.WA.7665.EBA.994.002.0D.523121'}</td>
+            <th class="lembar-kendali-before-colon font-bold" style="border: 1px solid #000; padding: 5px 6px; text-align: left;">Nilai (Rp)</th>
+            <td class="lembar-kendali-colon" style="border: 1px solid #000; text-align: center;">:</td>
+            <td style="border: 1px solid #000; padding: 5px 6px; font-weight: bold; text-align: right;">${nilaiFmt}</td>
+          </tr>
+          <tr>
+            <th colspan="2" class="lembar-kendali-before-colon font-bold" style="border: 1px solid #000; padding: 5px 6px; text-align: left;">Jenis Pengadaan</th>
+            <td class="lembar-kendali-colon" style="border: 1px solid #000; text-align: center;">:</td>
+            <td colspan="4" style="border: 1px solid #000; padding: 5px 6px;">${data.jenisPengadaan || 'Perawatan Kendaraan Bermotor'}</td>
+          </tr>
+        </table>
+
+        <!-- TABEL BERKAS KEGIATAN -->
+        <table class="lembar-kendali-checklist" style="width: 100%; border-collapse: collapse; border: 1px solid #000; margin-top: 8px; font-size: 11px;">
+          <thead>
+            <tr style="background: #f8fafc;">
+              <th style="width: 44px; border: 1px solid #000; padding: 6px; text-align: center;">No</th>
+              <th style="border: 1px solid #000; padding: 6px; text-align: left;">Berkas Kegiatan</th>
+              <th style="width: 80px; border: 1px solid #000; padding: 6px; text-align: center;">Ada</th>
+              <th style="width: 90px; border: 1px solid #000; padding: 6px; text-align: center;">Tidak Ada</th>
+              <th style="width: 130px; border: 1px solid #000; padding: 6px; text-align: center;">Kesesuaian</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="border: 1px solid #000; padding: 5px; text-align: center; font-weight: bold;">1</td>
+              <td style="border: 1px solid #000; padding: 5px 8px;">Kwitansi/Struk Pembayaran</td>
+              <td style="border: 1px solid #000; padding: 5px; text-align: center; font-weight: bold;">✓</td>
+              <td style="border: 1px solid #000; padding: 5px;"></td>
+              <td style="border: 1px solid #000; padding: 5px; text-align: center;">Sesuai</td>
+            </tr>
+            <tr>
+              <td style="border: 1px solid #000; padding: 5px; text-align: center; font-weight: bold;">2</td>
+              <td style="border: 1px solid #000; padding: 5px 8px;">Daftar Rincian Pembayaran</td>
+              <td style="border: 1px solid #000; padding: 5px; text-align: center; font-weight: bold;">✓</td>
+              <td style="border: 1px solid #000; padding: 5px;"></td>
+              <td style="border: 1px solid #000; padding: 5px; text-align: center;">Sesuai</td>
+            </tr>
+            <tr>
+              <td style="border: 1px solid #000; padding: 5px; text-align: center; font-weight: bold;">3</td>
+              <td style="border: 1px solid #000; padding: 5px 8px;">Dokumentasi</td>
+              <td style="border: 1px solid #000; padding: 5px; text-align: center; font-weight: bold;">✓</td>
+              <td style="border: 1px solid #000; padding: 5px;"></td>
+              <td style="border: 1px solid #000; padding: 5px; text-align: center;">Sesuai</td>
+            </tr>
+            <tr class="lembar-kendali-notes">
+              <td colspan="5" style="border: 1px solid #000; padding: 8px 10px; font-size: 11px;">
+                <strong>Catatan :</strong> ${data.catatan || ''}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- TANDA TANGAN 3 KOLOM RESMI LEMBAR KENDALI -->
+        <div class="lembar-kendali-signatures" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-top: 24px; text-align: center; font-size: 11px; line-height: 1.35;">
+          <div class="lk-sig-col">
+            <div class="lk-sig-head">
+              <div>Disetujui</div>
+              <strong style="display: block;">Pejabat Pembuat Komitmen</strong>
+              <div>Sekretariat Jenderal Kementerian PKP</div>
+            </div>
+            <div class="lembar-kendali-signature-space" style="height: 55px;"></div>
+            <div style="font-weight: bold; text-decoration: underline;">${data.pejabat?.ppkNama || 'Emanuel Pati Libak, S.Pd., M.T.'}</div>
+            <div>NIP. ${data.pejabat?.ppkNip || '197512072010121001'}</div>
+          </div>
+
+          <div class="lk-sig-col">
+            <div class="lk-sig-head">
+              <strong style="display: block;">PPSPM</strong>
+              <div>(Pejabat Penanda Tangan SPM)</div>
+              <div>&nbsp;</div>
+            </div>
+            <div class="lembar-kendali-signature-space" style="height: 55px;"></div>
+            <div style="font-weight: bold; text-decoration: underline;">${data.pejabat?.ppspmNama || 'Mala Hayati Rahayu, S.E'}</div>
+            <div>NIP. ${data.pejabat?.ppspmNip || '198408012009122003'}</div>
+          </div>
+
+          <div class="lk-sig-col">
+            <div class="lk-sig-head">
+              <div>Jakarta, ${tglMasuk || '&nbsp;'}</div>
+              <strong style="display: block;">Verifikator Pejabat Pembuat Komitmen</strong>
+              <div>&nbsp;</div>
+            </div>
+            <div class="lembar-kendali-signature-space" style="height: 55px;"></div>
+            <div style="text-decoration: underline;">${data.pejabat?.verifikatorNama || '…......…...........…........................................'}</div>
+            <div>NIP. ${data.pejabat?.verifikatorNip || '..................................'}</div>
+          </div>
         </div>
-      </div>
+      </section>
     </div>
   `;
 }
 
 /**
  * 2. RENDER KUITANSI / BUKTI PEMBAYARAN BBM (Akun 523121)
+ * 100% Plek Ketiplek Format Box Gambar User (Image 1)
  */
 function renderBbmKuitansiHtml(d) {
   const data = d || getDefaultBbmData();
@@ -233,216 +283,256 @@ function renderBbmKuitansiHtml(d) {
     ? terbilang(data.nilaiTotal || 0)
     : 'Satu Juta Rupiah';
 
+  const kendLabel = (data.kategoriKendaraan === 'pribadi')
+    ? `Mobil Pribadi - ${data.kendaraan || 'Kendaraan Pribadi'} ${data.platNomor ? '(' + data.platNomor + ')' : ''}`
+    : `Mobil Dinas - ${data.kendaraan || 'TOYOTA INNOVA B 2577 KRK'}`;
+
+  const defaultUraianKuitansi = `Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan ${kendLabel}, Output: Perawatan Kendaraan Bermotor.`;
+  const uraianKuitansi = data.pekerjaanKuitansi || defaultUraianKuitansi;
+
   return `
-    <div class="bbm-paper bbm-paper-kuitansi">
-      <!-- HEADER KANAN ATAS -->
-      <div class="bbm-kuitansi-top-right">
-        <table class="bbm-table-borderless">
-          <tr>
-            <td class="font-bold">TA</td>
-            <td>:</td>
-            <td>${data.ta || '2026'}</td>
-          </tr>
-          <tr>
-            <td class="font-bold">Nomor Bukti</td>
-            <td>:</td>
-            <td>${data.noKuitansi || '            /KW/Bend/Satker-Setjen/2026'}</td>
-          </tr>
-          <tr>
-            <td class="font-bold">Akun</td>
-            <td>:</td>
-            <td class="font-bold">${data.akun || '146.01.WA.7665.EBA.994.002.0D.523121'}</td>
-          </tr>
-          <tr>
-            <td></td>
-            <td></td>
-            <td class="bbm-sub-akun">(${data.namaAkun || 'Belanja Pemeliharaan Peralatan dan Mesin'})</td>
-          </tr>
-        </table>
-      </div>
+    <div class="bbm-paper bbm-paper-kuitansi" style="padding: 20px;">
+      <!-- KOTAK BINGKAI UTAMA KUITANSI -->
+      <div class="bbm-kuitansi-border-box" style="border: 1.5px solid #000; padding: 26px 32px; background: #ffffff; color: #000000; font-family: Arial, sans-serif; font-size: 11px; line-height: 1.4; box-sizing: border-box;">
+        
+        <!-- HEADER KANAN ATAS: TA, NOMOR BUKTI, AKUN -->
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 22px;">
+          <table style="border-collapse: collapse; font-size: 11px;">
+            <tr>
+              <td style="width: 85px; vertical-align: top;">TA</td>
+              <td style="width: 14px; text-align: center; vertical-align: top;">:</td>
+              <td style="vertical-align: top;">${data.ta || '2026'}</td>
+            </tr>
+            <tr>
+              <td style="vertical-align: top;">Nomor Bukti</td>
+              <td style="text-align: center; vertical-align: top;">:</td>
+              <td style="vertical-align: top; font-family: monospace;">${data.noKuitansi || '            /KW/Bend/Satker-Setjen/2026'}</td>
+            </tr>
+            <tr>
+              <td style="vertical-align: top;">Akun</td>
+              <td style="text-align: center; vertical-align: top;">:</td>
+              <td style="vertical-align: top; font-family: monospace;">${data.akun || '146.01.WA.7665.EBA.994.002.0D.523121'}</td>
+            </tr>
+            <tr>
+              <td></td>
+              <td></td>
+              <td style="font-size: 10.5px; padding-top: 2px;">(${data.namaAkun || 'Belanja Pemeliharaan Peralatan dan Mesin'})</td>
+            </tr>
+          </table>
+        </div>
 
-      <!-- JUDUL KUITANSI -->
-      <div class="bbm-kuitansi-header">
-        <h2 class="bbm-kuitansi-title">KUITANSI / BUKTI PEMBAYARAN</h2>
-      </div>
+        <!-- JUDUL TENGAH -->
+        <div style="text-align: center; margin-bottom: 28px;">
+          <h2 style="font-size: 15px; font-weight: bold; margin: 0; letter-spacing: 0.5px;">KUITANSI / BUKTI PEMBAYARAN</h2>
+        </div>
 
-      <!-- FORM ISIAN KUITANSI -->
-      <table class="bbm-table-kuitansi-body">
-        <tbody>
+        <!-- ISI KUITANSI -->
+        <table style="width: 100%; border-collapse: collapse; font-size: 11.5px; margin-bottom: 25px;">
           <tr>
-            <td class="bbm-k-label">Sudah terima dari</td>
-            <td class="bbm-k-sep">:</td>
-            <td class="bbm-k-val font-bold">
+            <td style="width: 140px; vertical-align: top; padding: 4px 0;">Sudah terima dari</td>
+            <td style="width: 14px; vertical-align: top; text-align: center; padding: 4px 0;">:</td>
+            <td style="vertical-align: top; padding: 4px 0; line-height: 1.45;">
               Pejabat Pembuat Komitmen<br>
               Sekretariat Jenderal Kementerian Perumahan dan Kawasan Permukiman
             </td>
           </tr>
           <tr>
-            <td class="bbm-k-label">Jumlah Uang</td>
-            <td class="bbm-k-sep">:</td>
-            <td class="bbm-k-val">
-              <span class="bbm-k-amount">${formatRupiahMurni(data.nilaiTotal)}</span>
+            <td style="vertical-align: top; padding: 8px 0 4px 0;">Jumlah Uang</td>
+            <td style="vertical-align: top; text-align: center; padding: 8px 0 4px 0;">:</td>
+            <td style="vertical-align: top; padding: 8px 0 4px 0;">
+              <span style="display: inline-block; width: 40px;">Rp</span>
+              <span style="font-size: 12px; margin-left: 15px;">${Number(data.nilaiTotal || 0).toLocaleString('en-US')}</span>
             </td>
           </tr>
           <tr>
-            <td class="bbm-k-label">Terbilang</td>
-            <td class="bbm-k-sep">:</td>
-            <td class="bbm-k-val font-bold italic bbm-terbilang-box">
+            <td style="vertical-align: top; padding: 4px 0;">Terbilang</td>
+            <td style="vertical-align: top; text-align: center; padding: 4px 0;">:</td>
+            <td style="vertical-align: top; padding: 4px 0; font-style: italic;">
               ${terbilangTeks}
             </td>
           </tr>
           <tr>
-            <td class="bbm-k-label">Untuk pembayaran</td>
-            <td class="bbm-k-sep">:</td>
-            <td class="bbm-k-val">
-              "${data.pekerjaanKuitansi || `Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan Mobil Dinas - ${data.kendaraan}, Output: Perawatan Kendaraan Bermotor.`}"
+            <td style="vertical-align: top; padding: 6px 0;">Untuk pembayaran</td>
+            <td style="vertical-align: top; text-align: center; padding: 6px 0;">:</td>
+            <td style="vertical-align: top; padding: 6px 0; line-height: 1.45;">
+              ${uraianKuitansi}
             </td>
           </tr>
-        </tbody>
-      </table>
+        </table>
 
-      <!-- SUB-TANDA TANGAN: PEMBUAT DAFTAR -->
-      <div class="bbm-pembuat-daftar-row">
-        <div class="bbm-pembuat-daftar-col">
-          <p>Tempat / Tanggal : Jakarta/ &nbsp; &nbsp; ${data.tanggalKuitansi || 'Desember 2026'}</p>
-          <p class="font-bold">Pembuat Daftar</p>
-          <div class="bbm-sign-space-sm"></div>
-          <p class="font-bold underline">"${data.pelaksanaNama || 'Yogi Andre Yonatan Pakpahan, S.P.W.K'}"</p>
-          <p>NIP. ${data.pelaksanaNip || '199511272025061006'}</p>
-        </div>
-      </div>
-
-      <!-- TANDA TANGAN PPK & BENDAHARA (DUA KOLOM) -->
-      <div class="bbm-sign-dual-row bbm-mt-15">
-        <div class="bbm-sign-dual-col">
-          <p class="italic">"Setuju dibebankan pada mata anggaran berkenaan,"</p>
-          <p>An. Kuasa Pengguna Anggaran</p>
-          <p class="font-bold">Pejabat Pembuat Komitmen</p>
-          <p>Sekretariat Jenderal</p>
-          <p>Kementerian Perumahan dan Kawasan Permukiman</p>
-          <div class="bbm-sign-space-sm"></div>
-          <p class="font-bold underline">${data.pejabat?.ppkNama || 'Emanuel Pati Libak'}</p>
-          <p>NIP. '${data.pejabat?.ppkNip || '197512072010121001'}</p>
+        <!-- BLOK TANDA TANGAN 1: PEMBUAT DAFTAR (KANAN) -->
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 18px;">
+          <div style="width: 320px; font-size: 11px;">
+            <table style="border-collapse: collapse; margin-bottom: 4px;">
+              <tr>
+                <td style="width: 110px;">Tempat / Tanggal</td>
+                <td style="width: 10px; text-align: center;">:</td>
+                <td>Jakarta/ &nbsp; &nbsp; ${data.tanggalKuitansi || 'Desember 2026'}</td>
+              </tr>
+            </table>
+            <div>Pembuat Daftar</div>
+            <div style="height: 52px;"></div>
+            <div>${data.pelaksanaNama || 'Yogi Andre Yonatan Pakpahan, S.P.W.K'}</div>
+            <div>NIP. ${data.pelaksanaNip || '199511272025061006'}</div>
+          </div>
         </div>
 
-        <div class="bbm-sign-dual-col">
-          <p>Lunas dibayar tgl :</p>
-          <p class="font-bold">Bendahara Pengeluaran</p>
-          <p>&nbsp;</p>
-          <p>&nbsp;</p>
-          <div class="bbm-sign-space-sm"></div>
-          <p class="font-bold underline">${data.pejabat?.bendaharaNama || 'Rahmat H'}</p>
-          <p>NIP. ${data.pejabat?.bendaharaNip || '198004022014081001'}</p>
-        </div>
-      </div>
+        <!-- GARIS PEMISAH HORIZONTAL 1 -->
+        <div style="border-top: 1px solid #000; margin: 12px 0 16px 0;"></div>
 
-      <!-- TANDA TANGAN KASUBBAG TU (BAWAH KIRI) -->
-      <div class="bbm-kasubbag-row bbm-mt-15">
-        <div class="bbm-kasubbag-col">
-          <p>Barang / pekerjaan tersebut telah diterima / diselesaikan dengan lengkap dan baik</p>
-          <p>Pejabat yang bertanggungjawab</p>
-          <p class="font-bold">Kepala Subbagian Tata Usaha</p>
-          <div class="bbm-sign-space-sm"></div>
-          <p class="font-bold underline">"${data.pejabat?.kasubbagTuNama || 'Ahmad Jayadi, S.Hum., MT.'}"</p>
-          <p>NIP. ${data.pejabat?.kasubbagTuNip || '198702182010121003'}</p>
+        <!-- BLOK TANDA TANGAN 2 & 3: PPK (KIRI) DAN BENDAHARA (KANAN) -->
+        <div style="display: flex; justify-content: space-between; font-size: 11px; line-height: 1.35; margin-bottom: 18px;">
+          <div style="width: 52%;">
+            <div>Setuju dibebankan pada mata anggaran berkenaan,</div>
+            <div>An. Kuasa Pengguna Anggaran</div>
+            <div>Pejabat Pembuat Komitmen</div>
+            <div>Sekretariat Jenderal</div>
+            <div>Kementerian Perumahan dan Kawasan Permukiman</div>
+            <div style="height: 52px;"></div>
+            <div>${data.pejabat?.ppkNama || 'Emanuel Pati Libak'}</div>
+            <div>NIP. '${data.pejabat?.ppkNip || '197512072010121001'}</div>
+          </div>
+          <div style="width: 44%;">
+            <div>Lunas dibayar tgl &nbsp; &nbsp;:</div>
+            <div style="margin-top: 2px;">Bendahara Pengeluaran</div>
+            <div style="height: 82px;"></div>
+            <div>${data.pejabat?.bendaharaNama || 'Rahmat H'}</div>
+            <div>NIP. ${data.pejabat?.bendaharaNip || '198004022014081001'}</div>
+          </div>
         </div>
+
+        <!-- GARIS PEMISAH HORIZONTAL 2 -->
+        <div style="border-top: 1px solid #000; margin: 12px 0 16px 0;"></div>
+
+        <!-- BLOK TANDA TANGAN 4: KASUBBAG TU (KIRI) -->
+        <div style="width: 65%; font-size: 11px; line-height: 1.35;">
+          <div>Barang / pekerjaan tersebut telah diterima / diselesaikan dengan lengkap dan baik</div>
+          <div>Pejabat yang bertanggungjawab</div>
+          <div>Kepala Subbagian Tata Usaha</div>
+          <div style="height: 52px;"></div>
+          <div>${data.pejabat?.kasubbagTuNama || 'Ahmad Jayadi, S.Hum., MT.'}</div>
+          <div>NIP. ${data.pejabat?.kasubbagTuNip || '198702182010121003'}</div>
+        </div>
+
       </div>
     </div>
   `;
 }
 
 /**
- * 3. RENDER DAFTAR RINCIAN PEMBAYARAN (Format Lampiran S-46/PB/2013)
+ * 3. RENDER DAFTAR RINCIAN PEMBAYARAN
+ * 100% Plek Ketiplek Format Gambar User (Image 2)
+ * Mendukung Multi-Struk BBM dikelompokkan berdasarkan Tanggal
  */
 function renderBbmRincianHtml(d) {
   const data = d || getDefaultBbmData();
   const items = (data.items && data.items.length) ? data.items : [
     {
+      id: 1,
       tanggal: data.tanggalBukti || '2026-11-20',
       uraian: `Pengisian Bahan Bakar Minyak (BBM) Pertamina Dex - Mobil Innova ${data.platNomor || 'B 2577 KRK'}`,
+      spbu: 'SPBU Pertamina',
+      jenisBbm: 'Pertamina Dex',
+      liter: 65,
       jumlah: data.nilaiTotal || 1000000
     }
   ];
 
-  let itemRowsHtml = '';
+  // Group items by date for clean rendering
+  const dateGroups = {};
   items.forEach((item, idx) => {
-    const tglItem = formatTanggalIndoLengkap(item.tanggal);
-    if (idx === 0 || item.tanggal !== items[idx - 1]?.tanggal) {
-      itemRowsHtml += `
-        <tr class="bbm-rincian-date-group">
-          <td></td>
-          <td colspan="2" class="font-bold bbm-pl-15">${tglItem}</td>
-        </tr>
-      `;
-    }
-    itemRowsHtml += `
+    const tgl = item.tanggal || data.tanggalBukti || '2026-11-20';
+    if (!dateGroups[tgl]) dateGroups[tgl] = [];
+    dateGroups[tgl].push({ ...item, globalIdx: idx + 1 });
+  });
+
+  let groupedRowsHtml = '';
+  Object.keys(dateGroups).forEach(tgl => {
+    const tglFormatted = formatTanggalIndoLengkap(tgl);
+    // Header Baris Tanggal
+    groupedRowsHtml += `
       <tr>
-        <td class="tc">${idx + 1}</td>
-        <td>${item.uraian}</td>
-        <td class="tr font-mono">${Number(item.jumlah || 0).toLocaleString('id-ID')}</td>
+        <td style="border: 1px solid #000; padding: 5px 8px;"></td>
+        <td style="border: 1px solid #000; padding: 5px 8px; font-weight: normal;">${tglFormatted}</td>
+        <td style="border: 1px solid #000; padding: 5px 8px;"></td>
       </tr>
     `;
+    // Baris Struk di bawah tanggal tersebut
+    dateGroups[tgl].forEach(item => {
+      groupedRowsHtml += `
+        <tr>
+          <td style="border: 1px solid #000; padding: 5px 8px; text-align: center;">${item.globalIdx}</td>
+          <td style="border: 1px solid #000; padding: 5px 8px;">${item.uraian}</td>
+          <td style="border: 1px solid #000; padding: 5px 8px;">
+            <div style="display: flex; justify-content: space-between;">
+              <span>Rp</span>
+              <span style="font-family: Arial, sans-serif;">${Number(item.jumlah || 0).toLocaleString('en-US')}</span>
+            </div>
+          </td>
+        </tr>
+      `;
+    });
   });
 
   return `
-    <div class="bbm-paper bbm-paper-rincian">
-      <!-- HEADER LAMPIRAN PERBENDAHARAAN -->
-      <div class="bbm-s46-header">
-        <p>Lampiran Surat Direktur Jenderal Perbendaharaan</p>
-        <p>Nomor : S-46 /PB/2013</p>
-        <p>Tanggal : 2013-01-03</p>
+    <div class="bbm-paper bbm-paper-rincian" style="padding: 40px 48px; background: #ffffff; color: #000000; font-family: Arial, sans-serif; font-size: 11.5px; line-height: 1.45;">
+      
+      <!-- JUDUL RESMI TENGAH -->
+      <div style="text-align: center; margin-bottom: 28px;">
+        <h2 style="font-size: 15px; font-weight: bold; margin: 0;">Daftar Rincian Pembayaran</h2>
       </div>
 
-      <!-- JUDUL -->
-      <div class="bbm-rincian-title-box">
-        <h2 class="bbm-rincian-title">Daftar Rincian Pembayaran</h2>
-      </div>
-
-      <!-- KETERANGAN PERNYATAAN -->
-      <p class="bbm-rincian-statement">
-        Yang bertandatangan di bawah ini menyatakan bahwa kami bertanggungjawab atas pengeluaran yang tidak diperoleh kuitansi, dengan perincian sebagai berikut :
+      <!-- KETERANGAN PERNYATAAN PENANGGUNGJAWAB -->
+      <p style="font-size: 11px; line-height: 1.5; margin: 0 0 10px 0; text-align: justify;">
+        Yang bertandatangan di bawah ini menyatakan bahwa kami bertanggungjawab atas pengeluaran yang tidak diperoleh kuitansi, dengan perincian sebagai berikut:
       </p>
 
-      <p class="bbm-rincian-klasifikasi">
-        <span class="font-bold">Klasifikasi anggaran : fungsi / sub fungsi / program / kegiatan / output / sub kelompok akun / akun</span><br>
-        <span class="font-bold font-mono">${data.akun || '146.01.WA.7665.EBA.994.002.0D.523121'}</span>
+      <p style="font-size: 11px; margin: 0 0 16px 0;">
+        Klasifikasi anggaran : fungsi / sub fungsi / program / kegiatan / output / sub kelompok akun / akun
       </p>
 
-      <!-- TABEL RINCIAN -->
-      <table class="bbm-table bbm-table-rincian">
+      <!-- TABEL RINCIAN 3 KOLOM PERSIS GAMBAR USER -->
+      <table style="width: 100%; border-collapse: collapse; border: 1px solid #000; font-size: 11px; margin-bottom: 16px;">
         <thead>
           <tr>
-            <th style="width: 45px;">No</th>
-            <th>Uraian</th>
-            <th style="width: 170px;">Jumlah</th>
+            <th style="width: 45px; border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">No</th>
+            <th style="border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">Uraian</th>
+            <th style="width: 190px; border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold;">Jumlah</th>
           </tr>
         </thead>
         <tbody>
-          ${itemRowsHtml}
-          <tr class="bbm-row-total">
-            <td colspan="2" class="tr font-bold">Nilai Total</td>
-            <td class="tr font-bold font-mono">${Number(data.nilaiTotal || 0).toLocaleString('id-ID')}</td>
+          ${groupedRowsHtml}
+          <tr>
+            <td style="border: 1px solid #000; padding: 5px 8px;"></td>
+            <td style="border: 1px solid #000; padding: 5px 8px; text-align: right; font-weight: bold;">Nilai Total</td>
+            <td style="border: 1px solid #000; padding: 5px 8px;">
+              <div style="display: flex; justify-content: space-between; font-weight: bold;">
+                <span>Rp</span>
+                <span style="font-family: Arial, sans-serif;">${Number(data.nilaiTotal || 0).toLocaleString('en-US')}</span>
+              </div>
+            </td>
           </tr>
         </tbody>
       </table>
 
-      <!-- PERNYATAAN PENUTUP RESMI -->
-      <p class="bbm-rincian-closing">
+      <!-- PERNYATAAN PENUTUP RESMI KAS NEGARA -->
+      <p style="font-size: 11px; line-height: 1.5; margin: 0 0 28px 0; text-align: justify;">
         Jumlah uang tersebut di atas benar - benar di keluarkan untuk pelaksanaan dukungan atas kegiatan biro kompu, kami bersedia untuk menyetorkan kelebihan tersebut ke kas negara
       </p>
 
-      <!-- TANDA TANGAN PPK -->
-      <div class="bbm-rincian-sign-row">
-        <div class="bbm-rincian-sign-box">
-          <p>Jakarta, &nbsp; &nbsp; &nbsp; &nbsp; ${data.tanggalKuitansi || 'Desember 2026'}</p>
-          <p class="font-bold">Pejabat Pembuat Komitmen</p>
-          <p>Sekretariat Jenderal</p>
-          <p>Kementerian Perumahan dan Kawasan Permukiman</p>
-          <div class="bbm-sign-space"></div>
-          <p class="font-bold underline">${data.pejabat?.ppkNama || 'Emanuel Pati Libak'}</p>
-          <p>NIP. '${data.pejabat?.ppkNip || '197512072010121001'}</p>
+      <!-- TANDA TANGAN PPK KANAN -->
+      <div style="display: flex; justify-content: flex-end;">
+        <div style="width: 320px; font-size: 11px; text-align: left; line-height: 1.35;">
+          <div>Jakarta, &nbsp; &nbsp; &nbsp; ${data.tanggalKuitansi || 'Desember 2026'}</div>
+          <div style="margin-top: 3px;">Pejabat Pembuat Komitmen</div>
+          <div>Sekretariat Jenderal</div>
+          <div>Kementerian Perumahan dan Kawasan Permukiman</div>
+          <div style="height: 55px;"></div>
+          <div>${data.pejabat?.ppkNama || 'Emanuel Pati Libak'}</div>
+          <div>NIP. '${data.pejabat?.ppkNip || '197512072010121001'}</div>
         </div>
       </div>
+
     </div>
   `;
 }
