@@ -74,31 +74,53 @@ function initAppLoader() {
 }
 
 let pageLoaderTimer = null;
+let pageLoaderSafetyTimer = null;
+
+function hidePageLoader() {
+  const loader = document.getElementById('pageLoader');
+  if (loader) {
+    loader.classList.remove('is-active');
+  }
+}
 
 function showPageTransitionLoader(targetName, onSwitch) {
   const loader = document.getElementById('pageLoader');
   const textEl = document.getElementById('pageLoaderText');
 
   if (textEl) {
-    const meta = tabMeta[targetName];
+    const meta = (typeof tabMeta !== 'undefined' && tabMeta[targetName]) ? tabMeta[targetName] : null;
     const pageName = meta ? meta[0] : 'Halaman';
     textEl.textContent = `Memuat ${pageName}...`;
   }
 
   if (!loader) {
-    if (onSwitch) onSwitch();
+    if (onSwitch) {
+      try { onSwitch(); } catch (e) { console.error('Error on tab switch:', e); }
+    }
     return;
   }
 
   loader.classList.add('is-active');
 
   if (pageLoaderTimer) clearTimeout(pageLoaderTimer);
+  if (pageLoaderSafetyTimer) clearTimeout(pageLoaderSafetyTimer);
+
+  // Safety hard timeout (1.2 detik): Garansi 100% loader tidak pernah stuck di layar
+  pageLoaderSafetyTimer = setTimeout(() => {
+    hidePageLoader();
+  }, 1200);
+
   pageLoaderTimer = setTimeout(() => {
-    if (onSwitch) onSwitch();
-    setTimeout(() => {
-      loader.classList.remove('is-active');
-    }, 100);
-  }, 420);
+    try {
+      if (onSwitch) onSwitch();
+    } catch (err) {
+      console.error('Error during tab switch execution:', err);
+    } finally {
+      setTimeout(() => {
+        hidePageLoader();
+      }, 100);
+    }
+  }, 350);
 }
 
 function triggerTabProgress(callback) {

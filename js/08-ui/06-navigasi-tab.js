@@ -81,9 +81,6 @@ function switchTabPanel(name) {
   if (eyebrowEl) eyebrowEl.textContent = meta[1];
   closeSidebar();
   window.scrollTo({ top: 0, behavior: 'smooth' });
-  if (name === 'bbm') {
-    if (typeof initBbmModule === 'function') initBbmModule();
-  }
   if (name === 'dashboard') {
     if (typeof renderDashboardModule === 'function') renderDashboardModule();
     if (typeof syncTripsFromCloud === 'function') syncTripsFromCloud(true);

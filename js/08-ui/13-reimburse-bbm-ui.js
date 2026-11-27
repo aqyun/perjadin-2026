@@ -42,18 +42,118 @@ function getActiveBbmRecord() {
 }
 
 /**
+ * Preset Armada Mobil Dinas Operasional Kantor
+ */
+const BBM_KENDARAAN_PRESETS = [
+  { nama: 'TOYOTA INNOVA B 2577 KRK', plat: 'B 2577 KRK', label: 'Innova Operasional (B 2577 KRK)' },
+  { nama: 'TOYOTA HIACE B 7123 PKP', plat: 'B 7123 PKP', label: 'Hiace Operasional (B 7123 PKP)' },
+  { nama: 'MITSUBISHI XPANDER B 1945 RKP', plat: 'B 1945 RKP', label: 'Xpander Operasional (B 1945 RKP)' },
+  { nama: 'custom', plat: '', label: '-- Input Mobil Manual / Lainnya --' }
+];
+
+function populateBbmKendaraanPresets() {
+  const sel = document.getElementById('bbm_preset_kendaraan');
+  if (!sel) return;
+  const currentPlat = document.getElementById('bbm_platNomor')?.value || 'B 2577 KRK';
+  sel.innerHTML = BBM_KENDARAAN_PRESETS.map(p => {
+    const isSel = (p.plat && currentPlat.toUpperCase().includes(p.plat.toUpperCase())) ? 'selected' : '';
+    return `<option value="${p.plat}" ${isSel}>${p.label}</option>`;
+  }).join('');
+}
+
+function onBbmPresetKendaraanChange() {
+  const sel = document.getElementById('bbm_preset_kendaraan');
+  if (!sel) return;
+  const found = BBM_KENDARAAN_PRESETS.find(p => p.plat === sel.value);
+  if (found && found.plat) {
+    const elKend = document.getElementById('bbm_kendaraan');
+    const elPlat = document.getElementById('bbm_platNomor');
+    if (elKend) elKend.value = found.nama;
+    if (elPlat) elPlat.value = found.plat;
+    updateBbmUraianOtomatis();
+  }
+}
+
+function populateBbmPelaksanaDropdown() {
+  const sel = document.getElementById('bbm_select_pegawai');
+  if (!sel) return;
+
+  const currentPel = document.getElementById('bbm_pelaksanaNama')?.value || '';
+  const pelakuList = (typeof getAvailablePelakuList === 'function') ? getAvailablePelakuList() : [];
+
+  let html = '<option value="">-- Pilih dari Database Pegawai --</option>';
+  pelakuList.forEach(p => {
+    const isSel = (currentPel && p.nama && currentPel.includes(p.nama.split(',')[0]));
+    html += `<option value="${p.nama}" data-nip="${p.nip || ''}" ${isSel ? 'selected' : ''}>${p.nama}</option>`;
+  });
+
+  sel.innerHTML = html;
+}
+
+function onBbmPelaksanaChange() {
+  const sel = document.getElementById('bbm_select_pegawai');
+  if (!sel || !sel.value) return;
+
+  const opt = sel.options[sel.selectedIndex];
+  const nama = sel.value;
+  const nip = opt ? (opt.getAttribute('data-nip') || '') : '';
+
+  const elNama = document.getElementById('bbm_pelaksanaNama');
+  const elNip = document.getElementById('bbm_pelaksanaNip');
+  const elPanggil = document.getElementById('bbm_pelaksanaPanggilan');
+
+  if (elNama) elNama.value = nama;
+  if (elNip && nip) elNip.value = nip;
+  if (elPanggil) {
+    const parts = nama.split(/[\s,]+/);
+    elPanggil.value = parts.length > 2 ? `${parts[0]} ${parts[1]}` : parts[0];
+  }
+
+  onBbmRowFieldChange();
+}
+
+function onBbmKategoriChange(val) {
+  const isPribadi = val === 'pribadi';
+  const pribadiWrap = document.getElementById('bbm_pribadi_fields');
+  const presetWrap = document.getElementById('bbm_preset_wrap');
+  const lblKend = document.getElementById('bbm_lbl_kendaraan');
+  const hintKend = document.getElementById('bbm_hint_kendaraan');
+
+  if (pribadiWrap) pribadiWrap.style.display = isPribadi ? 'block' : 'none';
+  if (presetWrap) presetWrap.style.display = isPribadi ? 'none' : 'block';
+
+  if (lblKend) {
+    lblKend.textContent = isPribadi ? 'Nama & Jenis Kendaraan Pribadi *' : 'Nama & Jenis Kendaraan Dinas *';
+  }
+  if (hintKend) {
+    hintKend.textContent = isPribadi ? 'Merk dan tipe kendaraan pribadi' : 'Merk dan tipe kendaraan dinas operasional';
+  }
+
+  checkBbmDecemberRule();
+  updateBbmUraianOtomatis();
+}
+
+/**
  * Inisialisasi modul BBM saat pertama kali tab dibuka
  */
 function initBbmModule() {
-  populateBbmSptDropdown();
-  populateBbmPelaksanaDropdown();
-  populateBbmKendaraanPresets();
+  try {
+    populateBbmSptDropdown();
+    populateBbmPelaksanaDropdown();
+    populateBbmKendaraanPresets();
 
-  const record = getActiveBbmRecord();
-  loadBbmRecordIntoForm(record);
-  renderBbmHistoryTable();
-  checkBbmDecemberRule();
-  updateBbmDocPreview();
+    const record = getActiveBbmRecord();
+    loadBbmRecordIntoForm(record);
+    renderBbmHistoryTable();
+    checkBbmDecemberRule();
+    updateBbmDocPreview();
+  } catch (err) {
+    console.error('Error initializing BBM module:', err);
+  } finally {
+    if (typeof hidePageLoader === 'function') {
+      hidePageLoader();
+    }
+  }
 }
 
 /**
