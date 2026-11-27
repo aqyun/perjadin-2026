@@ -35,7 +35,7 @@ function getDefaultBbmData() {
   return {
     id: 'bbm_' + Date.now(),
     kategoriKendaraan: 'dinas', // 'dinas' | 'pribadi'
-    tanggalMasuk: '2026-11-20',
+    tanggalMasuk: '',
     pelaksanaPanggilan: 'Yogi Pakpahan',
     pelaksanaNama: 'Yogi Andre Yonatan Pakpahan, S.P.W.K',
     pelaksanaNip: '199511272025061006',
@@ -48,12 +48,12 @@ function getDefaultBbmData() {
     tanggalKembali: '2026-10-16',
     nomorSPM: '-',
     nomorSPD: '-',
-    pekerjaan: 'Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan Mobil Dinas - TOYOTA INNOVA B 2577 KRK.',
+    pekerjaan: 'Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan Mobil Dinas (B 2577 KRK).',
     pekerjaanKuitansi: 'Pembelian BBM untuk kegiatan perjalanan dinas dalam rangka Pembuatan Video Dokumenter dan Pengambilan Footage Penerima Manfaat Bedah Rumah BSPS di Pulau Lancang, Kel. Pulau Pari, Kab. Kepulauan Seribu tanggal 14 Oktober 2026 s.d. 16 Oktober 2026 dengan Nomor ST 395/ST/Sj.07/2026.',
-    kendaraan: 'Innova',
+    kendaraan: 'Mobil',
     platNomor: 'B 2577 KRK',
     pemilikMobil: '',
-    tanggalBukti: '2026-11-20',
+    tanggalBukti: '',
     tanggalKuitansi: 'Desember 2026',
     tempatKota: 'Jakarta',
     akun: '146.01.WA.7665.EBA.994.002.0D.523121',
@@ -67,26 +67,26 @@ function getDefaultBbmData() {
         pelaksanaNama: 'Ahmad Jayadi, S.Hum., MT.',
         pelaksanaNip: '198702182010121003',
         tanggal: '2026-11-20',
-        kendaraan: 'Innova',
+        kendaraan: 'Mobil',
         platNomor: 'B 2577 KRK',
         jenisBbm: 'Pertamina Dex',
         spbu: 'SPBU Pertamina',
         liter: 65,
         jumlah: 1000000,
-        uraian: 'Pengisian Bahan Bakar Minyak (BBM) Pertamina Dex - Mobil Innova B 2577 KRK'
+        uraian: 'Pengisian Bahan Bakar Minyak (BBM) Pertamina Dex - Mobil B 2577 KRK'
       },
       {
         id: 2,
         pelaksanaNama: 'Fitrah Faizal, S.I.Kom.',
         pelaksanaNip: '199208152020121004',
         tanggal: '2026-11-20',
-        kendaraan: 'Innova',
+        kendaraan: 'Mobil',
         platNomor: 'B 2577 KRK',
         jenisBbm: 'Pertamina Dex',
         spbu: 'SPBU Pertamina',
         liter: 65,
         jumlah: 1000000,
-        uraian: 'Pengisian Bahan Bakar Minyak (BBM) Pertamina Dex - Mobil Innova B 2577 KRK'
+        uraian: 'Pengisian Bahan Bakar Minyak (BBM) Pertamina Dex - Mobil B 2577 KRK'
       }
     ],
     nilaiTotal: 2000000,
@@ -119,11 +119,12 @@ function renderBbmChecklistHtml(d) {
   const logoSrc = (typeof LOGO_PKP_BASE64 !== 'undefined' && LOGO_PKP_BASE64) ? LOGO_PKP_BASE64 : 'logo-pkp.webp';
   const alamat = (typeof document !== 'undefined' && ((document.getElementById('cfg_alamatSatker')?.value || document.getElementById('alamatSatker')?.value) || '')) || 'Raden Patah No. 1 RT. 002 RW. 001 Kebayoran Baru, Jakarta Selatan - DKI Jakarta';
 
-  const pelaksana = (typeof document !== 'undefined' && document.getElementById('lk_pelaksana')?.value) || data.pelaksanaNama || data.pelaksanaPanggilan || 'Yogi Andre Yonatan Pakpahan, S.P.W.K';
+  const pelaksanaRaw = (typeof document !== 'undefined' && document.getElementById('lk_pelaksana')?.value) || data.pelaksanaNama || data.pelaksanaPanggilan || 'Yogi Andre Yonatan Pakpahan, S.P.W.K';
+  const pelaksana = (typeof resolveBbmPelaksanaIdentity === 'function')
+    ? resolveBbmPelaksanaIdentity(pelaksanaRaw, data.pelaksanaNip).nama
+    : pelaksanaRaw;
 
-  const kendLabel = (data.kategoriKendaraan === 'pribadi')
-    ? `Mobil Pribadi - ${data.kendaraan || 'Kendaraan Pribadi'} ${data.platNomor ? '(' + data.platNomor + ')' : ''}`
-    : `Mobil Dinas - ${data.kendaraan || 'TOYOTA INNOVA B 2577 KRK'}`;
+  const kendLabel = `${data.kendaraan || 'Mobil'} ${data.kategoriKendaraan === 'pribadi' ? 'Pribadi' : 'Dinas'}${data.platNomor ? ' - ' + data.platNomor : ''}`;
 
   const pekerjaanText = data.pekerjaan || `Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan ${kendLabel}.`;
 
@@ -333,13 +334,15 @@ function renderBbmKuitansiHtml(d) {
     ? terbilang(data.nilaiTotal || 0)
     : 'Satu Juta Rupiah';
 
-  const kendLabel = (data.kategoriKendaraan === 'pribadi')
-    ? `Mobil Pribadi - ${data.kendaraan || 'Kendaraan Pribadi'} ${data.platNomor ? '(' + data.platNomor + ')' : ''}`
-    : `Mobil Dinas - ${data.kendaraan || 'TOYOTA INNOVA B 2577 KRK'}`;
+  const kendLabel = `${data.kendaraan || 'Mobil'} ${data.kategoriKendaraan === 'pribadi' ? 'Pribadi' : 'Dinas'}${data.platNomor ? ' - ' + data.platNomor : ''}`;
 
   // Pembuat Daftar sama dengan Pelaksana Pertanggungjawaban pembuat berkas perjadin
-  const pelaksanaNama = (typeof document !== 'undefined' && document.getElementById('lk_pelaksana')?.value) || data.pelaksanaNama || 'Yogi Andre Yonatan Pakpahan, S.P.W.K';
-  const pelaksanaNip = data.pelaksanaNip || '199511272025061006';
+  const pelaksanaRaw = (typeof document !== 'undefined' && document.getElementById('lk_pelaksana')?.value) || data.pelaksanaNama || 'Yogi Andre Yonatan Pakpahan, S.P.W.K';
+  const pelIdentity = (typeof resolveBbmPelaksanaIdentity === 'function')
+    ? resolveBbmPelaksanaIdentity(pelaksanaRaw, data.pelaksanaNip)
+    : { nama: pelaksanaRaw, nip: data.pelaksanaNip || '199511272025061006' };
+  const pelaksanaNama = pelIdentity.nama;
+  const pelaksanaNip = pelIdentity.nip || '199511272025061006';
 
   // Format Uraian Kuitansi Formal Aturan 1:
   // "Pembelian BBM untuk kegiatan perjalanan dinas dalam rangka (...) tanggal (...) dengan Nomor ST (...)."
@@ -507,20 +510,20 @@ function renderBbmRincianHtml(d) {
       id: 1,
       pelaksanaNama: 'Ahmad Jayadi, S.Hum., MT.',
       tanggal: data.tanggalBukti || '2026-11-20',
-      kendaraan: 'Innova',
+      kendaraan: 'Mobil',
       platNomor: 'B 2577 KRK',
       jenisBbm: 'Pertamina Dex',
-      uraian: 'Pengisian Bahan Bakar Minyak (BBM) Pertamina Dex - Mobil Innova B 2577 KRK',
+      uraian: 'Pengisian Bahan Bakar Minyak (BBM) Pertamina Dex - Mobil B 2577 KRK',
       jumlah: 1000000
     },
     {
       id: 2,
       pelaksanaNama: 'Fitrah Faizal, S.I.Kom.',
       tanggal: data.tanggalBukti || '2026-11-20',
-      kendaraan: 'Innova',
+      kendaraan: 'Mobil',
       platNomor: 'B 2577 KRK',
       jenisBbm: 'Pertamina Dex',
-      uraian: 'Pengisian Bahan Bakar Minyak (BBM) Pertamina Dex - Mobil Innova B 2577 KRK',
+      uraian: 'Pengisian Bahan Bakar Minyak (BBM) Pertamina Dex - Mobil B 2577 KRK',
       jumlah: 1000000
     }
   ];
@@ -558,7 +561,7 @@ function renderBbmRincianHtml(d) {
 
       // 3. Baris Struk di bawah pelaku tersebut (nomor berulang mulai dari 1)
       dateGroups[tgl][pelName].forEach((item, itemIdx) => {
-        const itemUraian = item.uraian || `Pengisian Bahan Bakar Minyak (BBM) ${item.jenisBbm || 'Pertamina Dex'} - Mobil ${item.kendaraan || data.kendaraan || 'Innova'} ${item.platNomor || data.platNomor || 'B 2577 KRK'}`;
+        const itemUraian = item.uraian || `Pengisian Bahan Bakar Minyak (BBM) ${item.jenisBbm || 'Pertamina Dex'} - ${item.kendaraanPlat || `${item.kendaraan || data.kendaraan || 'Mobil'} ${item.platNomor || data.platNomor || 'B 2577 KRK'}`}`;
         groupedRowsHtml += `
           <tr>
             <td style="border: 1px solid #000; padding: 5px 8px; text-align: center;">${itemIdx + 1}</td>

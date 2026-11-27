@@ -47,7 +47,7 @@
   <link rel="stylesheet" href="css/31-dashboard-modular-dan-filter.css?v=20261126_13">
   <link rel="stylesheet" href="css/32-revisi-dan-mobile-nav.css?v=20261126_13">
   <link rel="stylesheet" href="css/33-kalkulator-simulasi.css?v=20261126_21">
-  <link rel="stylesheet" href="css/34-reimburse-bbm.css?v=20261127_08">
+  <link rel="stylesheet" href="css/34-reimburse-bbm.css?v=20261127_16">
 </head>
 <body class="auth-locked">
 
@@ -2484,22 +2484,34 @@
         <!-- KPI Grid -->
         <div class="bbm-kpi-grid">
           <div class="bbm-kpi-item">
-            <div class="bbm-kpi-label">TOTAL PENGELUARAN BBM</div>
+            <div class="bbm-kpi-top">
+              <span class="bbm-kpi-ic bbm-kpi-ic--ok"><svg class="ico"><use href="#i-wallet"></use></svg></span>
+              <span class="bbm-kpi-label">Total Pengeluaran BBM</span>
+            </div>
             <div class="bbm-kpi-val text-success" id="bbm_kpi_total">Rp 1.000.000</div>
             <div class="bbm-kpi-sub">Total struk siap dipertanggungjawabkan</div>
           </div>
           <div class="bbm-kpi-item">
-            <div class="bbm-kpi-label">KLASIFIKASI MAK (AKUN)</div>
-            <div class="bbm-kpi-val" style="font-size: 15px;">523121</div>
+            <div class="bbm-kpi-top">
+              <span class="bbm-kpi-ic"><svg class="ico"><use href="#i-sliders"></use></svg></span>
+              <span class="bbm-kpi-label">Klasifikasi MAK (Akun)</span>
+            </div>
+            <div class="bbm-kpi-val bbm-kpi-val-sm">523121</div>
             <div class="bbm-kpi-sub">Belanja Pemeliharaan Peralatan &amp; Mesin</div>
           </div>
           <div class="bbm-kpi-item">
-            <div class="bbm-kpi-label">OUTPUT KEGIATAN</div>
-            <div class="bbm-kpi-val" style="font-size: 15px;">Perawatan Kendaraan</div>
+            <div class="bbm-kpi-top">
+              <span class="bbm-kpi-ic bbm-kpi-ic--gold"><svg class="ico"><use href="#i-chart"></use></svg></span>
+              <span class="bbm-kpi-label">Output Kegiatan</span>
+            </div>
+            <div class="bbm-kpi-val bbm-kpi-val-sm">Perawatan Kendaraan</div>
             <div class="bbm-kpi-sub">Kendaraan Dinas Operasional Kantor</div>
           </div>
           <div class="bbm-kpi-item">
-            <div class="bbm-kpi-label">BERKAS TERSIMPAN</div>
+            <div class="bbm-kpi-top">
+              <span class="bbm-kpi-ic"><svg class="ico"><use href="#i-clipboard"></use></svg></span>
+              <span class="bbm-kpi-label">Berkas Tersimpan</span>
+            </div>
             <div class="bbm-kpi-val" id="bbm_kpi_count">1</div>
             <div class="bbm-kpi-sub">Arsip pengajuan BBM di perangkat</div>
           </div>
@@ -2565,96 +2577,59 @@
             <span class="badge badge-success">Akun 523121</span>
           </div>
           <div class="card-body">
-            <!-- Banner Peringatan Aturan 1 Desember 2026 -->
-            <div id="bbm_rule_december_banner" style="display: none; background: #fff1f2; border: 1.5px solid #f43f5e; color: #9f1239; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-size: 12px; line-height: 1.5;">
-              <div style="display: flex; gap: 10px; align-items: flex-start;">
-                <span style="font-size: 18px; line-height: 1;">⛔</span>
-                <div>
-                  <strong style="display: block; font-size: 12.5px; margin-bottom: 2px;">KETENTUAN PEMBELIAN BBM MULAI 1 DESEMBER 2026:</strong>
-                  Terhitung mulai tanggal <strong>1 Desember 2026</strong>, penggantian biaya (reimburse/klaim) pembelian BBM untuk <strong>kendaraan pribadi</strong> dalam rangka perjalanan dinas <strong>tidak lagi diperkenankan</strong>, meskipun kendaraan pribadi tersebut digunakan untuk tugas dinas. Berkas klaim mobil pribadi hanya berlaku untuk kegiatan sebelum 1 Desember 2026.
-                </div>
-              </div>
-            </div>
-
-            <!-- Modern Interactive Vehicle Category Switch -->
-            <div class="bbm-category-toggle">
-              <div class="bbm-category-card active" id="bbm_cat_card_dinas" onclick="setBbmKategori('dinas')">
-                <div class="bbm-category-icon">🏢</div>
-                <div class="bbm-category-info">
-                  <h5>Mobil Dinas Operasional</h5>
-                  <p>Armada resmi Biro (Innova, Hiace, dll.)</p>
-                </div>
-              </div>
-              <div class="bbm-category-card" id="bbm_cat_card_pribadi" onclick="setBbmKategori('pribadi')">
-                <div class="bbm-category-icon">🚗</div>
-                <div class="bbm-category-info">
-                  <h5>Mobil Pribadi Penugasan</h5>
-                  <p>Klaim operasional (Hanya sebelum 1 Des 2026)</p>
-                </div>
-              </div>
-            </div>
             <input type="hidden" id="bbm_kategoriKendaraan" value="dinas">
 
-            <!-- Row 1: Preset Kendaraan & Input Manual -->
-            <div class="form-grid form-grid-3">
-              <div class="form-group" id="bbm_preset_wrap">
-                <label class="form-label" for="bbm_preset_kendaraan">Preset Mobil Dinas Operasional</label>
-                <select id="bbm_preset_kendaraan" class="form-control" onchange="onBbmPresetKendaraanChange()">
-                  <!-- Populated by JS -->
-                </select>
-                <span class="form-hint">Pilih cepat armada dinas biro</span>
-              </div>
+            <!-- Row 1: Jenis Kendaraan + Nomor Polisi -->
+            <div class="form-grid form-grid-2">
               <div class="form-group">
-                <label class="form-label" id="bbm_lbl_kendaraan" for="bbm_kendaraan">Nama &amp; Jenis Kendaraan Dinas *</label>
-                <input type="text" id="bbm_kendaraan" class="form-control font-bold" value="TOYOTA INNOVA B 2577 KRK" oninput="updateBbmUraianOtomatis()" placeholder="Contoh: TOYOTA INNOVA B 2577 KRK">
-                <span class="form-hint" id="bbm_hint_kendaraan">Merk dan tipe kendaraan</span>
+                <label class="form-label" id="bbm_lbl_kendaraan" for="bbm_kendaraan">Jenis Kendaraan *</label>
+                <select id="bbm_kendaraan" class="form-control font-bold" onchange="updateBbmUraianOtomatis()">
+                  <option value="Mobil" selected>Mobil</option>
+                  <option value="Motor">Motor</option>
+                </select>
+                <span class="form-hint" id="bbm_hint_kendaraan">Cukup pilih mobil atau motor</span>
               </div>
               <div class="form-group">
                 <label class="form-label" for="bbm_platNomor">Nomor Polisi (Plat) *</label>
-                <div style="display: flex; align-items: center; gap: 8px;">
+                <div class="bbm-plat-row">
                   <input type="text" id="bbm_platNomor" class="form-control font-mono font-bold" value="B 2577 KRK" oninput="onBbmPlatInput(this.value)" placeholder="Contoh: B 2577 KRK">
                   <div class="bbm-plat-preview-badge" id="bbm_plat_badge" style="margin-top: 0; white-space: nowrap;">B 2577 KRK</div>
                 </div>
-                <span class="form-hint">Nomor plat polisi mobil</span>
+                <span class="form-hint">Nomor plat polisi kendaraan</span>
               </div>
             </div>
 
-            <!-- Row Tambahan Mobil Pribadi (Hidden jika Mobil Dinas) -->
-            <div id="bbm_pribadi_fields" style="display: none; margin-bottom: 16px;">
-              <div class="form-group">
-                <label class="form-label" for="bbm_pemilikMobil">Identitas Pemilik / Pengemudi Mobil Pribadi</label>
-                <input type="text" id="bbm_pemilikMobil" class="form-control" placeholder="Contoh: Yogi Andre Yonatan Pakpahan / Pegawai Operasional Penugasan" oninput="onBbmRowFieldChange()">
-                <span class="form-hint">Keterangan kepemilikan mobil pribadi untuk pertanggungjawaban</span>
+            <div class="form-group" id="bbm_preset_wrap">
+              <label class="form-label" for="bbm_preset_kendaraan">Pilih Cepat Plat Kendaraan</label>
+              <select id="bbm_preset_kendaraan" class="form-control" onchange="onBbmPresetKendaraanChange()">
+                <!-- Populated by JS -->
+              </select>
+              <span class="form-hint">Pilih plat armada untuk mengisi otomatis kolom Nomor Polisi</span>
+            </div>
+
+                        <!-- Row 2: Pelaksana Pertanggungjawaban (Otomatis dari Lembar Kendali Perjadin) -->
+            <div class="bbm-auto-panel">
+              <div class="bbm-auto-panel-head">
+                <span class="bbm-auto-panel-ic"><svg class="ico"><use href="#i-user"></use></svg></span>
+                <div class="bbm-auto-panel-text">
+                  <div class="bbm-auto-panel-title">Pelaksana Pertanggungjawaban</div>
+                  <div class="bbm-auto-panel-sub">Otomatis dari Penanggungjawab Lembar Kendali Perjadin &amp; data pegawai</div>
+                </div>
+                <span class="bbm-auto-panel-badge">Otomatis</span>
+              </div>
+              <div class="bbm-auto-panel-grid">
+                <div class="form-group">
+                  <label class="form-label" for="bbm_pelaksanaNama">Nama Lengkap</label>
+                  <input type="text" id="bbm_pelaksanaNama" class="form-control font-bold" value="Yogi Andre Yonatan Pakpahan, S.P.W.K" readonly>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="bbm_pelaksanaNip">NIP</label>
+                  <input type="text" id="bbm_pelaksanaNip" class="form-control font-mono" value="199511272025061006" readonly>
+                </div>
               </div>
             </div>
 
-            <!-- Row 2: Pelaksana Pertanggungjawaban (Sama dengan Pembuat Berkas Perjadin) -->
-            <div class="form-grid form-grid-3">
-              <div class="form-group">
-                <label class="form-label" for="bbm_pelaksanaNama">Pelaksana Pertanggungjawaban *</label>
-                <input type="text" id="bbm_pelaksanaNama" class="form-control font-bold" value="Yogi Andre Yonatan Pakpahan, S.P.W.K" oninput="onBbmRowFieldChange()">
-                <span class="form-hint" style="color: #0284c7;">Otomatis sama dengan Pembuat Berkas Perjadin</span>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="bbm_pelaksanaNip">NIP Pelaksana *</label>
-                <input type="text" id="bbm_pelaksanaNip" class="form-control font-mono" value="199511272025061006" oninput="onBbmRowFieldChange()">
-                <span class="form-hint">NIP penanggungjawab pembuat daftar</span>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="bbm_select_pegawai">Ganti Cepat Pelaksana (Database)</label>
-                <select id="bbm_select_pegawai" class="form-control" onchange="onBbmPelaksanaChange()">
-                  <!-- Populated by JS -->
-                </select>
-                <span class="form-hint">Pilihan personil jika ingin mengganti pelaksana</span>
-              </div>
-            </div>
-
-            <div class="form-grid form-grid-3">
-              <div class="form-group">
-                <label class="form-label" for="bbm_pelaksanaPanggilan">Nama Panggilan / Singkat di Checklist</label>
-                <input type="text" id="bbm_pelaksanaPanggilan" class="form-control" value="Yogi Pakpahan" oninput="onBbmRowFieldChange()">
-                <span class="form-hint">Tampil pada kolom Verifikator Lembar Kendali</span>
-              </div>
+            <div class="form-grid form-grid-2">
               <div class="form-group">
                 <label class="form-label" for="bbm_namaPenyedia">Nama Penyedia / Pengaju</label>
                 <input type="text" id="bbm_namaPenyedia" class="form-control" value="Biro Komunikasi Publik" oninput="onBbmRowFieldChange()">
@@ -2673,11 +2648,11 @@
             <div class="form-grid form-grid-3">
               <div class="form-group">
                 <label class="form-label" for="bbm_tanggalMasuk">Tanggal Masuk Berkas (Checklist)</label>
-                <input type="date" id="bbm_tanggalMasuk" class="form-control" value="2026-11-20" onchange="onBbmRowFieldChange()">
+                <input type="date" id="bbm_tanggalMasuk" class="form-control" onchange="onBbmRowFieldChange()">
               </div>
               <div class="form-group">
                 <label class="form-label" for="bbm_tanggalBukti">Tanggal Bukti Struk / S-46</label>
-                <input type="date" id="bbm_tanggalBukti" class="form-control" value="2026-11-20" onchange="onBbmRowFieldChange()">
+                <input type="date" id="bbm_tanggalBukti" class="form-control" onchange="onBbmRowFieldChange()">
               </div>
               <div class="form-group">
                 <label class="form-label" for="bbm_tanggalKuitansi">Bulan / Tanggal Kuitansi</label>
@@ -2722,12 +2697,12 @@
 
             <div class="form-group">
               <label class="form-label" for="bbm_pekerjaan">Uraian Pekerjaan (Checklist &amp; Rincian S-46)</label>
-              <input type="text" id="bbm_pekerjaan" class="form-control" value="Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan Mobil Dinas - TOYOTA INNOVA B 2577 KRK." oninput="onBbmRowFieldChange()">
+              <input type="text" id="bbm_pekerjaan" class="form-control" value="Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan Mobil Dinas (B 2577 KRK)." oninput="onBbmRowFieldChange()">
             </div>
 
             <div class="form-group">
               <label class="form-label" for="bbm_pekerjaanKuitansi">Uraian Pembayaran Pada Kuitansi (Untuk Pembayaran)</label>
-              <input type="text" id="bbm_pekerjaanKuitansi" class="form-control" value="Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan Mobil Dinas - TOYOTA INNOVA B 2577 KRK, Output: Perawatan Kendaraan Bermotor." oninput="onBbmRowFieldChange()">
+              <input type="text" id="bbm_pekerjaanKuitansi" class="form-control" value="Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan Mobil Dinas (B 2577 KRK), Output: Perawatan Kendaraan Bermotor." oninput="onBbmRowFieldChange()">
             </div>
 
             <!-- Row 5: Tabel Rincian Struk Pembelian BBM Modern -->
@@ -2738,7 +2713,7 @@
 
             <div class="bbm-table-card">
               <div class="table-responsive">
-                <table class="bbm-items-table" style="min-width: 980px;">
+                <table class="bbm-items-table">
                   <thead>
                     <tr>
                       <th style="width: 44px;" class="tc">No</th>
@@ -2756,12 +2731,11 @@
                   </tbody>
                 </table>
               </div>
-            </div>
-
-            <div style="margin-top: 8px; margin-bottom: 16px;">
-              <button type="button" class="btn btn-secondary btn-sm" onclick="addBbmItemRow()">
-                <svg class="ico"><use href="#i-plus"></use></svg> Tambah Struk BBM
-              </button>
+              <div class="bbm-table-footer">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="addBbmItemRow()">
+                  <svg class="ico"><use href="#i-plus"></use></svg> Tambah Struk BBM
+                </button>
+              </div>
             </div>
 
             <!-- Summary Total Widget Modern -->
@@ -2776,12 +2750,12 @@
             </div>
 
             <!-- Pejabat Penandatangan Dokumen BBM: Diselaraskan dari Pengaturan (PPK, PPSPM, Bendahara, KTU) -->
-            <div style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 14px 18px; margin-top: 18px; margin-bottom: 18px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <svg class="ico" style="color: #0284c7; width: 16px; height: 16px;"><use href="#i-user"></use></svg>
-                  <strong style="color: #0f172a; font-size: 13px;">Pejabat Penandatangan Dokumen BBM</strong>
-                  <span class="badge badge-success" style="font-size: 10px;">Otomatis dari Pengaturan</span>
+            <div class="bbm-pejabat-panel">
+              <div class="bbm-pejabat-head">
+                <div class="bbm-pejabat-head-left">
+                  <svg class="ico"><use href="#i-user"></use></svg>
+                  <strong class="bbm-pejabat-head-title">Pejabat Penandatangan Dokumen BBM</strong>
+                  <span class="badge badge-success">Otomatis dari Pengaturan</span>
                 </div>
                 <button type="button" class="btn btn-outline btn-xs" onclick="showTab('pengaturan')" title="Buka Tab Pengaturan untuk mengubah nama / NIP pejabat">
                   <svg class="ico"><use href="#i-settings"></use></svg> Ubah di Pengaturan
@@ -2822,13 +2796,8 @@
               <input type="hidden" id="bbm_kasubbagTuNip" value="198702182010121003">
             </div>
 
-            <div class="form-group">
-              <label class="form-label" for="bbm_catatan">Catatan / Keterangan Tambahan Lembar Kendali</label>
-              <textarea id="bbm_catatan" class="form-control" rows="2" placeholder="Catatan verifikasi atau rincian tambahan..." oninput="onBbmRowFieldChange()"></textarea>
-            </div>
-
             <!-- Tombol Aksi Bawah Form -->
-            <div style="display: flex; gap: 12px; margin-top: 20px; justify-content: flex-end; flex-wrap: wrap;">
+            <div class="bbm-form-actions">
               <button type="button" class="btn btn-secondary" onclick="loadBbmSampleData()">
                 <svg class="ico"><use href="#i-refresh"></use></svg> Muat Contoh Struk
               </button>
@@ -2839,9 +2808,8 @@
                 <svg class="ico"><use href="#i-check"></use></svg> Simpan Pengajuan
               </button>
               <button type="button" class="btn btn-primary" onclick="switchBbmTabSubView('docs')">
-                <svg class="ico"><use href="#i-file-lines"></use></svg> Pratinjau Dokumen ↗
-              </button>
-            </div>
+                <svg class="ico"><use href="#i-file-lines"></use></svg> Pratinjau Dokumen
+              </button>            </div>
           </div>
         </div>
       </div>
@@ -2849,10 +2817,10 @@
       <!-- SUB-VIEW 3: ARSIP RIWAYAT BBM -->
       <div id="bbm_sub_history" class="bbm-sub-view-pane" style="display: none;">
         <div class="card">
-          <div class="card-head" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-            <div style="display: flex; align-items: center; gap: 10px;">
+          <div class="card-head bbm-history-head">
+            <div class="card-title">
               <svg class="ico"><use href="#i-clipboard"></use></svg>
-              <h3 class="card-title" style="margin: 0;">Arsip Riwayat Pengajuan Reimburse BBM</h3>
+              <span>Arsip Riwayat Pengajuan Reimburse BBM</span>
             </div>
             <button type="button" class="btn btn-secondary btn-sm" onclick="switchBbmTabSubView('form')">
               <svg class="ico"><use href="#i-arrow-left"></use></svg> Kembali ke Form Input
@@ -2860,7 +2828,7 @@
           </div>
           <div class="card-body">
             <div class="table-responsive">
-              <table class="table">
+              <table class="bbm-history-table">
                 <thead>
                   <tr>
                     <th style="width: 40px;" class="tc">No</th>
@@ -2899,7 +2867,7 @@
               3. Rincian S-46
             </button>
           </div>
-          <div class="bbm-doc-actions" style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <div class="bbm-doc-actions">
             <button type="button" class="btn btn-secondary" onclick="switchBbmTabSubView('form')">
               <svg class="ico"><use href="#i-arrow-left"></use></svg> Edit Formulir
             </button>
@@ -3855,9 +3823,9 @@
 <script src="js/06-documents/01-render-nominatif-dan-rekap.js?v=20261126_13"></script>
 <script src="js/06-documents/02-render-rincian-per-orang.js?v=20261126_13"></script>
 <script src="js/06-documents/03-render-dpr-per-orang.js?v=20261126_13"></script>
-<script src="js/06-documents/04-render-bbm.js?v=20261127_06"></script>
+<script src="js/06-documents/04-render-bbm.js?v=20261127_13"></script>
 <script src="js/07-excel/01-ekspor-impor-excel.js?v=20261127_06"></script>
-<script src="js/07-excel/02-ekspor-bbm-excel.js?v=20261127_06"></script>
+<script src="js/07-excel/02-ekspor-bbm-excel.js?v=20261127_12"></script>
 <script src="js/08-ui/01-mode-tampilan.js?v=20261126_13"></script>
 <script src="js/08-ui/02-init-aplikasi.js?v=20261126_13"></script>
 <script src="js/08-ui/03-validasi-form.js?v=20261126_13"></script>
@@ -3870,6 +3838,6 @@
 <script src="js/08-ui/10-autosave-draft.js?v=20261127_04"></script>
 <script src="js/08-ui/11-riwayat-perjalanan.js?v=20261127_04"></script>
 <script src="js/08-ui/12-modal-dokumen-pdf.js?v=20261126_13"></script>
-<script src="js/08-ui/13-reimburse-bbm-ui.js?v=20261127_08"></script>
+<script src="js/08-ui/13-reimburse-bbm-ui.js?v=20261127_13"></script>
 </body>
 </html>

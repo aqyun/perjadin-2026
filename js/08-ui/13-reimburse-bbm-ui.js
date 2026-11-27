@@ -42,13 +42,13 @@ function getActiveBbmRecord() {
 }
 
 /**
- * Preset Armada Mobil Dinas Operasional Kantor
+ * Daftar plat kendaraan yang tersedia
  */
 const BBM_KENDARAAN_PRESETS = [
-  { nama: 'TOYOTA INNOVA B 2577 KRK', plat: 'B 2577 KRK', label: 'Innova Operasional (B 2577 KRK)' },
-  { nama: 'TOYOTA HIACE B 7123 PKP', plat: 'B 7123 PKP', label: 'Hiace Operasional (B 7123 PKP)' },
-  { nama: 'MITSUBISHI XPANDER B 1945 RKP', plat: 'B 1945 RKP', label: 'Xpander Operasional (B 1945 RKP)' },
-  { nama: 'custom', plat: '', label: '-- Input Mobil Manual / Lainnya --' }
+  { plat: 'B 2223 UKQ', label: 'B 2223 UKQ (Rendhi Mirad)' },
+  { plat: 'B 2602 UYZ', label: 'B 2602 UYZ (Arif Fajar Alfalaqy)' },
+  { plat: 'B 2577 KRK', label: 'B 2577 KRK (bukan atas nama siapa-siapa)' },
+  { plat: '', label: '-- Input Plat Manual / Lainnya --' }
 ];
 
 function populateBbmKendaraanPresets() {
@@ -66,50 +66,66 @@ function onBbmPresetKendaraanChange() {
   if (!sel) return;
   const found = BBM_KENDARAAN_PRESETS.find(p => p.plat === sel.value);
   if (found && found.plat) {
-    const elKend = document.getElementById('bbm_kendaraan');
     const elPlat = document.getElementById('bbm_platNomor');
-    if (elKend) elKend.value = found.nama;
     if (elPlat) elPlat.value = found.plat;
-    updateBbmUraianOtomatis();
+    onBbmPlatInput(found.plat);
   }
 }
 
-function populateBbmPelaksanaDropdown() {
-  const sel = document.getElementById('bbm_select_pegawai');
-  if (!sel) return;
-
-  const currentPel = document.getElementById('bbm_pelaksanaNama')?.value || '';
-  const pelakuList = (typeof getAvailablePelakuList === 'function') ? getAvailablePelakuList() : [];
-
-  let html = '<option value="">-- Pilih dari Database Pegawai --</option>';
-  pelakuList.forEach(p => {
-    const isSel = (currentPel && p.nama && currentPel.includes(p.nama.split(',')[0]));
-    html += `<option value="${p.nama}" data-nip="${p.nip || ''}" ${isSel ? 'selected' : ''}>${p.nama}</option>`;
-  });
-
-  sel.innerHTML = html;
+/**
+ * Normalisasi jenis kendaraan menjadi "Mobil" / "Motor" saja
+ */
+function normalizeBbmJenisKendaraan(val) {
+  return /motor/i.test(val || '') ? 'Motor' : 'Mobil';
 }
 
-function onBbmPelaksanaChange() {
-  const sel = document.getElementById('bbm_select_pegawai');
-  if (!sel || !sel.value) return;
+/**
+ * Cari data pegawai berdasarkan nama (tanpa gelar) dari database kepegawaian
+ */
+function findBbmPegawaiByNama(nama) {
+  if (!nama || typeof employees === 'undefined' || !Array.isArray(employees)) return null;
+  const key = nama.split(',')[0].trim().toLowerCase();
+  if (!key) return null;
+  return employees.find(p => p && p.nama && p.nama.split(',')[0].trim().toLowerCase() === key) || null;
+}
 
-  const opt = sel.options[sel.selectedIndex];
-  const nama = sel.value;
-  const nip = opt ? (opt.getAttribute('data-nip') || '') : '';
-
+/**
+ * Isi NIP pelaksana otomatis dari data pegawai
+ */
+function syncBbmNipPelaksana() {
   const elNama = document.getElementById('bbm_pelaksanaNama');
   const elNip = document.getElementById('bbm_pelaksanaNip');
-  const elPanggil = document.getElementById('bbm_pelaksanaPanggilan');
+  if (!elNama || !elNip) return;
+  const emp = findBbmPegawaiByNama(elNama.value);
+  if (emp && emp.nip) elNip.value = emp.nip;
+}
 
-  if (elNama) elNama.value = nama;
-  if (elNip && nip) elNip.value = nip;
-  if (elPanggil) {
-    const parts = nama.split(/[\s,]+/);
-    elPanggil.value = parts.length > 2 ? `${parts[0]} ${parts[1]}` : parts[0];
+/**
+ * Resolusi identitas pelaksana/pembuat berkas ke data pegawai.
+ * Contoh: "Aqyun (Kompu)" -> "Aqyun Rista Maulidin, S.Tr.Kom." + NIP pegawai.
+ */
+function resolveBbmPelaksanaIdentity(rawNama, fallbackNip) {
+  const raw = (rawNama || '').trim();
+  let emp = null;
+
+  if (raw && typeof employees !== 'undefined' && Array.isArray(employees)) {
+    emp = findBbmPegawaiByNama(raw);
+    if (!emp) {
+      // Cocokkan lewat unsur nama (mis. "Aqyun (Kompu)" -> pegawai bernama Aqyun)
+      const tokens = raw.toLowerCase().match(/[a-z]{3,}/g) || [];
+      const candidates = employees.filter(p => {
+        if (!p || !p.nama) return false;
+        const nameTokens = p.nama.toLowerCase().match(/[a-z]{3,}/g) || [];
+        return tokens.some(t => nameTokens.includes(t));
+      });
+      if (candidates.length === 1) emp = candidates[0];
+    }
   }
 
-  onBbmRowFieldChange();
+  return {
+    nama: (emp && emp.nama) ? emp.nama : raw,
+    nip: (emp && emp.nip) ? emp.nip : (fallbackNip || '')
+  };
 }
 
 function setBbmKategori(val) {
@@ -131,10 +147,10 @@ function setBbmKategori(val) {
   if (presetWrap) presetWrap.style.display = isPribadi ? 'none' : 'block';
 
   if (lblKend) {
-    lblKend.textContent = isPribadi ? 'Nama & Jenis Kendaraan Pribadi *' : 'Nama & Jenis Kendaraan Dinas *';
+    lblKend.textContent = isPribadi ? 'Jenis Kendaraan Pribadi *' : 'Jenis Kendaraan Dinas *';
   }
   if (hintKend) {
-    hintKend.textContent = isPribadi ? 'Merk dan tipe kendaraan pribadi' : 'Merk dan tipe kendaraan dinas operasional';
+    hintKend.textContent = 'Cukup pilih mobil atau motor';
   }
 
   checkBbmDecemberRule();
@@ -159,10 +175,10 @@ function onBbmPlatInput(val) {
 function initBbmModule() {
   try {
     populateBbmKendaraanPresets();
-    populateBbmPelaksanaDropdown();
 
     // Otomatis tarik & hubungkan langsung dengan SPT aktif saat ini
     syncBbmFromActiveSpt(false);
+    syncBbmNipPelaksana();
 
     renderBbmHistoryTable();
     checkBbmDecemberRule();
@@ -194,7 +210,9 @@ function syncBbmFromActiveSpt(showToast = true) {
   const agenda = getV('agenda') || (activeTrip && activeTrip.agenda) || 'Pembuatan Video Dokumenter dan Pengambilan Footage Penerima Manfaat Bedah Rumah BSPS di Pulau Lancang, Kel. Pulau Pari, Kab. Kepulauan Seribu';
   const tglBerangkat = getV('tglBerangkat') || (activeTrip && activeTrip.tglBerangkat) || '2026-10-14';
   const tglKembali = getV('tglKembali') || (activeTrip && activeTrip.tglKembali) || '2026-10-16';
-  const pelaksana = getV('lk_pelaksana') || (activeTrip && (activeTrip.lk_pelaksana || (activeTrip.draft && activeTrip.draft.fields && activeTrip.draft.fields.lk_pelaksana))) || 'Yogi Andre Yonatan Pakpahan, S.P.W.K';
+  const pelaksanaRaw = getV('lk_pelaksana') || (activeTrip && (activeTrip.lk_pelaksana || (activeTrip.draft && activeTrip.draft.fields && activeTrip.draft.fields.lk_pelaksana))) || 'Yogi Andre Yonatan Pakpahan, S.P.W.K';
+  const pelaksanaIdentity = resolveBbmPelaksanaIdentity(pelaksanaRaw);
+  const pelaksana = pelaksanaIdentity.nama;
   const prov = getV('tujuanProvinsi') || (activeTrip && activeTrip.tujuanProvinsi) || 'DKI Jakarta';
   const kota = getV('tujuanKota') || getV('tujuanKabKota') || (activeTrip && activeTrip.tujuanKota) || '';
   const tujuanLengkap = kota ? `${prov}, ${kota}` : prov;
@@ -208,30 +226,32 @@ function syncBbmFromActiveSpt(showToast = true) {
 
   if (existingBbm) {
     loadBbmRecordIntoForm(existingBbm);
+
+    // Tanggal checklist tidak diisi manual, jadi selalu dikosongkan di form
+    const elTglMasuk = document.getElementById('bbm_tanggalMasuk');
+    const elTglBukti = document.getElementById('bbm_tanggalBukti');
+    if (elTglMasuk) elTglMasuk.value = '';
+    if (elTglBukti) elTglBukti.value = '';
+    if (window.currentBbmRecord) {
+      window.currentBbmRecord.tanggalMasuk = '';
+      window.currentBbmRecord.tanggalBukti = '';
+    }
+
+    // Identitas pelaksana tetap mengikuti pembuat berkas perjadin yang aktif
+    const elPelNama = document.getElementById('bbm_pelaksanaNama');
+    const elPelNip = document.getElementById('bbm_pelaksanaNip');
+    if (elPelNama) elPelNama.value = pelaksana;
+    if (elPelNip && pelaksanaIdentity.nip) elPelNip.value = pelaksanaIdentity.nip;
+    if (window.currentBbmRecord) {
+      window.currentBbmRecord.pelaksanaNama = pelaksana;
+      if (pelaksanaIdentity.nip) window.currentBbmRecord.pelaksanaNip = pelaksanaIdentity.nip;
+    }
   } else {
     // 3. Update field identitas pelaksana BBM dari lk_pelaksana
     const elPelNama = document.getElementById('bbm_pelaksanaNama');
     const elPelNip = document.getElementById('bbm_pelaksanaNip');
-    const elPelPanggil = document.getElementById('bbm_pelaksanaPanggilan');
     if (elPelNama) elPelNama.value = pelaksana;
-    if (elPelPanggil) {
-      const parts = pelaksana.split(/[\s,]+/);
-      elPelPanggil.value = parts.length > 2 ? `${parts[0]} ${parts[1]}` : parts[0];
-    }
-
-    // Cari NIP dari masterPegawai jika belum terisi
-    if (typeof masterPegawai !== 'undefined' && Array.isArray(masterPegawai)) {
-      const matchedP = masterPegawai.find(p => p.nama && pelaksana.includes(p.nama.split(',')[0]));
-      if (matchedP && elPelNip && matchedP.nip) {
-        elPelNip.value = matchedP.nip;
-      }
-    }
-
-    // Tanggal berkas diselaraskan dengan tanggal kegiatan penugasan
-    const elTglMasuk = document.getElementById('bbm_tanggalMasuk');
-    const elTglBukti = document.getElementById('bbm_tanggalBukti');
-    if (elTglMasuk && tglKembali) elTglMasuk.value = tglKembali;
-    if (elTglBukti && tglBerangkat) elTglBukti.value = tglBerangkat;
+    if (elPelNip && pelaksanaIdentity.nip) elPelNip.value = pelaksanaIdentity.nip;
 
     if (window.currentBbmRecord) {
       window.currentBbmRecord.noST = noST;
@@ -239,6 +259,7 @@ function syncBbmFromActiveSpt(showToast = true) {
       window.currentBbmRecord.tanggalBerangkat = tglBerangkat;
       window.currentBbmRecord.tanggalKembali = tglKembali;
       window.currentBbmRecord.pelaksanaNama = pelaksana;
+      if (pelaksanaIdentity.nip) window.currentBbmRecord.pelaksanaNip = pelaksanaIdentity.nip;
     }
 
     updateBbmUraianOtomatis();
@@ -368,17 +389,16 @@ function getAvailablePelakuList() {
 function updateBbmUraianOtomatis() {
   const selKategori = document.getElementById('bbm_kategoriKendaraan');
   const isPribadi = (selKategori && selKategori.value === 'pribadi');
-  const kend = document.getElementById('bbm_kendaraan')?.value || (isPribadi ? 'TOYOTA INNOVA ZENIX' : 'TOYOTA INNOVA B 2577 KRK');
+  const kend = normalizeBbmJenisKendaraan(document.getElementById('bbm_kendaraan')?.value);
   const plat = document.getElementById('bbm_platNomor')?.value || '';
   const elPekerjaan = document.getElementById('bbm_pekerjaan');
   const elPekerjaanKuitansi = document.getElementById('bbm_pekerjaanKuitansi');
 
+  const jenisLabel = `${kend} ${isPribadi ? 'Pribadi' : 'Dinas'}`;
   const platSfx = plat ? ` (${plat})` : '';
 
   if (elPekerjaan) {
-    elPekerjaan.value = isPribadi
-      ? `Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan Mobil Pribadi - ${kend}${platSfx}.`
-      : `Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan Mobil Dinas - ${kend}.`;
+    elPekerjaan.value = `Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan ${jenisLabel}${platSfx}.`;
   }
 
   // Format Aturan 1 Kuitansi: "Pembelian BBM untuk kegiatan perjalanan dinas dalam rangka (...) tanggal (...) dengan Nomor ST (...)."
@@ -400,9 +420,7 @@ function updateBbmUraianOtomatis() {
     if (agenda || noST) {
       elPekerjaanKuitansi.value = `Pembelian BBM untuk kegiatan perjalanan dinas dalam rangka ${agenda || '...'} tanggal ${tglRentang} dengan Nomor ST ${noST || '...'}.`;
     } else {
-      elPekerjaanKuitansi.value = isPribadi
-        ? `Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan Mobil Pribadi - ${kend}${platSfx}, Output: Perawatan Kendaraan Bermotor.`
-        : `Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan Mobil Dinas - ${kend}, Output: Perawatan Kendaraan Bermotor.`;
+      elPekerjaanKuitansi.value = `Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan ${jenisLabel}${platSfx}, Output: Perawatan Kendaraan Bermotor.`;
     }
   }
 
@@ -428,21 +446,20 @@ function loadBbmRecordIntoForm(rec) {
   setVal('bbm_tanggalKuitansi', rec.tanggalKuitansi);
   setVal('bbm_nomorSPM', rec.nomorSPM || '-');
   setVal('bbm_nomorSPD', rec.nomorSPD || '-');
-  setVal('bbm_pelaksanaNama', rec.pelaksanaNama);
-  setVal('bbm_pelaksanaNip', rec.pelaksanaNip);
-  setVal('bbm_pelaksanaPanggilan', rec.pelaksanaPanggilan);
+  const recIdentity = resolveBbmPelaksanaIdentity(rec.pelaksanaNama, rec.pelaksanaNip);
+  setVal('bbm_pelaksanaNama', recIdentity.nama);
+  setVal('bbm_pelaksanaNip', recIdentity.nip);
   setVal('bbm_pemilikMobil', rec.pemilikMobil || '');
   setVal('bbm_namaPenyedia', rec.namaPenyedia || 'Biro Komunikasi Publik');
   setVal('bbm_noBukti', rec.noBukti || '-');
   setVal('bbm_noKuitansi', rec.noKuitansi || '            /KW/Bend/Satker-Setjen/2026');
-  setVal('bbm_kendaraan', rec.kendaraan);
+  setVal('bbm_kendaraan', normalizeBbmJenisKendaraan(rec.kendaraan));
   setVal('bbm_platNomor', rec.platNomor);
   setVal('bbm_pekerjaan', rec.pekerjaan);
   setVal('bbm_pekerjaanKuitansi', rec.pekerjaanKuitansi);
   setVal('bbm_akun', rec.akun || '146.01.WA.7665.EBA.994.002.0D.523121');
   setVal('bbm_namaAkun', rec.namaAkun || 'Belanja Pemeliharaan Peralatan dan Mesin');
   setVal('bbm_jenisPengadaan', rec.jenisPengadaan || 'Perawatan Kendaraan Bermotor');
-  setVal('bbm_catatan', rec.catatan || '');
 
   // Update banner SPT summary
   const elNo = document.getElementById('bbm_spt_no_lbl');
@@ -510,7 +527,8 @@ function renderBbmItemRows(items) {
   const list = (items && items.length) ? items : [
     {
       pelaksanaNama: 'Ahmad Jayadi, S.Hum., MT.',
-      kendaraanPlat: 'Innova B 2577 KRK',
+      kendaraan: 'Mobil',
+      platNomor: 'B 2577 KRK',
       tanggal: '2026-11-20',
       jenisBbm: 'Pertamina Dex',
       liter: 65,
@@ -518,7 +536,8 @@ function renderBbmItemRows(items) {
     },
     {
       pelaksanaNama: 'Fitrah Faizal, S.I.Kom.',
-      kendaraanPlat: 'Innova B 2577 KRK',
+      kendaraan: 'Mobil',
+      platNomor: 'B 2577 KRK',
       tanggal: '2026-11-20',
       jenisBbm: 'Pertamina Dex',
       liter: 65,
@@ -535,11 +554,11 @@ function appendBbmItemRowHtml(item = {}, idx = 0) {
   const tbody = document.getElementById('bbm_items_body');
   if (!tbody) return;
 
-  const defaultKend = document.getElementById('bbm_kendaraan')?.value || 'Innova';
+  const defaultKend = normalizeBbmJenisKendaraan(document.getElementById('bbm_kendaraan')?.value);
   const defaultPlat = document.getElementById('bbm_platNomor')?.value || 'B 2577 KRK';
-  const kendVal = item.kendaraan || defaultKend;
+  const kendVal = normalizeBbmJenisKendaraan(item.kendaraan || defaultKend);
   const platVal = item.platNomor || defaultPlat;
-  const itemKendPlat = (item.kendaraanPlat) ? item.kendaraanPlat : (platVal ? `${kendVal} ${platVal}` : kendVal);
+  const itemKendPlat = platVal ? `${kendVal} ${platVal}` : kendVal;
 
   const pelakuList = getAvailablePelakuList();
   const currentPelaku = item.pelaksanaNama || document.getElementById('lk_pelaksana')?.value || document.getElementById('bbm_pelaksanaNama')?.value || (pelakuList[0]?.nama || 'Ahmad Jayadi, S.Hum., MT.');
@@ -565,7 +584,7 @@ function appendBbmItemRowHtml(item = {}, idx = 0) {
       </select>
     </td>
     <td>
-      <input type="text" class="form-control bbm-item-kendaraan-plat font-bold" value="${itemKendPlat}" placeholder="Innova B 2577 KRK" oninput="onBbmRowFieldChange()">
+      <input type="text" class="form-control bbm-item-kendaraan-plat font-bold" value="${itemKendPlat}" placeholder="Mobil B 2577 KRK" oninput="onBbmRowFieldChange()">
     </td>
     <td>
       <input type="date" class="form-control bbm-item-tanggal" value="${item.tanggal || document.getElementById('bbm_tanggalBukti')?.value || '2026-11-20'}" onchange="onBbmRowFieldChange()">
@@ -604,7 +623,7 @@ function appendBbmItemRowHtml(item = {}, idx = 0) {
  */
 function addBbmItemRow() {
   const tgl = document.getElementById('bbm_tanggalBukti')?.value || new Date().toISOString().slice(0, 10);
-  const kend = document.getElementById('bbm_kendaraan')?.value || 'Innova';
+  const kend = normalizeBbmJenisKendaraan(document.getElementById('bbm_kendaraan')?.value);
   const plat = document.getElementById('bbm_platNomor')?.value || 'B 2577 KRK';
   const kendPlat = plat ? `${kend} ${plat}` : kend;
   const pelakuList = getAvailablePelakuList();
@@ -694,19 +713,23 @@ function collectBbmFormData() {
     sum += jumlah;
 
     const pelaksanaNama = tr.querySelector('.bbm-item-pelaksana')?.value || getV('bbm_pelaksanaNama') || 'Ahmad Jayadi, S.Hum., MT.';
-    const kendPlat = tr.querySelector('.bbm-item-kendaraan-plat')?.value || `${getV('bbm_kendaraan')} ${getV('bbm_platNomor')}`.trim();
+    const kendPlatRaw = (tr.querySelector('.bbm-item-kendaraan-plat')?.value || `${getV('bbm_kendaraan')} ${getV('bbm_platNomor')}`).trim();
+    const kendPlatMatch = kendPlatRaw.match(/^(mobil|motor)\s+(.+)$/i);
+    const kendItem = normalizeBbmJenisKendaraan(kendPlatMatch ? kendPlatMatch[1] : getV('bbm_kendaraan'));
+    const platItem = kendPlatMatch ? kendPlatMatch[2].trim() : kendPlatRaw;
+    const kendPlat = platItem ? `${kendItem} ${platItem}` : kendItem;
     const tgl = tr.querySelector('.bbm-item-tanggal')?.value || getV('bbm_tanggalBukti') || '2026-11-20';
     const jenisBbm = tr.querySelector('.bbm-item-jenis')?.value || 'Pertamina Dex';
     const liter = parseFloat(tr.querySelector('.bbm-item-liter')?.value) || 0;
 
-    const uraian = `Pengisian Bahan Bakar Minyak (BBM) ${jenisBbm} - Mobil ${kendPlat}`;
+    const uraian = `Pengisian Bahan Bakar Minyak (BBM) ${jenisBbm} - ${kendPlat}`;
 
     items.push({
       id: i + 1,
       pelaksanaNama: pelaksanaNama,
       kendaraanPlat: kendPlat,
-      kendaraan: kendPlat.split(/\s+[A-Z]\s/)[0] || kendPlat,
-      platNomor: kendPlat,
+      kendaraan: kendItem,
+      platNomor: platItem,
       tanggal: tgl,
       jenisBbm: jenisBbm,
       uraian: uraian,
@@ -714,6 +737,11 @@ function collectBbmFormData() {
       jumlah: jumlah
     });
   });
+
+  const pelIdentity = resolveBbmPelaksanaIdentity(
+    getV('bbm_pelaksanaNama') || document.getElementById('lk_pelaksana')?.value,
+    getV('bbm_pelaksanaNip')
+  );
 
   const record = {
     id: window.currentBbmRecord?.id || ('bbm_' + Date.now()),
@@ -723,9 +751,9 @@ function collectBbmFormData() {
     tanggalKuitansi: getV('bbm_tanggalKuitansi') || 'Desember 2026',
     nomorSPM: getV('bbm_nomorSPM') || '-',
     nomorSPD: getV('bbm_nomorSPD') || '-',
-    pelaksanaNama: (document.getElementById('lk_pelaksana')?.value || getV('bbm_pelaksanaNama') || 'Yogi Andre Yonatan Pakpahan, S.P.W.K').trim(),
-    pelaksanaNip: getV('bbm_pelaksanaNip'),
-    pelaksanaPanggilan: getV('bbm_pelaksanaPanggilan') || getV('bbm_pelaksanaNama'),
+    pelaksanaNama: pelIdentity.nama || 'Yogi Andre Yonatan Pakpahan, S.P.W.K',
+    pelaksanaNip: pelIdentity.nip,
+    pelaksanaPanggilan: pelIdentity.nama,
     pemilikMobil: getV('bbm_pemilikMobil'),
     namaPenyedia: getV('bbm_namaPenyedia') || 'Biro Komunikasi Publik',
     noBukti: getV('bbm_noBukti') || '-',
@@ -741,7 +769,7 @@ function collectBbmFormData() {
     ta: '2026',
     items: items,
     nilaiTotal: sum,
-    catatan: getV('bbm_catatan'),
+    catatan: '',
     status: window.currentBbmRecord?.status || 'selesai',
     noST: window.currentBbmRecord?.noST || getV('noST') || '395/ST/Sj.07/2026',
     agenda: window.currentBbmRecord?.agenda || getV('agenda') || '',
@@ -840,7 +868,7 @@ function loadBbmSampleData() {
   updateBbmDocPreview();
 
   if (typeof showRefreshToast === 'function') {
-    showRefreshToast('Contoh Dimuat', 'Data contoh Toyota Innova B 2577 KRK (Rp 1.000.000) berhasil dimuat.');
+    showRefreshToast('Contoh Dimuat', 'Data contoh Mobil B 2577 KRK (Rp 1.000.000) berhasil dimuat.');
   }
 }
 
@@ -850,7 +878,7 @@ function loadBbmSampleData() {
 function resetBbmForm() {
   const fresh = getDefaultBbmData();
   fresh.id = 'bbm_' + Date.now();
-  fresh.kendaraan = '';
+  fresh.kendaraan = 'Mobil';
   fresh.platNomor = '';
   fresh.pekerjaan = 'Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan Mobil Dinas.';
   fresh.pekerjaanKuitansi = 'Pengisian Bahan Bakar Minyak (BBM) untuk Kendaraan Mobil Dinas, Output: Perawatan Kendaraan Bermotor.';
@@ -894,24 +922,24 @@ function renderBbmHistoryTable() {
   tbody.innerHTML = list.map((item, idx) => {
     const tgl = formatTanggalIndoLengkap(item.tanggalBukti || item.tanggalMasuk);
     const tipeBadges = item.kategoriKendaraan === 'pribadi'
-      ? '<span class="badge badge-warning" style="font-size: 10px;">Pribadi</span>'
-      : '<span class="badge badge-success" style="font-size: 10px;">Dinas</span>';
+      ? '<span class="badge badge-warning">Pribadi</span>'
+      : '<span class="badge badge-success">Dinas</span>';
     const itemCount = (item.items && item.items.length) ? item.items.length : 1;
 
     return `
       <tr>
         <td class="tc font-bold">${idx + 1}</td>
         <td>
-          <div style="display: flex; align-items: center; gap: 6px;">
+          <div class="bbm-hist-kendaraan-row">
             ${tipeBadges}
             <strong class="bbm-hist-kendaraan">${item.kendaraan || 'Mobil Dinas'}</strong>
           </div>
-          <span class="bbm-hist-plat font-mono" style="font-size: 11px; color: #64748b;">${item.platNomor || '-'}</span>
-          <span class="font-mono" style="font-size: 11px; color: #0284c7;">(${itemCount} Struk)</span>
+          <div class="bbm-hist-meta">
+            <span class="bbm-hist-plat font-mono">${item.platNomor || '-'}</span>
+            <span class="bbm-hist-struk">${itemCount} Struk</span>
+          </div>
         </td>
-        <td>
-          <span class="bbm-hist-pelaksana">${item.pelaksanaNama || item.pelaksanaPanggilan || '-'}</span>
-        </td>
+        <td class="bbm-hist-pelaksana">${item.pelaksanaNama || item.pelaksanaPanggilan || '-'}</td>
         <td class="font-mono">${tgl}</td>
         <td class="tr font-bold font-mono text-success">${formatRupiahMurni(item.nilaiTotal)}</td>
         <td class="tc">
@@ -919,15 +947,15 @@ function renderBbmHistoryTable() {
         </td>
         <td class="tc bbm-hist-actions">
           <button type="button" class="btn btn-secondary btn-xs" onclick="onBbmHistoryOpen('${item.id}')" title="Buka dan Edit">
-            Buka
+            <svg class="ico"><use href="#i-edit"></use></svg> Buka
           </button>
           <button type="button" class="btn btn-primary btn-xs" onclick="onBbmHistoryPrint('${item.id}')" title="Pratinjau Cetak">
-            Cetak
+            <svg class="ico"><use href="#i-print"></use></svg> Cetak
           </button>
           <button type="button" class="btn btn-outline btn-xs" onclick="onBbmHistoryExcel('${item.id}')" title="Ekspor Excel">
-            Excel
+            <svg class="ico"><use href="#i-file"></use></svg> Excel
           </button>
-          <button type="button" class="btn-icon-danger btn-xs" onclick="onBbmHistoryDelete('${item.id}')" title="Hapus">
+          <button type="button" class="btn-icon-danger" onclick="onBbmHistoryDelete('${item.id}')" title="Hapus">
             <svg class="ico"><use href="#i-trash"></use></svg>
           </button>
         </td>
